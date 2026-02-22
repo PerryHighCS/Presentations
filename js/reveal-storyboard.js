@@ -59,9 +59,28 @@
 
     const slideSections = Array.from(document.querySelectorAll('.reveal .slides > section'));
 
+    function getAllowedMaxSlideIndex() {
+      const lastIndex = Math.max(0, slideSections.length - 1);
+      const syncApi = window.RevealIframeSyncAPI;
+      if (!syncApi || typeof syncApi.getStatus !== 'function') return lastIndex;
+
+      const status = syncApi.getStatus();
+      if (!status || status.role !== 'student') return lastIndex;
+
+      if (status.capabilities?.canNavigateForward) return lastIndex;
+
+      const boundaryH = Number(status.studentBoundary?.h ?? reveal.getIndices().h ?? 0);
+      if (!Number.isFinite(boundaryH)) return lastIndex;
+      return Math.max(0, Math.min(lastIndex, boundaryH));
+    }
+
     function renderStoryboard() {
       storyboardTrack.innerHTML = '';
+      const allowedMaxIndex = getAllowedMaxSlideIndex();
+      const hiddenCount = Math.max(0, slideSections.length - (allowedMaxIndex + 1));
       slideSections.forEach((section, index) => {
+        if (index > allowedMaxIndex) return;
+
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'story-thumb';
@@ -82,12 +101,36 @@
         button.addEventListener('click', () => reveal.slide(index));
         storyboardTrack.appendChild(button);
       });
+
+      if (hiddenCount > 0) {
+        const lockedCard = document.createElement('div');
+        lockedCard.className = 'story-thumb story-thumb-locked';
+        lockedCard.setAttribute('aria-label', `${hiddenCount} additional slides are currently locked`);
+
+        const num = document.createElement('span');
+        num.className = 'story-num';
+        num.textContent = '🔒';
+
+        const body = document.createElement('div');
+        body.className = 'story-lock-body';
+        body.textContent = `+${hiddenCount} locked`;
+
+        const caption = document.createElement('span');
+        caption.className = 'story-caption';
+        caption.textContent = 'Host-controlled slides';
+
+        lockedCard.appendChild(num);
+        lockedCard.appendChild(body);
+        lockedCard.appendChild(caption);
+        storyboardTrack.appendChild(lockedCard);
+      }
     }
 
     function updateStoryboardActive(index) {
       const thumbs = storyboardTrack.querySelectorAll('.story-thumb');
-      thumbs.forEach((thumb, thumbIndex) => {
-        thumb.classList.toggle('active', thumbIndex === index);
+      thumbs.forEach((thumb) => {
+        const slideIndex = Number(thumb.dataset.slide);
+        thumb.classList.toggle('active', slideIndex === index);
       });
 
       const activeThumb = storyboardTrack.querySelector('.story-thumb.active');
@@ -103,11 +146,19 @@
       reveal.layout();
     }
 
-    renderStoryboard();
-    updateStoryboardActive(reveal.getIndices().h || 0);
+    function refreshStoryboard() {
+      renderStoryboard();
+      updateStoryboardActive(reveal.getIndices().h || 0);
+    }
+
+    refreshStoryboard();
 
     reveal.on('slidechanged', (event) => {
       updateStoryboardActive(event.indexh);
+    });
+
+    window.addEventListener('reveal-iframesync-status', () => {
+      refreshStoryboard();
     });
 
     document.addEventListener('keydown', (event) => {

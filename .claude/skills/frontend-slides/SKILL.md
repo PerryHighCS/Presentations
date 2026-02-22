@@ -167,6 +167,68 @@ Configuration:
 - Ensure cloned preview sections are explicitly visible (`present`) to avoid black thumbnails.
 - Preserve existing Reveal keyboard controls; choose a toggle key that does not conflict with core navigation.
 
+### Add-on: Iframe Instructor/Student Sync
+
+Use shared script **`js/reveal-iframe-sync.js`** to sync slides via `postMessage` so that for decks embedded in an iframe, the instructor can control navigation and state from the host page, while students view a synced presentation in the iframe.
+
+Minimal setup:
+
+```html
+<script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
+<script src="js/reveal-iframe-sync.js"></script>
+<script>
+Reveal.initialize({
+    // ... your Reveal config ...
+    plugins: [ RevealIframeSync ],
+    iframeSync: {
+        role: 'instructor',
+        deckId: 'my-deck',
+        hostOrigin: '*',
+        allowedOrigins: ['*']
+    }
+});
+</script>
+```
+
+Contract:
+
+- Student role listens for host commands (`next`, `prev`, `slide`, `setState`).
+- Instructor role publishes state changes back to host.
+- Default role should be `instructor` so asynchronous viewers retain full local navigation unless a host explicitly switches to `student`.
+- Message scope can be constrained by `deckId` and `allowedOrigins`.
+- On connect (and role changes), iframe posts `ready` with current role, deck state, and navigation capabilities.
+- By default, students can navigate backward but not forward beyond the most recent instructor-synced position.
+- Use `studentCanNavigateBack` / `studentCanNavigateForward` in `iframeSync` to tune this behavior.
+
+### Add-on: Chalkboard
+
+Use Reveal Chalkboard for live drawing/annotation during a presentation.
+
+Minimal setup:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js-plugins@latest/chalkboard/style.css" />
+
+<script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js-plugins@latest/chalkboard/plugin.js"></script>
+<script>
+Reveal.initialize({
+    // ... your Reveal config ...
+    plugins: [ RevealChalkboard ],
+    chalkboard: {
+        boardmarkerWidth: 4,
+        chalkWidth: 7
+    }
+});
+</script>
+```
+
+Contract:
+
+- Register `RevealChalkboard` in `plugins` and keep chalkboard options under `chalkboard`.
+- Keep keys non-conflicting with deck navigation (default plugin bindings are acceptable).
+- For iframe sync (`js/reveal-iframe-sync.js`), forward chalkboard commands/events through the same `postMessage` channel so student and instructor views stay aligned.
+
 ### Required CSS
 
 Include this complete CSS block in every presentation. Adapt colors/fonts to the chosen style preset.
