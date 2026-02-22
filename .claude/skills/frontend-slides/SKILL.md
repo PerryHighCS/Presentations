@@ -163,6 +163,7 @@ Configuration:
 
 - Configure via the `initRevealStoryboard({...})` options object (init-call-only).
 - Keep storyboard shared scripts in top-level **`js/`** for reuse across decks.
+- For GitHub Pages project sites (for example `/Presentations/`), use **relative local asset paths** like `../js/...` instead of root-absolute `/js/...`.
 - Build thumbnails from cloned `<section>` nodes so design styles are faithfully previewed.
 - Ensure cloned preview sections are explicitly visible (`present`) to avoid black thumbnails.
 - Preserve existing Reveal keyboard controls; choose a toggle key that does not conflict with core navigation.
