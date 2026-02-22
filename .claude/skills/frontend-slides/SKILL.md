@@ -5,243 +5,397 @@ description: Create stunning, animation-rich HTML presentations from scratch or 
 
 # Frontend Slides Skill
 
-Create zero-dependency, animation-rich HTML presentations that run entirely in the browser. This skill helps non-designers discover their preferred aesthetic through visual exploration ("show, don't tell"), then generates production-quality slide decks.
+Create Reveal.js-powered HTML presentations that run entirely in the browser. This skill helps non-designers discover their preferred aesthetic through visual exploration ("show, don't tell"), then generates production-quality slide decks.
 
 ## Core Philosophy
 
-1. **Zero Dependencies** — Single HTML files with inline CSS/JS. No npm, no build tools.
+1. **Reveal.js for Navigation** — Use Reveal.js (CDN) for slide transitions, keyboard/touch navigation, fragments, progress bar, and slide numbers. Do not write a custom SlidePresentation class.
 2. **Show, Don't Tell** — People don't know what they want until they see it. Generate visual previews, not abstract choices.
 3. **Distinctive Design** — Avoid generic "AI slop" aesthetics. Every presentation should feel custom-crafted.
 4. **Production Quality** — Code should be well-commented, accessible, and performant.
-5. **Viewport Fitting (CRITICAL)** — Every slide MUST fit exactly within the viewport. No scrolling within slides, ever. This is non-negotiable.
+5. **Canvas Fitting (CRITICAL)** — Every slide MUST fill the configured Reveal.js canvas (1600×900 by default). Content that overflows should be split across slides.
 
 ---
 
-## CRITICAL: Viewport Fitting Requirements
+## CRITICAL: Reveal.js Architecture
 
-**This section is mandatory for ALL presentations. Every slide must be fully visible without scrolling on any screen size.**
+**This section is mandatory for ALL presentations. Read it carefully before generating any code.**
 
-### The Golden Rule
+### How Reveal.js Sizing Works
 
+Reveal.js renders slides on a fixed **canvas** (configured as `width × height`, default 1600×900). It then scales the entire canvas using a CSS `transform: scale()` on `.reveal .slides` to fit the actual browser viewport. This has several important consequences:
+
+1. **Use `px` for font sizes and spacing** — NOT `clamp()`, NOT `vw`, NOT `em` in CSS custom properties.
+   - Reveal.js JS sets `font-size` on `.reveal` as `Math.floor(viewportHeight * 0.04)` (~28px at 720px viewport).
+   - If you use `em` in custom properties, they resolve relative to that ~28px, then the slide is also scaled down by the transform. **Double-shrinking.**
+   - `px` values are immune to the inherited font-size and scale correctly through the CSS transform alone.
+   - `clamp()`/`vw` reference actual viewport dimensions, not canvas dimensions — they don't scale with slides.
+
+2. **Size everything for the canvas** — Pick `px` values that look right in a 1600×900 layout. Reveal's transform handles all viewport responsiveness automatically.
+
+3. **No media queries for font sizes** — Reveal's transform replaces them. You don't need `@media (max-height: 700px)` font-size overrides.
+
+### Required HTML Structure
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentation Title</title>
+
+    <!-- Reveal.js base CSS — no theme file, we supply a full custom theme -->
+    <link rel="stylesheet" href="https://unpkg.com/reveal.js@5/dist/reveal.css">
+
+    <!-- Fonts (Google Fonts or Fontshare) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=...">
+
+    <style>
+        /* See "Required CSS" section below */
+    </style>
+</head>
+<body>
+    <!-- Reveal.js wrapper — REQUIRED structure -->
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Each <section> = one slide -->
+            <section>
+                <div class="slide-inner">
+                    <h1>Presentation Title</h1>
+                    <p>Subtitle or author</p>
+                </div>
+            </section>
+
+            <!-- Content slide with fragments (progressive reveal) -->
+            <section>
+                <div class="slide-inner">
+                    <h2>Slide Title</h2>
+                    <ul>
+                        <li class="fragment fade-up">First point (appears on keypress)</li>
+                        <li class="fragment fade-up">Second point</li>
+                        <li class="fragment fade-up">Third point</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Simultaneous reveal: same data-fragment-index -->
+            <section>
+                <div class="slide-inner split">
+                    <div class="fragment fade-up" data-fragment-index="1">Left panel</div>
+                    <div class="fragment fade-up" data-fragment-index="1">Right panel (same keypress)</div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Reveal.js library -->
+    <script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,               // URL updates with slide number
+            transition: 'fade',       // slide transition (fade/slide/convex/none)
+            transitionSpeed: 'fast',
+            backgroundTransition: 'none',
+            center: false,            // we handle centering via flex in .slide-inner
+            controls: false,          // no on-screen arrow buttons (keyboard/touch only)
+            progress: true,           // thin progress bar at bottom
+            slideNumber: 'c/t',       // "3 / 12" counter
+            keyboard: true,
+            touch: true,              // swipe on mobile
+            fragments: true,
+            width: 1600,              // canvas width — match your design
+            height: 900,              // canvas height
+            margin: 0.04,
+            minScale: 0.2,
+            maxScale: 2.5,
+        });
+    </script>
+</body>
+</html>
 ```
-Each slide = exactly one viewport height (100vh/100dvh)
-Content overflows? → Split into multiple slides or reduce content
-Never scroll within a slide.
+
+### Default Add-on: Toggleable Storyboard Strip
+
+For future Reveal.js presentations generated by this skill, include a **storyboard strip by default** (unless the user asks not to include it).
+
+Required behavior:
+
+1. Provide a bottom storyboard panel that is hidden by default and toggles with a key (default: **`M`**).
+2. Show **rendered slide thumbnails** with short captions.
+3. Support click-to-navigate and active-slide highlighting.
+4. Keep thumbnails true **16:9** and avoid covering slide content when open.
+
+Integration standard:
+
+- Use shared script **`js/reveal-storyboard.js`** to show the storyboard.
+- Include storyboard container markup (`#storyboard`, `#storyboard-track`).
+- After `Reveal.initialize(...)`, call `window.initRevealStoryboard({...})`.
+
+Required storyboard HTML:
+
+```html
+<div id="storyboard" class="storyboard" aria-hidden="true">
+    <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+```
+
+Required JavaScript:
+
+```html
+<script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
+<script src="js/reveal-storyboard.js"></script>
+<script>
+if (window.initRevealStoryboard) {
+    window.initRevealStoryboard({
+        reveal: Reveal,
+        storyboardId: 'storyboard',
+        trackId: 'storyboard-track',
+        toggleKey: 'm',
+    });
+}
+</script>
+```
+
+Configuration:
+
+- Configure via the `initRevealStoryboard({...})` options object (init-call-only).
+- Keep storyboard shared scripts in top-level **`js/`** for reuse across decks.
+- Build thumbnails from cloned `<section>` nodes so design styles are faithfully previewed.
+- Ensure cloned preview sections are explicitly visible (`present`) to avoid black thumbnails.
+- Preserve existing Reveal keyboard controls; choose a toggle key that does not conflict with core navigation.
+
+### Required CSS
+
+Include this complete CSS block in every presentation. Adapt colors/fonts to the chosen style preset.
+
+```css
+/* ===========================================
+   1. THEMING — apply colors and fonts explicitly.
+   NOTE: --r-* CSS custom properties (like --r-background-color) are ONLY
+   consumed by Reveal's bundled theme CSS files (black.css, moon.css, etc.).
+   Since we load reveal.css alone (no theme), we MUST use explicit CSS rules.
+   =========================================== */
+
+/* .reveal-viewport is the class Reveal.js adds to <body> at runtime */
+body,
+.reveal-viewport {
+    background: #0a0f1c;        /* ← your background color */
+    background-color: #0a0f1c;
+}
+
+.reveal {
+    background: transparent;
+    color: #ffffff;
+    font-family: 'Your Font', sans-serif;
+}
+
+/* Headings — reset Reveal's defaults (some themes force uppercase, add margins) */
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+    color: #ffffff;
+    font-family: 'Your Font', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    text-transform: none;   /* Reveal themes often set uppercase — always reset */
+    margin: 0;
+}
+
+.reveal p,
+.reveal li,
+.reveal blockquote {
+    color: rgba(255,255,255,0.7);
+    font-family: 'Your Font', sans-serif;
+}
+
+/* Inline code chips */
+.reveal :not(pre) > code {
+    font-family: 'Your Mono Font', monospace;
+    color: #00ffcc;
+    background: rgba(0,255,204,0.1);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+}
+
+/* Links */
+.reveal a { color: #00ffcc; }
+
+/* ===========================================
+   2. CSS CUSTOM PROPERTIES
+   IMPORTANT: Use px, not em/clamp/vw.
+   Reveal scales the 1600×900 canvas via CSS transform — px values
+   scale correctly with it. em/clamp/vw cause double-scaling issues.
+   =========================================== */
+:root {
+    /* Colors */
+    --bg:       #0a0f1c;
+    --text:     #ffffff;
+    --accent:   #00ffcc;
+
+    /* Fonts */
+    --font-ui:   'Your Display Font', sans-serif;
+    --font-mono: 'Your Mono Font', monospace;
+
+    /* Typography — px sized for 1600×900 canvas.
+       At a 1280×720 viewport (scale ≈ 0.8), visuals are ~80% of these values.
+       At a 1920×1080 viewport (scale ≈ 1.2), visuals are ~120% of these values. */
+    --title:  100px;   /* visual ~80px at 1280×720 */
+    --h2:      56px;   /* visual ~45px */
+    --h3:      36px;   /* visual ~29px */
+    --body:    25px;   /* visual ~20px */
+    --small:   19px;   /* visual ~15px */
+    --code:    21px;   /* visual ~17px */
+    --tag:     15px;   /* visual ~12px — labels/eyebrows */
+
+    /* Spacing — also px for same reason */
+    --pad:     72px;   /* slide inner padding */
+    --gap:     26px;   /* between content items */
+    --gap-sm:  13px;   /* tight gaps */
+    --gap-lg:  52px;   /* section breaks */
+
+    /* Animation */
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===========================================
+   3. REVEAL.JS STRUCTURAL OVERRIDES
+   =========================================== */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* CRITICAL: Do NOT set position on sections.
+   Reveal.js sets position: absolute on sections to layer and fade them.
+   Overriding with position: relative breaks fade transitions — slides
+   2 through N will appear blank after the title slide.
+   Note: position: absolute elements are already their own positioning
+   context, so child position: absolute elements (decorative glows, etc.)
+   are already scoped without needing position: relative on the section. */
+.reveal .slides > section {
+    height: 100%;
+    padding: 0 !important;   /* override Reveal's default 20px padding */
+    box-sizing: border-box;
+    text-align: left;
+}
+
+/* Slide inner wrapper — apply padding, centering, and overflow here.
+   This is a <div>, not the <section>, so position: relative is safe. */
+.slide-inner {
+    width: 100%;
+    height: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: var(--pad);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+}
+
+/* Center layout variant (for title/impact slides) */
+.slide-center {
+    align-items: center;
+    text-align: center;
+}
+
+/* Reset Reveal.js <pre> defaults */
+.reveal pre {
+    font-family: var(--font-mono);
+    font-size: var(--code);
+    line-height: 1.8;
+    margin: 0;
+    box-shadow: none;   /* Reveal adds a drop-shadow by default */
+    width: auto;        /* Reveal forces width: 90% by default */
+    text-align: left;
+}
+
+/* Reset Reveal.js <code> defaults inside pre */
+.reveal pre code {
+    font-family: inherit;
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    max-height: none;   /* Reveal caps at 400px by default */
+}
+
+/* Progress bar */
+.reveal .progress { height: 3px; }
+.reveal .progress span {
+    background: var(--accent);
+}
+
+/* Slide number */
+.reveal .slide-number {
+    font-family: var(--font-mono);
+    font-size: 0.45em;
+    background: transparent;
+}
+
+/* ===========================================
+   4. FRAGMENTS (progressive reveal)
+   Use class="fragment fade-up" on any element.
+   Use data-fragment-index="N" for simultaneous reveal.
+   =========================================== */
+.reveal .fragment.fade-up {
+    transform: translateY(20px);
+    transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+}
+
+.reveal .fragment.fade-up.visible {
+    transform: translateY(0);
+}
+
+/* ===========================================
+   5. ANIMATIONS FOR SLIDE ENTRY
+   Use .reveal section.present (not .is-visible or IntersectionObserver)
+   =========================================== */
+.reveal section.present .my-animation {
+    animation: my-keyframe 0.6s var(--ease) forwards;
+}
+
+/* ===========================================
+   6. REDUCED MOTION
+   =========================================== */
+@media (prefers-reduced-motion: reduce) {
+    .reveal .fragment {
+        transition: opacity 0.2s ease !important;
+        transform: none !important;
+    }
+}
 ```
 
 ### Content Density Limits
 
-To guarantee viewport fitting, enforce these limits per slide:
+Content that overflows the 1600×900 canvas should be split across slides.
 
 | Slide Type | Maximum Content |
 |------------|-----------------|
 | Title slide | 1 heading + 1 subtitle + optional tagline |
 | Content slide | 1 heading + 4-6 bullet points OR 1 heading + 2 paragraphs |
-| Feature grid | 1 heading + 6 cards maximum (2x3 or 3x2 grid) |
+| Feature grid | 1 heading + 6 cards maximum (2×3 or 3×2 grid) |
 | Code slide | 1 heading + 8-10 lines of code maximum |
 | Quote slide | 1 quote (max 3 lines) + attribution |
-| Image slide | 1 heading + 1 image (max 60vh height) |
 
-**If content exceeds these limits → Split into multiple slides**
+### Reveal.js Gotchas (Hard-Won Lessons)
 
-### Required CSS Architecture
-
-Every presentation MUST include this base CSS for viewport fitting:
-
-```css
-/* ===========================================
-   VIEWPORT FITTING: MANDATORY BASE STYLES
-   These styles MUST be included in every presentation.
-   They ensure slides fit exactly in the viewport.
-   =========================================== */
-
-/* 1. Lock html/body to viewport */
-html, body {
-    height: 100%;
-    overflow-x: hidden;
-}
-
-html {
-    scroll-snap-type: y mandatory;
-    scroll-behavior: smooth;
-}
-
-/* 2. Each slide = exact viewport height */
-.slide {
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh; /* Dynamic viewport height for mobile browsers */
-    overflow: hidden; /* CRITICAL: Prevent ANY overflow */
-    scroll-snap-align: start;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-}
-
-/* 3. Content container with flex for centering */
-.slide-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    max-height: 100%;
-    overflow: hidden; /* Double-protection against overflow */
-    padding: var(--slide-padding);
-}
-
-/* 4. ALL typography uses clamp() for responsive scaling */
-:root {
-    /* Titles scale from mobile to desktop */
-    --title-size: clamp(1.5rem, 5vw, 4rem);
-    --h2-size: clamp(1.25rem, 3.5vw, 2.5rem);
-    --h3-size: clamp(1rem, 2.5vw, 1.75rem);
-
-    /* Body text */
-    --body-size: clamp(0.75rem, 1.5vw, 1.125rem);
-    --small-size: clamp(0.65rem, 1vw, 0.875rem);
-
-    /* Spacing scales with viewport */
-    --slide-padding: clamp(1rem, 4vw, 4rem);
-    --content-gap: clamp(0.5rem, 2vw, 2rem);
-    --element-gap: clamp(0.25rem, 1vw, 1rem);
-}
-
-/* 5. Cards/containers use viewport-relative max sizes */
-.card, .container, .content-box {
-    max-width: min(90vw, 1000px);
-    max-height: min(80vh, 700px);
-}
-
-/* 6. Lists auto-scale with viewport */
-.feature-list, .bullet-list {
-    gap: clamp(0.4rem, 1vh, 1rem);
-}
-
-.feature-list li, .bullet-list li {
-    font-size: var(--body-size);
-    line-height: 1.4;
-}
-
-/* 7. Grids adapt to available space */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
-    gap: clamp(0.5rem, 1.5vw, 1rem);
-}
-
-/* 8. Images constrained to viewport */
-img, .image-container {
-    max-width: 100%;
-    max-height: min(50vh, 400px);
-    object-fit: contain;
-}
-
-/* ===========================================
-   RESPONSIVE BREAKPOINTS
-   Aggressive scaling for smaller viewports
-   =========================================== */
-
-/* Short viewports (< 700px height) */
-@media (max-height: 700px) {
-    :root {
-        --slide-padding: clamp(0.75rem, 3vw, 2rem);
-        --content-gap: clamp(0.4rem, 1.5vw, 1rem);
-        --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
-        --h2-size: clamp(1rem, 3vw, 1.75rem);
-    }
-}
-
-/* Very short viewports (< 600px height) */
-@media (max-height: 600px) {
-    :root {
-        --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
-        --content-gap: clamp(0.3rem, 1vw, 0.75rem);
-        --title-size: clamp(1.1rem, 4vw, 2rem);
-        --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
-    }
-
-    /* Hide non-essential elements */
-    .nav-dots, .keyboard-hint, .decorative {
-        display: none;
-    }
-}
-
-/* Extremely short (landscape phones, < 500px height) */
-@media (max-height: 500px) {
-    :root {
-        --slide-padding: clamp(0.4rem, 2vw, 1rem);
-        --title-size: clamp(1rem, 3.5vw, 1.5rem);
-        --h2-size: clamp(0.9rem, 2.5vw, 1.25rem);
-        --body-size: clamp(0.65rem, 1vw, 0.85rem);
-    }
-}
-
-/* Narrow viewports (< 600px width) */
-@media (max-width: 600px) {
-    :root {
-        --title-size: clamp(1.25rem, 7vw, 2.5rem);
-    }
-
-    /* Stack grids vertically */
-    .grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* ===========================================
-   REDUCED MOTION
-   Respect user preferences
-   =========================================== */
-@media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.2s !important;
-    }
-
-    html {
-        scroll-behavior: auto;
-    }
-}
-```
-
-### Overflow Prevention Checklist
-
-Before generating any presentation, mentally verify:
-
-1. ✅ Every `.slide` has `height: 100vh; height: 100dvh; overflow: hidden;`
-2. ✅ All font sizes use `clamp(min, preferred, max)`
-3. ✅ All spacing uses `clamp()` or viewport units
-4. ✅ Content containers have `max-height` constraints
-5. ✅ Images have `max-height: min(50vh, 400px)` or similar
-6. ✅ Grids use `auto-fit` with `minmax()` for responsive columns
-7. ✅ Breakpoints exist for heights: 700px, 600px, 500px
-8. ✅ No fixed pixel heights on content elements
-9. ✅ Content per slide respects density limits
-
-### When Content Doesn't Fit
-
-If you find yourself with too much content:
-
-**DO:**
-- Split into multiple slides
-- Reduce bullet points (max 5-6 per slide)
-- Shorten text (aim for 1-2 lines per bullet)
-- Use smaller code snippets
-- Create a "continued" slide
-
-**DON'T:**
-- Reduce font size below readable limits
-- Remove padding/spacing entirely
-- Allow any scrolling
-- Cram content to fit
-
-### Testing Viewport Fit
-
-After generating, recommend the user test at these sizes:
-- Desktop: 1920×1080, 1440×900, 1280×720
-- Tablet: 1024×768, 768×1024 (portrait)
-- Mobile: 375×667, 414×896
-- Landscape phone: 667×375, 896×414
+| Issue | Root Cause | Fix |
+|-------|-----------|-----|
+| White background, invisible text | `--r-*` CSS vars ignored without theme file | Use explicit CSS rules on `.reveal-viewport`, `.reveal`, `.reveal h1-h6`, etc. |
+| Slides 2-N appear blank | `position: relative` on `section` overrides Reveal's `position: absolute` needed for fade | Never set `position` on `.reveal .slides > section`. Use a `.slide-inner` div for padding/centering |
+| Text smaller than expected | `em` values double-scaled: Reveal sets ~28px base font-size on `.reveal` via JS, then also scales slides via transform | Use `px` values sized for the canvas (e.g., 56px for a main heading in 1600×900) |
+| Code blocks get a shadow + fixed width | Reveal.js defaults: `box-shadow` + `width: 90%` on `pre` | Reset: `box-shadow: none; width: auto;` |
+| Code truncated at 400px height | Reveal.js default: `max-height: 400px` on `pre code` | Reset: `max-height: none;` |
+| Headings uppercase | Some Reveal CSS sets `text-transform: uppercase` | Always reset: `text-transform: none;` on `.reveal h1-h6` |
 
 ---
 
@@ -294,7 +448,15 @@ Before designing, understand the content. Ask via AskUserQuestion:
   - "I have rough notes" — Need help organizing into slides
   - "I have a topic only" — Need help creating the full outline
 
-If user has content, ask them to share it (text, bullet points, images, etc.).
+**Question 4: Fragments**
+- Header: "Reveal mode"
+- Question: "How should content appear on screen?"
+- Options:
+  - "All at once" — Each slide appears complete (good for self-paced/PDF export)
+  - "Teach mode" — Key points reveal one-by-one on keypress (good for live teaching)
+  - "Light fragments" — Only major reveals fragment, details appear together
+
+If user has content, ask them to share it.
 
 ---
 
@@ -302,22 +464,17 @@ If user has content, ask them to share it (text, bullet points, images, etc.).
 
 **CRITICAL: This is the "show, don't tell" phase.**
 
-Most people can't articulate design preferences in words. Instead of asking "do you want minimalist or bold?", we generate mini-previews and let them react.
+Most people can't articulate design preferences in words. Generate mini-previews and let them react.
 
 ### How Users Choose Presets
 
-Users can select a style in **two ways**:
-
 **Option A: Guided Discovery (Default)**
 - User answers mood questions
-- Skill generates 3 preview files based on their answers
-- User views previews in browser and picks their favorite
-- This is best for users who don't have a specific style in mind
+- Skill generates 3 preview files
+- User picks their favorite
 
 **Option B: Direct Selection**
-- If user already knows what they want, they can request a preset by name
-- Example: "Use the Bold Signal style" or "I want something like Dark Botanical"
-- Skip to Phase 3 immediately
+- User requests a preset by name → skip to Phase 3
 
 **Available Presets:**
 | Preset | Vibe | Best For |
@@ -330,59 +487,62 @@ Users can select a style in **two ways**:
 | Pastel Geometry | Friendly, approachable | Product overviews |
 | Split Pastel | Playful, modern | Creative agencies |
 | Vintage Editorial | Witty, personality-driven | Personal brands |
-| Neon Cyber | Futuristic, techy | Tech startups |
+| Neon Cyber | Futuristic, techy | Tech startups, CS education |
 | Terminal Green | Developer-focused | Dev tools, APIs |
 | Swiss Modern | Minimal, precise | Corporate, data |
 | Paper & Ink | Literary, thoughtful | Storytelling |
 
 ### Step 2.0: Style Path Selection
 
-First, ask how the user wants to choose their style:
-
 **Question: Style Selection Method**
 - Header: "Style"
 - Question: "How would you like to choose your presentation style?"
 - Options:
-  - "Show me options" — Generate 3 previews based on my needs (recommended for most users)
+  - "Show me options" — Generate 3 previews based on my needs (recommended)
   - "I know what I want" — Let me pick from the preset list directly
-
-**If "Show me options"** → Continue to Step 2.1 (Mood Selection)
-
-**If "I know what I want"** → Show preset picker:
-
-**Question: Pick a Preset**
-- Header: "Preset"
-- Question: "Which style would you like to use?"
-- Options:
-  - "Bold Signal" — Vibrant card on dark, confident and high-impact
-  - "Dark Botanical" — Elegant dark with soft abstract shapes
-  - "Notebook Tabs" — Editorial paper look with colorful section tabs
-  - "Pastel Geometry" — Friendly pastels with decorative pills
-
-(If user picks one, skip to Phase 3. If they want to see more options, show additional presets or proceed to guided discovery.)
 
 ### Step 2.1: Mood Selection (Guided Discovery)
 
-**Question 1: Feeling**
+**Question: Feeling**
 - Header: "Vibe"
 - Question: "What feeling should the audience have when viewing your slides?"
 - Options:
-  - "Impressed/Confident" — Professional, trustworthy, this team knows what they're doing
-  - "Excited/Energized" — Innovative, bold, this is the future
+  - "Impressed/Confident" — Professional, trustworthy
+  - "Excited/Energized" — Innovative, bold, the future
   - "Calm/Focused" — Clear, thoughtful, easy to follow
   - "Inspired/Moved" — Emotional, storytelling, memorable
-- multiSelect: true (can choose up to 2)
+- multiSelect: true
 
 ### Step 2.2: Generate Style Previews
 
-Based on their mood selection, generate **3 distinct style previews** as mini HTML files in a temporary directory. Each preview should be a single title slide showing:
+Based on mood, generate **3 style previews** in `.claude-design/slide-previews/`:
 
+```
+.claude-design/slide-previews/
+├── style-a.html
+├── style-b.html
+└── style-c.html
+```
+
+**Preview files:** These are standalone title-slide demos (~50-100 lines). They do NOT need to use Reveal.js — simple single-page HTML with inline CSS animations is fine for previews. The full presentation will use Reveal.js.
+
+Each preview should show:
 - Typography (font choices, heading/body hierarchy)
-- Color palette (background, accent, text colors)
-- Animation style (how elements enter)
-- Overall aesthetic feel
+- Color palette
+- Animation style
+- Overall aesthetic
 
-**Preview Styles to Consider (pick 3 based on mood):**
+**IMPORTANT: Never use:**
+- Purple gradients on white backgrounds
+- Inter, Roboto, or system fonts
+- Standard blue primary colors
+- Predictable centered hero layouts
+
+**Use distinctive choices:**
+- Unique font pairings (Clash Display, Satoshi, Cormorant Garamond, DM Sans, etc.)
+- Cohesive color themes with personality
+- Atmospheric backgrounds (gradients, subtle patterns, depth)
+- Signature animation moments
 
 | Mood | Style Options |
 |------|---------------|
@@ -391,56 +551,22 @@ Based on their mood selection, generate **3 distinct style previews** as mini HT
 | Calm/Focused | "Notebook Tabs", "Paper & Ink", "Swiss Modern" |
 | Inspired/Moved | "Dark Botanical", "Vintage Editorial", "Pastel Geometry" |
 
-**IMPORTANT: Never use these generic patterns:**
-- Purple gradients on white backgrounds
-- Inter, Roboto, or system fonts
-- Standard blue primary colors
-- Predictable hero layouts
-
-**Instead, use distinctive choices:**
-- Unique font pairings (Clash Display, Satoshi, Cormorant Garamond, DM Sans, etc.)
-- Cohesive color themes with personality
-- Atmospheric backgrounds (gradients, subtle patterns, depth)
-- Signature animation moments
-
 ### Step 2.3: Present Previews
 
-Create the previews in: `.claude-design/slide-previews/`
-
 ```
-.claude-design/slide-previews/
-├── style-a.html   # First style option
-├── style-b.html   # Second style option
-├── style-c.html   # Third style option
-└── assets/        # Any shared assets
-```
+I've created 3 style previews:
 
-Each preview file should be:
-- Self-contained (inline CSS/JS)
-- A single "title slide" showing the aesthetic
-- Animated to demonstrate motion style
-- ~50-100 lines, not a full presentation
+**Style A: [Name]** — [1 sentence]
+**Style B: [Name]** — [1 sentence]
+**Style C: [Name]** — [1 sentence]
 
-Present to user:
-```
-I've created 3 style previews for you to compare:
-
-**Style A: [Name]** — [1 sentence description]
-**Style B: [Name]** — [1 sentence description]
-**Style C: [Name]** — [1 sentence description]
-
-Open each file to see them in action:
+Open each file to compare:
 - .claude-design/slide-previews/style-a.html
 - .claude-design/slide-previews/style-b.html
 - .claude-design/slide-previews/style-c.html
 
-Take a look and tell me:
-1. Which style resonates most?
-2. What do you like about it?
-3. Anything you'd change?
+Which resonates most? Anything you'd change?
 ```
-
-Then use AskUserQuestion:
 
 **Question: Pick Your Style**
 - Header: "Style"
@@ -451,291 +577,55 @@ Then use AskUserQuestion:
   - "Style C: [Name]" — [Brief description]
   - "Mix elements" — Combine aspects from different styles
 
-If "Mix elements", ask for specifics.
-
 ---
 
 ## Phase 3: Generate Presentation
 
-Now generate the full presentation based on:
-- Content from Phase 1
-- Style from Phase 2
+Generate the full presentation using **Reveal.js** as described in the Architecture section above.
 
 ### File Structure
 
-For single presentations:
 ```
-presentation.html    # Self-contained presentation
+presentation.html    # Single self-contained file (CSS inline, JS via CDN)
 assets/              # Images, if any
 ```
 
-For projects with multiple presentations:
-```
-[presentation-name].html
-[presentation-name]-assets/
-```
+### Fragment Strategy
 
-### HTML Architecture
+Choose fragment density based on user's reveal mode preference:
 
-Follow this structure for all presentations:
+**All at once:** No `fragment` classes. Content appears complete when slide advances.
 
+**Teach mode:** Aggressive fragmentation. Key ideas appear one-by-one. Good pacing:
+- Bullet list: each `<li>` is a fragment
+- Rhetorical questions: each sentence is a fragment
+- Diagrams: reveal elements in logical teach order
+- Code + result: code visible immediately for think time; result fragments in
+
+**Light fragments:** Only major reveals fragment. Sub-points appear together.
+
+**Fragment class reference:**
 ```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presentation Title</title>
+<!-- Basic: appears on keypress -->
+<li class="fragment fade-up">Point</li>
 
-    <!-- Fonts (use Fontshare or Google Fonts) -->
-    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=...">
+<!-- Simultaneous: same data-fragment-index -->
+<div class="fragment fade-up" data-fragment-index="2">Left</div>
+<div class="fragment fade-up" data-fragment-index="2">Right (same keypress)</div>
 
-    <style>
-        /* ===========================================
-           CSS CUSTOM PROPERTIES (THEME)
-           Easy to modify: change these to change the whole look
-           =========================================== */
-        :root {
-            /* Colors */
-            --bg-primary: #0a0f1c;
-            --bg-secondary: #111827;
-            --text-primary: #ffffff;
-            --text-secondary: #9ca3af;
-            --accent: #00ffcc;
-            --accent-glow: rgba(0, 255, 204, 0.3);
-
-            /* Typography - MUST use clamp() for responsive scaling */
-            --font-display: 'Clash Display', sans-serif;
-            --font-body: 'Satoshi', sans-serif;
-            --title-size: clamp(2rem, 6vw, 5rem);
-            --subtitle-size: clamp(0.875rem, 2vw, 1.25rem);
-            --body-size: clamp(0.75rem, 1.2vw, 1rem);
-
-            /* Spacing - MUST use clamp() for responsive scaling */
-            --slide-padding: clamp(1.5rem, 4vw, 4rem);
-            --content-gap: clamp(1rem, 2vw, 2rem);
-
-            /* Animation */
-            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-            --duration-normal: 0.6s;
-        }
-
-        /* ===========================================
-           BASE STYLES
-           =========================================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-            scroll-snap-type: y mandatory;
-            height: 100%;
-        }
-
-        body {
-            font-family: var(--font-body);
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            overflow-x: hidden;
-            height: 100%;
-        }
-
-        /* ===========================================
-           SLIDE CONTAINER
-           CRITICAL: Each slide MUST fit exactly in viewport
-           - Use height: 100vh (NOT min-height)
-           - Use overflow: hidden to prevent scroll
-           - Content must scale with clamp() values
-           =========================================== */
-        .slide {
-            width: 100vw;
-            height: 100vh; /* EXACT viewport height - no scrolling */
-            height: 100dvh; /* Dynamic viewport height for mobile */
-            padding: var(--slide-padding);
-            scroll-snap-align: start;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-            overflow: hidden; /* Prevent any content overflow */
-        }
-
-        /* Content wrapper that prevents overflow */
-        .slide-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            max-height: 100%;
-            overflow: hidden;
-        }
-
-        /* ===========================================
-           RESPONSIVE BREAKPOINTS
-           Adjust content for different screen sizes
-           =========================================== */
-        @media (max-height: 600px) {
-            :root {
-                --slide-padding: clamp(1rem, 3vw, 2rem);
-                --content-gap: clamp(0.5rem, 1.5vw, 1rem);
-            }
-        }
-
-        @media (max-width: 768px) {
-            :root {
-                --title-size: clamp(1.5rem, 8vw, 3rem);
-            }
-        }
-
-        @media (max-height: 500px) and (orientation: landscape) {
-            /* Extra compact for landscape phones */
-            :root {
-                --title-size: clamp(1.25rem, 5vw, 2rem);
-                --slide-padding: clamp(0.75rem, 2vw, 1.5rem);
-            }
-        }
-
-        /* ===========================================
-           ANIMATIONS
-           Trigger via .visible class (added by JS on scroll)
-           =========================================== */
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity var(--duration-normal) var(--ease-out-expo),
-                        transform var(--duration-normal) var(--ease-out-expo);
-        }
-
-        .slide.visible .reveal {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Stagger children */
-        .reveal:nth-child(1) { transition-delay: 0.1s; }
-        .reveal:nth-child(2) { transition-delay: 0.2s; }
-        .reveal:nth-child(3) { transition-delay: 0.3s; }
-        .reveal:nth-child(4) { transition-delay: 0.4s; }
-
-        /* ... more styles ... */
-    </style>
-</head>
-<body>
-    <!-- Progress bar (optional) -->
-    <div class="progress-bar"></div>
-
-    <!-- Navigation dots (optional) -->
-    <nav class="nav-dots">
-        <!-- Generated by JS -->
-    </nav>
-
-    <!-- Slides -->
-    <section class="slide title-slide">
-        <h1 class="reveal">Presentation Title</h1>
-        <p class="reveal">Subtitle or author</p>
-    </section>
-
-    <section class="slide">
-        <h2 class="reveal">Slide Title</h2>
-        <p class="reveal">Content...</p>
-    </section>
-
-    <!-- More slides... -->
-
-    <script>
-        /* ===========================================
-           SLIDE PRESENTATION CONTROLLER
-           Handles navigation, animations, and interactions
-           =========================================== */
-
-        class SlidePresentation {
-            constructor() {
-                // ... initialization
-            }
-
-            // ... methods
-        }
-
-        // Initialize
-        new SlidePresentation();
-    </script>
-</body>
-</html>
+<!-- Plain fade (good for grids/wide elements) -->
+<div class="fragment">Grid</div>
 ```
-
-### Required JavaScript Features
-
-Every presentation should include:
-
-1. **SlidePresentation Class** — Main controller
-   - Keyboard navigation (arrows, space)
-   - Touch/swipe support
-   - Mouse wheel navigation
-   - Progress bar updates
-   - Navigation dots
-
-2. **Intersection Observer** — For scroll-triggered animations
-   - Add `.visible` class when slides enter viewport
-   - Trigger CSS animations efficiently
-
-3. **Optional Enhancements** (based on style):
-   - Custom cursor with trail
-   - Particle system background (canvas)
-   - Parallax effects
-   - 3D tilt on hover
-   - Magnetic buttons
-   - Counter animations
 
 ### Code Quality Requirements
 
-**Comments:**
-Every section should have clear comments explaining:
-- What it does
-- Why it exists
-- How to modify it
-
-```javascript
-/* ===========================================
-   CUSTOM CURSOR
-   Creates a stylized cursor that follows mouse with a trail effect.
-   - Uses lerp (linear interpolation) for smooth movement
-   - Grows larger when hovering over interactive elements
-   =========================================== */
-class CustomCursor {
-    constructor() {
-        // ...
-    }
-}
-```
+**Comments:** Every major CSS/JS section should explain what it does and how to modify it.
 
 **Accessibility:**
-- Semantic HTML (`<section>`, `<nav>`, `<main>`)
-- Keyboard navigation works
+- Semantic HTML (`<section>`, `<nav>`, `<h1-h6>`)
+- Keyboard navigation works (Reveal.js handles this)
 - ARIA labels where needed
 - Reduced motion support
-
-```css
-@media (prefers-reduced-motion: reduce) {
-    .reveal {
-        transition: opacity 0.3s ease;
-        transform: none;
-    }
-}
-```
-
-**Responsive & Viewport Fitting (CRITICAL):**
-
-**See the "CRITICAL: Viewport Fitting Requirements" section above for complete CSS and guidelines.**
-
-Quick reference:
-- Every `.slide` must have `height: 100vh; height: 100dvh; overflow: hidden;`
-- All typography and spacing must use `clamp()`
-- Respect content density limits (max 4-6 bullets, max 6 cards, etc.)
-- Include breakpoints for heights: 700px, 600px, 500px
-- When content doesn't fit → split into multiple slides, never scroll
 
 ---
 
@@ -749,20 +639,11 @@ Use Python with `python-pptx` to extract:
 
 ```python
 from pptx import Presentation
-from pptx.util import Inches, Pt
-import json
 import os
-import base64
 
 def extract_pptx(file_path, output_dir):
-    """
-    Extract all content from a PowerPoint file.
-    Returns a JSON structure with slides, text, and images.
-    """
     prs = Presentation(file_path)
     slides_data = []
-
-    # Create assets directory
     assets_dir = os.path.join(output_dir, 'assets')
     os.makedirs(assets_dir, exist_ok=True)
 
@@ -776,76 +657,35 @@ def extract_pptx(file_path, output_dir):
         }
 
         for shape in slide.shapes:
-            # Extract title
             if shape.has_text_frame:
                 if shape == slide.shapes.title:
                     slide_data['title'] = shape.text
                 else:
-                    slide_data['content'].append({
-                        'type': 'text',
-                        'content': shape.text
-                    })
+                    slide_data['content'].append({'type': 'text', 'content': shape.text})
 
-            # Extract images
             if shape.shape_type == 13:  # Picture
                 image = shape.image
-                image_bytes = image.blob
-                image_ext = image.ext
-                image_name = f"slide{slide_num + 1}_img{len(slide_data['images']) + 1}.{image_ext}"
+                image_name = f"slide{slide_num + 1}_img{len(slide_data['images']) + 1}.{image.ext}"
                 image_path = os.path.join(assets_dir, image_name)
-
                 with open(image_path, 'wb') as f:
-                    f.write(image_bytes)
+                    f.write(image.blob)
+                slide_data['images'].append({'path': f"assets/{image_name}"})
 
-                slide_data['images'].append({
-                    'path': f"assets/{image_name}",
-                    'width': shape.width,
-                    'height': shape.height
-                })
-
-        # Extract notes
         if slide.has_notes_slide:
-            notes_frame = slide.notes_slide.notes_text_frame
-            slide_data['notes'] = notes_frame.text
+            slide_data['notes'] = slide.notes_slide.notes_text_frame.text
 
         slides_data.append(slide_data)
 
     return slides_data
 ```
 
-### Step 4.2: Confirm Content Structure
+### Step 4.2: Confirm Content
 
-Present the extracted content to the user:
+Present extracted content summary to user, then proceed to style selection (Phase 2).
 
-```
-I've extracted the following from your PowerPoint:
+### Step 4.3: Generate HTML
 
-**Slide 1: [Title]**
-- [Content summary]
-- Images: [count]
-
-**Slide 2: [Title]**
-- [Content summary]
-- Images: [count]
-
-...
-
-All images have been saved to the assets folder.
-
-Does this look correct? Should I proceed with style selection?
-```
-
-### Step 4.3: Style Selection
-
-Proceed to Phase 2 (Style Discovery) with the extracted content in mind.
-
-### Step 4.4: Generate HTML
-
-Convert the extracted content into the chosen style, preserving:
-- All text content
-- All images (referenced from assets folder)
-- Slide order
-- Any speaker notes (as HTML comments or separate file)
+Convert content into chosen Reveal.js style, preserving text, images, and slide order.
 
 ---
 
@@ -855,82 +695,68 @@ Convert the extracted content into the chosen style, preserving:
 
 When the presentation is complete:
 
-1. **Clean up temporary files**
-   - Delete `.claude-design/slide-previews/` if it exists
+1. **Clean up** — Delete `.claude-design/slide-previews/` if it exists
 
-2. **Open the presentation**
-   - Use `open [filename].html` to launch in browser
-
-3. **Provide summary**
+2. **Provide summary**
 ```
 Your presentation is ready!
 
-📁 File: [filename].html
-🎨 Style: [Style Name]
-📊 Slides: [count]
+File: [filename].html
+Style: [Style Name]
+Slides: [count]
 
-**Navigation:**
-- Arrow keys (← →) or Space to navigate
-- Scroll/swipe also works
-- Click the dots on the right to jump to a slide
+Navigation:
+- Arrow keys (← → ↑ ↓) or Space to advance
+- Swipe on touch devices
+- Press F for fullscreen, Esc to exit
+- Press ? to see all keyboard shortcuts
 
-**To customize:**
-- Colors: Look for `:root` CSS variables at the top
-- Fonts: Change the Fontshare/Google Fonts link
-- Animations: Modify `.reveal` class timings
+To customize:
+- Colors/fonts: update the :root CSS variables and explicit .reveal rules at the top
+- Canvas size: change width/height in Reveal.initialize()
+- Fragments: add/remove class="fragment fade-up" on elements
 
-Would you like me to make any adjustments?
+Would you like any adjustments?
 ```
 
 ---
 
 ## Style Reference: Effect → Feeling Mapping
 
-Use this guide to match animations to intended feelings:
-
 ### Dramatic / Cinematic
 - Slow fade-ins (1-1.5s)
-- Large scale transitions (0.9 → 1)
 - Dark backgrounds with spotlight effects
-- Parallax scrolling
 - Full-bleed images
+- Fragment: entire sections reveal at once
 
 ### Techy / Futuristic
 - Neon glow effects (box-shadow with accent color)
-- Particle systems (canvas background)
-- Grid patterns
+- Grid patterns on background
 - Monospace fonts for accents
-- Glitch or scramble text effects
 - Cyan, magenta, electric blue palette
+- Fragment: line-by-line code reveals
 
 ### Playful / Friendly
 - Bouncy easing (spring physics)
 - Rounded corners (large radius)
 - Pastel or bright colors
 - Floating/bobbing animations
-- Hand-drawn or illustrated elements
 
 ### Professional / Corporate
 - Subtle, fast animations (200-300ms)
 - Clean sans-serif fonts
 - Navy, slate, or charcoal backgrounds
-- Precise spacing and alignment
-- Minimal decorative elements
 - Data visualization focus
 
 ### Calm / Minimal
 - Very slow, subtle motion
 - High whitespace
-- Muted color palette
 - Serif typography
 - Generous padding
-- Content-focused, no distractions
 
 ### Editorial / Magazine
 - Strong typography hierarchy
 - Pull quotes and callouts
-- Image-text interplay
-- Grid-breaking layouts
 - Serif headlines, sans-serif body
 - Black and white with one accent
 
@@ -938,66 +764,46 @@ Use this guide to match animations to intended feelings:
 
 ## Animation Patterns Reference
 
-### Entrance Animations
-
-```css
-/* Fade + Slide Up (most common) */
-.reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.6s var(--ease-out-expo),
-                transform 0.6s var(--ease-out-expo);
-}
-
-.visible .reveal {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* Scale In */
-.reveal-scale {
-    opacity: 0;
-    transform: scale(0.9);
-    transition: opacity 0.6s, transform 0.6s var(--ease-out-expo);
-}
-
-/* Slide from Left */
-.reveal-left {
-    opacity: 0;
-    transform: translateX(-50px);
-    transition: opacity 0.6s, transform 0.6s var(--ease-out-expo);
-}
-
-/* Blur In */
-.reveal-blur {
-    opacity: 0;
-    filter: blur(10px);
-    transition: opacity 0.8s, filter 0.8s var(--ease-out-expo);
-}
-```
-
 ### Background Effects
 
 ```css
 /* Gradient Mesh */
-.gradient-bg {
+body::before {
+    content: '';
+    position: fixed; inset: 0;
     background:
-        radial-gradient(ellipse at 20% 80%, rgba(120, 0, 255, 0.3) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 20%, rgba(0, 255, 200, 0.2) 0%, transparent 50%),
-        var(--bg-primary);
-}
-
-/* Noise Texture */
-.noise-bg {
-    background-image: url("data:image/svg+xml,..."); /* Inline SVG noise */
+        radial-gradient(ellipse at 20% 80%, rgba(120, 0, 255, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(0, 255, 200, 0.15) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 /* Grid Pattern */
-.grid-bg {
+body::before {
+    content: '';
+    position: fixed; inset: 0;
     background-image:
         linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
     background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+}
+```
+
+### Slide-Entry Animations
+
+Trigger via `.reveal section.present` (not IntersectionObserver — Reveal handles this):
+
+```css
+/* Keyframe triggered when slide becomes active */
+.reveal section.present .hero-element {
+    animation: hero-enter 0.8s var(--ease) 0.2s both;
+}
+
+@keyframes hero-enter {
+    from { opacity: 0; transform: scale(0.9) translateY(30px); }
+    to   { opacity: 1; transform: scale(1)   translateY(0);    }
 }
 ```
 
@@ -1008,25 +814,15 @@ Use this guide to match animations to intended feelings:
 class TiltEffect {
     constructor(element) {
         this.element = element;
-        this.element.style.transformStyle = 'preserve-3d';
-        this.element.style.perspective = '1000px';
-        this.bindEvents();
-    }
-
-    bindEvents() {
-        this.element.addEventListener('mousemove', (e) => {
-            const rect = this.element.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width - 0.5;
-            const y = (e.clientY - rect.top) / rect.height - 0.5;
-
-            this.element.style.transform = `
-                rotateY(${x * 10}deg)
-                rotateX(${-y * 10}deg)
-            `;
+        element.style.transformStyle = 'preserve-3d';
+        element.addEventListener('mousemove', (e) => {
+            const rect = element.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width  - 0.5;
+            const y = (e.clientY - rect.top)  / rect.height - 0.5;
+            element.style.transform = `rotateY(${x * 10}deg) rotateX(${-y * 10}deg)`;
         });
-
-        this.element.addEventListener('mouseleave', () => {
-            this.element.style.transform = 'rotateY(0) rotateX(0)';
+        element.addEventListener('mouseleave', () => {
+            element.style.transform = '';
         });
     }
 }
@@ -1036,29 +832,29 @@ class TiltEffect {
 
 ## Troubleshooting
 
-### Common Issues
+### White background / invisible text after adding Reveal.js
+- **Cause:** `--r-*` CSS custom properties are only consumed by Reveal's bundled theme files
+- **Fix:** Apply colors with explicit CSS rules targeting `.reveal-viewport`, `.reveal`, `.reveal h1-h6`, `.reveal p/li`, etc.
 
-**Fonts not loading:**
-- Check Fontshare/Google Fonts URL
-- Ensure font names match in CSS
+### Slides 2-N appear blank after first slide
+- **Cause:** `position: relative` set on `.reveal .slides > section`, overriding Reveal's `position: absolute` needed for fade transitions
+- **Fix:** Remove any `position` from section rules. Put padding/centering in a `.slide-inner` div inside the section instead
 
-**Animations not triggering:**
-- Verify Intersection Observer is running
-- Check that `.visible` class is being added
+### Text is smaller than expected
+- **Cause:** `em` values in CSS custom properties double-scale (Reveal sets ~28px base font-size on `.reveal` via JS, then transform scales slides down too)
+- **Fix:** Use `px` values in custom properties, sized for the canvas (e.g., `56px` for a main heading in a 1600×900 canvas)
 
-**Scroll snap not working:**
-- Ensure `scroll-snap-type` on html/body
-- Each slide needs `scroll-snap-align: start`
+### Code blocks have a shadow and fixed width
+- **Cause:** Reveal.js defaults add `box-shadow` and force `width: 90%` on `<pre>`
+- **Fix:** `box-shadow: none; width: auto;` on `.reveal pre`
 
-**Mobile issues:**
-- Disable heavy effects at 768px breakpoint
-- Test touch events
-- Reduce particle count or disable canvas
+### Code block content truncated
+- **Cause:** Reveal.js sets `max-height: 400px` on `pre code`
+- **Fix:** `max-height: none;` on `.reveal pre code`
 
-**Performance issues:**
-- Use `will-change` sparingly
-- Prefer `transform` and `opacity` animations
-- Throttle scroll/mousemove handlers
+### Fonts not loading
+- Check Google Fonts / Fontshare URL is correct
+- Ensure font family names in CSS match exactly
 
 ---
 
@@ -1066,22 +862,20 @@ class TiltEffect {
 
 - **learn** — Generate FORZARA.md documentation for the presentation
 - **frontend-design** — For more complex interactive pages beyond slides
-- **design-and-refine:design-lab** — For iterating on component designs
 
 ---
 
 ## Example Session Flow
 
 1. User: "I want to create a pitch deck for my AI startup"
-2. Skill asks about purpose, length, content
-3. User shares their bullet points and key messages
+2. Skill asks about purpose, length, content, fragment mode
+3. User shares bullet points and key messages
 4. Skill asks about desired feeling (Impressed + Excited)
-5. Skill generates 3 style previews
-6. User picks Style B (Neon Cyber), asks for darker background
-7. Skill generates full presentation with all slides
-8. Skill opens the presentation in browser
-9. User requests tweaks to specific slides
-10. Final presentation delivered
+5. Skill generates 3 style preview HTML files
+6. User picks Style B (Neon Cyber), asks for no scan lines
+7. Skill generates full Reveal.js presentation
+8. User requests tweaks to specific slides
+9. Final presentation delivered
 
 ---
 
@@ -1090,8 +884,8 @@ class TiltEffect {
 1. User: "Convert my slides.pptx to a web presentation"
 2. Skill extracts content and images from PPT
 3. Skill confirms extracted content with user
-4. Skill asks about desired feeling/style
+4. Skill asks about fragment mode and desired feeling/style
 5. Skill generates style previews
 6. User picks a style
-7. Skill generates HTML presentation with preserved assets
+7. Skill generates Reveal.js HTML presentation
 8. Final presentation delivered

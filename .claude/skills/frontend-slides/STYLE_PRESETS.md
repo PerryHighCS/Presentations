@@ -1,162 +1,199 @@
 # Style Presets Reference
 
-Curated visual styles for Frontend Slides. Each preset is inspired by real design references—no generic "AI slop" aesthetics. **Abstract shapes only—no illustrations.**
+Curated visual styles for Frontend Slides. Each preset is inspired by real design references — no generic "AI slop" aesthetics. **Abstract shapes only — no illustrations.**
+
+All presentations use **Reveal.js** for navigation, transitions, and fragment-based progressive reveal.
 
 ---
 
-## ⚠️ CRITICAL: Viewport Fitting (Non-Negotiable)
+## ⚠️ CRITICAL: Reveal.js Architecture (Non-Negotiable)
 
-**Every slide MUST fit exactly in the viewport. No scrolling within slides, ever.**
+**Read the full architecture section in SKILL.md first. Key constraints are summarized here.**
 
-### Content Density Limits Per Slide
+### How Reveal.js Scales Slides
 
-| Slide Type | Maximum Content |
-|------------|-----------------|
-| Title slide | 1 heading + 1 subtitle |
-| Content slide | 1 heading + 4-6 bullets (max 2 lines each) |
-| Feature grid | 1 heading + 6 cards (2x3 or 3x2) |
-| Code slide | 1 heading + 8-10 lines of code |
-| Quote slide | 1 quote (max 3 lines) + attribution |
+Reveal.js renders a fixed canvas (default 1600×900) and scales it to fit the viewport using `transform: scale()` on `.reveal .slides`. This means:
 
-**Too much content? → Split into multiple slides. Never scroll.**
+- **Use `px` for all font sizes and spacing** — not `em`, not `clamp()`, not `vw`
+  - Reveal.js JS sets `font-size` on `.reveal` as `~viewportHeight * 0.04` (~28px at 720px tall)
+  - `em` values resolve against that ~28px AND Reveal also scales slides via transform — **double-shrinking**
+  - `clamp()`/`vw` reference actual viewport, not canvas — they don't scale correctly with slides
+  - `px` values are immune to base font-size and scale through the transform alone
+- **Size for the canvas** — choose `px` values that look right in 1600×900
+- **No media queries for font sizes** — Reveal's transform handles all responsiveness
 
 ### Required Base CSS (Include in ALL Presentations)
 
 ```css
 /* ===========================================
-   VIEWPORT FITTING: MANDATORY
-   Copy this entire block into every presentation
+   REVEAL.JS THEMING — apply explicitly.
+   --r-* CSS vars only work with Reveal's bundled theme CSS files.
+   Since we load reveal.css alone, use explicit rules instead.
    =========================================== */
 
-/* 1. Lock document to viewport */
-html, body {
-    height: 100%;
-    overflow-x: hidden;
+/* .reveal-viewport is the class Reveal adds to <body> at runtime */
+body,
+.reveal-viewport {
+    background: var(--bg);
+    background-color: var(--bg);
 }
 
-html {
-    scroll-snap-type: y mandatory;
-    scroll-behavior: smooth;
+.reveal {
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-body);
 }
 
-/* 2. Each slide = exact viewport height */
-.slide {
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh; /* Dynamic viewport for mobile */
-    overflow: hidden; /* CRITICAL: No overflow ever */
-    scroll-snap-align: start;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+/* Always reset these Reveal defaults */
+.reveal h1, .reveal h2, .reveal h3,
+.reveal h4, .reveal h5, .reveal h6 {
+    color: var(--text);
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.1;
+    text-transform: none;   /* some Reveal themes force uppercase */
+    margin: 0;
 }
 
-/* 3. Content wrapper */
-.slide-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    max-height: 100%;
-    overflow: hidden;
-    padding: var(--slide-padding);
-}
-
-/* 4. ALL sizes use clamp() - scales with viewport */
-:root {
-    /* Typography */
-    --title-size: clamp(1.5rem, 5vw, 4rem);
-    --h2-size: clamp(1.25rem, 3.5vw, 2.5rem);
-    --body-size: clamp(0.75rem, 1.5vw, 1.125rem);
-    --small-size: clamp(0.65rem, 1vw, 0.875rem);
-
-    /* Spacing */
-    --slide-padding: clamp(1rem, 4vw, 4rem);
-    --content-gap: clamp(0.5rem, 2vw, 2rem);
-}
-
-/* 5. Cards/containers use viewport-relative max sizes */
-.card, .container {
-    max-width: min(90vw, 1000px);
-    max-height: min(80vh, 700px);
-}
-
-/* 6. Images constrained */
-img {
-    max-width: 100%;
-    max-height: min(50vh, 400px);
-    object-fit: contain;
-}
-
-/* 7. Grids adapt to space */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-    gap: clamp(0.5rem, 1.5vw, 1rem);
+.reveal p, .reveal li, .reveal blockquote {
+    color: var(--text-muted);
+    font-family: var(--font-body);
 }
 
 /* ===========================================
-   RESPONSIVE BREAKPOINTS - Height-based
+   CSS CUSTOM PROPERTIES
+   Use px — not em/clamp/vw. See above for why.
+   =========================================== */
+:root {
+    /* Colors — override per preset */
+    --bg:         #0a0f1c;
+    --text:       #ffffff;
+    --text-muted: rgba(255,255,255,0.6);
+    --accent:     #00ffcc;
+
+    /* Fonts */
+    --font-display: 'Your Display Font', sans-serif;
+    --font-body:    'Your Body Font', sans-serif;
+    --font-mono:    'Your Mono Font', monospace;
+
+    /* Typography — px sized for 1600×900 canvas
+       Visual size at 1280×720 viewport (scale ≈ 0.8) is ~80% of these values */
+    --title:  100px;   /* visual ~80px */
+    --h2:      56px;   /* visual ~45px */
+    --h3:      36px;   /* visual ~29px */
+    --body:    25px;   /* visual ~20px */
+    --small:   19px;   /* visual ~15px */
+    --code:    21px;   /* visual ~17px */
+    --tag:     15px;   /* visual ~12px */
+
+    /* Spacing — also px */
+    --pad:     72px;
+    --gap:     26px;
+    --gap-sm:  13px;
+    --gap-lg:  52px;
+
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===========================================
+   REVEAL.JS STRUCTURAL OVERRIDES
    =========================================== */
 
-/* Short screens (< 700px height) */
-@media (max-height: 700px) {
-    :root {
-        --slide-padding: clamp(0.75rem, 3vw, 2rem);
-        --content-gap: clamp(0.4rem, 1.5vw, 1rem);
-        --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
-    }
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* CRITICAL: Do NOT set position on sections.
+   Reveal needs position: absolute on sections for fade transitions.
+   position: relative here makes slides 2-N appear blank. */
+.reveal .slides > section {
+    height: 100%;
+    padding: 0 !important;   /* override Reveal's default 20px padding */
+    box-sizing: border-box;
+    text-align: left;
 }
 
-/* Very short (< 600px height) */
-@media (max-height: 600px) {
-    :root {
-        --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
-        --title-size: clamp(1.1rem, 4vw, 2rem);
-        --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
-    }
-
-    .nav-dots, .keyboard-hint, .decorative {
-        display: none;
-    }
+/* Slide inner wrapper — padding and centering live here (a div, not section) */
+.slide-inner {
+    width: 100%;
+    height: 100%;
+    padding: var(--pad);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;   /* safe here — this is a div, not section */
+    z-index: 2;
 }
 
-/* Extremely short - landscape phones (< 500px) */
-@media (max-height: 500px) {
-    :root {
-        --slide-padding: clamp(0.4rem, 2vw, 1rem);
-        --title-size: clamp(1rem, 3.5vw, 1.5rem);
-        --body-size: clamp(0.65rem, 1vw, 0.85rem);
-    }
+/* Reset Reveal <pre> defaults */
+.reveal pre {
+    font-family: var(--font-mono);
+    font-size: var(--code);
+    margin: 0;
+    box-shadow: none;   /* Reveal adds a drop-shadow */
+    width: auto;        /* Reveal forces 90% */
+    text-align: left;
 }
 
-/* Narrow screens */
-@media (max-width: 600px) {
-    .grid {
-        grid-template-columns: 1fr;
-    }
+.reveal pre code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    max-height: none;   /* Reveal caps at 400px */
 }
+
+/* Progress bar and slide number */
+.reveal .progress { height: 3px; }
+.reveal .progress span { background: var(--accent); }
+.reveal .slide-number { font-family: var(--font-mono); font-size: 0.45em; background: transparent; }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.2s !important;
+    .reveal .fragment {
+        transition: opacity 0.2s ease !important;
+        transform: none !important;
     }
 }
 ```
 
-### Viewport Fitting Checklist
+### Reveal.initialize() Config (Standard)
+
+```javascript
+Reveal.initialize({
+    hash: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,          // we handle centering in .slide-inner
+    controls: false,        // keyboard/touch only — no on-screen arrows
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+});
+```
+
+### Slide Structure Checklist
 
 Before finalizing any presentation, verify:
 
-- [ ] Every `.slide` has `height: 100vh; height: 100dvh; overflow: hidden;`
-- [ ] All font sizes use `clamp(min, preferred, max)`
-- [ ] All spacing uses `clamp()` or viewport units
-- [ ] Breakpoints exist for heights: 700px, 600px, 500px
-- [ ] Content respects density limits (max 6 bullets, max 6 cards)
-- [ ] No fixed pixel heights on content elements
-- [ ] Images have `max-height` constraints
+- [ ] `<div class="reveal"><div class="slides">` wraps all sections
+- [ ] Each `<section>` contains a `.slide-inner` div for padding/layout
+- [ ] No `position` property set on `.reveal .slides > section`
+- [ ] All font sizes and spacing use `px` (not em/clamp/vw)
+- [ ] Colors applied via explicit `.reveal`, `.reveal h1-h6`, `.reveal p/li` rules (not `--r-*` vars)
+- [ ] `box-shadow: none; width: auto;` on `.reveal pre`
+- [ ] `max-height: none;` on `.reveal pre code`
+- [ ] `text-transform: none;` on `.reveal h1-h6`
+- [ ] Reveal.js loaded from CDN: `reveal.css` in `<head>`, `reveal.js` before `</body>`
+- [ ] `Reveal.initialize({...})` called after the script
 
 ---
 
@@ -166,7 +203,7 @@ Before finalizing any presentation, verify:
 
 **Vibe:** Confident, bold, modern, high-impact
 
-**Layout:** Colored card on dark gradient. Number top-left, navigation top-right, title bottom-left.
+**Layout:** Colored card on dark gradient. Number top-left, title bottom-left.
 
 **Typography:**
 - Display: `Archivo Black` (900)
@@ -175,10 +212,11 @@ Before finalizing any presentation, verify:
 **Colors:**
 ```css
 :root {
-    --bg-primary: #1a1a1a;
-    --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
-    --card-bg: #FF5722;
-    --text-primary: #ffffff;
+    --bg:         #1a1a1a;
+    --text:       #ffffff;
+    --text-muted: rgba(255,255,255,0.6);
+    --accent:     #FF5722;
+    --card-bg:    #FF5722;
     --text-on-card: #1a1a1a;
 }
 ```
@@ -186,7 +224,6 @@ Before finalizing any presentation, verify:
 **Signature Elements:**
 - Bold colored card as focal point (orange, coral, or vibrant accent)
 - Large section numbers (01, 02, etc.)
-- Navigation breadcrumbs with active/inactive opacity states
 - Grid-based layout for precise alignment
 
 ---
@@ -195,7 +232,7 @@ Before finalizing any presentation, verify:
 
 **Vibe:** Bold, clean, professional, high contrast
 
-**Layout:** Split panel—white top, blue bottom. Brand marks in corners.
+**Layout:** Split panel — white top, blue bottom. Brand marks in corners.
 
 **Typography:**
 - Display: `Manrope` (800)
@@ -204,18 +241,16 @@ Before finalizing any presentation, verify:
 **Colors:**
 ```css
 :root {
-    --bg-dark: #0a0a0a;
-    --bg-white: #ffffff;
-    --accent-blue: #4361ee;
-    --text-dark: #0a0a0a;
+    --bg:         #0a0a0a;
+    --text:       #0a0a0a;
     --text-light: #ffffff;
+    --accent:     #4361ee;
 }
 ```
 
 **Signature Elements:**
 - Two-panel vertical split
 - Accent bar on panel edge
-- Quote typography as hero element
 - Minimal, confident spacing
 
 ---
@@ -224,7 +259,7 @@ Before finalizing any presentation, verify:
 
 **Vibe:** Bold, creative, energetic, retro-modern
 
-**Layout:** Split panels—electric blue left, dark right. Script accents.
+**Layout:** Split panels — electric blue left, dark right.
 
 **Typography:**
 - Display: `Syne` (700/800)
@@ -233,18 +268,17 @@ Before finalizing any presentation, verify:
 **Colors:**
 ```css
 :root {
-    --bg-primary: #0066ff;
-    --bg-dark: #1a1a2e;
+    --bg:         #1a1a2e;
+    --accent-blue: #0066ff;
     --accent-neon: #d4ff00;
-    --text-light: #ffffff;
+    --text:       #ffffff;
 }
 ```
 
 **Signature Elements:**
 - Electric blue + neon yellow contrast
 - Halftone texture patterns
-- Neon badges/callouts
-- Script typography for creative flair
+- Neon badge/callout chips
 
 ---
 
@@ -252,7 +286,7 @@ Before finalizing any presentation, verify:
 
 **Vibe:** Elegant, sophisticated, artistic, premium
 
-**Layout:** Centered content on dark. Abstract soft shapes in corner.
+**Layout:** Centered content on dark. Abstract soft shapes in corners.
 
 **Typography:**
 - Display: `Cormorant` (400/600) — elegant serif
@@ -261,10 +295,10 @@ Before finalizing any presentation, verify:
 **Colors:**
 ```css
 :root {
-    --bg-primary: #0f0f0f;
-    --text-primary: #e8e4df;
-    --text-secondary: #9a9590;
-    --accent-warm: #d4a574;
+    --bg:         #0f0f0f;
+    --text:       #e8e4df;
+    --text-muted: #9a9590;
+    --accent:     #d4a574;
     --accent-pink: #e8b4b8;
     --accent-gold: #c9b896;
 }
@@ -274,8 +308,7 @@ Before finalizing any presentation, verify:
 - Abstract soft gradient circles (blurred, overlapping)
 - Warm color accents (pink, gold, terracotta)
 - Thin vertical accent lines
-- Italic signature typography
-- **No illustrations—only abstract CSS shapes**
+- **No illustrations — only abstract CSS shapes**
 
 ---
 
@@ -288,20 +321,20 @@ Before finalizing any presentation, verify:
 **Layout:** Cream paper card on dark background. Colorful tabs on right edge.
 
 **Typography:**
-- Display: `Bodoni Moda` (400/700) — classic editorial
+- Display: `Bodoni Moda` (400/700)
 - Body: `DM Sans` (400/500)
 
 **Colors:**
 ```css
 :root {
-    --bg-outer: #2d2d2d;
-    --bg-page: #f8f6f1;
-    --text-primary: #1a1a1a;
-    --tab-1: #98d4bb; /* Mint */
-    --tab-2: #c7b8ea; /* Lavender */
-    --tab-3: #f4b8c5; /* Pink */
-    --tab-4: #a8d8ea; /* Sky */
-    --tab-5: #ffe6a7; /* Cream */
+    --bg:       #2d2d2d;
+    --bg-page:  #f8f6f1;
+    --text:     #1a1a1a;
+    --tab-1:    #98d4bb;
+    --tab-2:    #c7b8ea;
+    --tab-3:    #f4b8c5;
+    --tab-4:    #a8d8ea;
+    --tab-5:    #ffe6a7;
 }
 ```
 
@@ -309,7 +342,6 @@ Before finalizing any presentation, verify:
 - Paper container with subtle shadow
 - Colorful section tabs on right edge (vertical text)
 - Binder hole decorations on left
-- Tab text must scale with viewport: `font-size: clamp(0.5rem, 1vh, 0.7rem)`
 
 ---
 
@@ -326,21 +358,19 @@ Before finalizing any presentation, verify:
 **Colors:**
 ```css
 :root {
-    --bg-primary: #c8d9e6;
-    --card-bg: #faf9f7;
-    --pill-pink: #f0b4d4;
-    --pill-mint: #a8d4c4;
-    --pill-sage: #5a7c6a;
-    --pill-lavender: #9b8dc4;
-    --pill-violet: #7c6aad;
+    --bg:           #c8d9e6;
+    --card-bg:      #faf9f7;
+    --pill-pink:    #f0b4d4;
+    --pill-mint:    #a8d4c4;
+    --pill-sage:    #5a7c6a;
+    --pill-lavender:#9b8dc4;
 }
 ```
 
 **Signature Elements:**
 - Rounded card with soft shadow
-- **Vertical pills on right edge** with varying heights (like tabs)
-- Consistent pill width, heights: short → medium → tall → medium → short
-- Download/action icon in corner
+- Vertical pills on right edge with varying heights
+- Consistent pill width, heights vary: short → medium → tall → medium → short
 
 ---
 
@@ -357,12 +387,12 @@ Before finalizing any presentation, verify:
 **Colors:**
 ```css
 :root {
-    --bg-peach: #f5e6dc;
+    --bg-peach:    #f5e6dc;
     --bg-lavender: #e4dff0;
-    --text-dark: #1a1a1a;
-    --badge-mint: #c8f0d8;
-    --badge-yellow: #f0f0c8;
-    --badge-pink: #f0d4e0;
+    --text:        #1a1a1a;
+    --badge-mint:  #c8f0d8;
+    --badge-yellow:#f0f0c8;
+    --badge-pink:  #f0d4e0;
 }
 ```
 
@@ -370,7 +400,6 @@ Before finalizing any presentation, verify:
 - Split background colors
 - Playful badge pills with icons
 - Grid pattern overlay on right panel
-- Rounded CTA buttons
 
 ---
 
@@ -387,9 +416,9 @@ Before finalizing any presentation, verify:
 **Colors:**
 ```css
 :root {
-    --bg-cream: #f5f3ee;
-    --text-primary: #1a1a1a;
-    --text-secondary: #555;
+    --bg:          #f5f3ee;
+    --text:        #1a1a1a;
+    --text-muted:  #555555;
     --accent-warm: #e8d4c0;
 }
 ```
@@ -397,8 +426,7 @@ Before finalizing any presentation, verify:
 **Signature Elements:**
 - Abstract geometric shapes (circle outline + line + dot)
 - Bold bordered CTA boxes
-- Witty, conversational copy style
-- **No illustrations—only geometric CSS shapes**
+- **No illustrations — only geometric CSS shapes**
 
 ---
 
@@ -406,13 +434,91 @@ Before finalizing any presentation, verify:
 
 ### 9. Neon Cyber
 
-**Vibe:** Futuristic, techy, confident
+**Vibe:** Futuristic, techy, dark academia for CS
 
-**Typography:** `Clash Display` + `Satoshi` (Fontshare)
+**Typography:**
+- UI: `Space Grotesk` (400/500/700) — Google Fonts
+- Mono: `JetBrains Mono` — Google Fonts
 
-**Colors:** Deep navy (#0a0f1c), cyan accent (#00ffcc), magenta (#ff00aa)
+**Colors:**
+```css
+:root {
+    --bg:          #020813;
+    --bg-card:     #081120;
+    --text:        #ddeeff;
+    --text-muted:  rgba(221,238,255,0.55);
+    --text-dim:    rgba(221,238,255,0.25);
+    --cyan:        #00ffff;
+    --cyan-border: rgba(0,255,255,0.2);
+    --purple:      #b46fff;
+    --gold:        #ffd700;
+    --green:       #4dffb4;
+}
+```
 
-**Signature:** Particle backgrounds, neon glow, grid patterns
+**Typography tokens (px for 1600×900 canvas):**
+```css
+:root {
+    --title:  100px;
+    --h2:      56px;
+    --h3:      36px;
+    --body:    25px;
+    --small:   19px;
+    --code:    21px;
+    --tag:     15px;
+    --pad:     72px;
+    --gap:     26px;
+    --gap-sm:  13px;
+    --gap-lg:  52px;
+}
+```
+
+**Explicit Reveal theme application:**
+```css
+body, .reveal-viewport {
+    background: #020813;
+    background-color: #020813;
+}
+.reveal {
+    background: transparent;
+    color: #ddeeff;
+    font-family: 'Space Grotesk', sans-serif;
+}
+.reveal h1, .reveal h2, .reveal h3,
+.reveal h4, .reveal h5, .reveal h6 {
+    color: #ddeeff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-transform: none;
+    margin: 0;
+}
+.reveal p, .reveal li, .reveal blockquote {
+    color: rgba(221,238,255,0.55);
+    font-family: 'Space Grotesk', sans-serif;
+}
+.reveal :not(pre) > code {
+    font-family: 'JetBrains Mono', monospace;
+    color: #00ffff;
+    background: rgba(0,255,255,0.07);
+    padding: 0.1em 0.38em;
+    border-radius: 4px;
+    border: 1px solid rgba(0,255,255,0.18);
+}
+.reveal .progress span {
+    background: linear-gradient(90deg, #00ffff, #b46fff);
+    box-shadow: 0 0 10px rgba(0,255,255,0.4);
+}
+```
+
+**Signature Elements:**
+- Deep navy (#020813) background with subtle cyan grid texture on body
+- Cyan (#00ffff) primary accent, purple (#b46fff) secondary, gold (#ffd700) tertiary
+- Code cards: dark bg-card with cyan border, JetBrains Mono
+- Array/memory visualizations with color-coded cell highlights
+- `.glow` divs (position: absolute, border-radius: 50%) for ambient color blobs
+- Progress bar styled with cyan→purple gradient + glow
+- **No scan lines** (distracting in teaching contexts)
 
 ---
 
@@ -422,9 +528,17 @@ Before finalizing any presentation, verify:
 
 **Typography:** `JetBrains Mono` (monospace only)
 
-**Colors:** GitHub dark (#0d1117), terminal green (#39d353)
+**Colors:**
+```css
+:root {
+    --bg:     #0d1117;
+    --text:   #39d353;
+    --dim:    rgba(57,211,83,0.4);
+    --accent: #39d353;
+}
+```
 
-**Signature:** Scan lines, blinking cursor, code syntax styling
+**Signature Elements:** Blinking cursor, code syntax styling, scan-line texture (light — 1-2% opacity)
 
 ---
 
@@ -434,9 +548,16 @@ Before finalizing any presentation, verify:
 
 **Typography:** `Archivo` (800) + `Nunito` (400)
 
-**Colors:** Pure white, pure black, red accent (#ff3300)
+**Colors:**
+```css
+:root {
+    --bg:     #ffffff;
+    --text:   #000000;
+    --accent: #ff3300;
+}
+```
 
-**Signature:** Visible grid, asymmetric layouts, geometric shapes
+**Signature Elements:** Visible grid, asymmetric layouts, geometric shapes, red accent only
 
 ---
 
@@ -446,9 +567,16 @@ Before finalizing any presentation, verify:
 
 **Typography:** `Cormorant Garamond` + `Source Serif 4`
 
-**Colors:** Warm cream (#faf9f7), charcoal (#1a1a1a), crimson accent (#c41e3a)
+**Colors:**
+```css
+:root {
+    --bg:     #faf9f7;
+    --text:   #1a1a1a;
+    --accent: #c41e3a;
+}
+```
 
-**Signature:** Drop caps, pull quotes, elegant horizontal rules
+**Signature Elements:** Drop caps, pull quotes, elegant horizontal rules
 
 ---
 
@@ -464,8 +592,8 @@ Before finalizing any presentation, verify:
 | Pastel Geometry | Plus Jakarta Sans | Plus Jakarta Sans | Google |
 | Split Pastel | Outfit | Outfit | Google |
 | Vintage Editorial | Fraunces | Work Sans | Google |
-| Neon Cyber | Clash Display | Satoshi | Fontshare |
-| Terminal Green | JetBrains Mono | JetBrains Mono | JetBrains |
+| Neon Cyber | Space Grotesk | Space Grotesk / JetBrains Mono | Google |
+| Terminal Green | JetBrains Mono | JetBrains Mono | Google |
 
 ---
 
@@ -481,47 +609,42 @@ Before finalizing any presentation, verify:
 
 ---
 
-## Troubleshooting Viewport Issues
+## Troubleshooting
 
-### Content Overflows the Slide
+### White background / invisible text after Reveal.js
 
-**Symptoms:** Scrollbar appears, content cut off, elements outside viewport
+- **Cause:** `--r-*` CSS custom properties only work with Reveal's bundled theme files
+- **Fix:** Apply all colors with explicit CSS rules targeting `.reveal-viewport`, `.reveal`, `.reveal h1-h6`, `.reveal p/li`
 
-**Solutions:**
-1. Check slide has `overflow: hidden` (not `overflow: auto` or `visible`)
-2. Reduce content — split into multiple slides
-3. Ensure all fonts use `clamp()` not fixed `px` or `rem`
-4. Add/fix height breakpoints for smaller screens
-5. Check images have `max-height: min(50vh, 400px)`
+### Slides 2-N appear blank
 
-### Text Too Small on Mobile / Too Large on Desktop
+- **Cause:** `position: relative` on `.reveal .slides > section` overrides Reveal's `position: absolute` needed for fade transitions
+- **Fix:** Remove any `position` from section CSS. Put padding and centering inside a `.slide-inner` div instead
 
-**Symptoms:** Unreadable text on phones, oversized text on big screens
+### Text smaller than expected
 
-**Solutions:**
-```css
-/* Use clamp with viewport-relative middle value */
-font-size: clamp(1rem, 3vw, 2.5rem);
-/*              ↑       ↑      ↑
-            minimum  scales  maximum */
-```
+- **Cause:** `em`/`clamp()`/`vw` values double-scale with Reveal's architecture
+- **Fix:** Use `px` values sized for the 1600×900 canvas. Reference: `--h2: 56px` gives ~45px visual at a 1280×720 viewport
 
-### Content Doesn't Fill Short Screens
+### Code blocks shadowed / wrong width / truncated
 
-**Symptoms:** Excessive whitespace on landscape phones or short browser windows
+- **Reveal defaults:** `box-shadow` on `pre`, `width: 90%` on `pre`, `max-height: 400px` on `pre code`
+- **Fix:**
+  ```css
+  .reveal pre { box-shadow: none; width: auto; }
+  .reveal pre code { max-height: none; }
+  ```
 
-**Solutions:**
-1. Add `@media (max-height: 600px)` and `(max-height: 500px)` breakpoints
-2. Reduce padding at smaller heights
-3. Hide decorative elements (`display: none`)
-4. Consider hiding nav dots and hints on short screens
+### Fragment animations not firing
+
+- Check `Reveal.initialize()` includes `fragments: true`
+- Elements need `class="fragment"` (plus optional `fade-up`, `fade-in`, etc.)
+- For simultaneous reveal, use matching `data-fragment-index="N"` values
 
 ### Testing Recommendations
 
-Test at these viewport sizes:
+Test at these viewport sizes in browser DevTools:
 - **Desktop:** 1920×1080, 1440×900, 1280×720
 - **Tablet:** 1024×768 (landscape), 768×1024 (portrait)
-- **Mobile:** 375×667 (iPhone SE), 414×896 (iPhone 11)
-- **Landscape phone:** 667×375, 896×414
-
-Use browser DevTools responsive mode to quickly test multiple sizes.
+- **Mobile:** 375×667, 414×896
+- **Press `?`** in Reveal.js to see all keyboard shortcuts
