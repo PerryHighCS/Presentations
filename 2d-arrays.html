@@ -246,6 +246,21 @@ body::before {
   max-height: none; /* Reveal sets max-height: 400px */
 }
 
+/* Indentation guides for code cards */
+.code-card .code-body pre {
+  background-image:
+    linear-gradient(rgba(0,255,255,0.18), rgba(0,255,255,0.18)),
+    linear-gradient(rgba(0,255,255,0.16), rgba(0,255,255,0.16)),
+    linear-gradient(rgba(0,255,255,0.14), rgba(0,255,255,0.14)),
+    linear-gradient(rgba(0,255,255,0.12), rgba(0,255,255,0.12)),
+    linear-gradient(rgba(0,255,255,0.10), rgba(0,255,255,0.10)),
+    linear-gradient(rgba(0,255,255,0.08), rgba(0,255,255,0.08)),
+    linear-gradient(rgba(0,255,255,0.07), rgba(0,255,255,0.07));
+  background-repeat: no-repeat;
+  background-size: 1px 100%, 1px 100%, 1px 100%, 1px 100%, 1px 100%, 1px 100%, 1px 100%;
+  background-position: 0.1ch 0, 2ch 0, 4ch 0, 6ch 0, 8ch 0, 10ch 0, 12ch 0;
+}
+
 /* ─── 5. Layout utilities ──────────────────────────────────────────── */
 
 .glow {
@@ -463,8 +478,16 @@ body::before {
   opacity: 0;
   pointer-events: none;
 }
-.reveal section.present .yes-ring {
+.reveal section.present .yes-ring:not(.yes-ring-frag) {
   animation: ring-burst 1.4s var(--ease) 0.2s forwards;
+}
+
+/* For rings inside fragments: animate when fragment becomes visible */
+.reveal .fragment .yes-ring-frag {
+  animation: none;
+}
+.reveal .fragment.visible .yes-ring-frag {
+  animation: ring-burst 1.4s var(--ease) 0.08s forwards;
 }
 
 /* ─── 11. Fragment overrides ───────────────────────────────────────── */
@@ -483,12 +506,138 @@ body::before {
   transform: translateY(0);
 }
 
-/* ─── 12. Reduced motion ───────────────────────────────────────────── */
+/* ─── 12. Storyboard strip ─────────────────────────────────────────── */
+
+.storyboard {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  overflow: hidden;
+  background: rgba(2,8,19,0.96);
+  border-top: 1px solid var(--cyan-border);
+  box-shadow: 0 -12px 30px rgba(0,0,0,0.35);
+  z-index: 35;
+  transition: height 0.28s var(--ease);
+}
+
+.storyboard-track {
+  height: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.story-thumb {
+  min-width: 212px;
+  max-width: 212px;
+  height: 150px;
+  border: 1px solid var(--cyan-border);
+  border-radius: 8px;
+  background: rgba(8,17,32,0.9);
+  color: var(--text);
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.story-thumb:hover {
+  border-color: rgba(0,255,255,0.45);
+  color: var(--text);
+}
+
+.story-thumb.active {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 1px rgba(0,255,255,0.35) inset;
+  color: var(--text);
+}
+
+.story-num {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  z-index: 2;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(2,8,19,0.78);
+  border: 1px solid var(--cyan-border);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--purple);
+  letter-spacing: 0.08em;
+}
+
+.story-preview {
+  width: 192px;
+  height: 108px;
+  flex: 0 0 108px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,255,255,0.2);
+  overflow: hidden;
+  background: #020813;
+}
+
+.story-scene {
+  width: 1600px;
+  height: 900px;
+  transform: scale(0.12);
+  transform-origin: top left;
+  pointer-events: none;
+}
+
+.story-scene .slides {
+  position: static;
+  width: 1600px;
+  height: 900px;
+  inset: auto;
+  transform: none;
+}
+
+.story-scene .slides > section {
+  position: relative;
+  display: block;
+  top: auto;
+  left: auto;
+  width: 1600px;
+  height: 900px;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.story-caption {
+  flex: 0 0 auto;
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 2px;
+}
+
+body.storyboard-open .storyboard {
+  height: 172px;
+}
+
+body.storyboard-open .reveal {
+  padding-bottom: 172px;
+}
+
+/* ─── 13. Reduced motion ───────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .reveal .fragment { transition: opacity 0.3s ease !important; }
   .reveal .fragment.fade-up { transform: none !important; }
   .reveal section.present .yes-text { animation: none; }
   .reveal section.present .yes-ring { animation: none; }
+  .storyboard { transition: none; }
 }
 
 </style>
@@ -508,25 +657,13 @@ body::before {
   <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(180,111,255,0.1) 0%,transparent 70%);bottom:-80px;right:8%;"></div>
 
   <div class="slide-inner slide-center">
-    <span class="slide-tag">AP CS · Unit 8</span>
+    <span class="slide-tag">AP CSA · Unit 8</span>
 
     <h1 class="title-h1">
-      <span style="color:var(--cyan);display:block;">2D</span>
-      <span style="display:block;">Arrays</span>
+      <span style="color:var(--cyan);">2D</span>
+      <span >Arrays</span>
     </h1>
 
-    <p style="max-width:42ch;margin-top:var(--gap);font-size:var(--h3);color:var(--text-muted);line-height:1.5;">
-      Arrays are objects — and if you can have an array of objects,<br>
-      can you have an <span style="color:var(--text);font-style:normal;font-weight:600;">array of arrays</span>?
-    </p>
-
-    <div style="margin-top:var(--gap-lg);">
-      <div class="code-card" style="display:inline-block;">
-        <div class="code-body">
-          <pre><span class="kw">int</span><span class="tp">[][]</span> grid = <span class="kw">new int</span>[<span class="nm">3</span>][<span class="nm">5</span>]; <span class="cm">// 3 rows, 5 columns</span></pre>
-        </div>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -558,13 +695,15 @@ body::before {
     <div class="fragment fade-up" style="margin-top:var(--gap-lg);">
       <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">▸ Memory layout</p>
       <div style="display:flex;align-items:center;gap:var(--gap);">
-        <div class="var-name">evenNums</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.2em;">
+          <div class="var-name">evenNums</div>
+          <span class="type-ann" style="margin-left:0;">(int[])</span>
+        </div>
         <span class="arr-arrow">⟶</span>
         <div class="arr-1d">
           <div class="arr-cell">0</div><div class="arr-cell">2</div><div class="arr-cell">4</div>
           <div class="arr-cell">6</div><div class="arr-cell">8</div><div class="arr-cell">10</div><div class="arr-cell">12</div>
         </div>
-        <span class="type-ann">(int)</span>
       </div>
     </div>
   </div>
@@ -628,13 +767,16 @@ body::before {
     <span class="slide-tag">Concept</span>
     <h2>What would it look like<br><span style="color:var(--cyan);">in memory?</span></h2>
 
-    <p style="max-width:56ch;margin-bottom:var(--gap);">
+    <p style="margin-bottom:var(--gap);">
       We know a regular array looks like this — a variable that references a block of data:
     </p>
 
     <!-- Diagram appears first -->
-    <div class="fragment fade-up" style="display:flex;align-items:center;gap:var(--gap);margin-bottom:var(--gap-lg);">
-      <div class="var-name">evenNums</div>
+    <div class="fragment fade-up" style="display:flex;align-items:center;justify-content:center;gap:var(--gap);margin-bottom:var(--gap-lg);width:100%;">
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.2em;">
+        <div class="var-name">evenNums</div>
+        <span class="type-ann" style="margin-left:0;">(int[])</span>
+      </div>
       <span class="arr-arrow">⟶</span>
       <div class="arr-1d">
         <div class="arr-cell">0</div><div class="arr-cell">2</div><div class="arr-cell">4</div>
@@ -643,7 +785,7 @@ body::before {
     </div>
 
     <!-- Callout appears second -->
-    <div class="callout accent-p fragment fade-up" style="max-width:620px;">
+    <div class="callout accent-p fragment fade-up" style="max-width:620px;margin-left:auto;margin-right:auto;">
       <h3 style="color:var(--purple);">Think about it...</h3>
       <p>
         What if each <em>element</em> in that outer array held a
@@ -681,11 +823,11 @@ body::before {
       <div class="fragment" style="display:flex;flex-direction:column;align-items:center;gap:var(--gap-sm);">
         <p style="font-size:var(--small);color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--gap-sm);">Elevation Grid</p>
         <div class="arr-2d">
-          <div class="arr-row"><div class="arr-cell hl-c">4</div><div class="arr-cell">6</div><div class="arr-cell">8</div><div class="arr-cell">10</div><div class="arr-cell">12</div></div>
-          <div class="arr-row"><div class="arr-cell">6</div><div class="arr-cell hl-c">7</div><div class="arr-cell">11</div><div class="arr-cell">12</div><div class="arr-cell">16</div></div>
-          <div class="arr-row"><div class="arr-cell">5</div><div class="arr-cell">6</div><div class="arr-cell hl-c">10</div><div class="arr-cell">14</div><div class="arr-cell">16</div></div>
-          <div class="arr-row"><div class="arr-cell">4</div><div class="arr-cell">6</div><div class="arr-cell">10</div><div class="arr-cell hl-c">13</div><div class="arr-cell">15</div></div>
-          <div class="arr-row"><div class="arr-cell">3</div><div class="arr-cell">5</div><div class="arr-cell">9</div><div class="arr-cell">12</div><div class="arr-cell hl-c">14</div></div>
+          <div class="arr-row"><div class="arr-cell" style="background:rgba(0,255,255,0.10);">4</div><div class="arr-cell" style="background:rgba(0,255,255,0.13);">6</div><div class="arr-cell" style="background:rgba(0,255,255,0.16);">8</div><div class="arr-cell" style="background:rgba(0,255,255,0.19);">10</div><div class="arr-cell" style="background:rgba(0,255,255,0.22);">12</div></div>
+          <div class="arr-row"><div class="arr-cell" style="background:rgba(0,255,255,0.13);">6</div><div class="arr-cell" style="background:rgba(0,255,255,0.14);">7</div><div class="arr-cell" style="background:rgba(0,255,255,0.21);">11</div><div class="arr-cell" style="background:rgba(0,255,255,0.22);">12</div><div class="arr-cell" style="background:rgba(0,255,255,0.40);">16</div></div>
+          <div class="arr-row"><div class="arr-cell" style="background:rgba(0,255,255,0.11);">5</div><div class="arr-cell" style="background:rgba(0,255,255,0.13);">6</div><div class="arr-cell" style="background:rgba(0,255,255,0.19);">10</div><div class="arr-cell" style="background:rgba(0,255,255,0.30);">14</div><div class="arr-cell" style="background:rgba(0,255,255,0.40);">16</div></div>
+          <div class="arr-row"><div class="arr-cell" style="background:rgba(0,255,255,0.10);">4</div><div class="arr-cell" style="background:rgba(0,255,255,0.13);">6</div><div class="arr-cell" style="background:rgba(0,255,255,0.19);">10</div><div class="arr-cell" style="background:rgba(0,255,255,0.24);">13</div><div class="arr-cell" style="background:rgba(0,255,255,0.35);">15</div></div>
+          <div class="arr-row"><div class="arr-cell" style="background:rgba(0,255,255,0.08);">3</div><div class="arr-cell" style="background:rgba(0,255,255,0.11);">5</div><div class="arr-cell" style="background:rgba(0,255,255,0.17);">9</div><div class="arr-cell" style="background:rgba(0,255,255,0.22);">12</div><div class="arr-cell" style="background:rgba(0,255,255,0.30);">14</div></div>
         </div>
       </div>
     </div>
@@ -971,8 +1113,7 @@ arr[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">42<
         </div>
         <div class="code-body">
           <pre><span class="kw">for</span> (<span class="kw">int</span> row = <span class="nm">0</span>; row &lt; arr.length; row++) {
-  <span class="kw">for</span> (<span class="kw">int</span> col = <span class="nm">0</span>;
-       col &lt; arr[row].length; col++) {
+  <span class="kw">for</span> (<span class="kw">int</span> col = <span class="nm">0</span>; col &lt; arr[row].length; col++) {
     <span class="cm">// Safe for ragged arrays!</span>
   }
 }</pre>
@@ -1056,48 +1197,49 @@ arr[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">42<
       Declare and populate a 2D array in one statement using nested curly braces:
     </p>
 
-    <div class="code-card fragment fade-up" style="max-width:700px;margin-bottom:var(--gap);">
-      <div class="code-hdr">
-        <div class="cdot" style="background:#ff5f57;"></div><div class="cdot" style="background:#febc2e;"></div><div class="cdot" style="background:#28c840;"></div>
-        <span class="clang">Java</span>
-      </div>
-      <div class="code-body">
-        <pre><span class="kw">int</span><span class="tp">[][]</span> matrix = {
+    <div class="split" style="margin-top:var(--gap);align-items:start;">
+      <div class="code-card fragment fade-up" data-fragment-index="1">
+        <div class="code-hdr">
+          <div class="cdot" style="background:#ff5f57;"></div><div class="cdot" style="background:#febc2e;"></div><div class="cdot" style="background:#28c840;"></div>
+          <span class="clang">Java</span>
+        </div>
+        <div class="code-body">
+          <pre><span class="kw">int</span><span class="tp">[][]</span> matrix = {
     {<span class="nm">0</span>,  <span class="nm">1</span>,  <span class="nm">2</span>,  <span class="nm">3</span> },  <span class="cm">// row 0</span>
     {<span class="nm">10</span>, <span class="nm">11</span>, <span class="nm">12</span>, <span class="nm">13</span>},  <span class="cm">// row 1</span>
     {<span class="nm">20</span>, <span class="nm">21</span>, <span class="nm">22</span>, <span class="nm">23</span>}   <span class="cm">// row 2</span>
 };</pre>
-      </div>
-    </div>
-
-    <div class="fragment fade-up" style="display:flex;flex-direction:column;align-items:flex-start;gap:var(--gap-sm);">
-      <p style="color:var(--text-muted);">Results in:</p>
-      <div style="display:flex;align-items:flex-start;gap:1.8em;">
-        <div style="display:flex;align-items:center;gap:var(--gap-sm);padding-top:1.55em;">
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.2em;">
-            <div class="var-name">matrix</div>
-            <span class="type-ann" style="margin-left:0;">(int[][])</span>
-          </div>
-          <span class="arr-arrow">⟶</span>
         </div>
+      </div>
 
-        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:var(--gap-sm);">
-          <!--p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.12em;color:var(--text-dim);margin-left:1.2em;">Rows Array</p -->
-          <div style="display:flex;flex-direction:column;gap:0;">
-            <div style="display:flex;align-items:center;gap:0.72em;">
-              <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
-              <span class="arr-arrow">⟶</span>
-              <div class="arr-row"><div class="arr-cell">0</div><div class="arr-cell">1</div><div class="arr-cell">2</div><div class="arr-cell">3</div></div>
+      <div class="fragment fade-up" data-fragment-index="2">
+        <p style="color:var(--text-muted);margin-bottom:var(--gap-sm);">Results in:</p>
+        <div style="display:flex;align-items:flex-start;gap:1.8em;">
+          <div style="display:flex;align-items:center;gap:var(--gap-sm);padding-top:1.55em;">
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.2em;">
+              <div class="var-name">matrix</div>
+              <span class="type-ann" style="margin-left:0;">(int[][])</span>
             </div>
-            <div style="display:flex;align-items:center;gap:0.72em;">
-              <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
-              <span class="arr-arrow">⟶</span>
-              <div class="arr-row"><div class="arr-cell">10</div><div class="arr-cell">11</div><div class="arr-cell">12</div><div class="arr-cell">13</div></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:0.72em;">
-              <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
-              <span class="arr-arrow">⟶</span>
-              <div class="arr-row"><div class="arr-cell">20</div><div class="arr-cell">21</div><div class="arr-cell">22</div><div class="arr-cell">23</div></div>
+            <span class="arr-arrow">⟶</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:var(--gap-sm);">
+            <div style="display:flex;flex-direction:column;gap:0;">
+              <div style="display:flex;align-items:center;gap:0.72em;">
+                <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+                <span class="arr-arrow">⟶</span>
+                <div class="arr-row"><div class="arr-cell">0</div><div class="arr-cell">1</div><div class="arr-cell">2</div><div class="arr-cell">3</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.72em;">
+                <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+                <span class="arr-arrow">⟶</span>
+                <div class="arr-row"><div class="arr-cell">10</div><div class="arr-cell">11</div><div class="arr-cell">12</div><div class="arr-cell">13</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.72em;">
+                <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+                <span class="arr-arrow">⟶</span>
+                <div class="arr-row"><div class="arr-cell">20</div><div class="arr-cell">21</div><div class="arr-cell">22</div><div class="arr-cell">23</div></div>
+              </div>
             </div>
           </div>
         </div>
@@ -1118,8 +1260,7 @@ arr[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">42<
     <span class="slide-tag">Initialization</span>
     <h2>Method 2: <span style="color:var(--purple);">Nested For Loop</span></h2>
 
-    <div class="split fragment fade-up" style="margin-top:var(--gap);align-items:start;">
-      <div class="code-card">
+    <div class="code-card fragment fade-up" data-fragment-index="1" style="width:100%;margin-top:var(--gap);margin-bottom:var(--gap);">
         <div class="code-hdr">
           <div class="cdot" style="background:#ff5f57;"></div><div class="cdot" style="background:#febc2e;"></div><div class="cdot" style="background:#28c840;"></div>
           <span class="clang">Java</span>
@@ -1127,21 +1268,26 @@ arr[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">42<
         <div class="code-body">
           <pre><span class="kw">int</span><span class="tp">[][]</span> matrix = <span class="kw">new int</span>[<span class="nm">3</span>][<span class="nm">4</span>];
 
-<span class="kw">for</span> (<span class="kw">int</span> row = <span class="nm">0</span>;
-     row &lt; matrix.length; row++) {
-
-  <span class="kw">for</span> (<span class="kw">int</span> col = <span class="nm">0</span>;
-       col &lt; matrix[row].length; col++) {
-
+<span class="kw">for</span> (<span class="kw">int</span> row = <span class="nm">0</span>; row &lt; matrix.length; row++) {
+  <span class="kw">for</span> (<span class="kw">int</span> col = <span class="nm">0</span>; col &lt; matrix[row].length; col++) {
     matrix[row][col] = row * <span class="nm">10</span> + col;
   }
 }</pre>
         </div>
       </div>
 
+    <div class="split fragment fade-up" data-fragment-index="2" style="align-items:start;">
+      <div class="callout">
+        <p style="font-size:var(--small);color:var(--text-muted);">Formula: <code>row * 10 + col</code></p>
+        <ul class="bullets" style="margin-top:var(--gap-sm);">
+          <li style="font-size:var(--small);">Row 0: <code>0×10+0=0</code>, <code>0×10+1=1</code> …</li>
+          <li style="font-size:var(--small);">Row 1: <code>1×10+0=10</code>, <code>1×10+1=11</code> …</li>
+        </ul>
+      </div>
+
       <div>
         <p style="color:var(--text-muted);margin-bottom:var(--gap);">Results in:</p>
-        <div style="display:flex;align-items:flex-start;gap:1.55em;margin-bottom:var(--gap);">
+        <div style="display:flex;align-items:flex-start;gap:1.55em;">
           <div style="display:flex;align-items:center;gap:var(--gap-sm);padding-top:1.55em;">
             <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.2em;">
               <div class="var-name">matrix</div>
@@ -1168,13 +1314,6 @@ arr[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">42<
             </div>
           </div>
         </div>
-        <div class="callout">
-          <p style="font-size:var(--small);color:var(--text-muted);">Formula: <code>row * 10 + col</code></p>
-          <ul class="bullets" style="margin-top:var(--gap-sm);">
-            <li style="font-size:var(--small);">Row 0: <code>0×10+0=0</code>, <code>0×10+1=1</code> …</li>
-            <li style="font-size:var(--small);">Row 1: <code>1×10+0=10</code>, <code>1×10+1=11</code> …</li>
-          </ul>
-        </div>
       </div>
     </div>
   </div>
@@ -1193,21 +1332,16 @@ arr[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">42<
     <span class="slide-tag">Check your understanding</span>
     <h2>Will this <span style="color:var(--cyan);">work?</span></h2>
 
-    <div class="split" style="margin-top:var(--gap);align-items:start;">
-      <!-- The challenge code — visible immediately so students can think -->
-      <div class="code-card">
+    <!-- The challenge code — visible immediately so students can think -->
+    <div class="code-card" style="width:100%;margin-top:var(--gap);margin-bottom:var(--gap);">
         <div class="code-hdr">
           <div class="cdot" style="background:#ff5f57;"></div><div class="cdot" style="background:#febc2e;"></div><div class="cdot" style="background:#28c840;"></div>
           <span class="clang">Java</span>
         </div>
         <div class="code-body">
           <pre><span class="kw">int</span><span class="tp">[][]</span> matrix = <span class="kw">new int</span>[<span class="nm">3</span>][<span class="nm">4</span>];
-
 <span class="kw">for</span> (<span class="kw">int</span><span class="tp">[]</span> row : matrix) {
-
-  <span class="kw">for</span> (<span class="kw">int</span> col = <span class="nm">0</span>;
-       col &lt; row.length; col++) {
-
+  <span class="kw">for</span> (<span class="kw">int</span> col = <span class="nm">0</span>; col &lt; row.length; col++) {
     row[col] = <span class="nm">10</span> * col;
   }
 }</pre>
@@ -1215,13 +1349,14 @@ arr[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">42<
       </div>
 
       <!-- Answer + result appear together on advance -->
-      <div>
-        <div class="callout accent-g fragment" style="margin-bottom:var(--gap);"  data-fragment-index="1">
+    <div class="split" style="align-items:start;">
+        <div class="callout accent-g fragment" style="position:relative;margin-bottom:var(--gap);" data-fragment-index="1">
+          <div class="yes-ring yes-ring-frag" style="top:1.25em;left:2.45em;width:120px;height:120px;border-color:rgba(77,255,180,0.5);"></div>
           <p style="color:var(--green);font-weight:700;font-size:var(--h3);margin-bottom:var(--gap-sm);">✓ Yes, it works!</p>
           <ul class="bullets">
             <li style="font-size:var(--small);">The enhanced <code>for</code> gives you each <code>int[]</code> row as a reference</li>
             <li style="font-size:var(--small);">Mutations through <code>row</code> <strong>do affect</strong> the original <code>matrix</code></li>
-            <li style="font-size:var(--small);">Formula <code>10 * col</code> has no <code>row</code> variable, so all rows are identical</li>
+            <li style="font-size:var(--small);">There is no numeric row index variable in this loop, just a reference to each row.</li>
           </ul>
         </div>
 
@@ -1254,12 +1389,9 @@ arr[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">42<
               </div>
             </div>
           </div>
-          <p style="font-size:var(--small);color:var(--text-muted);">
-            All rows identical — formula only depends on <code>col</code>, not the row index.
-          </p>
         </div>
       </div>
-    </div>
+
   </div>
 </section>
 
@@ -1267,11 +1399,17 @@ arr[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">42<
 </div><!-- /.slides -->
 </div><!-- /.reveal -->
 
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
 
 <!-- ============================================================
      REVEAL.JS — loaded after DOM so slides are parsed first
      ============================================================ -->
 <script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
+<script src="https://unpkg.com/reveal.js@5/plugin/notes/notes.js"></script>
+<script src="js/reveal-storyboard.js"></script>
 <script>
 Reveal.initialize({
   // Navigation
@@ -1301,7 +1439,19 @@ Reveal.initialize({
   // Fragments
   fragments:         true,
   fragmentInURL:     false,
+
+  // Plugins
+  plugins:           [ RevealNotes ],
 });
+
+if (window.initRevealStoryboard) {
+  window.initRevealStoryboard({
+    reveal: Reveal,
+    storyboardId: 'storyboard',
+    trackId: 'storyboard-track',
+    toggleKey: 'm',
+  });
+}
 </script>
 
 </body>
