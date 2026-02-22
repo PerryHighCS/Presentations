@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2D Arrays — Java</title>
+
+<!-- Reveal.js base CSS (no theme — we supply a full custom theme below) -->
+<link rel="stylesheet" href="https://unpkg.com/reveal.js@5/dist/reveal.css">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap">
+
+<style>
+
+/* ============================================================
+   NEON CYBER THEME — custom Reveal.js theme
+   Overrides reveal.css defaults to create a dark navy +
+   cyan + purple techy aesthetic.
+
+   ARCHITECTURE:
+   1. Reveal.js CSS variables (--r-*)   → global theme colours/fonts
+   2. Custom CSS variables (--*)        → component sizing/spacing
+   3. Reveal.js structural overrides    → layout adjustments
+   4. Component styles                  → code cards, array diagrams etc.
+   5. YES! slide animations             → keyframe definitions
+   6. Fragment overrides                → custom fade-up easing
+   ============================================================ */
+
+/* ─── 1. Explicit Reveal.js theme application ─────────────────────
+   NOTE: --r-* CSS custom properties are only consumed by Reveal's
+   bundled theme CSS files. Since we load reveal.css alone (no theme),
+   we must apply our colours/fonts with explicit CSS rules instead.
+   ─────────────────────────────────────────────────────────────── */
+
+/* Background: .reveal-viewport is the class Reveal adds to <body> */
+body,
+.reveal-viewport {
+  background: #020813;
+  background-color: #020813;
+}
+
+.reveal {
+  background: transparent;
+  color: #ddeeff;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Headings */
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  color: #ddeeff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-transform: none;
+  margin: 0;
+}
+
+/* Body text */
+.reveal p,
+.reveal li,
+.reveal blockquote {
+  color: rgba(221,238,255,0.55);
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Inline code */
+.reveal :not(pre) > code {
+  font-family: 'JetBrains Mono', monospace;
+  color: #00ffff;
+  background: rgba(0,255,255,0.07);
+  padding: 0.1em 0.38em;
+  border-radius: 4px;
+  border: 1px solid rgba(0,255,255,0.18);
+}
+
+/* Links */
+.reveal a { color: #00ffff; }
+.reveal a:hover { color: rgba(0,255,255,0.7); }
+
+/* Selection */
+.reveal ::selection {
+  background: rgba(0,255,255,0.2);
+  color: #fff;
+}
+
+/* ─── 2. Custom design tokens ─────────────────────────────────────── */
+:root {
+  /* Palette */
+  --cyan:          #00ffff;
+  --cyan-dim:      rgba(0,255,255,0.5);
+  --cyan-glow:     rgba(0,255,255,0.15);
+  --cyan-border:   rgba(0,255,255,0.2);
+  --purple:        #b46fff;
+  --purple-dim:    rgba(180,111,255,0.5);
+  --purple-glow:   rgba(180,111,255,0.12);
+  --gold:          #ffd700;
+  --green:         #4dffb4;
+  --bg:            #020813;
+  --bg-card:       #081120;
+  --text:          #ddeeff;
+  --text-muted:    rgba(221,238,255,0.55);
+  --text-dim:      rgba(221,238,255,0.25);
+
+  /* Fonts */
+  --font-ui:   'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Typography — px sized for the 1600×900 slide canvas.
+     Reveal.js scales the entire .slides container via CSS transform
+     so px values scale proportionally on all viewport sizes.
+     Reveal.js JS sets font-size on .reveal as floor(viewportHeight*0.04)
+     (~28px at 720px tall), then scales slides by e.g. 0.8 at 1280px wide —
+     double-shrinking em values. Using px bypasses this entirely. */
+  --title:  100px;    /* visual ~80px at 1280×720 — title slide  */
+  --h2:      56px;    /* visual ~45px — section headings         */
+  --h3:      36px;    /* visual ~29px — sub-headings             */
+  --body:    25px;    /* visual ~20px — paragraph text           */
+  --small:   19px;    /* visual ~15px — captions / annotations   */
+  --code:    21px;    /* visual ~17px — code blocks              */
+  --tag:     15px;    /* visual ~12px — slide labels             */
+
+  /* Spacing — px so everything scales with Reveal's transform */
+  --pad:     72px;    /* slide inner padding  */
+  --gap:     26px;    /* between content items */
+  --gap-sm:  13px;    /* tight gaps           */
+  --gap-lg:  52px;    /* section gaps         */
+
+  /* Animation easing */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── 3. Reveal.js structural overrides ──────────────────────────── */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* Persistent grid texture on body */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,255,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Each section = full configured slide height.
+   DO NOT set position here — Reveal.js sets position: absolute on sections
+   so it can layer, fade, and transition slides. Overriding that with
+   position: relative breaks the fade transition (slides go blank after #1).
+   Glow divs (position: absolute) are already scoped to the section because
+   an absolutely-positioned element is its own positioning context. */
+.reveal .slides > section {
+  height: 100%;
+  padding: 0 !important;  /* override Reveal's default padding: 20px 0 */
+  box-sizing: border-box;
+  text-align: left;
+}
+
+/* Slide inner wrapper — centres content vertically, applies padding */
+.slide-inner {
+  width: 100%;
+  height: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: var(--pad);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+}
+
+/* Title/impact slides: centre both axes */
+.slide-center { align-items: center; text-align: center; }
+
+/* Reveal progress bar — styled to theme */
+.reveal .progress {
+  height: 3px;
+}
+.reveal .progress span {
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  box-shadow: 0 0 10px rgba(0,255,255,0.4);
+}
+
+/* Slide number */
+.reveal .slide-number {
+  font-family: var(--font-mono);
+  font-size: 0.45em;
+  background: transparent;
+  color: var(--text-dim);
+  bottom: 0.8em;
+  right: 1.2em;
+  padding: 0;
+}
+
+/* ─── 4. Typography sizing ─────────────────────────────────────────
+   Colours are set in section 1 above. These rules handle font sizes,
+   spacing, and Reveal.js resets (box-shadow on pre, etc.).
+   ─────────────────────────────────────────────────────────────── */
+
+.reveal h2 {
+  font-size: var(--h2);
+  margin-bottom: var(--gap);
+}
+
+.reveal p {
+  font-size: var(--body);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* Reset Reveal.js defaults on <pre> */
+.reveal pre {
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  line-height: 1.8;
+  color: rgba(221,238,255,0.82);
+  white-space: pre;
+  overflow: hidden;
+  margin: 0;
+  box-shadow: none;  /* Reveal adds a drop-shadow by default */
+  width: auto;       /* Reveal sets width: 90% by default */
+  text-align: left;
+}
+
+/* Reset Reveal.js <code> defaults (the :not(pre) rule in §1 handles chips) */
+.reveal pre code {
+  font-family: var(--font-mono);
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  max-height: none; /* Reveal sets max-height: 400px */
+}
+
+/* ─── 5. Layout utilities ──────────────────────────────────────────── */
+
+.glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+  align-items: center;
+  width: 100%;
+}
+.split-60  { grid-template-columns: 1.5fr 1fr; }
+.split-40  { grid-template-columns: 1fr 1.5fr; }
+.split-top { align-items: start; }
+
+/* ─── 6. Slide label ("▸ REVIEW") ─────────────────────────────────── */
+
+.slide-tag {
+  font-size: var(--tag);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: var(--gap);
+  display: block;
+}
+.slide-tag::before { content: '▸ '; color: var(--purple); }
+
+/* Title slide heading */
+.title-h1 {
+  font-size: var(--title);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  font-family: var(--font-ui);
+  color: var(--text);
+  margin: 0;
+}
+
+/* ─── 7. Bullet lists ──────────────────────────────────────────────── */
+
+.bullets {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.bullets li {
+  position: relative;
+  padding-left: 1.2em;
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.bullets li::before {
+  content: '○';
+  color: var(--cyan);
+  position: absolute;
+  left: 0;
+  top: 0.28em;
+  font-size: 0.75em;
+}
+.bullets li strong { color: var(--text); font-weight: 600; }
+
+/* ─── 8. Code blocks ───────────────────────────────────────────────── */
+
+.code-card {
+  background: var(--bg-card);
+  border: 1px solid var(--cyan-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.code-card.accent { border-color: rgba(0,255,255,0.45); }
+
+.code-hdr {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.45em 0.85em;
+  background: rgba(0,255,255,0.05);
+  border-bottom: 1px solid var(--cyan-border);
+}
+.cdot { width: 8px; height: 8px; border-radius: 50%; }
+.clang {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-left: auto;
+}
+.code-body {
+  padding: 0.85em 1em;
+  overflow: hidden;
+}
+
+/* Java syntax highlight colours */
+.kw { color: var(--cyan);   font-weight: 500; }
+.tp { color: var(--purple); }
+.nm { color: var(--gold);   }
+.cm { color: rgba(221,238,255,0.3); font-style: italic; }
+
+/* ─── 9. Array / memory visualizations ────────────────────────────── */
+
+.var-name {
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  font-weight: 700;
+  color: var(--gold);
+  padding: 0.2em 0.55em;
+  background: rgba(255,215,0,0.08);
+  border: 1px solid rgba(255,215,0,0.28);
+  border-radius: 4px;
+  white-space: nowrap;
+  align-self: center;
+}
+
+.arr-arrow { color: var(--cyan-dim); font-size: var(--h3); }
+
+.type-ann {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--text-dim);
+  align-self: center;
+  margin-left: 0.5em;
+}
+
+/* 1D array — merged-border row of cells */
+.arr-1d { display: flex; align-items: stretch; }
+.arr-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.8em;
+  aspect-ratio: 1;
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  font-weight: 500;
+  color: var(--text);
+  background: rgba(0,255,255,0.05);
+  border: 1px solid var(--cyan-border);
+  border-right: none;
+}
+.arr-cell:last-child { border-right: 1px solid var(--cyan-border); }
+
+/* Highlight variants */
+.hl-c { background: rgba(0,255,255,0.18);   color: var(--cyan);   border-color: var(--cyan);   font-weight: 700; border-right: 1px solid var(--cyan); }
+.hl-p { background: rgba(180,111,255,0.18); color: var(--purple); border-color: var(--purple); font-weight: 700; border-right: 1px solid var(--purple); }
+.hl-g { background: rgba(255,215,0,0.18);   color: var(--gold);   border-color: rgba(255,215,0,0.6); font-weight: 700; border-right: 1px solid rgba(255,215,0,0.6); }
+.hl-n { background: rgba(77,255,180,0.18);  color: var(--green);  border-color: rgba(77,255,180,0.5); font-weight: 700; border-right: 1px solid rgba(77,255,180,0.5); }
+
+/* 2D array — grid with per-cell borders */
+.arr-2d { display: flex; flex-direction: column; gap: 3px; }
+.arr-row { display: flex; align-items: center; }
+.arr-2d .arr-cell { border-right: 1px solid var(--cyan-border); }
+
+/* Row label ("arr[0]", "r0", etc.) */
+.row-lbl {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--purple);
+  font-weight: 700;
+  width: 4.5em;
+  text-align: right;
+  padding-right: 0.55em;
+  flex-shrink: 0;
+}
+
+/* Info / callout cards */
+.callout {
+  background: var(--bg-card);
+  border: 1px solid var(--cyan-border);
+  border-radius: 10px;
+  padding: 0.8em 1em;
+}
+.callout h3 { font-size: var(--h3); font-weight: 600; color: var(--cyan); margin-bottom: var(--gap-sm); }
+.callout.accent-p { border-color: rgba(180,111,255,0.35); }
+.callout.accent-g { border-color: rgba(77,255,180,0.35); background: rgba(77,255,180,0.04); }
+
+/* ─── 10. YES! slide animations ────────────────────────────────────── */
+
+@keyframes glow-pulse {
+  0%, 100% { text-shadow: 0 0 30px rgba(0,255,255,0.55), 0 0 80px rgba(0,255,255,0.2); }
+  50%       { text-shadow: 0 0 55px rgba(0,255,255,0.85), 0 0 140px rgba(0,255,255,0.3); }
+}
+@keyframes ring-burst {
+  from { transform: translate(-50%,-50%) scale(0.4); opacity: 0.9; }
+  to   { transform: translate(-50%,-50%) scale(2.2); opacity: 0; }
+}
+
+.yes-text {
+  font-size: 5em;
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  color: var(--cyan);
+  line-height: 1;
+}
+/* Trigger when slide becomes active */
+.reveal section.present .yes-text {
+  animation: glow-pulse 2.5s ease-in-out 0.5s infinite;
+}
+
+.yes-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 350px; height: 350px;
+  border: 2px solid rgba(0,255,255,0.5);
+  border-radius: 50%;
+  transform: translate(-50%,-50%) scale(0.4);
+  opacity: 0;
+  pointer-events: none;
+}
+.reveal section.present .yes-ring {
+  animation: ring-burst 1.4s var(--ease) 0.2s forwards;
+}
+
+/* ─── 11. Fragment overrides ───────────────────────────────────────── */
+/* Override Reveal's default fragment transition with our easing curve */
+
+.reveal .fragment {
+  transition:
+    opacity 0.55s var(--ease),
+    transform 0.55s var(--ease),
+    filter 0.55s var(--ease);
+}
+.reveal .fragment.fade-up {
+  transform: translateY(22px);
+}
+.reveal .fragment.fade-up.visible {
+  transform: translateY(0);
+}
+
+/* ─── 12. Reduced motion ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .reveal .fragment { transition: opacity 0.3s ease !important; }
+  .reveal .fragment.fade-up { transform: none !important; }
+  .reveal section.present .yes-text { animation: none; }
+  .reveal section.present .yes-ring { animation: none; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ============================================================
+     SLIDE 01 · TITLE
+     No fragments — entire slide appears at once.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:550px;height:550px;background:radial-gradient(circle,rgba(0,255,255,0.12) 0%,transparent 70%);top:-160px;left:-120px;"></div>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(180,111,255,0.1) 0%,transparent 70%);bottom:-80px;right:8%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AP CS · Unit 8</span>
+
+    <h1 class="title-h1">
+      <span style="color:var(--cyan);display:block;">2D</span>
+      <span style="display:block;">Arrays</span>
+    </h1>
+
+    <p style="max-width:42ch;margin-top:var(--gap);font-size:var(--h3);color:var(--text-muted);line-height:1.5;">
+      Arrays are objects — and if you can have an array of objects,<br>
+      can you have an <span style="color:var(--text);font-style:normal;font-weight:600;">array of arrays</span>?
+    </p>
+
+    <div style="margin-top:var(--gap-lg);">
+      <div class="code-card" style="display:inline-block;">
+        <div class="code-body">
+          <pre><span class="kw">int</span><span class="tp">[][]</span> grid = <span class="kw">new int</span>[<span class="nm">3</span>][<span class="nm">5</span>]; <span class="cm">// 3 rows, 5 columns</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 02 · ARRAYS ARE OBJECTS
+     Fragments: each bullet, then memory diagram.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(180,111,255,0.11) 0%,transparent 70%);top:-120px;right:5%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Review</span>
+    <h2>Arrays are <span style="color:var(--cyan);">Objects</span></h2>
+
+    <ul class="bullets" style="max-width:760px;gap:0.42em;">
+      <li class="fragment fade-up">
+        Arrays have a public member variable: <code>array.length</code>
+      </li>
+      <li class="fragment fade-up">
+        Array variables are <strong>references</strong> — they point to the actual data in memory, not the data itself
+      </li>
+      <li class="fragment fade-up">
+        Java gives arrays a special operator unavailable to other objects: the <code>[]</code> subscript operator
+      </li>
+    </ul>
+
+    <!-- Memory diagram — appears after all bullets -->
+    <div class="fragment fade-up" style="margin-top:var(--gap-lg);">
+      <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">▸ Memory layout</p>
+      <div style="display:flex;align-items:center;gap:var(--gap);">
+        <div class="var-name">evenNums</div>
+        <span class="arr-arrow">⟶</span>
+        <div class="arr-1d">
+          <div class="arr-cell">0</div><div class="arr-cell">2</div><div class="arr-cell">4</div>
+          <div class="arr-cell">6</div><div class="arr-cell">8</div><div class="arr-cell">10</div><div class="arr-cell">12</div>
+        </div>
+        <span class="type-ann">(int)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 03 · THE BIG QUESTION
+     Fragments: each line of the question builds up one at a time.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:600px;height:600px;background:radial-gradient(circle,rgba(0,255,255,0.07) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">The question</span>
+
+    <p style="font-size:var(--h3);color:var(--text-muted);max-width:50ch;line-height:1.6;">
+      Arrays are objects.
+    </p>
+    <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);max-width:50ch;line-height:1.6;margin-top:var(--gap-sm);">
+      If you can have an <span style="color:var(--text);font-weight:600;">array of objects</span>...
+    </p>
+    <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);max-width:50ch;line-height:1.6;margin-top:var(--gap-sm);">
+      ...and arrays <em style="font-style:normal;color:var(--text);">are</em> objects...
+    </p>
+    <p class="fragment fade-up" style="font-size:var(--h2);color:var(--text);font-weight:700;max-width:44ch;margin-top:var(--gap);letter-spacing:-0.02em;line-height:1.2;">
+      Can you have an array<br>of <span style="color:var(--cyan);">arrays</span>?
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 04 · YES!
+     Ring burst + YES text appear with slide.
+     Fragment: subtitle appears on first advance.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:700px;height:700px;background:radial-gradient(circle,rgba(0,255,255,0.06) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <!-- Ring is inside section (position:absolute relative to section) -->
+  <div class="yes-ring"></div>
+
+  <div class="slide-inner slide-center">
+    <div class="yes-text">YES!</div>
+    <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-lg);">
+      An array of arrays is called a <span style="color:var(--cyan);font-weight:600;">2D Array</span>
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 05 · WHAT WOULD IT LOOK LIKE?
+     Fragments: evenNums diagram, then callout.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(180,111,255,0.1) 0%,transparent 70%);bottom:-60px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Concept</span>
+    <h2>What would it look like<br><span style="color:var(--cyan);">in memory?</span></h2>
+
+    <p style="max-width:56ch;margin-bottom:var(--gap);">
+      We know a regular array looks like this — a variable that references a block of data:
+    </p>
+
+    <!-- Diagram appears first -->
+    <div class="fragment fade-up" style="display:flex;align-items:center;gap:var(--gap);margin-bottom:var(--gap-lg);">
+      <div class="var-name">evenNums</div>
+      <span class="arr-arrow">⟶</span>
+      <div class="arr-1d">
+        <div class="arr-cell">0</div><div class="arr-cell">2</div><div class="arr-cell">4</div>
+        <div class="arr-cell">6</div><div class="arr-cell">8</div><div class="arr-cell">10</div><div class="arr-cell">12</div>
+      </div>
+    </div>
+
+    <!-- Callout appears second -->
+    <div class="callout accent-p fragment fade-up" style="max-width:620px;">
+      <h3 style="color:var(--purple);">Think about it...</h3>
+      <p>
+        What if each <em>element</em> in that outer array held a
+        <strong style="color:var(--text);">reference to another array</strong>?
+        Sketch what that structure would look like — then continue.
+      </p>
+      <p style="margin-top:var(--gap-sm);color:var(--cyan);">Then advance to the next slide ⟶</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 06 · THE MAP PROBLEM
+     Fragment: right elevation grid.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(0,255,255,0.1) 0%,transparent 70%);top:-110px;right:-50px;"></div>
+
+  <div class="slide-inner">
+    <div class="split-40 split">
+      <div>
+        <span class="slide-tag">Real-world example</span>
+        <h2>The <span style="color:var(--cyan);">Map</span> Problem</h2>
+        <p style="margin-bottom:var(--gap);">
+          Imagine building a game that needs a map. The natural way to represent it is as a
+          <strong style="color:var(--text);">grid of cells</strong>.
+        </p>
+        <p>
+          To store the <span style="color:var(--cyan);font-weight:600;">elevation</span>
+          of each cell, you'd want something like this grid →
+        </p>
+      </div>
+
+      <div class="fragment" style="display:flex;flex-direction:column;align-items:center;gap:var(--gap-sm);">
+        <p style="font-size:var(--small);color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--gap-sm);">Elevation Grid</p>
+        <div class="arr-2d">
+          <div class="arr-row"><div class="arr-cell hl-c">4</div><div class="arr-cell">6</div><div class="arr-cell">8</div><div class="arr-cell">10</div><div class="arr-cell">12</div></div>
+          <div class="arr-row"><div class="arr-cell">6</div><div class="arr-cell hl-c">7</div><div class="arr-cell">11</div><div class="arr-cell">12</div><div class="arr-cell">16</div></div>
+          <div class="arr-row"><div class="arr-cell">5</div><div class="arr-cell">6</div><div class="arr-cell hl-c">10</div><div class="arr-cell">14</div><div class="arr-cell">16</div></div>
+          <div class="arr-row"><div class="arr-cell">4</div><div class="arr-cell">6</div><div class="arr-cell">10</div><div class="arr-cell hl-c">13</div><div class="arr-cell">15</div></div>
+          <div class="arr-row"><div class="arr-cell">3</div><div class="arr-cell">5</div><div class="arr-cell">9</div><div class="arr-cell">12</div><div class="arr-cell hl-c">14</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 07 · EACH ROW IS AN ARRAY
+     Fragments: r0 through r4 reveal one at a time.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(180,111,255,0.1) 0%,transparent 70%);bottom:-80px;right:8%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Step 1</span>
+    <h2>Each row becomes <span style="color:var(--purple);">its own array</span></h2>
+    <p style="max-width:58ch;margin-bottom:var(--gap);">
+      To store grid data, make each <strong style="color:var(--text);">row</strong> its own <code>int[]</code> array:
+    </p>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+      <div class="fragment fade-up" style="display:flex;align-items:center;gap:var(--gap);">
+        <div class="row-lbl" style="color:var(--purple);">r0</div>
+        <div class="arr-1d"><div class="arr-cell">4</div><div class="arr-cell">6</div><div class="arr-cell">8</div><div class="arr-cell">10</div><div class="arr-cell">12</div></div>
+        <code style="font-size:var(--small);">int[] r0 = {4, 6, 8, 10, 12};</code>
+      </div>
+      <div class="fragment fade-up" style="display:flex;align-items:center;gap:var(--gap);">
+        <div class="row-lbl" style="color:var(--purple);">r1</div>
+        <div class="arr-1d"><div class="arr-cell">6</div><div class="arr-cell">7</div><div class="arr-cell">11</div><div class="arr-cell">12</div><div class="arr-cell">16</div></div>
+        <code style="font-size:var(--small);">int[] r1 = {6, 7, 11, 12, 16};</code>
+      </div>
+      <div class="fragment fade-up" style="display:flex;align-items:center;gap:var(--gap);">
+        <div class="row-lbl" style="color:var(--purple);">r2</div>
+        <div class="arr-1d"><div class="arr-cell">5</div><div class="arr-cell">6</div><div class="arr-cell">10</div><div class="arr-cell">14</div><div class="arr-cell">16</div></div>
+        <code style="font-size:var(--small);">int[] r2 = {5, 6, 10, 14, 16};</code>
+      </div>
+      <div class="fragment fade-up" style="display:flex;align-items:center;gap:var(--gap);">
+        <div class="row-lbl" style="color:var(--purple);">r3</div>
+        <div class="arr-1d"><div class="arr-cell">4</div><div class="arr-cell">6</div><div class="arr-cell">10</div><div class="arr-cell">13</div><div class="arr-cell">15</div></div>
+        <code style="font-size:var(--small);">int[] r3 = {4, 6, 10, 13, 15};</code>
+      </div>
+      <div class="fragment fade-up" style="display:flex;align-items:center;gap:var(--gap);">
+        <div class="row-lbl" style="color:var(--purple);">r4</div>
+        <div class="arr-1d"><div class="arr-cell">3</div><div class="arr-cell">5</div><div class="arr-cell">9</div><div class="arr-cell">12</div><div class="arr-cell">14</div></div>
+        <code style="font-size:var(--small);">int[] r4 = {3, 5, 9, 12, 14};</code>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 08 · ARRAY OF ARRAYS = 2D ARRAY
+     Fragments: the full reference diagram, then the conclusion.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:480px;height:480px;background:radial-gradient(circle,rgba(0,255,255,0.09) 0%,transparent 70%);top:-100px;left:-80px;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Step 2</span>
+    <h2>Put the rows <span style="color:var(--cyan);">inside one array</span></h2>
+    <p style="max-width:60ch;margin-bottom:var(--gap);">
+      Instead of 5 separate row variables, store them all in one outer array that holds
+      <strong style="color:var(--text);">references</strong> to each row:
+    </p>
+
+    <!-- Reference diagram appears first -->
+    <div class="fragment fade-up" style="display:flex;align-items:flex-start;gap:2.1em;margin-bottom:var(--gap);">
+      <!-- Variable reference to rows array -->
+      <div style="display:flex;align-items:center;gap:var(--gap-sm);padding-top:2.55em;">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.2em;">
+          <div class="var-name">elevation</div>
+          <span class="type-ann" style="margin-left:0;">(int[][])</span>
+        </div>
+        <span class="arr-arrow">⟶</span>
+      </div>
+
+      <!-- Rows array and pointed row arrays -->
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:var(--gap-sm);">
+        <!--p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.12em;color:var(--text-dim);margin-left:1.3em;">Rows Array</p -->
+        <div style="display:flex;flex-direction:column;gap:0;">
+          <div style="display:flex;align-items:center;gap:0.72em;">
+            <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+            <span class="arr-arrow">⟶</span>
+            <div class="arr-row"><div class="arr-cell">4</div><div class="arr-cell">6</div><div class="arr-cell">8</div><div class="arr-cell">10</div><div class="arr-cell">12</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.72em;">
+            <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+            <span class="arr-arrow">⟶</span>
+            <div class="arr-row"><div class="arr-cell">6</div><div class="arr-cell">7</div><div class="arr-cell">11</div><div class="arr-cell">12</div><div class="arr-cell">16</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.72em;">
+            <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+            <span class="arr-arrow">⟶</span>
+            <div class="arr-row"><div class="arr-cell">5</div><div class="arr-cell">6</div><div class="arr-cell">10</div><div class="arr-cell">14</div><div class="arr-cell">16</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.72em;">
+            <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+            <span class="arr-arrow">⟶</span>
+            <div class="arr-row"><div class="arr-cell">4</div><div class="arr-cell">6</div><div class="arr-cell">10</div><div class="arr-cell">13</div><div class="arr-cell">15</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.72em;">
+            <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+            <span class="arr-arrow">⟶</span>
+            <div class="arr-row"><div class="arr-cell">3</div><div class="arr-cell">5</div><div class="arr-cell">9</div><div class="arr-cell">12</div><div class="arr-cell">14</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conclusion appears second -->
+    <p class="fragment fade-up" style="font-size:var(--h3);color:var(--cyan);font-weight:600;">
+      → An array of arrays = a <strong>2D array</strong>, because it has both length and width.
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 09 · DECLARING A 2D ARRAY
+     Fragments: 1D card, then 2D card, then callout.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(180,111,255,0.1) 0%,transparent 70%);top:-90px;right:-40px;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Syntax</span>
+    <h2>Declaring a <span style="color:var(--cyan);">2D Array</span></h2>
+
+    <div class="split" style="margin-top:var(--gap);margin-bottom:var(--gap);">
+      <div class="fragment fade-up">
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.12em;color:var(--text-dim);margin-bottom:var(--gap-sm);">1D Array (familiar)</p>
+        <div class="code-card">
+          <div class="code-hdr">
+            <div class="cdot" style="background:#ff5f57;"></div><div class="cdot" style="background:#febc2e;"></div><div class="cdot" style="background:#28c840;"></div>
+            <span class="clang">Java</span>
+          </div>
+          <div class="code-body">
+            <pre><span class="cm">// Declares an array with 3 cells</span>
+<span class="kw">int</span><span class="tp">[]</span> arr = <span class="kw">new int</span>[<span class="nm">3</span>];</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="fragment fade-up">
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.12em;color:var(--cyan);margin-bottom:var(--gap-sm);">2D Array (new!)</p>
+        <div class="code-card accent">
+          <div class="code-hdr" style="background:rgba(0,255,255,0.08);">
+            <div class="cdot" style="background:#ff5f57;"></div><div class="cdot" style="background:#febc2e;"></div><div class="cdot" style="background:#28c840;"></div>
+            <span class="clang">Java</span>
+          </div>
+          <div class="code-body">
+            <pre><span class="cm">// 3 rows, 5 columns</span>
+<span class="kw">int</span><span class="tp">[][]</span> arr = <span class="kw">new int</span>[<span class="nm">3</span>][<span class="nm">5</span>];</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout fragment fade-up" style="max-width:720px;">
+      <p>
+        The <span style="color:var(--purple);font-weight:600;">first index</span> is the row,
+        the <span style="color:var(--cyan);font-weight:600;">second index</span> is the column.
+        Both are required to access a single element:
+      </p>
+      <pre style="margin-top:var(--gap-sm);">arr[<span class="nm">1</span>][<span class="nm">3</span>] = <span class="nm">99</span>;  <span class="cm">// row 1, col 3</span>
+arr[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">42</span>;  <span class="cm">// row 0, col 0  (top-left)</span></pre>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 10 · arr.length vs arr[0].length
+     Fragments: code card, then diagram, then two callout boxes together.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(0,255,255,0.09) 0%,transparent 70%);bottom:-80px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Memory</span>
+    <h2><code style="font-size:inherit;">arr</code> is an array <span style="color:var(--purple);">of int arrays</span></h2>
+
+    <div class="fragment fade-up" data-fragment-index="1" style="margin:var(--gap) 0;">
+      <div class="code-card" style="max-width:580px;display:inline-block;">
+        <div class="code-body">
+          <pre><span class="kw">int</span><span class="tp">[][]</span> arr = <span class="kw">new int</span>[<span class="nm">3</span>][<span class="nm">5</span>];</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Memory diagram -->
+    <div class="fragment fade-up" data-fragment-index="2" style="display:flex;align-items:flex-start;gap:2.1em;margin-bottom:var(--gap);">
+      <div style="display:flex;align-items:center;gap:var(--gap-sm);padding-top:1.55em;">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.2em;">
+          <div class="var-name">arr</div>
+          <span class="type-ann" style="margin-left:0;">(int[][])</span>
+        </div>
+        <span class="arr-arrow">⟶</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:var(--gap-sm);">
+        <!--p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.12em;color:var(--text-dim);margin-left:1.3em;">Rows Array</p-->
+        <div style="display:flex;flex-direction:column;gap:0;">
+          <div style="display:flex;align-items:center;gap:0.72em;">
+            <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+            <span class="arr-arrow">⟶</span>
+            <div class="arr-row"><div class="arr-cell">0</div><div class="arr-cell">0</div><div class="arr-cell">0</div><div class="arr-cell">0</div><div class="arr-cell">0</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.72em;">
+            <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+            <span class="arr-arrow">⟶</span>
+            <div class="arr-row"><div class="arr-cell">0</div><div class="arr-cell">0</div><div class="arr-cell">0</div><div class="arr-cell">0</div><div class="arr-cell">0</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.72em;">
+            <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+            <span class="arr-arrow">⟶</span>
+            <div class="arr-row"><div class="arr-cell">0</div><div class="arr-cell">0</div><div class="arr-cell">0</div><div class="arr-cell">0</div><div class="arr-cell">0</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Both callout boxes appear together (same fragment-index) -->
+    <div style="display:flex;gap:var(--gap);flex-wrap:wrap;">
+      <div class="callout fragment fade-up" data-fragment-index="3" style="flex:1;min-width:200px;">
+        <pre>arr.length == <span class="nm">3</span></pre>
+        <p style="margin-top:var(--gap-sm);">The outer array holds <span style="color:var(--purple);font-weight:600;">3 rows</span></p>
+      </div>
+      <div class="callout fragment fade-up" data-fragment-index="3" style="flex:1;min-width:200px;">
+        <pre>arr[<span class="nm">0</span>].length == <span class="nm">5</span></pre>
+        <p style="margin-top:var(--gap-sm);">Each row has <span style="color:var(--cyan);font-weight:600;">5 columns</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 11 · RAGGED ARRAYS
+     Fragments: code card + right visual together, then AP note.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:380px;height:380px;background:radial-gradient(circle,rgba(255,107,107,0.07) 0%,transparent 70%);top:-80px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <div class="split-40 split split-top" style="column-gap:var(--gap-lg);row-gap:var(--gap-sm);">
+      <div>
+        <span class="slide-tag">Edge case</span>
+        <h2>Ragged <span style="color:var(--purple);">Arrays</span></h2>
+        <p style="margin-bottom:var(--gap);">
+          Since a 2D array is an array of arrays, each row can have a
+          <strong style="color:var(--text);">different length</strong>.
+        </p>
+        <p style="margin-bottom:var(--gap);" class="fragment fade-up" data-fragment-index="2">
+          Always use <code>arr[row].length</code> when iterating columns — it handles
+          ragged arrays safely:
+        </p>
+
+      </div>
+
+      <!-- Right: ragged array visual — same index as code card -->
+      <div class="fragment fade-up" data-fragment-index="1">
+        <p style="font-size:var(--small);color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--gap-sm);">Ragged Array</p>
+        <div class="arr-2d" style="margin-bottom:var(--gap);">
+          <div class="arr-row"><div class="arr-cell">4</div><div class="arr-cell">6</div><div class="arr-cell">8</div><div class="arr-cell">10</div><div class="arr-cell">12</div></div>
+          <div class="arr-row"><div class="arr-cell">6</div><div class="arr-cell">7</div></div>
+          <div class="arr-row"><div class="arr-cell">5</div><div class="arr-cell">6</div><div class="arr-cell">10</div><div class="arr-cell">14</div></div>
+          <div class="arr-row"><div class="arr-cell">4</div><div class="arr-cell">6</div><div class="arr-cell">10</div><div class="arr-cell">13</div></div>
+          <div class="arr-row"><div class="arr-cell">3</div><div class="arr-cell">5</div><div class="arr-cell">9</div></div>
+        </div>
+        <p style="font-size:var(--small);color:var(--text-muted);">
+          <code>arr[0].length</code> = 5 &nbsp;&nbsp; <code>arr[1].length</code> = 2
+        </p>
+      </div>
+
+      <!-- Full-width code card appears with right visual -->
+      <div class="code-card fragment fade-up" data-fragment-index="2" style="grid-column:1 / -1;width:100%;">
+        <div class="code-hdr">
+          <div class="cdot" style="background:#ff5f57;"></div><div class="cdot" style="background:#febc2e;"></div><div class="cdot" style="background:#28c840;"></div>
+          <span class="clang">Java</span>
+        </div>
+        <div class="code-body">
+          <pre><span class="kw">for</span> (<span class="kw">int</span> row = <span class="nm">0</span>; row &lt; arr.length; row++) {
+  <span class="kw">for</span> (<span class="kw">int</span> col = <span class="nm">0</span>;
+       col &lt; arr[row].length; col++) {
+    <span class="cm">// Safe for ragged arrays!</span>
+  }
+}</pre>
+        </div>
+      </div>
+      <p class="fragment fade-up" data-fragment-index="3" style="grid-column:1 / -1;width:100%;margin-top:var(--gap-sm);font-size:var(--small);color:var(--gold);">
+        ★ Ragged arrays won't appear on the AP exam — but good to know!
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 12 · ROW-MAJOR ORDER
+     Fragments: right panel (logical grid + memory strip) together.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(0,255,255,0.09) 0%,transparent 70%);bottom:-90px;right:-40px;"></div>
+
+  <div class="slide-inner">
+    <div class="split-60 split">
+      <div>
+        <span class="slide-tag">Under the hood</span>
+        <h2>Row-Major <span style="color:var(--cyan);">Order</span></h2>
+        <p style="max-width:46ch;margin-bottom:var(--gap);">
+          Java stores 2D arrays in <strong style="color:var(--text);">row-major order</strong>:
+          elements of each row are stored consecutively in memory.
+        </p>
+        <ul class="bullets">
+          <li><code>A1</code> is stored next to <code>A2</code> next to <code>A3</code></li>
+          <li><code>B1</code> may be adjacent to <code>A3</code>, but Java does not guarantee it — the next row could be elsewhere in memory</li>
+          <li>Elements of <em>different rows</em> may not be adjacent</li>
+        </ul>
+        <p style="margin-top:var(--gap);font-size:var(--small);color:var(--text-muted);">
+          This is why iterating row-by-row is more cache-friendly than column-by-column.
+        </p>
+      </div>
+
+      <!-- Both the grid and the memory strip appear together -->
+      <div class="fragment" style="display:flex;flex-direction:column;align-items:center;gap:var(--gap);">
+        <div>
+          <p style="font-size:var(--small);color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:var(--gap-sm);text-align:center;">Logical grid</p>
+          <div class="arr-2d">
+            <div class="arr-row"><div class="arr-cell hl-c">A1</div><div class="arr-cell hl-c">A2</div><div class="arr-cell hl-c">A3</div></div>
+            <div class="arr-row"><div class="arr-cell hl-p">B1</div><div class="arr-cell hl-p">B2</div><div class="arr-cell hl-p">B3</div></div>
+            <div class="arr-row"><div class="arr-cell hl-g">C1</div><div class="arr-cell hl-g">C2</div><div class="arr-cell hl-g">C3</div></div>
+          </div>
+        </div>
+        <div style="width:100%;">
+          <p style="font-size:var(--small);color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:var(--gap-sm);text-align:center;">In memory</p>
+          <div class="arr-1d" style="flex-wrap:wrap;justify-content:center;">
+            <div class="arr-cell hl-c" style="font-size:var(--small);">A1</div>
+            <div class="arr-cell hl-c" style="font-size:var(--small);">A2</div>
+            <div class="arr-cell hl-c" style="font-size:var(--small);">A3</div>
+            <div class="arr-cell hl-p" style="font-size:var(--small);border-left:1px solid var(--cyan-border);">B1</div>
+            <div class="arr-cell hl-p" style="font-size:var(--small);">B2</div>
+            <div class="arr-cell hl-p" style="font-size:var(--small);">B3</div>
+            <div class="arr-cell hl-g" style="font-size:var(--small);border-left:1px solid var(--cyan-border);">C1</div>
+            <div class="arr-cell hl-g" style="font-size:var(--small);">C2</div>
+            <div class="arr-cell hl-g" style="font-size:var(--small);">C3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 13 · INITIALIZING WITH LITERALS
+     Fragments: code card, then result grid.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(180,111,255,0.1) 0%,transparent 70%);top:-100px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Initialization</span>
+    <h2>Method 1: <span style="color:var(--cyan);">Literal Values</span></h2>
+    <p style="max-width:58ch;margin-bottom:var(--gap);">
+      Declare and populate a 2D array in one statement using nested curly braces:
+    </p>
+
+    <div class="code-card fragment fade-up" style="max-width:700px;margin-bottom:var(--gap);">
+      <div class="code-hdr">
+        <div class="cdot" style="background:#ff5f57;"></div><div class="cdot" style="background:#febc2e;"></div><div class="cdot" style="background:#28c840;"></div>
+        <span class="clang">Java</span>
+      </div>
+      <div class="code-body">
+        <pre><span class="kw">int</span><span class="tp">[][]</span> matrix = {
+    {<span class="nm">0</span>,  <span class="nm">1</span>,  <span class="nm">2</span>,  <span class="nm">3</span> },  <span class="cm">// row 0</span>
+    {<span class="nm">10</span>, <span class="nm">11</span>, <span class="nm">12</span>, <span class="nm">13</span>},  <span class="cm">// row 1</span>
+    {<span class="nm">20</span>, <span class="nm">21</span>, <span class="nm">22</span>, <span class="nm">23</span>}   <span class="cm">// row 2</span>
+};</pre>
+      </div>
+    </div>
+
+    <div class="fragment fade-up" style="display:flex;flex-direction:column;align-items:flex-start;gap:var(--gap-sm);">
+      <p style="color:var(--text-muted);">Results in:</p>
+      <div style="display:flex;align-items:flex-start;gap:1.8em;">
+        <div style="display:flex;align-items:center;gap:var(--gap-sm);padding-top:1.55em;">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.2em;">
+            <div class="var-name">matrix</div>
+            <span class="type-ann" style="margin-left:0;">(int[][])</span>
+          </div>
+          <span class="arr-arrow">⟶</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:var(--gap-sm);">
+          <!--p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.12em;color:var(--text-dim);margin-left:1.2em;">Rows Array</p -->
+          <div style="display:flex;flex-direction:column;gap:0;">
+            <div style="display:flex;align-items:center;gap:0.72em;">
+              <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+              <span class="arr-arrow">⟶</span>
+              <div class="arr-row"><div class="arr-cell">0</div><div class="arr-cell">1</div><div class="arr-cell">2</div><div class="arr-cell">3</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.72em;">
+              <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+              <span class="arr-arrow">⟶</span>
+              <div class="arr-row"><div class="arr-cell">10</div><div class="arr-cell">11</div><div class="arr-cell">12</div><div class="arr-cell">13</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.72em;">
+              <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+              <span class="arr-arrow">⟶</span>
+              <div class="arr-row"><div class="arr-cell">20</div><div class="arr-cell">21</div><div class="arr-cell">22</div><div class="arr-cell">23</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 14 · INITIALIZING WITH A NESTED FOR LOOP
+     Fragment: both columns appear together (code + result).
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(0,255,255,0.09) 0%,transparent 70%);bottom:-70px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Initialization</span>
+    <h2>Method 2: <span style="color:var(--purple);">Nested For Loop</span></h2>
+
+    <div class="split fragment fade-up" style="margin-top:var(--gap);align-items:start;">
+      <div class="code-card">
+        <div class="code-hdr">
+          <div class="cdot" style="background:#ff5f57;"></div><div class="cdot" style="background:#febc2e;"></div><div class="cdot" style="background:#28c840;"></div>
+          <span class="clang">Java</span>
+        </div>
+        <div class="code-body">
+          <pre><span class="kw">int</span><span class="tp">[][]</span> matrix = <span class="kw">new int</span>[<span class="nm">3</span>][<span class="nm">4</span>];
+
+<span class="kw">for</span> (<span class="kw">int</span> row = <span class="nm">0</span>;
+     row &lt; matrix.length; row++) {
+
+  <span class="kw">for</span> (<span class="kw">int</span> col = <span class="nm">0</span>;
+       col &lt; matrix[row].length; col++) {
+
+    matrix[row][col] = row * <span class="nm">10</span> + col;
+  }
+}</pre>
+        </div>
+      </div>
+
+      <div>
+        <p style="color:var(--text-muted);margin-bottom:var(--gap);">Results in:</p>
+        <div style="display:flex;align-items:flex-start;gap:1.55em;margin-bottom:var(--gap);">
+          <div style="display:flex;align-items:center;gap:var(--gap-sm);padding-top:1.55em;">
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.2em;">
+              <div class="var-name">matrix</div>
+              <span class="type-ann" style="margin-left:0;">(int[][])</span>
+            </div>
+            <span class="arr-arrow">⟶</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:0;">
+            <div style="display:flex;align-items:center;gap:0.72em;">
+              <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+              <span class="arr-arrow">⟶</span>
+              <div class="arr-row"><div class="arr-cell">0</div><div class="arr-cell">1</div><div class="arr-cell">2</div><div class="arr-cell">3</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.72em;">
+              <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+              <span class="arr-arrow">⟶</span>
+              <div class="arr-row"><div class="arr-cell">10</div><div class="arr-cell">11</div><div class="arr-cell">12</div><div class="arr-cell">13</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.72em;">
+              <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+              <span class="arr-arrow">⟶</span>
+              <div class="arr-row"><div class="arr-cell">20</div><div class="arr-cell">21</div><div class="arr-cell">22</div><div class="arr-cell">23</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="callout">
+          <p style="font-size:var(--small);color:var(--text-muted);">Formula: <code>row * 10 + col</code></p>
+          <ul class="bullets" style="margin-top:var(--gap-sm);">
+            <li style="font-size:var(--small);">Row 0: <code>0×10+0=0</code>, <code>0×10+1=1</code> …</li>
+            <li style="font-size:var(--small);">Row 1: <code>1×10+0=10</code>, <code>1×10+1=11</code> …</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 15 · THE FOR-EACH CHALLENGE
+     Code is visible immediately (the question).
+     Fragment: answer card + result grid together (the reveal).
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(77,255,180,0.05) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Check your understanding</span>
+    <h2>Will this <span style="color:var(--cyan);">work?</span></h2>
+
+    <div class="split" style="margin-top:var(--gap);align-items:start;">
+      <!-- The challenge code — visible immediately so students can think -->
+      <div class="code-card">
+        <div class="code-hdr">
+          <div class="cdot" style="background:#ff5f57;"></div><div class="cdot" style="background:#febc2e;"></div><div class="cdot" style="background:#28c840;"></div>
+          <span class="clang">Java</span>
+        </div>
+        <div class="code-body">
+          <pre><span class="kw">int</span><span class="tp">[][]</span> matrix = <span class="kw">new int</span>[<span class="nm">3</span>][<span class="nm">4</span>];
+
+<span class="kw">for</span> (<span class="kw">int</span><span class="tp">[]</span> row : matrix) {
+
+  <span class="kw">for</span> (<span class="kw">int</span> col = <span class="nm">0</span>;
+       col &lt; row.length; col++) {
+
+    row[col] = <span class="nm">10</span> * col;
+  }
+}</pre>
+        </div>
+      </div>
+
+      <!-- Answer + result appear together on advance -->
+      <div>
+        <div class="callout accent-g fragment" style="margin-bottom:var(--gap);"  data-fragment-index="1">
+          <p style="color:var(--green);font-weight:700;font-size:var(--h3);margin-bottom:var(--gap-sm);">✓ Yes, it works!</p>
+          <ul class="bullets">
+            <li style="font-size:var(--small);">The enhanced <code>for</code> gives you each <code>int[]</code> row as a reference</li>
+            <li style="font-size:var(--small);">Mutations through <code>row</code> <strong>do affect</strong> the original <code>matrix</code></li>
+            <li style="font-size:var(--small);">Formula <code>10 * col</code> has no <code>row</code> variable, so all rows are identical</li>
+          </ul>
+        </div>
+
+        <div class="fragment" data-fragment-index="1">
+          <p style="color:var(--text-muted);margin-bottom:var(--gap-sm);">Result:</p>
+          <div style="display:flex;align-items:flex-start;gap:1.55em;margin-bottom:var(--gap-sm);">
+            <div style="display:flex;align-items:center;gap:var(--gap-sm);padding-top:1.55em;">
+              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.2em;">
+                <div class="var-name">matrix</div>
+                <span class="type-ann" style="margin-left:0;">(int[][])</span>
+              </div>
+              <span class="arr-arrow">⟶</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:0;">
+              <div style="display:flex;align-items:center;gap:0.72em;">
+                <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+                <span class="arr-arrow">⟶</span>
+                <div class="arr-row"><div class="arr-cell hl-n">0</div><div class="arr-cell hl-n">10</div><div class="arr-cell hl-n">20</div><div class="arr-cell hl-n">30</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.72em;">
+                <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+                <span class="arr-arrow">⟶</span>
+                <div class="arr-row"><div class="arr-cell hl-n">0</div><div class="arr-cell hl-n">10</div><div class="arr-cell hl-n">20</div><div class="arr-cell hl-n">30</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.72em;">
+                <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+                <span class="arr-arrow">⟶</span>
+                <div class="arr-row"><div class="arr-cell hl-n">0</div><div class="arr-cell hl-n">10</div><div class="arr-cell hl-n">20</div><div class="arr-cell hl-n">30</div></div>
+              </div>
+            </div>
+          </div>
+          <p style="font-size:var(--small);color:var(--text-muted);">
+            All rows identical — formula only depends on <code>col</code>, not the row index.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+
+<!-- ============================================================
+     REVEAL.JS — loaded after DOM so slides are parsed first
+     ============================================================ -->
+<script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
+<script>
+Reveal.initialize({
+  // Navigation
+  hash:              true,   // Update URL hash as slides advance
+  keyboard:          true,
+  touch:             true,
+  loop:              false,
+
+  // Appearance
+  transition:        'fade',
+  transitionSpeed:   'fast',
+  backgroundTransition: 'none',
+  center:            false,  // We handle vertical centering via flex
+
+  // UI chrome
+  controls:          false,  // No on-screen arrow buttons
+  progress:          true,   // Cyan gradient progress bar at top
+  slideNumber:       'c/t',  // "01 / 15" in bottom-right
+
+  // Scaling
+  width:             1600,
+  height:            900,
+  margin:            0.04,
+  minScale:          0.2,
+  maxScale:          2.5,
+
+  // Fragments
+  fragments:         true,
+  fragmentInURL:     false,
+});
+</script>
+
+</body>
+</html>
