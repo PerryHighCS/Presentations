@@ -73,35 +73,35 @@ jobs:
 
           html_files.sort(key=lambda p: str(p).lower())
 
-            tree = {"_files": [], "_dirs": {}}
+          tree = {"_files": [], "_dirs": {}}
           for rel in html_files:
               node = tree
               for folder in rel.parts[:-1]:
-                node = node["_dirs"].setdefault(folder, {"_files": [], "_dirs": {}})
+                  node = node["_dirs"].setdefault(folder, {"_files": [], "_dirs": {}})
 
               href = str(rel).replace('\\', '/')
               title = title_for(root / rel)
               node["_files"].append((rel.name, href, title))
 
-            def render_tree(node, indent='      '):
+          def render_tree(node, indent='      '):
               lines = []
 
               for _name, href, title in sorted(node["_files"], key=lambda item: item[1].lower()):
-                lines.append(
-                  f'{indent}<li class="file"><a href="{html.escape(href, quote=True)}">{html.escape(title)}</a></li>'
-                )
+                  lines.append(
+                      f'{indent}<li class="file"><a href="{html.escape(href, quote=True)}">{html.escape(title)}</a></li>'
+                  )
 
               for dirname, child in sorted(node["_dirs"].items(), key=lambda item: item[0].lower()):
-                lines.append(f'{indent}<li class="folder"><span class="folder-name">{html.escape(dirname)}/</span>')
-                lines.append(f'{indent}  <ul>')
-                lines.extend(render_tree(child, indent + '    '))
-                lines.append(f'{indent}  </ul>')
-                lines.append(f'{indent}</li>')
+                  lines.append(f'{indent}<li class="folder"><span class="folder-name">{html.escape(dirname)}/</span>')
+                  lines.append(f'{indent}  <ul>')
+                  lines.extend(render_tree(child, indent + '    '))
+                  lines.append(f'{indent}  </ul>')
+                  lines.append(f'{indent}</li>')
 
               return lines
 
-            tree_lines = render_tree(tree)
-            listing = '\n'.join(tree_lines) if tree_lines else '      <li>No presentations found.</li>'
+          tree_lines = render_tree(tree)
+          listing = '\n'.join(tree_lines) if tree_lines else '      <li>No presentations found.</li>'
           generated_at_dt = datetime.now(timezone.utc)
           generated_at = generated_at_dt.strftime('%Y-%m-%d %H:%M:%S UTC')
           generated_at_iso = generated_at_dt.isoformat().replace('+00:00', 'Z')
@@ -161,7 +161,7 @@ jobs:
               </ul>
             </main>
             <script>
-              (() => {
+              (() => {{
                 const el = document.getElementById('generated-time');
                 if (!el) return;
                 const iso = el.getAttribute('data-generated-utc');
@@ -169,8 +169,8 @@ jobs:
                 const dt = new Date(iso);
                 if (Number.isNaN(dt.getTime())) return;
                 const local = dt.toLocaleString();
-                el.textContent += ` (${local} local)`;
-              })();
+                el.textContent += ` (${{local}} local)`;
+              }})();
             </script>
           </body>
           </html>
