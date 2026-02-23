@@ -92,9 +92,10 @@
 
   function getRoleCapabilities(ctx) {
     const isInstructor = ctx.state.role === 'instructor';
+    const isStandalone = ctx.state.role === 'standalone';
     return {
-      canNavigateBack: isInstructor ? true : !!ctx.config.studentCanNavigateBack,
-      canNavigateForward: isInstructor ? true : !!ctx.config.studentCanNavigateForward,
+      canNavigateBack: (isInstructor || isStandalone) ? true : !!ctx.config.studentCanNavigateBack,
+      canNavigateForward: (isInstructor || isStandalone) ? true : !!ctx.config.studentCanNavigateForward,
     };
   }
 
@@ -465,7 +466,11 @@
       config,
       cleanup: [],
       state: {
-        role: config.role === 'instructor' ? 'instructor' : 'student',
+        // Use 'standalone' when not embedded in a parent frame so boundary
+        // controls and student restrictions are inactive for direct viewers.
+        role: window.parent === window
+          ? 'standalone'
+          : (config.role === 'instructor' ? 'instructor' : 'student'),
         applyingRemote: false,
         studentMaxIndices: titleSlideBoundary(),  // default: title slide until instructor progresses
         hasExplicitBoundary: false,  // true once allowStudentForwardTo/setStudentBoundary received
