@@ -228,8 +228,31 @@
           shouldCaptureStudentBoundary = true;
           break;
         case 'setState':
-          if (payload.state) deck.setState(payload.state);
+          if (payload.state) {
+            // Strip `overview` before applying — Reveal's built-in grid overview
+            // should never be activated on the receiving end. Instead, route the
+            // overview flag to the custom bottom-of-screen storyboard strip.
+            const { overview, ...safeState } = payload.state;
+            deck.setState(safeState);
+            if (overview !== undefined) {
+              window.dispatchEvent(new CustomEvent('reveal-storyboard-set', { detail: { open: !!overview } }));
+            }
+          }
           shouldCaptureStudentBoundary = true;
+          break;
+
+        // overview commands → custom storyboard strip (not Reveal's built-in grid).
+        // The container site can send these directly from a button or toolbar.
+        case 'toggleOverview':
+          window.dispatchEvent(new CustomEvent('reveal-storyboard-toggle'));
+          break;
+
+        case 'showOverview':
+          window.dispatchEvent(new CustomEvent('reveal-storyboard-set', { detail: { open: true } }));
+          break;
+
+        case 'hideOverview':
+          window.dispatchEvent(new CustomEvent('reveal-storyboard-set', { detail: { open: false } }));
           break;
         case 'togglePause':
           deck.togglePause?.(payload.override);

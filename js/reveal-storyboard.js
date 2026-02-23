@@ -46,7 +46,7 @@
       ...options,
     };
 
-    const reveal = config.reveal || window.Reveal;
+    const reveal = config.reveal || /** @type {any} */ (window).Reveal;
     if (!reveal) return;
 
     const storyboardId = config.storyboardId;
@@ -169,6 +169,19 @@
         event.preventDefault();
         toggleStoryboard();
       }
+    });
+
+    // Allow reveal-iframe-sync (and any other code) to drive the storyboard
+    // without a direct reference to toggleStoryboard().
+    // Used when the container site sends overview commands or setState with overview:true/false.
+    window.addEventListener('reveal-storyboard-toggle', () => {
+      toggleStoryboard();
+    });
+
+    window.addEventListener('reveal-storyboard-set', (event) => {
+      const shouldBeOpen = !!event.detail?.open;
+      const isOpen = document.body.classList.contains('storyboard-open');
+      if (shouldBeOpen !== isOpen) toggleStoryboard();
     });
   }
 
