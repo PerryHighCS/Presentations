@@ -410,6 +410,7 @@
     // localBoundary:true lets the storyboard skip forward-restriction so the
     // acting instructor's own view is never blanked.
     const onBoundaryMoved = (event) => {
+      if (ctx.state.role !== 'instructor') return;
       const indices = event.detail?.indices;
       if (!indices) return;
       setStudentBoundary(ctx, indices, { reason: 'instructorSet', localBoundary: true });
