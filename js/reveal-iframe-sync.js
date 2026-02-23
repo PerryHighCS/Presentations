@@ -339,8 +339,7 @@
 
     const emitState = () => {
       if (ctx.state.applyingRemote) return;
-      if (ctx.state.role !== 'instructor') return;
-      safePostToParent(ctx, 'state', currentDeckState(deck));
+      safePostToParent(ctx, 'state', buildSyncStatusPayload(ctx, 'stateChanged'));
     };
 
     deck.on('slidechanged', emitState);
@@ -353,7 +352,11 @@
 
     // Emit state to the host whenever the storyboard strip opens or closes so
     // the host can reflect the storyboard state in its own UI (overview field).
-    const onStoryboardChanged = () => emitState();
+    // Bypasses applyingRemote so the host receives confirmation even when the
+    // toggle was triggered by a remote command.
+    const onStoryboardChanged = () => {
+      safePostToParent(ctx, 'state', buildSyncStatusPayload(ctx, 'storyboardChanged'));
+    };
     window.addEventListener('reveal-storyboard-changed', onStoryboardChanged);
 
     ctx.cleanup.push(() => {

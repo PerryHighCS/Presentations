@@ -202,7 +202,7 @@ Sent on init (if `autoAnnounceReady`) and when role changes.
 
 ### `state`
 
-Sent by instructor on: slide change, fragment shown/hidden, pause, resume, overview shown/hidden, **storyboard strip opened/closed**. Also returned when host sends `requestState`.
+Sent by **any role** on: slide change, fragment shown/hidden, pause, resume, overview shown/hidden, **storyboard strip opened/closed**. Also returned when host sends `requestState`. Students emit state so the host can track their position.
 
 ```json
 {
