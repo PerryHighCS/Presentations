@@ -174,20 +174,19 @@
   function enforceStudentNavigationBoundary(ctx) {
     if (ctx.state.applyingRemote) return;
     if (ctx.state.role !== 'student') return;
-
-    const canGoBack = !!ctx.config.studentCanNavigateBack;
-    const canGoForward = !!ctx.config.studentCanNavigateForward;
-
-    if (canGoBack && canGoForward) return;
-
-    if (!ctx.state.studentMaxIndices) {
-      captureStudentBoundary(ctx);
-      return;
-    }
+    if (!ctx.state.studentMaxIndices) return;
 
     const current = normalizeIndices(ctx.deck.getIndices());
     const max = normalizeIndices(ctx.state.studentMaxIndices);
     const delta = compareIndices(current, max);
+
+    const canGoBack = !!ctx.config.studentCanNavigateBack;
+    // An explicit boundary (allowStudentForwardTo / setStudentBoundary) always
+    // enforces the forward limit regardless of the studentCanNavigateForward
+    // config flag.  Config flags only govern "follow instructor" mode.
+    const canGoForward = ctx.state.hasExplicitBoundary
+      ? false
+      : !!ctx.config.studentCanNavigateForward;
 
     let shouldReset = false;
     if (!canGoForward && delta > 0) shouldReset = true;
@@ -290,10 +289,11 @@
           if (payload.role === 'instructor' || payload.role === 'student') {
             ctx.state.role = payload.role;
             if (ctx.state.role === 'student') {
-              // Clear any instructor-set local boundary when demoting to student.
+              // Reset boundary state when demoting to student so the host
+              // controls the starting boundary via allowStudentForwardTo.
+              ctx.state.studentMaxIndices = null;
               ctx.state.hasExplicitBoundary = false;
               ctx.state.boundaryIsLocal = false;
-              captureStudentBoundary(ctx);
             }
             safePostToParent(ctx, 'roleChanged', { role: ctx.state.role });
             announceReady(ctx, 'roleChanged');
@@ -467,10 +467,6 @@
         boundaryIsLocal: false,      // true when boundary was set by storyboard button (acting instructor)
       },
     };
-
-    if (ctx.state.role === 'student') {
-      captureStudentBoundary(ctx);
-    }
 
     wireDeckEvents(ctx);
     wireWindowMessageListener(ctx);

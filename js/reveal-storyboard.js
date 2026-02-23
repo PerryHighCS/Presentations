@@ -159,7 +159,11 @@
         return lastIndex;
       }
 
-      const boundaryH = Number(status.studentBoundary?.h ?? reveal.getIndices().h ?? 0);
+      // Only restrict when an explicit boundary has been set.
+      // Without a boundary (null), show all slides — navigation enforcement
+      // handles snap-back separately and avoids blanking at an arbitrary position.
+      if (status.studentBoundary == null) return lastIndex;
+      const boundaryH = Number(status.studentBoundary.h);
       if (!Number.isFinite(boundaryH)) return lastIndex;
       return Math.max(0, Math.min(lastIndex, boundaryH));
     }
