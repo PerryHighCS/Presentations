@@ -73,6 +73,86 @@ jobs:
 
           html_files.sort(key=lambda p: str(p).lower())
 
+          PAGE_STYLE = '''
+              :root {
+                color-scheme: dark;
+                --bg: #0b1220;
+                --card: #111a2e;
+                --text: #e5ecff;
+                --muted: #9bb0d8;
+                --accent: #67d4ff;
+                --border: #223050;
+              }
+              * { box-sizing: border-box; }
+              body {
+                margin: 0;
+                font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+                background: var(--bg);
+                color: var(--text);
+                padding: 32px 18px;
+              }
+              .wrap {
+                max-width: 920px;
+                margin: 0 auto;
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 24px;
+              }
+              h1 { margin: 0 0 8px; font-size: 1.7rem; }
+              p { margin: 0 0 18px; color: var(--muted); }
+              .generated { margin: 0 0 18px; color: var(--muted); font-size: 0.92rem; }
+              .back { margin: 0 0 18px; font-size: 0.92rem; }
+              .back a { color: var(--muted); }
+              ul { margin: 0; }
+              .tree, .tree ul { list-style: none; padding-left: 18px; }
+              .tree > li { margin: 8px 0; }
+              .tree ul { margin-top: 6px; border-left: 1px solid var(--border); }
+              li { line-height: 1.45; }
+              a { color: var(--accent); text-decoration: none; }
+              a:hover { text-decoration: underline; }
+              .folder-name { color: var(--muted); font-weight: 600; }
+          '''
+
+          PAGE_SCRIPT = '''
+              (() => {
+                const el = document.getElementById('generated-time');
+                if (!el) return;
+                const iso = el.getAttribute('data-generated-utc');
+                if (!iso) return;
+                const dt = new Date(iso);
+                if (Number.isNaN(dt.getTime())) return;
+                const local = dt.toLocaleString();
+                el.textContent += ' (' + local + ' local)';
+              })();
+          '''
+
+          def make_page(title_text, heading, description, listing, generated_at, generated_at_iso, back_link=None):
+              back_html = f'<p class="back"><a href="{html.escape(back_link)}">← Back</a></p>' if back_link else ''
+              return f'''<!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>{html.escape(title_text)}</title>
+            <style>{PAGE_STYLE}</style>
+          </head>
+          <body>
+            <main class="wrap">
+              {back_html}
+              <h1>{html.escape(heading)}</h1>
+              <p>{html.escape(description)}</p>
+              <p class="generated" id="generated-time" data-generated-utc="{html.escape(generated_at_iso)}">Generated: {html.escape(generated_at)}</p>
+                <ul class="tree">
+          {listing}
+              </ul>
+            </main>
+            <script>{PAGE_SCRIPT}</script>
+          </body>
+          </html>
+          '''
+
+          # ── Root index ──────────────────────────────────────────────────────────
           tree = {"_files": [], "_dirs": {}}
           for rel in html_files:
               node = tree
@@ -106,78 +186,43 @@ jobs:
           generated_at = generated_at_dt.strftime('%Y-%m-%d %H:%M:%S UTC')
           generated_at_iso = generated_at_dt.isoformat().replace('+00:00', 'Z')
 
-          content = f'''<!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <title>Presentation Index</title>
-            <style>
-              :root {{
-                color-scheme: dark;
-                --bg: #0b1220;
-                --card: #111a2e;
-                --text: #e5ecff;
-                --muted: #9bb0d8;
-                --accent: #67d4ff;
-                --border: #223050;
-              }}
-              * {{ box-sizing: border-box; }}
-              body {{
-                margin: 0;
-                font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-                background: var(--bg);
-                color: var(--text);
-                padding: 32px 18px;
-              }}
-              .wrap {{
-                max-width: 920px;
-                margin: 0 auto;
-                background: var(--card);
-                border: 1px solid var(--border);
-                border-radius: 12px;
-                padding: 24px;
-              }}
-              h1 {{ margin: 0 0 8px; font-size: 1.7rem; }}
-              p {{ margin: 0 0 18px; color: var(--muted); }}
-              .generated {{ margin: 0 0 18px; color: var(--muted); font-size: 0.92rem; }}
-              ul {{ margin: 0; }}
-              .tree, .tree ul {{ list-style: none; padding-left: 18px; }}
-              .tree > li {{ margin: 8px 0; }}
-              .tree ul {{ margin-top: 6px; border-left: 1px solid var(--border); }}
-              li {{ line-height: 1.45; }}
-              a {{ color: var(--accent); text-decoration: none; }}
-              a:hover {{ text-decoration: underline; }}
-              .folder-name {{ color: var(--muted); font-weight: 600; }}
-            </style>
-          </head>
-          <body>
-            <main class="wrap">
-              <h1>Presentation Index</h1>
-              <p>Auto-generated list of HTML presentations in this repository.</p>
-              <p class="generated" id="generated-time" data-generated-utc="{html.escape(generated_at_iso)}">Generated: {html.escape(generated_at)}</p>
-                <ul class="tree">
-          {listing}
-              </ul>
-            </main>
-            <script>
-              (() => {{
-                const el = document.getElementById('generated-time');
-                if (!el) return;
-                const iso = el.getAttribute('data-generated-utc');
-                if (!iso) return;
-                const dt = new Date(iso);
-                if (Number.isNaN(dt.getTime())) return;
-                const local = dt.toLocaleString();
-                el.textContent += ' (' + local + ' local)';
-              }})();
-            </script>
-          </body>
-          </html>
-          '''
+          root.joinpath('index.html').write_text(
+              make_page('Presentation Index', 'Presentation Index',
+                        'Auto-generated list of HTML presentations in this repository.',
+                        listing, generated_at, generated_at_iso) + '\n',
+              encoding='utf-8'
+          )
+          print(f'Generated root index.html with {len(html_files)} link(s).')
 
-          root.joinpath('index.html').write_text(content + '\n', encoding='utf-8')
-          print(f'Generated index.html with {len(html_files)} link(s).')
+          # ── Per-folder indexes ───────────────────────────────────────────────────
+          from collections import defaultdict
+          by_folder = defaultdict(list)
+          for rel in html_files:
+              by_folder[rel.parent].append(rel)
+
+          folder_count = 0
+          for folder, files in sorted(by_folder.items(), key=lambda kv: str(kv[0]).lower()):
+              if folder == Path('.'):
+                  continue  # root already handled above
+              items_html = '\n'.join(
+                  f'      <li class="file"><a href="{html.escape(f.name, quote=True)}">{html.escape(title_for(root / f))}</a></li>'
+                  for f in sorted(files, key=lambda p: p.name.lower())
+              )
+              folder_listing = items_html if items_html else '      <li>No presentations found.</li>'
+              folder_label = str(folder).replace('\\', '/')
+              (root / folder / 'index.html').write_text(
+                  make_page(
+                      f'{folder_label} — Presentations',
+                      folder_label,
+                      f'HTML presentations in {folder_label}/',
+                      folder_listing, generated_at, generated_at_iso,
+                      back_link='../index.html'
+                  ) + '\n',
+                  encoding='utf-8'
+              )
+              folder_count += 1
+
+          print(f'Generated {folder_count} folder index.html file(s).')
           PY
       - name: Setup Pages
         uses: actions/configure-pages@v5
