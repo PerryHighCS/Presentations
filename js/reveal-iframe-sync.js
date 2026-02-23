@@ -476,10 +476,6 @@
     wireDeckEvents(ctx);
     wireWindowMessageListener(ctx);
 
-    if (config.autoAnnounceReady) {
-      announceReady(ctx, 'init');
-    }
-
     const api = {
       version: IFRAME_SYNC_VERSION,
       getRole: () => ctx.state.role,
@@ -513,7 +509,14 @@
       },
     };
 
+    // Assign to window before announceReady so the storyboard can read the
+    // API immediately when it receives the reveal-iframesync-status event.
     window.RevealIframeSyncAPI = api;
+
+    if (config.autoAnnounceReady) {
+      announceReady(ctx, 'init');
+    }
+
     return api;
   }
 
