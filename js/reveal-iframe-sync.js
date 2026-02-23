@@ -99,7 +99,6 @@
   }
 
   function getStudentBoundary(ctx) {
-    if (ctx.state.role !== 'student') return null;
     if (!ctx.state.studentMaxIndices) return null;
     return normalizeIndices(ctx.state.studentMaxIndices);
   }
@@ -131,13 +130,18 @@
   }
 
   function setStudentBoundary(ctx, indices, options = {}) {
-    if (ctx.state.role !== 'student') return false;
     if (!indices) return false;
 
     const nextBoundary = normalizeIndices(indices);
     ctx.state.studentMaxIndices = nextBoundary;
 
-    if (options.syncToBoundary) {
+    // Notify the storyboard so it can display the boundary marker for all roles.
+    window.dispatchEvent(new CustomEvent('reveal-storyboard-boundary-update', {
+      detail: { indices: nextBoundary },
+    }));
+
+    // Only enforce navigation limits for students.
+    if (ctx.state.role === 'student' && options.syncToBoundary) {
       ctx.deck.slide(nextBoundary.h, nextBoundary.v, nextBoundary.f);
     }
 
@@ -359,6 +363,15 @@
     };
     window.addEventListener('reveal-storyboard-changed', onStoryboardChanged);
 
+    // When the instructor clicks a boundary button in the storyboard, relay the
+    // new boundary to the host so it can propagate to the student iframe.
+    const onBoundaryMoved = (event) => {
+      const indices = event.detail?.indices;
+      if (!indices) return;
+      setStudentBoundary(ctx, indices, { reason: 'instructorSet' });
+    };
+    window.addEventListener('reveal-storyboard-boundary-moved', onBoundaryMoved);
+
     ctx.cleanup.push(() => {
       deck.off('slidechanged', enforceStudentBounds);
       deck.off('fragmentshown', enforceStudentBounds);
@@ -371,6 +384,7 @@
       deck.off('overviewshown', emitState);
       deck.off('overviewhidden', emitState);
       window.removeEventListener('reveal-storyboard-changed', onStoryboardChanged);
+      window.removeEventListener('reveal-storyboard-boundary-moved', onBoundaryMoved);
     });
   }
 
