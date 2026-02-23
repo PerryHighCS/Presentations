@@ -109,6 +109,10 @@
       role: ctx.state.role,
       capabilities: getRoleCapabilities(ctx),
       studentBoundary: getStudentBoundary(ctx),
+      // True when this iframe set the boundary locally (via the storyboard
+      // boundary button) rather than receiving it from the host. Lets the
+      // storyboard skip forward-navigation restrictions for the acting instructor.
+      boundaryIsLocal: !!ctx.state.boundaryIsLocal,
       ...currentDeckState(ctx.deck),
     };
   }
@@ -134,15 +138,28 @@
 
     const nextBoundary = normalizeIndices(indices);
     ctx.state.studentMaxIndices = nextBoundary;
+    ctx.state.hasExplicitBoundary = true;
+
+    // Track whether this boundary originated locally (storyboard button) so the
+    // storyboard can skip forward-restriction for the acting instructor.
+    ctx.state.boundaryIsLocal = !!options.localBoundary;
 
     // Notify the storyboard so it can display the boundary marker for all roles.
     window.dispatchEvent(new CustomEvent('reveal-storyboard-boundary-update', {
       detail: { indices: nextBoundary },
     }));
 
-    // Only enforce navigation limits for students.
-    if (ctx.state.role === 'student' && options.syncToBoundary) {
-      ctx.deck.slide(nextBoundary.h, nextBoundary.v, nextBoundary.f);
+    if (ctx.state.role === 'student') {
+      if (options.syncToBoundary) {
+        // Jump student to the boundary slide.
+        ctx.deck.slide(nextBoundary.h, nextBoundary.v, nextBoundary.f);
+      } else {
+        // Rubber band: if student is already past the new boundary, snap back.
+        const current = normalizeIndices(ctx.deck.getIndices());
+        if (compareIndices(current, nextBoundary) > 0) {
+          ctx.deck.slide(nextBoundary.h, nextBoundary.v, nextBoundary.f);
+        }
+      }
     }
 
     safePostToParent(ctx, 'studentBoundaryChanged', {
@@ -273,6 +290,9 @@
           if (payload.role === 'instructor' || payload.role === 'student') {
             ctx.state.role = payload.role;
             if (ctx.state.role === 'student') {
+              // Clear any instructor-set local boundary when demoting to student.
+              ctx.state.hasExplicitBoundary = false;
+              ctx.state.boundaryIsLocal = false;
               captureStudentBoundary(ctx);
             }
             safePostToParent(ctx, 'roleChanged', { role: ctx.state.role });
@@ -295,6 +315,21 @@
           });
           break;
         }
+        case 'clearBoundary':
+          // Remove the explicit boundary. Student reverts to "follow instructor"
+          // mode — the boundary auto-captures from the next sync command.
+          ctx.state.studentMaxIndices = null;
+          ctx.state.hasExplicitBoundary = false;
+          ctx.state.boundaryIsLocal = false;
+          window.dispatchEvent(new CustomEvent('reveal-storyboard-boundary-update', {
+            detail: { indices: null },
+          }));
+          safePostToParent(ctx, 'studentBoundaryChanged', {
+            reason: 'clearBoundary',
+            studentBoundary: null,
+          });
+          emitLocalStatusEvent(ctx, 'clearBoundary');
+          break;
         case 'chalkboardCall':
           if (payload.method) {
             callChalkboard(ctx, payload.method, payload.args || []);
@@ -319,7 +354,10 @@
           safePostToParent(ctx, 'warn', { message: `Unknown command: ${command.name}` });
       }
 
-      if (shouldCaptureStudentBoundary && ctx.state.role === 'student') {
+      // Auto-advance boundary when instructor syncs a position — but only if no
+      // explicit boundary (allowStudentForwardTo / setStudentBoundary) is in
+      // effect.  An explicit grant should not be silently overwritten by a sync.
+      if (shouldCaptureStudentBoundary && ctx.state.role === 'student' && !ctx.state.hasExplicitBoundary) {
         captureStudentBoundary(ctx);
         emitLocalStatusEvent(ctx, 'captureStudentBoundary');
       }
@@ -365,10 +403,12 @@
 
     // When the instructor clicks a boundary button in the storyboard, relay the
     // new boundary to the host so it can propagate to the student iframe.
+    // localBoundary:true lets the storyboard skip forward-restriction so the
+    // acting instructor's own view is never blanked.
     const onBoundaryMoved = (event) => {
       const indices = event.detail?.indices;
       if (!indices) return;
-      setStudentBoundary(ctx, indices, { reason: 'instructorSet' });
+      setStudentBoundary(ctx, indices, { reason: 'instructorSet', localBoundary: true });
     };
     window.addEventListener('reveal-storyboard-boundary-moved', onBoundaryMoved);
 
@@ -423,6 +463,8 @@
         role: config.role === 'instructor' ? 'instructor' : 'student',
         applyingRemote: false,
         studentMaxIndices: null,
+        hasExplicitBoundary: false,  // true once allowStudentForwardTo/setStudentBoundary received
+        boundaryIsLocal: false,      // true when boundary was set by storyboard button (acting instructor)
       },
     };
 

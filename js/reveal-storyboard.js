@@ -148,9 +148,16 @@
       if (!syncApi || typeof syncApi.getStatus !== 'function') return lastIndex;
 
       const status = syncApi.getStatus();
-      if (!status || status.role !== 'student') return lastIndex;
+      if (!status) return lastIndex;
 
-      if (status.capabilities?.canNavigateForward) return lastIndex;
+      // Never restrict when:
+      //  - role is instructor (they can always see everything)
+      //  - forward navigation is explicitly allowed
+      //  - boundary was set locally (this iframe is the acting instructor, even
+      //    if its role was not yet upgraded to 'instructor' by the host)
+      if (status.role !== 'student' || status.capabilities?.canNavigateForward || status.boundaryIsLocal) {
+        return lastIndex;
+      }
 
       const boundaryH = Number(status.studentBoundary?.h ?? reveal.getIndices().h ?? 0);
       if (!Number.isFinite(boundaryH)) return lastIndex;
