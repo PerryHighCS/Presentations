@@ -59,6 +59,9 @@ Use `action: "command"` with a command payload.
 - `setRole`
 - `allowStudentForwardTo`
 - `setStudentBoundary` (alias for explicit boundary set)
+- `toggleOverview` — opens/closes the custom storyboard strip (does **not** activate Reveal's built-in grid overview)
+- `showOverview` — opens the custom storyboard strip
+- `hideOverview` — closes the custom storyboard strip
 - `chalkboardCall`
 - `toggleChalkboard`
 - `toggleNotesCanvas`
@@ -125,6 +128,23 @@ Notes:
   }
 }
 ```
+
+#### `toggleOverview` / `showOverview` / `hideOverview`
+
+These commands drive the **custom storyboard strip** in the iframe (via `reveal-storyboard.js`).
+They do **not** activate Reveal.js's built-in grid overview mode.
+
+```json
+{ "name": "toggleOverview" }
+```
+```json
+{ "name": "showOverview" }
+```
+```json
+{ "name": "hideOverview" }
+```
+
+Note: sending `setState` with `overview: true` has the same effect as `showOverview` — the `overview` flag is stripped from the Reveal state before it is applied, and the storyboard strip is opened instead.
 
 #### `chalkboardCall`
 
