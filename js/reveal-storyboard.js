@@ -16,6 +16,12 @@
     const sectionClone = section.cloneNode(true);
     sectionClone.classList.remove('past', 'future', 'stack');
     sectionClone.classList.add('present');
+    // Reveal.js sets inline transform/opacity on slides during transitions.
+    // Those inline styles beat CSS specificity and blank the preview, so clear them.
+    sectionClone.style.removeProperty('opacity');
+    sectionClone.style.removeProperty('visibility');
+    sectionClone.style.removeProperty('display');
+    sectionClone.style.removeProperty('transform');
 
     sectionClone.querySelectorAll('.fragment').forEach((node) => {
       node.classList.add('visible');
