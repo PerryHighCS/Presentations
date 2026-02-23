@@ -144,6 +144,9 @@
       const isOpen = document.body.classList.contains('storyboard-open');
       storyboard.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
       reveal.layout();
+      // Notify reveal-iframe-sync (and any other listener) so the host can
+      // reflect the storyboard state in its own UI.
+      window.dispatchEvent(new CustomEvent('reveal-storyboard-changed', { detail: { open: isOpen } }));
     }
 
     function refreshStoryboard() {

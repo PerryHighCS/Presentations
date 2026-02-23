@@ -67,7 +67,9 @@
       revealState: deck.getState(),
       indices: deck.getIndices(),
       paused: !!deck.isPaused?.(),
-      overview: !!deck.isOverview?.(),
+      // Reflect the custom storyboard strip state rather than Reveal's native
+      // grid overview (which is always suppressed in this setup).
+      overview: document.body.classList.contains('storyboard-open'),
     };
   }
 
@@ -349,6 +351,11 @@
     deck.on('overviewshown', emitState);
     deck.on('overviewhidden', emitState);
 
+    // Emit state to the host whenever the storyboard strip opens or closes so
+    // the host can reflect the storyboard state in its own UI (overview field).
+    const onStoryboardChanged = () => emitState();
+    window.addEventListener('reveal-storyboard-changed', onStoryboardChanged);
+
     ctx.cleanup.push(() => {
       deck.off('slidechanged', enforceStudentBounds);
       deck.off('fragmentshown', enforceStudentBounds);
@@ -360,6 +367,7 @@
       deck.off('resumed', emitState);
       deck.off('overviewshown', emitState);
       deck.off('overviewhidden', emitState);
+      window.removeEventListener('reveal-storyboard-changed', onStoryboardChanged);
     });
   }
 

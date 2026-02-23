@@ -198,9 +198,11 @@ Sent on init (if `autoAnnounceReady`) and when role changes.
 }
 ```
 
+`overview` reflects whether the **custom storyboard strip** is currently open — not Reveal's native grid overview (which is always suppressed). `true` = strip is visible.
+
 ### `state`
 
-Sent by instructor on deck changes and returned when host sends `requestState`.
+Sent by instructor on: slide change, fragment shown/hidden, pause, resume, overview shown/hidden, **storyboard strip opened/closed**. Also returned when host sends `requestState`.
 
 ```json
 {
@@ -220,6 +222,8 @@ Sent by instructor on deck changes and returned when host sends `requestState`.
   }
 }
 ```
+
+`overview` reflects whether the **custom storyboard strip** is currently open (`true` = strip is visible).
 
 ### `roleChanged`
 
