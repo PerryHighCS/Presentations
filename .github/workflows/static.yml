@@ -11,7 +11,7 @@ on:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -179,19 +179,6 @@ jobs:
           root.joinpath('index.html').write_text(content + '\n', encoding='utf-8')
           print(f'Generated index.html with {len(html_files)} link(s).')
           PY
-      - name: Commit index if changed
-        run: |
-          git add index.html
-
-          if git diff --cached --quiet -- index.html; then
-            echo "No index changes to commit."
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore: regenerate presentation index"
-          git push
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
