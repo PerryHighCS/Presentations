@@ -133,6 +133,11 @@
     ctx.state.studentMaxIndices = normalizeIndices(ctx.deck.getIndices());
   }
 
+  /** Default boundary for a student before the instructor has progressed. */
+  function titleSlideBoundary() {
+    return { h: 0, v: 0, f: -1 };
+  }
+
   function setStudentBoundary(ctx, indices, options = {}) {
     if (!indices) return false;
 
@@ -289,9 +294,8 @@
           if (payload.role === 'instructor' || payload.role === 'student') {
             ctx.state.role = payload.role;
             if (ctx.state.role === 'student') {
-              // Reset boundary state when demoting to student so the host
-              // controls the starting boundary via allowStudentForwardTo.
-              ctx.state.studentMaxIndices = null;
+              // Reset boundary to title slide when demoting to student.
+              ctx.state.studentMaxIndices = titleSlideBoundary();
               ctx.state.hasExplicitBoundary = false;
               ctx.state.boundaryIsLocal = false;
             }
@@ -462,7 +466,7 @@
       state: {
         role: config.role === 'instructor' ? 'instructor' : 'student',
         applyingRemote: false,
-        studentMaxIndices: null,
+        studentMaxIndices: titleSlideBoundary(),  // default: title slide until instructor progresses
         hasExplicitBoundary: false,  // true once allowStudentForwardTo/setStudentBoundary received
         boundaryIsLocal: false,      // true when boundary was set by storyboard button (acting instructor)
       },
@@ -485,7 +489,9 @@
         if (role === 'instructor' || role === 'student') {
           ctx.state.role = role;
           if (ctx.state.role === 'student') {
-            captureStudentBoundary(ctx);
+            ctx.state.studentMaxIndices = titleSlideBoundary();
+            ctx.state.hasExplicitBoundary = false;
+            ctx.state.boundaryIsLocal = false;
           }
           safePostToParent(ctx, 'roleChanged', { role: ctx.state.role });
           announceReady(ctx, 'apiSetRole');
