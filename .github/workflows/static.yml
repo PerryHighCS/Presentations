@@ -163,7 +163,7 @@ jobs:
               title = title_for(root / rel)
               node["_files"].append((rel.name, href, title))
 
-          def render_tree(node, indent='      '):
+          def render_tree(node, indent='      ', path_prefix=''):
               lines = []
 
               for _name, href, title in sorted(node["_files"], key=lambda item: item[1].lower()):
@@ -172,9 +172,10 @@ jobs:
                   )
 
               for dirname, child in sorted(node["_dirs"].items(), key=lambda item: item[0].lower()):
-                  lines.append(f'{indent}<li class="folder"><span class="folder-name">{html.escape(dirname)}/</span>')
+                  folder_href = html.escape(f'{path_prefix}{dirname}/index.html', quote=True)
+                  lines.append(f'{indent}<li class="folder"><a class="folder-name" href="{folder_href}">{html.escape(dirname)}/</a>')
                   lines.append(f'{indent}  <ul>')
-                  lines.extend(render_tree(child, indent + '    '))
+                  lines.extend(render_tree(child, indent + '    ', f'{path_prefix}{dirname}/'))
                   lines.append(f'{indent}  </ul>')
                   lines.append(f'{indent}</li>')
 
