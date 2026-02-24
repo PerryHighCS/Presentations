@@ -528,7 +528,21 @@
       }
     };
 
+    // When the instructor changes slides, send a full chalkboard snapshot so
+    // the host can replace its delta buffer with a clean checkpoint.
+    // Using slidechanged only (not fragmentshown/hidden) — fragment moves
+    // don't change the active drawing layer, so there is nothing to flush.
+    const flushChalkboardState = () => {
+      if (ctx.state.applyingRemote) return;
+      if (ctx.state.role !== 'instructor') return;
+      const cbApi = chalkboardApi();
+      if (cbApi) {
+        safePostToParent(ctx, 'chalkboardState', { storage: cbApi.getData() });
+      }
+    };
+
     deck.on('slidechanged', emitState);
+    deck.on('slidechanged', flushChalkboardState);
     deck.on('fragmentshown', emitState);
     deck.on('fragmenthidden', emitState);
     deck.on('paused', emitState);
@@ -599,6 +613,7 @@
       deck.off('fragmentshown', enforceStudentBounds);
       deck.off('fragmenthidden', enforceStudentBounds);
       deck.off('slidechanged', emitState);
+      deck.off('slidechanged', flushChalkboardState);
       deck.off('fragmentshown', emitState);
       deck.off('fragmenthidden', emitState);
       deck.off('paused', emitState);

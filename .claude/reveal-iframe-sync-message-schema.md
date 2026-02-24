@@ -425,7 +425,48 @@ The host should relay this as a `chalkboardState` command to student iframes.
 - Prefer strict `allowedOrigins`/`hostOrigin` values in production instead of `*`.
 - After sending `setRole: student`, send `allowStudentForwardTo` to define handoff range.
 - Keep command ordering deterministic (role first, then boundary/state commands).
-- After the instructor is promoted (`setRole: instructor`), the iframe automatically sends an unsolicited `chalkboardState` message. Relay it to all student iframes as a `chalkboardState` command — this re-syncs students after an instructor reload without any explicit host request.
+
+### Chalkboard session state (snapshot + delta)
+
+The host should maintain a per-session chalkboard buffer with two parts:
+
+```js
+session.chalkboard = {
+  snapshot: null,  // string — last getData() blob from the instructor
+  delta:    [],    // array  — ordered chalkboardStroke payloads since the snapshot
+}
+```
+
+**When to update the buffer:**
+
+| Upward message from instructor | Action |
+|---|---|
+| `chalkboardState` (on `setRole: instructor` or slide change) | Replace `snapshot` with `payload.storage`; clear `delta` |
+| `chalkboardStroke` | Append `payload` to `delta` |
+| `clearChalkboard` / `resetChalkboard` relayed upward* | Clear `delta`; optionally request a fresh snapshot via `requestChalkboardState` |
+
+\* These are not currently relayed upward by the iframe; the host clears its buffer when it sends these commands downward.
+
+**When to send state to a student** (on join, reload, or explicit request):
+
+```js
+// 1. Send the snapshot (restores all drawings up to last slide change)
+if (session.chalkboard.snapshot) {
+  student.postMessage({ ..., payload: { name: 'chalkboardState',
+    storage: session.chalkboard.snapshot } });
+}
+// 2. Replay the delta (applies strokes drawn since the last slide change)
+for (const stroke of session.chalkboard.delta) {
+  student.postMessage({ ..., payload: { name: 'chalkboardStroke', ...stroke } });
+}
+```
+
+**Why this works without gaps:**
+
+- On `setRole: instructor` the iframe auto-broadcasts a full `chalkboardState`. The host stores this as the initial snapshot and starts with an empty delta.
+- Each instructor stroke arrives as a `chalkboardStroke`. The host relays it to connected students immediately and appends it to the delta.
+- On every slide change the iframe sends a fresh `chalkboardState`. The host replaces the snapshot and clears the delta — the new snapshot already incorporates all strokes from the previous slide, so the delta is always short (only strokes on the *current* slide).
+- If the instructor reloads, the iframe restores from `sessionStorage` before `setRole` arrives, so the auto-broadcast snapshot is fully populated.
 
 ### Compatibility policy (recommended)
 
