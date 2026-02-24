@@ -342,6 +342,7 @@ const initChalkboard = function ( Reveal ) {
 		[]
 	];
 	var slidechangeTimeout = null;
+	var pendingTransitionEnd = null; // { el, fn } — cleaned up by clearCanvas(0)
 	var updateStorageTimeout = null;
 	var playback = false;
 
@@ -1048,7 +1049,13 @@ const initChalkboard = function ( Reveal ) {
 	 * Clear current canvas.
 	 */
 	function clearCanvas( id ) {
-		if ( id == 0 ) clearTimeout( slidechangeTimeout );
+		if ( id == 0 ) {
+			clearTimeout( slidechangeTimeout );
+			if ( pendingTransitionEnd ) {
+				pendingTransitionEnd.el.removeEventListener( 'transitionend', pendingTransitionEnd.fn );
+				pendingTransitionEnd = null;
+			}
+		}
 		drawingCanvas[ id ].context.clearRect( 0, 0, drawingCanvas[ id ].width, drawingCanvas[ id ].height );
 		if ( id == 1 && grid ) drawGrid();
 	}
@@ -1761,7 +1768,26 @@ const initChalkboard = function ( Reveal ) {
 			clearCanvas( 0 );
 			clearCanvas( 1 );
 			if ( !playback ) {
-				slidechangeTimeout = setTimeout( startPlayback, transition, getSlideDuration(), 0 );
+				var pendingDuration = getSlideDuration();
+				var playbackFired = false;
+				var transitionEl = Reveal.getCurrentSlide();
+				var firePlayback = function() {
+					if ( playbackFired ) return;
+					playbackFired = true;
+					clearTimeout( slidechangeTimeout );
+					if ( pendingTransitionEnd ) {
+						pendingTransitionEnd.el.removeEventListener( 'transitionend', pendingTransitionEnd.fn );
+						pendingTransitionEnd = null;
+					}
+					startPlayback( pendingDuration, 0 );
+				};
+				var transitionEndHandler = function( e ) {
+					if ( e.target !== transitionEl ) return;
+					firePlayback();
+				};
+				transitionEl.addEventListener( 'transitionend', transitionEndHandler );
+				pendingTransitionEnd = { el: transitionEl, fn: transitionEndHandler };
+				slidechangeTimeout = setTimeout( firePlayback, transition );
 			}
 			if ( Reveal.isAutoSliding() ) {
 				var event = new CustomEvent( 'startplayback' );
