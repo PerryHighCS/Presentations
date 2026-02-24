@@ -297,17 +297,30 @@
           window.dispatchEvent(new CustomEvent('reveal-storyboard-set', { detail: { open: false } }));
           break;
         case 'togglePause':
+          if (ctx.state.role === 'student') {
+            const requestedPause = (payload.override === undefined)
+              ? !deck.isPaused?.()
+              : !!payload.override;
+            ctx.state.pauseLockedByHost = requestedPause;
+          }
           deck.togglePause?.(payload.override);
           break;
         case 'pause':
+          if (ctx.state.role === 'student') {
+            ctx.state.pauseLockedByHost = true;
+          }
           if (!deck.isPaused?.()) deck.togglePause?.(true);
           break;
         case 'resume':
+          if (ctx.state.role === 'student') {
+            ctx.state.pauseLockedByHost = false;
+          }
           if (deck.isPaused?.()) deck.togglePause?.(false);
           break;
         case 'setRole':
           if (payload.role === 'instructor' || payload.role === 'student') {
             ctx.state.role = payload.role;
+            ctx.state.pauseLockedByHost = false;
             if (ctx.state.role === 'student') {
               // Reset boundary to title slide when demoting to student.
               ctx.state.studentMaxIndices = titleSlideBoundary();
@@ -368,6 +381,15 @@
         captureStudentBoundary(ctx);
         emitLocalStatusEvent(ctx, 'captureStudentBoundary');
       }
+
+      // If a synced state explicitly carries paused=true/false, mirror lock state
+      // for students so local unpause cannot override a host pause.
+      if (command.name === 'setState' && ctx.state.role === 'student') {
+        const statePaused = payload?.state?.paused;
+        if (typeof statePaused === 'boolean') {
+          ctx.state.pauseLockedByHost = statePaused;
+        }
+      }
     } finally {
       queueMicrotask(() => {
         ctx.state.applyingRemote = false;
@@ -391,11 +413,30 @@
       safePostToParent(ctx, 'state', buildSyncStatusPayload(ctx, 'stateChanged'));
     };
 
+    const enforcePauseLock = () => {
+      if (ctx.state.applyingRemote) return;
+      if (ctx.state.role !== 'student') return;
+      if (!ctx.state.pauseLockedByHost) return;
+
+      // Student tried to unpause locally while host lock is active.
+      ctx.state.applyingRemote = true;
+      try {
+        if (!deck.isPaused?.()) {
+          deck.togglePause?.(true);
+        }
+      } finally {
+        queueMicrotask(() => {
+          ctx.state.applyingRemote = false;
+        });
+      }
+    };
+
     deck.on('slidechanged', emitState);
     deck.on('fragmentshown', emitState);
     deck.on('fragmenthidden', emitState);
     deck.on('paused', emitState);
     deck.on('resumed', emitState);
+    deck.on('resumed', enforcePauseLock);
     deck.on('overviewshown', emitState);
     deck.on('overviewhidden', emitState);
 
@@ -432,6 +473,7 @@
       deck.off('fragmenthidden', emitState);
       deck.off('paused', emitState);
       deck.off('resumed', emitState);
+      deck.off('resumed', enforcePauseLock);
       deck.off('overviewshown', emitState);
       deck.off('overviewhidden', emitState);
       window.removeEventListener('reveal-storyboard-changed', onStoryboardChanged);
@@ -476,6 +518,7 @@
         // any unmanaged context (direct browser, VS Code preview, etc.).
         role: 'standalone',
         applyingRemote: false,
+        pauseLockedByHost: false,
         studentMaxIndices: titleSlideBoundary(),  // default: title slide until instructor progresses
         hasExplicitBoundary: false,  // true once allowStudentForwardTo/setStudentBoundary received
         boundaryIsLocal: false,      // true when boundary was set by storyboard button (acting instructor)
@@ -494,6 +537,7 @@
       setRole: (role) => {
         if (role === 'instructor' || role === 'student') {
           ctx.state.role = role;
+          ctx.state.pauseLockedByHost = false;
           if (ctx.state.role === 'student') {
             ctx.state.studentMaxIndices = titleSlideBoundary();
             ctx.state.hasExplicitBoundary = false;

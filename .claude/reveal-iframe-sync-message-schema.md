@@ -99,6 +99,15 @@ Use `action: "command"` with a command payload.
 }
 ```
 
+#### `pause` / `resume` / `togglePause`
+
+When role is `student`, host-issued pause is treated as host-owned lock:
+
+- After `pause` (or `togglePause` resolving to paused), local unpause attempts in the student iframe are immediately reverted.
+- Only host `resume` (or `togglePause` resolving to unpaused) clears the lock.
+
+This ensures only the instructor/host can unblank student screens after a host pause.
+
 #### `allowStudentForwardTo` (recommended for temporary handoff)
 
 Allows a student to move forward up to the specified boundary, even if instructor has not reached it.
