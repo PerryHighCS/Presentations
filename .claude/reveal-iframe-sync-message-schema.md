@@ -393,7 +393,7 @@ studentIframe.postMessage({
 Sent by the **instructor** iframe in two situations:
 
 1. **In response to `requestChalkboardState`** — explicit host request for a full snapshot.
-2. **Automatically on `setRole: instructor`** — the iframe posts its current state immediately after being promoted to instructor. This covers both first load and tab reloads: because the plugin restores from `sessionStorage` before the first `setRole` arrives, the state is already populated when the auto-broadcast fires. The host should always relay this to all connected student iframes so they stay in sync without needing to request it explicitly.
+2. **Automatically on `setRole: instructor`** — the iframe posts its current state immediately after being promoted to instructor. On a fresh load this will be an empty storage blob; on a reload within the same session the in-memory state from before the reload will have been lost (sessionStorage is not used — the host is the source of truth). The host should relay this to all connected student iframes.
 
 The host should relay this as a `chalkboardState` command to student iframes.
 
@@ -466,7 +466,7 @@ for (const stroke of session.chalkboard.delta) {
 - On `setRole: instructor` the iframe auto-broadcasts a full `chalkboardState`. The host stores this as the initial snapshot and starts with an empty delta.
 - Each instructor stroke arrives as a `chalkboardStroke`. The host relays it to connected students immediately and appends it to the delta.
 - On every slide change the iframe sends a fresh `chalkboardState`. The host replaces the snapshot and clears the delta — the new snapshot already incorporates all strokes from the previous slide, so the delta is always short (only strokes on the *current* slide).
-- If the instructor reloads, the iframe restores from `sessionStorage` before `setRole` arrives, so the auto-broadcast snapshot is fully populated.
+- If the instructor reloads, the iframe starts with empty in-memory storage and auto-broadcasts an empty `chalkboardState` on `setRole`. The host should respond by immediately sending a `chalkboardState` command back to the instructor (with its cached snapshot) to restore the drawings, then relay the same snapshot to all students.
 
 ### Compatibility policy (recommended)
 
