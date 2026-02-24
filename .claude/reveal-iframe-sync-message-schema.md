@@ -390,7 +390,12 @@ studentIframe.postMessage({
 
 ### `chalkboardState`
 
-Sent by the **instructor** iframe in response to a `requestChalkboardState` command. Contains the full serialized drawing storage. The host should relay this as a `chalkboardState` command to any student that requested it (or all students, for a late-join sync).
+Sent by the **instructor** iframe in two situations:
+
+1. **In response to `requestChalkboardState`** — explicit host request for a full snapshot.
+2. **Automatically on `setRole: instructor`** — the iframe posts its current state immediately after being promoted to instructor. This covers both first load and tab reloads: because the plugin restores from `sessionStorage` before the first `setRole` arrives, the state is already populated when the auto-broadcast fires. The host should always relay this to all connected student iframes so they stay in sync without needing to request it explicitly.
+
+The host should relay this as a `chalkboardState` command to student iframes.
 
 ```json
 {
@@ -420,6 +425,7 @@ Sent by the **instructor** iframe in response to a `requestChalkboardState` comm
 - Prefer strict `allowedOrigins`/`hostOrigin` values in production instead of `*`.
 - After sending `setRole: student`, send `allowStudentForwardTo` to define handoff range.
 - Keep command ordering deterministic (role first, then boundary/state commands).
+- After the instructor is promoted (`setRole: instructor`), the iframe automatically sends an unsolicited `chalkboardState` message. Relay it to all student iframes as a `chalkboardState` command — this re-syncs students after an instructor reload without any explicit host request.
 
 ### Compatibility policy (recommended)
 

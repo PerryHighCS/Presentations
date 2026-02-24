@@ -392,6 +392,16 @@
             }
             safePostToParent(ctx, 'roleChanged', { role: ctx.state.role });
             announceReady(ctx, 'roleChanged');
+            if (ctx.state.role === 'instructor') {
+              // Broadcast the current drawing state immediately so the host can
+              // relay it to all students. Covers both first load and reloads —
+              // when sessionStorage is configured the plugin restores its drawings
+              // before setRole arrives, so students get re-synced automatically.
+              const cbApi = chalkboardApi();
+              if (cbApi) {
+                safePostToParent(ctx, 'chalkboardState', { storage: cbApi.getData() });
+              }
+            }
           }
           break;
         case 'allowStudentForwardTo': {
