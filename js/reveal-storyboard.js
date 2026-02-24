@@ -224,8 +224,10 @@
           boundaryBtn.textContent = '\u2691'; // ⚑ flag
           boundaryBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            // Toggle: clicking the active boundary slide clears it.
+            const isClear = currentBoundaryIndex === index;
             window.dispatchEvent(new CustomEvent('reveal-storyboard-boundary-moved', {
-              detail: { indices: { h: index, v: 0, f: 0 } },
+              detail: isClear ? { indices: null } : { indices: { h: index, v: 0, f: 0 } },
             }));
           });
           wrap.appendChild(boundaryBtn);

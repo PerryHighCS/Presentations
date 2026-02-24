@@ -177,6 +177,20 @@
     return true;
   }
 
+  function clearStudentBoundary(ctx, reason) {
+    ctx.state.studentMaxIndices = null;
+    ctx.state.hasExplicitBoundary = false;
+    ctx.state.boundaryIsLocal = false;
+    window.dispatchEvent(new CustomEvent('reveal-storyboard-boundary-update', {
+      detail: { indices: null },
+    }));
+    safePostToParent(ctx, 'studentBoundaryChanged', {
+      reason: reason || 'clearBoundary',
+      studentBoundary: null,
+    });
+    emitLocalStatusEvent(ctx, reason || 'clearBoundary');
+  }
+
   function enforceStudentNavigationBoundary(ctx) {
     if (ctx.state.applyingRemote) return;
     if (ctx.state.role !== 'student') return;
@@ -321,19 +335,7 @@
           break;
         }
         case 'clearBoundary':
-          // Remove the explicit boundary. Student reverts to "follow instructor"
-          // mode — the boundary auto-captures from the next sync command.
-          ctx.state.studentMaxIndices = null;
-          ctx.state.hasExplicitBoundary = false;
-          ctx.state.boundaryIsLocal = false;
-          window.dispatchEvent(new CustomEvent('reveal-storyboard-boundary-update', {
-            detail: { indices: null },
-          }));
-          safePostToParent(ctx, 'studentBoundaryChanged', {
-            reason: 'clearBoundary',
-            studentBoundary: null,
-          });
-          emitLocalStatusEvent(ctx, 'clearBoundary');
+          clearStudentBoundary(ctx, 'clearBoundary');
           break;
         case 'chalkboardCall':
           if (payload.method) {
@@ -413,7 +415,10 @@
     const onBoundaryMoved = (event) => {
       if (ctx.state.role !== 'instructor') return;
       const indices = event.detail?.indices;
-      if (!indices) return;
+      if (!indices) {
+        clearStudentBoundary(ctx, 'instructorCleared');
+        return;
+      }
       setStudentBoundary(ctx, indices, { reason: 'instructorSet', localBoundary: true });
     };
     window.addEventListener('reveal-storyboard-boundary-moved', onBoundaryMoved);
@@ -466,11 +471,10 @@
       config,
       cleanup: [],
       state: {
-        // Use 'standalone' when not embedded in a parent frame so boundary
-        // controls and student restrictions are inactive for direct viewers.
-        role: window.parent === window
-          ? 'standalone'
-          : (config.role === 'instructor' ? 'instructor' : 'student'),
+        // Always start as 'standalone' until the host explicitly promotes the
+        // role via setRole. This prevents boundary controls from appearing in
+        // any unmanaged context (direct browser, VS Code preview, etc.).
+        role: 'standalone',
         applyingRemote: false,
         studentMaxIndices: titleSlideBoundary(),  // default: title slide until instructor progresses
         hasExplicitBoundary: false,  // true once allowStudentForwardTo/setStudentBoundary received
