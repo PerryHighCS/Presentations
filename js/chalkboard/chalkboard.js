@@ -784,7 +784,9 @@ const initChalkboard = function ( Reveal ) {
 		var duration = 0;
 		for ( var id = 0; id < 2; id++ ) {
 			for ( var i = 0; i < storage[ id ].data.length; i++ ) {
-				if ( storage[ id ].data[ i ].slide.h === indices.h && storage[ id ].data[ i ].slide.v === indices.v && storage[ id ].data[ i ].slide.f === indices.f ) {
+				// Match on {h, v} only — same as getSlideData, so backward navigation
+				// (where Reveal enters at f=MAX rather than f=-1) still finds the entry.
+				if ( storage[ id ].data[ i ].slide.h === indices.h && storage[ id ].data[ i ].slide.v === indices.v ) {
 					duration = Math.max( duration, storage[ id ].data[ i ].duration );
 					break;
 				}
