@@ -4,7 +4,7 @@
  *
  * Usage:
  * <script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
- * <script src="../js/vendor/chalkboard.js"></script>
+ * <script src="../js/chalkboard/chalkboard.js"></script>
  * <script src="js/reveal-iframe-sync.js"></script>
  * <script>
  * Reveal.initialize({

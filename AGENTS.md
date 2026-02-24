@@ -11,7 +11,7 @@ Presentations/
 ├── js/
 │   ├── reveal-storyboard.js       # Toggleable slide-preview strip (bottom panel)
 │   ├── reveal-iframe-sync.js      # Instructor/student sync via postMessage
-│   └── vendor/
+│   └── chalkboard/
 │       ├── chalkboard.js          # Vendored reveal.js-plugins chalkboard (extended)
 │       ├── chalkboard.css         # Chalkboard styles
 │       └── img/                   # Cursor and background images for chalkboard
@@ -120,8 +120,8 @@ Full message schema: `.claude/reveal-iframe-sync-message-schema.md`
 1. Create `<topic>/presentation-name.html` (subdirectory keeps the repo organised).
 2. Load the shared plugins with relative paths:
    ```html
-   <link rel="stylesheet" href="../js/vendor/chalkboard.css">
-   <script src="../js/vendor/chalkboard.js"></script>
+   <link rel="stylesheet" href="../js/chalkboard/chalkboard.css">
+   <script src="../js/chalkboard/chalkboard.js"></script>
    <script src="../js/reveal-storyboard.js"></script>
    <script src="../js/reveal-iframe-sync.js"></script>  <!-- only if needed -->
    ```

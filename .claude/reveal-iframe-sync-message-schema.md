@@ -443,7 +443,7 @@ function isCompatibleProtocol(hostVersion, messageVersion) {
 }
 
 // Usage in message handler
-const HOST_SYNC_PROTOCOL = '1.0.0';
+const HOST_SYNC_PROTOCOL = '1.1.0';
 if (!isCompatibleProtocol(HOST_SYNC_PROTOCOL, data.version)) {
   // Ignore message or request iframe reload/update
   return;
