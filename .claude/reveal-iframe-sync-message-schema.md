@@ -7,7 +7,7 @@ This document defines the `postMessage` protocol used by `js/reveal-iframe-sync.
 ```json
 {
   "type": "reveal-sync",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "action": "ready",
   "deckId": "2d-arrays",
   "role": "student",
@@ -68,6 +68,9 @@ Use `action: "command"` with a command payload.
 - `toggleNotesCanvas`
 - `clearChalkboard`
 - `resetChalkboard`
+- `chalkboardStroke` — relay a single instructor draw/erase event to a student canvas
+- `chalkboardState` — replace the student's full drawing storage and redraw
+- `requestChalkboardState` — ask an instructor iframe for a full state snapshot (iframe responds with `chalkboardState` upward message)
 - `ping`
 
 ### Command payload shapes
@@ -190,6 +193,67 @@ Note: sending `setState` with `overview: true` has the same effect as `showOverv
 }
 ```
 
+#### `chalkboardStroke`
+
+Relay a single draw or erase event from the instructor to a student iframe. Coordinates are in logical space (divided by canvas scale on the instructor side), so they replay correctly at any student viewport size.
+
+```json
+{
+  "name": "chalkboardStroke",
+  "payload": {
+    "mode": 1,
+    "slide": { "h": 3, "v": 0, "f": -1 },
+    "event": {
+      "type": "draw",
+      "x1": 120.5, "y1": 80.0, "x2": 125.0, "y2": 83.2,
+      "color": 0,
+      "board": 0,
+      "time": 4200
+    }
+  }
+}
+```
+
+Erase variant:
+```json
+{
+  "name": "chalkboardStroke",
+  "payload": {
+    "mode": 1,
+    "slide": { "h": 3, "v": 0, "f": -1 },
+    "event": { "type": "erase", "x": 120.5, "y": 80.0, "board": 0, "time": 4350 }
+  }
+}
+```
+
+- `mode` — `0` = notes canvas, `1` = chalkboard canvas
+- `color` — integer index into the instructor's color palette (same index applies on the student side since palettes are identical)
+- `board` — chalkboard page index (for mode 1 only; mode 0 ignores it)
+- Strokes for slides not currently visible are stored and replayed when the student navigates to that slide
+
+#### `chalkboardState`
+
+Full state sync. Replace the student's entire drawing storage with a snapshot from the instructor and immediately redraw the current slide.
+
+```json
+{
+  "name": "chalkboardState",
+  "payload": {
+    "storage": "[{\"width\":960,\"height\":700,\"data\":[...]}]"
+  }
+}
+```
+
+`storage` is the JSON string returned by `RevealChalkboard.getData()` on the instructor side.
+
+#### `requestChalkboardState`
+
+Ask the instructor iframe for a full state snapshot. The iframe responds with a `chalkboardState` upward message.
+
+```json
+{ "name": "requestChalkboardState" }
+```
+
 ### Request current state
 
 Host can request a status snapshot via `action: "requestState"`.
@@ -294,6 +358,46 @@ Valid `reason` values: `"allowStudentForwardTo"`, `"setStudentBoundary"`, `"inst
 {
   "action": "pong",
   "payload": { "ok": true }
+}
+```
+
+### `chalkboardStroke`
+
+Sent by the **instructor** iframe on every draw or erase event. The host should relay this as a `chalkboardStroke` command to all student iframes.
+
+```json
+{
+  "action": "chalkboardStroke",
+  "payload": {
+    "mode": 1,
+    "slide": { "h": 3, "v": 0, "f": -1 },
+    "event": {
+      "type": "draw",
+      "x1": 120.5, "y1": 80.0, "x2": 125.0, "y2": 83.2,
+      "color": 0, "board": 0, "time": 4200
+    }
+  }
+}
+```
+
+The host relays this verbatim as a `chalkboardStroke` **command** to student iframes:
+```js
+studentIframe.postMessage({
+  type: 'reveal-sync', action: 'command',
+  payload: { name: 'chalkboardStroke', ...msg.payload }
+}, '*');
+```
+
+### `chalkboardState`
+
+Sent by the **instructor** iframe in response to a `requestChalkboardState` command. Contains the full serialized drawing storage. The host should relay this as a `chalkboardState` command to any student that requested it (or all students, for a late-join sync).
+
+```json
+{
+  "action": "chalkboardState",
+  "payload": {
+    "storage": "[{\"width\":960,\"height\":700,\"data\":[...]}]"
+  }
 }
 ```
 

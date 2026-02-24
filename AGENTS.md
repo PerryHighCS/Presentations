@@ -10,7 +10,11 @@ This repository contains HTML slide presentations built with **Reveal.js**, publ
 Presentations/
 ├── js/
 │   ├── reveal-storyboard.js       # Toggleable slide-preview strip (bottom panel)
-│   └── reveal-iframe-sync.js      # Instructor/student sync via postMessage
+│   ├── reveal-iframe-sync.js      # Instructor/student sync via postMessage
+│   └── vendor/
+│       ├── chalkboard.js          # Vendored reveal.js-plugins chalkboard (extended)
+│       ├── chalkboard.css         # Chalkboard styles
+│       └── img/                   # Cursor and background images for chalkboard
 │
 ├── CSA/
 │   └── 2d-arrays.html             # Computer Science A — 2D Arrays (Java)
@@ -105,7 +109,7 @@ iframe.contentWindow.postMessage({
 }, '*');
 ```
 
-**Supported commands (host → iframe):** `next`, `prev`, `slide`, `setState`, `togglePause`, `pause`, `resume`, `setRole`, `allowStudentForwardTo`, `setStudentBoundary`, `toggleOverview`, `showOverview`, `hideOverview`, `chalkboardCall`, `toggleChalkboard`, `toggleNotesCanvas`, `clearChalkboard`, `resetChalkboard`, `ping`
+**Supported commands (host → iframe):** `next`, `prev`, `slide`, `setState`, `togglePause`, `pause`, `resume`, `setRole`, `allowStudentForwardTo`, `setStudentBoundary`, `toggleOverview`, `showOverview`, `hideOverview`, `chalkboardCall`, `toggleChalkboard`, `toggleNotesCanvas`, `clearChalkboard`, `resetChalkboard`, `chalkboardStroke`, `chalkboardState`, `requestChalkboardState`, `ping`
 
 Full message schema: `.claude/reveal-iframe-sync-message-schema.md`
 
@@ -116,6 +120,8 @@ Full message schema: `.claude/reveal-iframe-sync-message-schema.md`
 1. Create `<topic>/presentation-name.html` (subdirectory keeps the repo organised).
 2. Load the shared plugins with relative paths:
    ```html
+   <link rel="stylesheet" href="../js/vendor/chalkboard.css">
+   <script src="../js/vendor/chalkboard.js"></script>
    <script src="../js/reveal-storyboard.js"></script>
    <script src="../js/reveal-iframe-sync.js"></script>  <!-- only if needed -->
    ```

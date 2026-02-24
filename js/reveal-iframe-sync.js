@@ -4,7 +4,7 @@
  *
  * Usage:
  * <script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
- * <script src="https://cdn.jsdelivr.net/npm/reveal.js-plugins@latest/chalkboard/plugin.js"></script>
+ * <script src="../js/vendor/chalkboard.js"></script>
  * <script src="js/reveal-iframe-sync.js"></script>
  * <script>
  * Reveal.initialize({
@@ -20,7 +20,7 @@
  */
 
 (function () {
-  const IFRAME_SYNC_VERSION = '1.0.0';
+  const IFRAME_SYNC_VERSION = '1.1.0';
 
   const DEFAULTS = {
     role: 'student',
@@ -387,6 +387,8 @@
               ctx.state.studentMaxIndices = titleSlideBoundary();
               ctx.state.hasExplicitBoundary = false;
               ctx.state.boundaryIsLocal = false;
+              // Prevent student from drawing on the chalkboard canvas.
+              callChalkboard(ctx, 'configure', [{ readOnly: true }]);
             }
             safePostToParent(ctx, 'roleChanged', { role: ctx.state.role });
             announceReady(ctx, 'roleChanged');
@@ -428,6 +430,28 @@
         case 'resetChalkboard':
           callChalkboard(ctx, 'reset');
           break;
+        case 'chalkboardStroke': {
+          // Relay a single draw/erase event from the instructor onto student canvas.
+          const { mode: strokeMode, slide: strokeSlide, event: strokeEvent } = payload;
+          if (strokeMode != null && strokeSlide && strokeEvent) {
+            callChalkboard(ctx, 'replayStroke', [strokeMode, strokeSlide, strokeEvent]);
+          }
+          break;
+        }
+        case 'chalkboardState':
+          // Full state sync — replace storage and redraw current slide.
+          if (payload.storage) {
+            callChalkboard(ctx, 'loadState', [payload.storage]);
+          }
+          break;
+        case 'requestChalkboardState': {
+          // Host asks the instructor iframe for a full state snapshot.
+          const cbApi = chalkboardApi();
+          if (cbApi) {
+            safePostToParent(ctx, 'chalkboardState', { storage: cbApi.getData() });
+          }
+          break;
+        }
         case 'ping':
           safePostToParent(ctx, 'pong', { ok: true });
           break;
@@ -527,6 +551,33 @@
     };
     window.addEventListener('reveal-storyboard-boundary-moved', onBoundaryMoved);
 
+    // Relay chalkboard draw/erase events to the host so it can forward them
+    // to student iframes. Only relayed when this frame is the instructor.
+    // The plugin fires 'broadcast' CustomEvents on document; event.content
+    // carries {sender, type:'draw'|'erase', mode, board, fromX/Y, toX/Y, color,
+    // x, y, timestamp} — all coordinates are already in logical space
+    // (divided by canvas scale) so students can replay them at any viewport size.
+    const onChalkboardBroadcast = (event) => {
+      if (ctx.state.role !== 'instructor') return;
+      const c = event.content;
+      if (!c || c.sender !== 'chalkboard-plugin') return;
+      const slide = deck.getIndices();
+      if (c.type === 'draw') {
+        safePostToParent(ctx, 'chalkboardStroke', {
+          mode: c.mode,
+          slide,
+          event: { type: 'draw', x1: c.fromX, y1: c.fromY, x2: c.toX, y2: c.toY, color: c.color, board: c.board, time: c.timestamp },
+        });
+      } else if (c.type === 'erase') {
+        safePostToParent(ctx, 'chalkboardStroke', {
+          mode: c.mode,
+          slide,
+          event: { type: 'erase', x: c.x, y: c.y, board: c.board, time: c.timestamp },
+        });
+      }
+    };
+    document.addEventListener('broadcast', onChalkboardBroadcast);
+
     const pauseBlocker = createPauseInputBlocker(ctx);
     const blockedEvents = ['keydown', 'keyup', 'keypress', 'wheel', 'mousedown', 'mouseup', 'click', 'touchstart', 'touchend', 'pointerdown', 'pointerup'];
     blockedEvents.forEach((eventName) => {
@@ -547,6 +598,7 @@
       deck.off('overviewhidden', emitState);
       window.removeEventListener('reveal-storyboard-changed', onStoryboardChanged);
       window.removeEventListener('reveal-storyboard-boundary-moved', onBoundaryMoved);
+      document.removeEventListener('broadcast', onChalkboardBroadcast);
       blockedEvents.forEach((eventName) => {
         window.removeEventListener(eventName, pauseBlocker, true);
       });
