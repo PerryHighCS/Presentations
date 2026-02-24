@@ -130,6 +130,64 @@
     emitLocalStatusEvent(ctx, reason || 'init');
   }
 
+  function ensurePauseOverlay(ctx) {
+    if (ctx.state.pauseOverlayEl) return ctx.state.pauseOverlayEl;
+
+    const overlay = document.createElement('div');
+    overlay.setAttribute('data-reveal-sync-pause-overlay', 'true');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.style.cssText = [
+      'position:fixed',
+      'inset:0',
+      'z-index:2147483647',
+      'display:none',
+      'align-items:center',
+      'justify-content:center',
+      'background:rgba(0,0,0,0.92)',
+      'backdrop-filter:blur(1px)',
+      'color:#ffffff',
+      'font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif',
+      'font-size:22px',
+      'letter-spacing:0.02em',
+      'pointer-events:auto',
+      'user-select:none',
+      'cursor:not-allowed',
+    ].join(';');
+    overlay.textContent = 'Presentation paused by instructor';
+
+    document.body.appendChild(overlay);
+    ctx.state.pauseOverlayEl = overlay;
+    return overlay;
+  }
+
+  function createPauseInputBlocker(ctx) {
+    return (event) => {
+      if (!ctx.state.pauseLockedByHost) return;
+      if (ctx.state.role !== 'student') return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === 'function') {
+        event.stopImmediatePropagation();
+      }
+    };
+  }
+
+  function applyPauseLockUi(ctx) {
+    const shouldLock = ctx.state.role === 'student' && !!ctx.state.pauseLockedByHost;
+    const overlay = ensurePauseOverlay(ctx);
+    overlay.style.display = shouldLock ? 'flex' : 'none';
+    overlay.setAttribute('aria-hidden', shouldLock ? 'false' : 'true');
+
+    if (shouldLock) {
+      // Ensure Reveal's own pause state also mirrors lock state.
+      if (!ctx.deck.isPaused?.()) {
+        ctx.deck.togglePause?.(true);
+      }
+      // Keep storyboard hidden while hard-paused.
+      window.dispatchEvent(new CustomEvent('reveal-storyboard-set', { detail: { open: false } }));
+    }
+  }
+
   function captureStudentBoundary(ctx) {
     ctx.state.studentMaxIndices = normalizeIndices(ctx.deck.getIndices());
   }
@@ -302,18 +360,21 @@
               ? !deck.isPaused?.()
               : !!payload.override;
             ctx.state.pauseLockedByHost = requestedPause;
+            applyPauseLockUi(ctx);
           }
           deck.togglePause?.(payload.override);
           break;
         case 'pause':
           if (ctx.state.role === 'student') {
             ctx.state.pauseLockedByHost = true;
+            applyPauseLockUi(ctx);
           }
           if (!deck.isPaused?.()) deck.togglePause?.(true);
           break;
         case 'resume':
           if (ctx.state.role === 'student') {
             ctx.state.pauseLockedByHost = false;
+            applyPauseLockUi(ctx);
           }
           if (deck.isPaused?.()) deck.togglePause?.(false);
           break;
@@ -321,6 +382,7 @@
           if (payload.role === 'instructor' || payload.role === 'student') {
             ctx.state.role = payload.role;
             ctx.state.pauseLockedByHost = false;
+            applyPauseLockUi(ctx);
             if (ctx.state.role === 'student') {
               // Reset boundary to title slide when demoting to student.
               ctx.state.studentMaxIndices = titleSlideBoundary();
@@ -388,6 +450,7 @@
         const statePaused = payload?.state?.paused;
         if (typeof statePaused === 'boolean') {
           ctx.state.pauseLockedByHost = statePaused;
+          applyPauseLockUi(ctx);
         }
       }
     } finally {
@@ -424,6 +487,7 @@
         if (!deck.isPaused?.()) {
           deck.togglePause?.(true);
         }
+        applyPauseLockUi(ctx);
       } finally {
         queueMicrotask(() => {
           ctx.state.applyingRemote = false;
@@ -464,6 +528,12 @@
     };
     window.addEventListener('reveal-storyboard-boundary-moved', onBoundaryMoved);
 
+    const pauseBlocker = createPauseInputBlocker(ctx);
+    const blockedEvents = ['keydown', 'keyup', 'keypress', 'wheel', 'mousedown', 'mouseup', 'click', 'touchstart', 'touchend', 'pointerdown', 'pointerup'];
+    blockedEvents.forEach((eventName) => {
+      window.addEventListener(eventName, pauseBlocker, true);
+    });
+
     ctx.cleanup.push(() => {
       deck.off('slidechanged', enforceStudentBounds);
       deck.off('fragmentshown', enforceStudentBounds);
@@ -478,6 +548,9 @@
       deck.off('overviewhidden', emitState);
       window.removeEventListener('reveal-storyboard-changed', onStoryboardChanged);
       window.removeEventListener('reveal-storyboard-boundary-moved', onBoundaryMoved);
+      blockedEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, pauseBlocker, true);
+      });
     });
   }
 
@@ -519,6 +592,7 @@
         role: 'standalone',
         applyingRemote: false,
         pauseLockedByHost: false,
+        pauseOverlayEl: null,
         studentMaxIndices: titleSlideBoundary(),  // default: title slide until instructor progresses
         hasExplicitBoundary: false,  // true once allowStudentForwardTo/setStudentBoundary received
         boundaryIsLocal: false,      // true when boundary was set by storyboard button (acting instructor)
@@ -527,6 +601,7 @@
 
     wireDeckEvents(ctx);
     wireWindowMessageListener(ctx);
+    applyPauseLockUi(ctx);
 
     const api = {
       version: IFRAME_SYNC_VERSION,
@@ -538,6 +613,7 @@
         if (role === 'instructor' || role === 'student') {
           ctx.state.role = role;
           ctx.state.pauseLockedByHost = false;
+          applyPauseLockUi(ctx);
           if (ctx.state.role === 'student') {
             ctx.state.studentMaxIndices = titleSlideBoundary();
             ctx.state.hasExplicitBoundary = false;
@@ -557,6 +633,10 @@
         reset: () => callChalkboard(ctx, 'reset'),
       },
       destroy: () => {
+        if (ctx.state.pauseOverlayEl) {
+          ctx.state.pauseOverlayEl.remove();
+          ctx.state.pauseOverlayEl = null;
+        }
         ctx.cleanup.forEach((fn) => fn());
         ctx.cleanup = [];
       },

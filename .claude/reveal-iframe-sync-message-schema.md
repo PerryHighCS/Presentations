@@ -105,6 +105,7 @@ When role is `student`, host-issued pause is treated as host-owned lock:
 
 - After `pause` (or `togglePause` resolving to paused), local unpause attempts in the student iframe are immediately reverted.
 - Only host `resume` (or `togglePause` resolving to unpaused) clears the lock.
+- While host pause lock is active for students, the iframe shows a full-screen pause overlay and capture-phase input blocking prevents local keyboard/mouse/touch navigation until host resume.
 
 This ensures only the instructor/host can unblank student screens after a host pause.
 
