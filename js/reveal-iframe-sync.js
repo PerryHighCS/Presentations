@@ -153,7 +153,6 @@
       'user-select:none',
       'cursor:not-allowed',
     ].join(';');
-    overlay.textContent = 'Presentation paused by instructor';
 
     document.body.appendChild(overlay);
     ctx.state.pauseOverlayEl = overlay;
