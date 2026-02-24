@@ -678,7 +678,8 @@ const initChalkboard = function ( Reveal ) {
 			}
 		}
 		if ( !slideData ) {
-			slideData = { slide: { h: slide.h, v: slide.v, f: slide.f }, page: 0, events: [], duration: 0 };
+			// Always store at f:-1 — fragments share one drawing layer (see getSlideData).
+			slideData = { slide: { h: slide.h, v: slide.v, f: -1 }, page: 0, events: [], duration: 0 };
 			storage[ replayMode ].data.push( slideData );
 		}
 
@@ -754,16 +755,19 @@ const initChalkboard = function ( Reveal ) {
 		if ( id == undefined ) id = mode;
 		if ( !indices ) indices = slideIndices;
 		var data;
+		// Match on {h, v} only — fragment index is intentionally ignored so that
+		// all fragment states of a slide share one drawing layer.  This prevents
+		// blank-canvas bugs when navigating backward (Reveal enters the slide at
+		// f=MAX rather than f=-1, which would miss entries stored at f=-1).
 		for ( var i = 0; i < storage[ id ].data.length; i++ ) {
-			if ( storage[ id ].data[ i ].slide.h === indices.h && storage[ id ].data[ i ].slide.v === indices.v && storage[ id ].data[ i ].slide.f === indices.f ) {
+			if ( storage[ id ].data[ i ].slide.h === indices.h && storage[ id ].data[ i ].slide.v === indices.v ) {
 				data = storage[ id ].data[ i ];
 				return data;
 			}
 		}
-		var page = Number( Reveal.getCurrentSlide().getAttribute('data-pdf-page-number') ); 
-//console.log( indices, Reveal.getCurrentSlide() );
+		var page = Number( Reveal.getCurrentSlide().getAttribute('data-pdf-page-number') );
 		storage[ id ].data.push( {
-			slide: indices,
+			slide: { h: indices.h, v: indices.v, f: -1 },
 			page,
 			events: [],
 			duration: 0

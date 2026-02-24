@@ -585,7 +585,10 @@
       if (ctx.state.role !== 'instructor') return;
       const c = event.content;
       if (!c || c.sender !== 'chalkboard-plugin') return;
-      const slide = deck.getIndices();
+      // Normalize f:-1 so strokes are stored under the same key that
+      // getSlideData uses — fragments share one drawing layer per slide.
+      const { h, v } = deck.getIndices();
+      const slide = { h, v, f: -1 };
       if (c.type === 'draw') {
         safePostToParent(ctx, 'chalkboardStroke', {
           mode: c.mode,
