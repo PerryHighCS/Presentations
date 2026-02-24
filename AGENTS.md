@@ -75,6 +75,21 @@ These events are the integration point for `reveal-iframe-sync.js` and any conta
 
 ---
 
+### `js/chalkboard/chalkboard.js`
+
+Vendored and extended copy of the [reveal.js-plugins chalkboard](https://github.com/rajgoel/reveal.js-plugins/tree/master/chalkboard). **Do not replace with a CDN link** — the local copy has two additions required for iframe sync:
+
+- `replayStroke(mode, slide, event)` — applies a single draw/erase event from the instructor to the local canvas without recording it as a new stroke.
+- `loadState(jsonString)` — replaces the entire drawing storage with a snapshot from the host, then redraws the current slide.
+
+Both are exposed on the public `RevealChalkboard` API.
+
+**Key constraint — do not set `storage`:** the plugin's built-in `sessionStorage` persistence is intentionally disabled. The **host page** is the source of truth for drawing state (snapshot + delta buffer). Do not add `chalkboard: { storage: '...' }` to `Reveal.initialize()` — doing so would cause the local in-memory state and the host's buffer to diverge after a reload.
+
+**Student canvas is read-only:** when the plugin receives `setRole: student` it calls `RevealChalkboard.configure({ readOnly: true })` automatically via `reveal-iframe-sync.js`. No manual config needed.
+
+---
+
 ### `js/reveal-iframe-sync.js`
 
 Registers a Reveal.js **plugin** (`RevealIframeSync`) that syncs navigation and state between an instructor page and one or more student iframes via `window.postMessage`.
@@ -88,13 +103,14 @@ Registers a Reveal.js **plugin** (`RevealIframeSync`) that syncs navigation and 
 Reveal.initialize({
     plugins: [RevealIframeSync],
     iframeSync: {
-        role: 'instructor',   // or 'student'
         deckId: 'my-deck',
         hostOrigin: '*',
         allowedOrigins: ['*'],
     }
 });
 ```
+
+> **Role lifecycle:** the plugin always initialises as `'standalone'` regardless of any `role` config field. The host must explicitly promote the iframe via a `setRole` command (`instructor` or `student`). This prevents boundary controls from appearing in direct-browser or VS Code preview contexts.
 
 **Overview / storyboard routing:**
 Reveal.js's built-in grid overview (`O` key) is intentionally **not** propagated to students as a native Reveal overview. Instead, `overview: true/false` in any `setState` command is stripped from the Reveal state and converted to `reveal-storyboard-set` DOM events — so the custom storyboard strip appears on the student side rather than Reveal's grid.
@@ -125,6 +141,7 @@ Full message schema: `.claude/reveal-iframe-sync-message-schema.md`
    <script src="../js/reveal-storyboard.js"></script>
    <script src="../js/reveal-iframe-sync.js"></script>  <!-- only if needed -->
    ```
+   Register `RevealChalkboard` in `plugins: [RevealNotes, RevealChalkboard, RevealIframeSync]`. **Do not** add a `chalkboard: { storage: '...' }` block — the host manages drawing state.
 3. Follow the architecture in `.claude/skills/frontend-slides/SKILL.md` — in particular:
    - Apply theme colors with explicit CSS rules on `.reveal-viewport`, `.reveal`, `.reveal h1-h6`, etc. — **not** `--r-*` CSS variables (those only work with Reveal's bundled theme files)
    - Use **`px`** for all font sizes and spacing in CSS custom properties (not `em`/`clamp`/`vw`) — Reveal scales the canvas via CSS transform; `em` values double-scale
@@ -143,3 +160,5 @@ Full message schema: `.claude/reveal-iframe-sync-message-schema.md`
 | `max-height: none` on `pre code` | Reveal's base CSS caps code blocks at 400 px. |
 | `box-shadow: none; width: auto` on `pre` | Reveal's base CSS adds a drop shadow and forces `width: 90%`. |
 | Overview → storyboard | `overview: true` in any synced state is intercepted and routed to `reveal-storyboard-set` rather than `deck.setState()`, so students see the custom strip, not Reveal's grid. |
+| No `chalkboard.storage` | The vendored chalkboard plugin does not write to `sessionStorage`. The host page is the source of truth (snapshot + delta buffer). Setting `storage` would cause divergence on reload. |
+| Role starts as `standalone` | `reveal-iframe-sync.js` always initialises in `standalone` mode. The host must send `setRole` to promote to `instructor` or `student`. Never rely on the `role` config field. |

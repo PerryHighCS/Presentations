@@ -233,7 +233,9 @@ Erase variant:
 
 #### `chalkboardState`
 
-Full state sync. Replace the student's entire drawing storage with a snapshot from the instructor and immediately redraw the current slide.
+Full state sync. Replace the target iframe's entire drawing storage with a snapshot and immediately redraw the current slide.
+
+Sent to **student** iframes to propagate instructor drawings. Also sent back to the **instructor** iframe after a reload — the host uses its cached snapshot to restore drawings that would otherwise be lost when the instructor's in-memory state is reset on page load.
 
 ```json
 {
