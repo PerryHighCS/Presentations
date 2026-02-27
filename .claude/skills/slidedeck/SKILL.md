@@ -7,6 +7,11 @@ description: Create stunning, animation-rich HTML presentations from scratch or 
 
 Create Reveal.js-powered HTML presentations that run entirely in the browser. This skill helps non-designers discover their preferred aesthetic through visual exploration ("show, don't tell"), then generates production-quality slide decks.
 
+## Attribution And License
+
+- Attribution: see `NOTICE.md` in this folder.
+- License: see `LICENSE.md` in this folder.
+
 ## Core Philosophy
 
 1. **Reveal.js for Navigation** — Use Reveal.js (CDN) for slide transitions, keyboard/touch navigation, fragments, progress bar, and slide numbers. Do not write a custom SlidePresentation class.
