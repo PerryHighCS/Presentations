@@ -85,7 +85,7 @@ Reveal.initialize({
 
 **Supported commands (host → iframe):** `next`, `prev`, `slide`, `setState`, `togglePause`, `pause`, `resume`, `setRole`, `allowStudentForwardTo`, `setStudentBoundary`, `toggleOverview`, `showOverview`, `hideOverview`, `chalkboardCall`, `toggleChalkboard`, `toggleNotesCanvas`, `clearChalkboard`, `resetChalkboard`, `chalkboardStroke`, `chalkboardState`, `requestChalkboardState`, `ping`
 
-Full message schema: `.claude/reveal-iframe-sync-message-schema.md`
+Full message schema: `vendor/SyncDeck-Reveal/js/reveal-iframe-sync-message-schema.md`
 
 ---
 
