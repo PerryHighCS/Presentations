@@ -146,7 +146,7 @@ Required JavaScript:
 
 ```html
 <script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
-<script src="js/reveal-storyboard.js"></script>
+<script src="../js/reveal-storyboard.js"></script>
 <script>
 if (window.initRevealStoryboard) {
     window.initRevealStoryboard({
@@ -163,7 +163,7 @@ Configuration:
 
 - Configure via the `initRevealStoryboard({...})` options object (init-call-only).
 - Keep storyboard shared scripts in top-level **`js/`** for reuse across decks.
-- For GitHub Pages project sites (for example `/Presentations/`), use **relative local asset paths** like `../js/...` instead of root-absolute `/js/...`.
+- For decks in subfolders, use **relative local asset paths** like `../js/...`; for root-level decks use `js/...`.
 - Build thumbnails from cloned `<section>` nodes so design styles are faithfully previewed.
 - Ensure cloned preview sections are explicitly visible (`present`) to avoid black thumbnails.
 - Preserve existing Reveal keyboard controls; choose a toggle key that does not conflict with core navigation.
@@ -176,13 +176,12 @@ Minimal setup:
 
 ```html
 <script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
-<script src="js/reveal-iframe-sync.js"></script>
+<script src="../js/reveal-iframe-sync.js"></script>
 <script>
 Reveal.initialize({
     // ... your Reveal config ...
     plugins: [ RevealIframeSync ],
     iframeSync: {
-        role: 'instructor',
         deckId: 'my-deck',
         hostOrigin: '*',
         allowedOrigins: ['*']
@@ -195,7 +194,7 @@ Contract:
 
 - Student role listens for host commands (`next`, `prev`, `slide`, `setState`).
 - Instructor role publishes state changes back to host.
-- Default role should be `instructor` so asynchronous viewers retain full local navigation unless a host explicitly switches to `student`.
+- Default role is `standalone`; the host must send `setRole` to switch to `instructor` or `student`.
 - Message scope can be constrained by `deckId` and `allowedOrigins`.
 - On connect (and role changes), iframe posts `ready` with current role, deck state, and navigation capabilities.
 - By default, students can navigate backward but not forward beyond the most recent instructor-synced position.
@@ -208,10 +207,10 @@ Use Reveal Chalkboard for live drawing/annotation during a presentation.
 Minimal setup:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js-plugins@latest/chalkboard/style.css" />
+<link rel="stylesheet" href="../js/chalkboard/chalkboard.css" />
 
 <script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/reveal.js-plugins@latest/chalkboard/plugin.js"></script>
+<script src="../js/chalkboard/chalkboard.js"></script>
 <script>
 Reveal.initialize({
     // ... your Reveal config ...
