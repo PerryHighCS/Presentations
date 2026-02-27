@@ -148,6 +148,16 @@ body,
 .reveal .progress span { background: var(--accent); }
 .reveal .slide-number { font-family: var(--font-mono); font-size: 0.45em; background: transparent; }
 
+/* Keep Reveal's controls visible on custom themes */
+.reveal .controls {
+    color: var(--accent);
+    z-index: 30;
+}
+
+.reveal .controls .enabled {
+    opacity: 0.95;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
     .reveal .fragment {
@@ -166,7 +176,8 @@ Reveal.initialize({
     transitionSpeed: 'fast',
     backgroundTransition: 'none',
     center: false,          // we handle centering in .slide-inner
-    controls: false,        // keyboard/touch only — no on-screen arrows
+    controls: true,         // on-screen arrow buttons
+    controlsLayout: 'edges', // keep controls at the viewport edges
     progress: true,
     slideNumber: 'c/t',
     keyboard: true,

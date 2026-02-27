@@ -105,7 +105,8 @@ Reveal.js renders slides on a fixed **canvas** (configured as `width × height`,
             transitionSpeed: 'fast',
             backgroundTransition: 'none',
             center: false,            // we handle centering via flex in .slide-inner
-            controls: false,          // no on-screen arrow buttons (keyboard/touch only)
+            controls: true,           // on-screen arrow buttons
+            controlsLayout: 'edges',  // keep controls at the viewport edges
             progress: true,           // thin progress bar at bottom
             slideNumber: 'c/t',       // "3 / 12" counter
             keyboard: true,
@@ -399,6 +400,16 @@ body,
 .reveal .progress { height: 3px; }
 .reveal .progress span {
     background: var(--accent);
+}
+
+/* Keep Reveal's controls visible on custom themes */
+.reveal .controls {
+    color: var(--accent);
+    z-index: 30;
+}
+
+.reveal .controls .enabled {
+    opacity: 0.95;
 }
 
 /* Slide number */
