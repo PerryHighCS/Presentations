@@ -104,6 +104,7 @@ body,
   --purple-glow:   rgba(180,111,255,0.12);
   --gold:          #ffd700;
   --green:         #4dffb4;
+  --red:           #ff4d6a;
   --bg:            #020813;
   --bg-card:       #081120;
   --text:          #ddeeff;
@@ -445,6 +446,7 @@ body::before {
 .callout h3 { font-size: var(--h3); font-weight: 600; color: var(--cyan); margin-bottom: var(--gap-sm); }
 .callout.accent-p { border-color: rgba(180,111,255,0.35); }
 .callout.accent-g { border-color: rgba(77,255,180,0.35); background: rgba(77,255,180,0.04); }
+.callout.accent-r { border-color: rgba(255,77,106,0.35); background: rgba(255,77,106,0.04); }
 
 /* ─── 10. YES! slide animations ────────────────────────────────────── */
 
@@ -489,6 +491,54 @@ body::before {
 }
 .reveal .fragment.visible .yes-ring-frag {
   animation: ring-burst 1.4s var(--ease) 0.08s forwards;
+}
+
+/* No / X ring — red counterpart to yes-ring */
+.no-ring {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%,-50%) scale(0.4);
+  opacity: 0;
+  pointer-events: none;
+  border: 2px solid rgba(255,77,106,0.5);
+}
+.reveal .fragment .no-ring-frag { animation: none; }
+.reveal .fragment.visible .no-ring-frag {
+  animation: ring-burst 1.4s var(--ease) 0.08s forwards;
+}
+
+/* X stamp — the ✗ character scales + rotates in */
+@keyframes x-stamp {
+  0%   { transform: scale(0.25) rotate(-20deg); opacity: 0; }
+  55%  { transform: scale(1.25) rotate(6deg);   opacity: 1; }
+  80%  { transform: scale(0.92) rotate(-2deg);              }
+  100% { transform: scale(1)    rotate(0deg);   opacity: 1; }
+}
+.x-stamp {
+  display: inline-block;
+  transform: scale(0.25) rotate(-20deg);
+  opacity: 0;
+}
+.reveal .fragment.visible .x-stamp {
+  animation: x-stamp 0.6s var(--ease) 0.05s both;
+}
+
+/* Checkmark wobble — bouncy settle */
+@keyframes check-wobble {
+  0%   { transform: scale(0.2) rotate(-12deg); opacity: 0; }
+  40%  { transform: scale(1.3) rotate(10deg);  opacity: 1; }
+  58%  { transform: scale(0.88) rotate(-6deg);             }
+  72%  { transform: scale(1.12) rotate(4deg);              }
+  86%  { transform: scale(0.96) rotate(-1deg);             }
+  100% { transform: scale(1)    rotate(0deg);  opacity: 1; }
+}
+.check-wobble {
+  display: inline-block;
+  transform: scale(0.2) rotate(-12deg);
+  opacity: 0;
+}
+.reveal .fragment.visible .check-wobble {
+  animation: check-wobble 0.7s var(--ease) 0.05s both;
 }
 
 /* ─── 11. Fragment overrides ───────────────────────────────────────── */
@@ -662,6 +712,9 @@ body.storyboard-open .reveal {
   .reveal .fragment.fade-up { transform: none !important; }
   .reveal section.present .yes-text { animation: none; }
   .reveal section.present .yes-ring { animation: none; }
+  .reveal .fragment.visible .no-ring-frag { animation: none; }
+  .reveal .fragment.visible .x-stamp { animation: none; opacity: 1; transform: none; }
+  .reveal .fragment.visible .check-wobble { animation: none; opacity: 1; transform: none; }
   .storyboard { transition: none; }
 }
 
@@ -1377,7 +1430,7 @@ arr[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">42<
     <div class="split" style="align-items:start;">
         <div class="callout accent-g fragment" style="position:relative;margin-bottom:var(--gap);" data-fragment-index="1">
           <div class="yes-ring yes-ring-frag" style="top:1.25em;left:2.45em;width:120px;height:120px;border-color:rgba(77,255,180,0.5);"></div>
-          <p style="color:var(--green);font-weight:700;font-size:var(--h3);margin-bottom:var(--gap-sm);">✓ Yes, it works!</p>
+          <p style="color:var(--green);font-weight:700;font-size:var(--h3);margin-bottom:var(--gap-sm);"><span class="check-wobble">✓</span> Yes, it works!</p>
           <ul class="bullets">
             <li style="font-size:var(--small);">The enhanced <code>for</code> gives you each <code>int[]</code> row as a reference</li>
             <li style="font-size:var(--small);">Mutations through <code>row</code> <strong>do affect</strong> the original <code>matrix</code></li>
@@ -1411,6 +1464,82 @@ arr[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">42<
                 <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
                 <span class="arr-arrow">⟶</span>
                 <div class="arr-row"><div class="arr-cell hl-n">0</div><div class="arr-cell hl-n">10</div><div class="arr-cell hl-n">20</div><div class="arr-cell hl-n">30</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 16 — For-each challenge: nested enhanced for (won't work)
+     Code is visible immediately (the question).
+     Fragment: answer card + result grid together (the reveal).
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(255,77,120,0.05) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Check your understanding</span>
+    <h2>Will this <span style="color:var(--cyan);">work?</span></h2>
+
+    <!-- The challenge code — visible immediately so students can think -->
+    <div class="code-card" style="width:100%;margin-top:var(--gap);margin-bottom:var(--gap);">
+        <div class="code-hdr">
+          <div class="cdot" style="background:#ff5f57;"></div><div class="cdot" style="background:#febc2e;"></div><div class="cdot" style="background:#28c840;"></div>
+          <span class="clang">Java</span>
+        </div>
+        <div class="code-body">
+          <pre><span class="kw">int</span><span class="tp">[][]</span> matrix = <span class="kw">new int</span>[<span class="nm">3</span>][<span class="nm">4</span>];
+<span class="kw">for</span> (<span class="kw">int</span><span class="tp">[]</span> row : matrix) {
+  <span class="kw">for</span> (<span class="kw">int</span> val : row) {
+    val = <span class="nm">10</span>;
+  }
+}</pre>
+        </div>
+      </div>
+
+      <!-- Answer + result appear together on advance -->
+    <div class="split" style="align-items:start;">
+        <div class="callout accent-r fragment" style="position:relative;margin-bottom:var(--gap);" data-fragment-index="1">
+          <div class="no-ring no-ring-frag" style="top:0.9em;left:2.1em;width:120px;height:120px;"></div>
+          <p style="color:var(--red);font-weight:700;font-size:var(--h3);margin-bottom:var(--gap-sm);"><span class="x-stamp">✗</span> No — it doesn't work!</p>
+          <ul class="bullets">
+            <li style="font-size:var(--small);"><code>int val</code> is a <strong>copy</strong> of the value stored in the array cell</li>
+            <li style="font-size:var(--small);">Assigning <code>val = 10</code> updates only the local copy — <code>matrix</code> is never touched</li>
+            <li style="font-size:var(--small);">This works for <code>int[]</code> rows because arrays are <em>references</em>; primitive <code>int</code>s are not</li>
+          </ul>
+        </div>
+
+        <div class="fragment" data-fragment-index="1">
+          <p style="color:var(--text-muted);margin-bottom:var(--gap-sm);">Result — matrix is unchanged (all zeros):</p>
+          <div style="display:flex;align-items:flex-start;gap:1.55em;margin-bottom:var(--gap-sm);">
+            <div style="display:flex;align-items:center;gap:var(--gap-sm);padding-top:1.55em;">
+              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.2em;">
+                <div class="var-name">matrix</div>
+                <span class="type-ann" style="margin-left:0;">(int[][])</span>
+              </div>
+              <span class="arr-arrow">⟶</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:0;">
+              <div style="display:flex;align-items:center;gap:0.72em;">
+                <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+                <span class="arr-arrow">⟶</span>
+                <div class="arr-row"><div class="arr-cell hl-n">0</div><div class="arr-cell hl-n">0</div><div class="arr-cell hl-n">0</div><div class="arr-cell hl-n">0</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.72em;">
+                <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+                <span class="arr-arrow">⟶</span>
+                <div class="arr-row"><div class="arr-cell hl-n">0</div><div class="arr-cell hl-n">0</div><div class="arr-cell hl-n">0</div><div class="arr-cell hl-n">0</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.72em;">
+                <div class="arr-cell hl-p" style="width:3.3em;height:1.86em;aspect-ratio:auto;"><span style="color:var(--cyan);font-size:0.7em;">●</span></div>
+                <span class="arr-arrow">⟶</span>
+                <div class="arr-row"><div class="arr-cell hl-n">0</div><div class="arr-cell hl-n">0</div><div class="arr-cell hl-n">0</div><div class="arr-cell hl-n">0</div></div>
               </div>
             </div>
           </div>
