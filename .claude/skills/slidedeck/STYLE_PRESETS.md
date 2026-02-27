@@ -172,6 +172,7 @@ body,
 ```javascript
 Reveal.initialize({
     hash: true,
+    hashOneBasedIndex: true,
     transition: 'fade',
     transitionSpeed: 'fast',
     backgroundTransition: 'none',

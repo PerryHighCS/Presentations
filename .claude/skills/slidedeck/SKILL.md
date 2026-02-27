@@ -101,6 +101,7 @@ Reveal.js renders slides on a fixed **canvas** (configured as `width × height`,
     <script>
         Reveal.initialize({
             hash: true,               // URL updates with slide number
+            hashOneBasedIndex: true,  // use 1-based slide indexes in the URL
             transition: 'fade',       // slide transition (fade/slide/convex/none)
             transitionSpeed: 'fast',
             backgroundTransition: 'none',
