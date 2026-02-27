@@ -1,5 +1,14 @@
 # SyncDeck-Reveal Migration Plan
 
+## Status Snapshot (2026-02-27)
+- Completed now:
+  - Enabled submodule checkout in Pages workflow: `.github/workflows/static.yml` uses `actions/checkout@v4` with `submodules: recursive`.
+  - Added migration-status notes to `AGENTS.md` (current `js/` vs planned `vendor/SyncDeck-Reveal/js/` paths).
+- Pending (blocked on new repo URL / submodule creation):
+  - Create `SyncDeck-Reveal` repo and publish shared `js/` runtime there.
+  - Add submodule pointer in this repo.
+  - Rewrite deck and template asset paths to `vendor/SyncDeck-Reveal/js/...`.
+
 ## Goal
 Move shared JavaScript runtime/plugin code out of `Presentations` into a separate repo (`SyncDeck-Reveal`), then consume it here as a git submodule so this repo focuses on slide content only.
 
@@ -36,6 +45,8 @@ Presentations/
 2. Verify submodule status:
    - `git submodule status`
 3. Ensure `.gitmodules` is committed.
+4. Confirm Pages workflow checkout includes submodules:
+   - `actions/checkout@v4` with `submodules: recursive` (already done).
 
 ## Phase 3: Update Paths in Decks
 1. Update deck/plugin references from local `../js/...` to submodule paths.

@@ -2,9 +2,15 @@
 
 This repository contains HTML slide presentations built with **Reveal.js**, published via GitHub Pages. Two shared JavaScript plugins in `js/` extend every deck with a slide-preview storyboard and iframe-based instructor/student synchronization.
 
+## Migration Status
+
+- Current source of shared runtime code: local `js/` directory.
+- Planned target: `vendor/SyncDeck-Reveal` git submodule.
+- CI readiness: `.github/workflows/static.yml` is configured with `submodules: recursive` so Pages deployments will include submodule contents once the submodule is added.
+
 ## Shared Plugins
 
-Both plugins are plain IIFE scripts — no build step, no npm. Reference them with a `<script>` tag relative to the presentation file (e.g. `../js/reveal-storyboard.js` for decks inside a subdirectory).
+Both plugins are plain IIFE scripts — no build step, no npm. Reference them with a `<script>` tag relative to the presentation file (currently `../js/...` for decks inside a subdirectory; migrate to `../vendor/SyncDeck-Reveal/js/...` after the submodule cutover).
 
 **Required HTML inside the presentation:**
 ```html
@@ -88,6 +94,8 @@ Full message schema: `.claude/reveal-iframe-sync-message-schema.md`
 
 1. Create `<topic>/presentation-name.html` (subdirectory keeps the repo organised).
 2. Load the shared plugins with relative paths:
+   - Current (pre-migration): `../js/...`
+   - After submodule migration: `../vendor/SyncDeck-Reveal/js/...`
    ```html
    <link rel="stylesheet" href="../js/chalkboard/chalkboard.css">
    <script src="../js/chalkboard/chalkboard.js"></script>
