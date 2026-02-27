@@ -135,7 +135,7 @@ Required behavior:
 
 Integration standard:
 
-- Use shared script **`js/reveal-storyboard.js`** to show the storyboard.
+- Use shared script **`vendor/SyncDeck-Reveal/js/reveal-storyboard.js`** to show the storyboard.
 - Include storyboard container markup (`#storyboard`, `#storyboard-track`).
 - After `Reveal.initialize(...)`, call `window.initRevealStoryboard({...})`.
 
@@ -151,7 +151,7 @@ Required JavaScript:
 
 ```html
 <script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
-<script src="../js/reveal-storyboard.js"></script>
+<script src="../vendor/SyncDeck-Reveal/js/reveal-storyboard.js"></script>
 <script>
 if (window.initRevealStoryboard) {
     window.initRevealStoryboard({
@@ -167,21 +167,21 @@ if (window.initRevealStoryboard) {
 Configuration:
 
 - Configure via the `initRevealStoryboard({...})` options object (init-call-only).
-- Keep storyboard shared scripts in top-level **`js/`** for reuse across decks.
-- For decks in subfolders, use **relative local asset paths** like `../js/...`; for root-level decks use `js/...`.
+- Keep storyboard shared scripts in **`vendor/SyncDeck-Reveal/js/`** for reuse across decks.
+- For decks in subfolders, use **relative local asset paths** like `../vendor/SyncDeck-Reveal/js/...`; for root-level decks use `vendor/SyncDeck-Reveal/js/...`.
 - Build thumbnails from cloned `<section>` nodes so design styles are faithfully previewed.
 - Ensure cloned preview sections are explicitly visible (`present`) to avoid black thumbnails.
 - Preserve existing Reveal keyboard controls; choose a toggle key that does not conflict with core navigation.
 
 ### Add-on: Iframe Instructor/Student Sync
 
-Use shared script **`js/reveal-iframe-sync.js`** to sync slides via `postMessage` so that for decks embedded in an iframe, the instructor can control navigation and state from the host page, while students view a synced presentation in the iframe.
+Use shared script **`vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js`** to sync slides via `postMessage` so that for decks embedded in an iframe, the instructor can control navigation and state from the host page, while students view a synced presentation in the iframe.
 
 Minimal setup:
 
 ```html
 <script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
-<script src="../js/reveal-iframe-sync.js"></script>
+<script src="../vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js"></script>
 <script>
 Reveal.initialize({
     // ... your Reveal config ...
@@ -212,10 +212,10 @@ Use Reveal Chalkboard for live drawing/annotation during a presentation.
 Minimal setup:
 
 ```html
-<link rel="stylesheet" href="../js/chalkboard/chalkboard.css" />
+<link rel="stylesheet" href="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.css" />
 
 <script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
-<script src="../js/chalkboard/chalkboard.js"></script>
+<script src="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.js"></script>
 <script>
 Reveal.initialize({
     // ... your Reveal config ...
@@ -232,7 +232,7 @@ Contract:
 
 - Register `RevealChalkboard` in `plugins` and keep chalkboard options under `chalkboard`.
 - Keep keys non-conflicting with deck navigation (default plugin bindings are acceptable).
-- For iframe sync (`js/reveal-iframe-sync.js`), forward chalkboard commands/events through the same `postMessage` channel so student and instructor views stay aligned.
+- For iframe sync (`vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js`), forward chalkboard commands/events through the same `postMessage` channel so student and instructor views stay aligned.
 
 ### Required CSS
 

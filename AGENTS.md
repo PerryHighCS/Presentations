@@ -1,16 +1,15 @@
 # AGENTS.md
 
-This repository contains HTML slide presentations built with **Reveal.js**, published via GitHub Pages. Two shared JavaScript plugins in `js/` extend every deck with a slide-preview storyboard and iframe-based instructor/student synchronization.
+This repository contains HTML slide presentations built with **Reveal.js**, published via GitHub Pages. Shared runtime/plugin code is consumed from the `SyncDeck-Reveal` git submodule at `vendor/SyncDeck-Reveal/js/`.
 
-## Migration Status
+## Runtime Source
 
-- Current source of shared runtime code: local `js/` directory.
-- Planned target: `vendor/SyncDeck-Reveal` git submodule.
-- CI readiness: `.github/workflows/static.yml` is configured with `submodules: recursive` so Pages deployments will include submodule contents once the submodule is added.
+- Shared runtime source: `vendor/SyncDeck-Reveal/js/` git submodule.
+- CI readiness: `.github/workflows/static.yml` is configured with `submodules: recursive` so Pages deployments include submodule contents.
 
 ## Shared Plugins
 
-Both plugins are plain IIFE scripts — no build step, no npm. Reference them with a `<script>` tag relative to the presentation file (currently `../js/...` for decks inside a subdirectory; migrate to `../vendor/SyncDeck-Reveal/js/...` after the submodule cutover).
+Both plugins are plain IIFE scripts — no build step, no npm. Reference them with a `<script>` tag relative to the presentation file (for decks inside a subdirectory, use `../vendor/SyncDeck-Reveal/js/...`).
 
 **Required HTML inside the presentation:**
 ```html
@@ -42,7 +41,7 @@ These events are the integration point for `reveal-iframe-sync.js` and any conta
 
 ---
 
-### `js/chalkboard/chalkboard.js`
+### `vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.js`
 
 Vendored and extended copy of the [reveal.js-plugins chalkboard](https://github.com/rajgoel/reveal.js-plugins/tree/master/chalkboard). **Do not replace with a CDN link** — the local copy has two additions required for iframe sync:
 
@@ -65,7 +64,7 @@ iframe.contentWindow.postMessage({
 
 ---
 
-### `js/reveal-iframe-sync.js`
+### `vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js`
 
 Registers a Reveal.js **plugin** (`RevealIframeSync`) that syncs navigation and state between an instructor page and one or more student iframes via `window.postMessage`.
 
@@ -94,13 +93,13 @@ Full message schema: `.claude/reveal-iframe-sync-message-schema.md`
 
 1. Create `<topic>/presentation-name.html` (subdirectory keeps the repo organised).
 2. Load the shared plugins with relative paths:
-   - Current (pre-migration): `../js/...`
-   - After submodule migration: `../vendor/SyncDeck-Reveal/js/...`
+   - For decks in subdirectories: `../vendor/SyncDeck-Reveal/js/...`
+   - For root-level decks: `vendor/SyncDeck-Reveal/js/...`
    ```html
-   <link rel="stylesheet" href="../js/chalkboard/chalkboard.css">
-   <script src="../js/chalkboard/chalkboard.js"></script>
-   <script src="../js/reveal-storyboard.js"></script>
-   <script src="../js/reveal-iframe-sync.js"></script>  <!-- only if needed -->
+   <link rel="stylesheet" href="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.css">
+   <script src="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.js"></script>
+   <script src="../vendor/SyncDeck-Reveal/js/reveal-storyboard.js"></script>
+   <script src="../vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js"></script>  <!-- only if needed -->
    ```
    Register `RevealChalkboard` in `plugins: [RevealNotes, RevealChalkboard, RevealIframeSync]`. **Do not** add a `chalkboard: { storage: '...' }` block — the host manages drawing state.
 3. Follow the architecture in `.claude/skills/frontend-slides/SKILL.md` — in particular:

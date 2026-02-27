@@ -3,11 +3,12 @@
 ## Status Snapshot (2026-02-27)
 - Completed now:
   - Enabled submodule checkout in Pages workflow: `.github/workflows/static.yml` uses `actions/checkout@v4` with `submodules: recursive`.
-  - Added migration-status notes to `AGENTS.md` (current `js/` vs planned `vendor/SyncDeck-Reveal/js/` paths).
-- Pending (blocked on new repo URL / submodule creation):
-  - Create `SyncDeck-Reveal` repo and publish shared `js/` runtime there.
-  - Add submodule pointer in this repo.
-  - Rewrite deck and template asset paths to `vendor/SyncDeck-Reveal/js/...`.
+  - Created `SyncDeck-Reveal` and pushed history-preserving `js/` split.
+  - Added `SyncDeck-Reveal` submodule at `vendor/SyncDeck-Reveal/js`.
+  - Rewrote deck and template asset paths to `vendor/SyncDeck-Reveal/js/...`.
+  - Removed legacy local `js/` directory from `Presentations`.
+- Pending:
+  - Validate runtime behavior in browser (storyboard, iframe sync, chalkboard assets).
 
 ## Goal
 Move shared JavaScript runtime/plugin code out of `Presentations` into a separate repo (`SyncDeck-Reveal`), then consume it here as a git submodule so this repo focuses on slide content only.
@@ -24,8 +25,8 @@ Move shared JavaScript runtime/plugin code out of `Presentations` into a separat
 ```text
 Presentations/
 ├── vendor/
-│   └── SyncDeck-Reveal/   # git submodule
-│       └── js/...
+│   └── SyncDeck-Reveal/
+│       └── js/            # git submodule
 ├── CSA/
 │   └── 2d-arrays.html
 ├── index.html
@@ -41,7 +42,7 @@ Presentations/
 
 ## Phase 2: Add Submodule Here
 1. In `Presentations`, add submodule:
-   - `git submodule add <syncdeck-reveal-url> vendor/SyncDeck-Reveal`
+   - `git submodule add <syncdeck-reveal-url> vendor/SyncDeck-Reveal/js`
 2. Verify submodule status:
    - `git submodule status`
 3. Ensure `.gitmodules` is committed.

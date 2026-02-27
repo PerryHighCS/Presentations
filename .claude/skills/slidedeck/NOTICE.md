@@ -11,9 +11,9 @@ repository's Reveal.js workflow and plugin conventions.
 
 ## Local Adaptations
 - Added repository-specific plugin guidance for:
-  - `js/reveal-storyboard.js`
-  - `js/reveal-iframe-sync.js`
-  - `js/chalkboard/chalkboard.js` and `chalkboard.css`
+  - `vendor/SyncDeck-Reveal/js/reveal-storyboard.js`
+  - `vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js`
+  - `vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.js` and `chalkboard.css`
 - Added strict Reveal.js canvas sizing and CSS architecture constraints.
 - Added default storyboard integration and iframe-sync contract guidance.
 - Added project-specific path guidance for subdirectory decks.

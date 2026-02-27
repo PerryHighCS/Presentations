@@ -1,6 +1,6 @@
 # Reveal Iframe Sync Message Schema
 
-This document defines the `postMessage` protocol used by `js/reveal-iframe-sync.js`.
+This document defines the `postMessage` protocol used by `vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js`.
 
 ## Envelope (all messages)
 
