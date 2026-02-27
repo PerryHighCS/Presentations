@@ -416,8 +416,18 @@ body,
 /* Slide number */
 .reveal .slide-number {
     font-family: var(--font-mono);
-    font-size: 0.45em;
+    font-size: 1em;
     background: transparent;
+    color: var(--text-muted);
+}
+
+/* Reveal renders slide numbers as links when hash navigation is enabled */
+.reveal .slide-number a,
+.reveal .slide-number a:hover,
+.reveal .slide-number a:focus {
+    color: inherit;
+    text-decoration: none;
+    cursor: default;
 }
 
 /* ===========================================
