@@ -155,6 +155,17 @@ jobs:
           print(f'Staged {copied_files} file(s) into {site.relative_to(root)}.')
           print(f'Applied {len(rules)} manifest rule(s).')
           PY
+            - name: List staged site files
+                run: |
+                    echo "Files that will be published from _site:"
+                    if [ -d _site ]; then
+                        find _site -type f -printf '%P\n' | sort
+                        echo
+                        echo "Total files: $(find _site -type f | wc -l)"
+                    else
+                        echo "_site directory was not created."
+                        exit 1
+                    fi
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
