@@ -5,10 +5,85 @@
   - Add a reusable shared runtime extension for video-backed Reveal slides, with YouTube as the v1 backend.
   - Extend `reveal-iframe-sync.js` and its message schema for host-authoritative video playback sync.
   - Document authoring and host relay expectations in repo docs.
+- In progress now:
+  - Expand `vendor/SyncDeck-Reveal/js/` regression coverage so the existing sync runtime is safer to extend for video work.
 - Not started:
   - Shared runtime implementation in `vendor/SyncDeck-Reveal/js/`
   - Sync protocol changes for YouTube commands/events
   - Example deck integration and browser validation
+
+## Progress Log
+
+### 2026-02-28: Sync runtime coverage expansion completed
+
+Completed in `vendor/SyncDeck-Reveal/js` before beginning the video-sync extension work:
+- Added a richer Playwright fixture deck in `test/fixtures/runtime-harness.html` with:
+  - a vertical stack
+  - fragment coverage
+  - additional horizontal slides
+- Expanded the Reveal test stub in `test/fixtures/helpers/reveal-stub.js` to model:
+  - horizontal navigation
+  - vertical stack navigation
+  - fragment progression
+  - `availableRoutes()`
+  - `getCurrentSlide()`
+  - pause override behavior
+- Added integration coverage in `test/integration/boundary-storyboard.spec.mjs` for:
+  - explicit student boundary status
+  - released-region rendering
+  - instructor storyboard boundary controls
+  - live-region announcement deduping on rerender
+- Added integration coverage in `test/integration/navigation-input.spec.mjs` for:
+  - direct API boundary-bypass snap-back
+  - exact pullback lock on same-`h` movement
+  - student keyboard-map restrictions
+  - touch-swipe fragment behavior at the boundary
+- Updated `test/integration/runtime-harness.smoke.spec.mjs` to track the expanded harness.
+
+Verification completed on 2026-02-28:
+- `npm test`
+- `npm run lint`
+
+Committed work:
+- Submodule commit: `495f323` `Add SyncDeck runtime navigation coverage`
+- Parent repo commit: `c2afe6b` `Update SyncDeck-Reveal test coverage`
+
+Why this matters for the video extension:
+- Video-slide sync will depend on the same boundary, role, pause, and host-authoritative message paths already used by `reveal-iframe-sync.js`.
+- The stronger harness reduces risk when extending the runtime for synchronized media playback.
+
+### 2026-02-28: Remaining sync-runtime coverage gaps still being worked
+
+Still open after the coverage tranche above:
+- upward host-relay assertions for chalkboard/state messages from a true iframe child context
+- any remaining real-browser/manual checks not covered by the top-level file fixture
+
+These gaps are runtime-hardening work for `SyncDeck-Reveal`, not yet the new YouTube/video implementation itself.
+
+### 2026-02-28: Additional runtime-hardening coverage completed
+
+Completed after the first coverage tranche:
+- Extended the fixture bootstrap in `test/fixtures/runtime-harness.html` so tests can inject per-run harness config.
+- Added integration coverage in `test/integration/navigation-input.spec.mjs` for:
+  - follow-instructor boundary auto-capture after `clearBoundary`
+  - `studentCanNavigateBack: false` no-back-mode enforcement and snap-back behavior
+  - host pause-lock UI and local unpause suppression
+  - chalkboard command routing and student read-only configuration on remote role change
+
+Verification completed on 2026-02-28:
+- `npm test`
+- `npm run lint`
+
+Current local coverage status before video-sync implementation:
+- boundary lifecycle: covered
+- released-region/storyboard rendering: covered
+- direct API safety-net enforcement: covered
+- keyboard restrictions: covered
+- touch/fragment behavior at the boundary: covered
+- follow-instructor recapture: covered
+- no-back mode: covered
+- pause-lock behavior: covered
+- chalkboard command dispatch: covered
 
 ## Summary
 Create a reusable Reveal.js extension in the shared runtime submodule that allows a deck author to declare synchronized video slides and have playback stay synchronized between instructor and student iframes. YouTube is the v1 backend. The implementation should follow the existing `reveal-iframe-sync.js` contract: host-authoritative control flows downward as commands, while iframe runtime emits state upward for relay, recovery, and drift correction.
