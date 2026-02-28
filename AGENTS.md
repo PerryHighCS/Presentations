@@ -6,6 +6,9 @@ This repository contains HTML slide presentations built with **Reveal.js**, publ
 
 - Shared runtime source: `vendor/SyncDeck-Reveal/js/` git submodule.
 - CI readiness: `.github/workflows/static.yml` is configured with `submodules: recursive` so Pages deployments include submodule contents.
+- Local submodule workflow: for local testing, edit files directly in `vendor/SyncDeck-Reveal/js/`; the parent repo will use those working-tree changes immediately.
+- Detached HEAD warning: submodules are often checked out at a raw commit hash, which makes local commits easy to lose track of. Before committing inside the submodule, create or switch to a branch, e.g. `git -C vendor/SyncDeck-Reveal/js switch -c fix/my-bug`.
+- Commit model: commit and push code changes from inside the submodule repo first, then commit the updated submodule pointer in the parent repo with `git add vendor/SyncDeck-Reveal/js`.
 
 ## Shared Plugins
 
