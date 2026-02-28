@@ -414,7 +414,7 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 ## Actionable Checklist
 
 ### Phase 1: Design and contract
-- [ ] Confirm final filename and store this plan at `.agent/plans/video-slide-sync-extension-plan.md`.
+- [x] Confirm final filename and store this plan at `.agent/plans/video-slide-sync-extension-plan.md`.
 - [ ] Add a short "Status Snapshot" header to the plan file, matching existing plan style.
 - [ ] Specify final declarative HTML contract for YouTube slides.
 - [ ] Specify default auto-generated player-slot behavior and the optional explicit slot override.
