@@ -1,16 +1,31 @@
 # Video Slide Sync Extension Plan
 
 ## Status Snapshot (2026-02-28)
-- Planned now:
-  - Add a reusable shared runtime extension for video-backed Reveal slides, with YouTube as the v1 backend.
-  - Extend `reveal-iframe-sync.js` and its message schema for host-authoritative video playback sync.
-  - Document authoring and host relay expectations in repo docs.
-- In progress now:
-  - Expand `vendor/SyncDeck-Reveal/js/` regression coverage so the existing sync runtime is safer to extend for video work.
-- Not started:
-  - Shared runtime implementation in `vendor/SyncDeck-Reveal/js/`
-  - Sync protocol changes for YouTube commands/events
-  - Example deck integration and browser validation
+- Current status:
+  - Direct video-sync implementation in `SyncDeck-Reveal` is out of scope.
+  - Planned video-sync work will move to an embedded ActiveBits activity instead.
+  - The `SyncDeck-Reveal` work completed here is retained as runtime-hardening groundwork only.
+- Completed here:
+  - Expanded `vendor/SyncDeck-Reveal/js/` regression coverage to reduce risk around future sync/runtime changes.
+- Not planned in this repo/submodule now:
+  - Shared YouTube/video runtime implementation in `vendor/SyncDeck-Reveal/js/`
+  - Video-specific sync protocol changes in `reveal-iframe-sync.js`
+  - Video-specific message schema additions for `SyncDeck-Reveal`
+  - Example deck integration for direct `SyncDeck-Reveal` video sync
+
+## Direction Change
+
+As of 2026-02-28, video sync is no longer planned as a direct extension inside `SyncDeck-Reveal`.
+
+New direction:
+- Build video-sync behavior inside an embedded ActiveBits activity.
+- Keep `SyncDeck-Reveal` focused on slide sync, role behavior, boundaries, storyboard behavior, pause lock, and related runtime coordination.
+- Reuse the strengthened `SyncDeck-Reveal` test coverage as supporting infrastructure where the embedded activity depends on existing iframe-sync behavior.
+
+Reason for the change:
+- It keeps video behavior decoupled from the shared Reveal runtime.
+- It reduces the amount of video-specific state and protocol logic pushed into `reveal-iframe-sync.js`.
+- It gives the embedded activity more room to own provider-specific behavior without turning `SyncDeck-Reveal` into a media runtime.
 
 ## Progress Log
 
@@ -84,6 +99,11 @@ Current local coverage status before video-sync implementation:
 - no-back mode: covered
 - pause-lock behavior: covered
 - chalkboard command dispatch: covered
+
+## Historical Note
+
+The remainder of this document captures the original direct-implementation plan for video sync inside `SyncDeck-Reveal`.
+It is preserved for reference only and should be treated as superseded by the ActiveBits direction above.
 
 ## Summary
 Create a reusable Reveal.js extension in the shared runtime submodule that allows a deck author to declare synchronized video slides and have playback stay synchronized between instructor and student iframes. YouTube is the v1 backend. The implementation should follow the existing `reveal-iframe-sync.js` contract: host-authoritative control flows downward as commands, while iframe runtime emits state upward for relay, recovery, and drift correction.
