@@ -46,6 +46,114 @@ jobs:
           # Pre-enable submodule checkout for upcoming SyncDeck-Reveal split.
           # If no submodules exist yet, this is a no-op.
           submodules: recursive
+      - name: Stage publishable site
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          import shutil
+
+          root = Path('.').resolve()
+          site = root / '_site'
+          manifest_name = '.pages-manifest'
+
+          default_dir_excludes = {
+              '.git',
+              '.github',
+              '.agent',
+              '.claude',
+              '_site',
+              'node_modules',
+          }
+          default_file_excludes = {
+              '.gitignore',
+              '.gitattributes',
+              '.gitmodules',
+              '.editorconfig',
+              'CODEOWNERS',
+          }
+
+          if site.exists():
+              shutil.rmtree(site)
+          site.mkdir()
+
+          rules = []
+          for manifest in root.rglob(manifest_name):
+              manifest_base = manifest.parent.relative_to(root).as_posix()
+              for line_number, raw_line in enumerate(manifest.read_text(encoding='utf-8').splitlines(), start=1):
+                  line = raw_line.strip()
+                  if not line or line.startswith('#'):
+                      continue
+                  if not line.startswith('exclude '):
+                      raise SystemExit(
+                          f'Unsupported directive in {manifest}: line {line_number}: {raw_line}'
+                      )
+                  value = line[len('exclude '):].strip()
+                  if not value:
+                      raise SystemExit(f'Empty exclude rule in {manifest}: line {line_number}')
+                  is_dir = value.endswith('/')
+                  normalized = value[:-1] if is_dir else value
+                  if normalized.startswith('./'):
+                      normalized = normalized[2:]
+                  if not normalized:
+                      raise SystemExit(f'Invalid exclude rule in {manifest}: line {line_number}')
+                  joined = Path(manifest_base, normalized) if manifest_base != '.' else Path(normalized)
+                  rules.append({
+                      'path': joined.as_posix(),
+                      'is_dir': is_dir,
+                      'manifest': manifest.relative_to(root).as_posix(),
+                  })
+
+          def is_excluded(rel_path: Path, is_dir: bool) -> bool:
+              rel_posix = rel_path.as_posix()
+              parts = rel_path.parts
+
+              if any(part in default_dir_excludes for part in parts):
+                  return True
+              if rel_path.name in default_file_excludes:
+                  return True
+              if rel_path.name == manifest_name:
+                  return True
+
+              for rule in rules:
+                  rule_path = rule['path']
+                  if rule['is_dir']:
+                      if rel_posix == rule_path or rel_posix.startswith(rule_path + '/'):
+                          return True
+                  elif rel_posix == rule_path:
+                      return True
+
+              return False
+
+          copied_files = 0
+          for current_root, dirs, files in os.walk(root):
+              current_path = Path(current_root)
+              rel_dir = current_path.relative_to(root)
+
+              kept_dirs = []
+              for directory in dirs:
+                  rel_child = rel_dir / directory if rel_dir != Path('.') else Path(directory)
+                  if is_excluded(rel_child, is_dir=True):
+                      continue
+                  kept_dirs.append(directory)
+              dirs[:] = kept_dirs
+
+              dest_dir = site / rel_dir if rel_dir != Path('.') else site
+              dest_dir.mkdir(parents=True, exist_ok=True)
+
+              for file_name in files:
+                  rel_file = rel_dir / file_name if rel_dir != Path('.') else Path(file_name)
+                  if is_excluded(rel_file, is_dir=False):
+                      continue
+                  source = root / rel_file
+                  dest = site / rel_file
+                  dest.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copy2(source, dest)
+                  copied_files += 1
+
+          print(f'Staged {copied_files} file(s) into {site.relative_to(root)}.')
+          print(f'Applied {len(rules)} manifest rule(s).')
+          PY
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -58,7 +166,7 @@ jobs:
           import html
           import re
 
-          root = Path('.')
+          root = Path('_site')
 
           def is_hidden(path: Path) -> bool:
               return any(part.startswith('.') for part in path.parts)
@@ -243,8 +351,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          path: '_site'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
