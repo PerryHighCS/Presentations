@@ -7,6 +7,8 @@ description: Create stunning, animation-rich HTML presentations from scratch or 
 
 Create Reveal.js-powered HTML presentations that run entirely in the browser. This skill helps non-designers discover their preferred aesthetic through visual exploration ("show, don't tell"), then generates production-quality slide decks.
 
+See also: `EXTENSIONS.md` for optional or specialized slide patterns that should not bloat the core skill instructions. Use it when a deck needs feature-specific authoring contracts, such as synchronized YouTube slides, beyond the default Reveal.js structure.
+
 ## Attribution And License
 
 - Attribution: see `NOTICE.md` in this folder.
@@ -206,6 +208,16 @@ Contract:
 - On connect (and role changes), iframe posts `ready` with current role, deck state, and navigation capabilities.
 - By default, students can navigate backward but not forward beyond the most recent instructor-synced position.
 - Use `studentCanNavigateBack` / `studentCanNavigateForward` in `iframeSync` to tune this behavior.
+
+### Add-on: YouTube Slides
+
+For synchronized YouTube slides, use the extension guidance in `EXTENSIONS.md`.
+
+Key rule:
+
+- Declare YouTube behavior on the slide `<section>` with `data-youtube-*` attributes.
+- Do not hand-write raw YouTube iframes for synchronized slides.
+- Assume the shared runtime will auto-insert `.youtube-player-slot` unless a custom slot is provided intentionally.
 
 ### Add-on: Chalkboard
 

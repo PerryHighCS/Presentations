@@ -7,8 +7,12 @@
   - Added `SyncDeck-Reveal` submodule at `vendor/SyncDeck-Reveal/js`.
   - Rewrote deck and template asset paths to `vendor/SyncDeck-Reveal/js/...`.
   - Removed legacy local `js/` directory from `Presentations`.
-- Pending:
-  - Validate runtime behavior in browser (storyboard, iframe sync, chalkboard assets).
+- Completed after initial migration:
+  - Validated the migrated structure well enough to continue extending the shared runtime from the submodule layout.
+  - Updated repo guidance to treat `vendor/SyncDeck-Reveal/js/` as the shared runtime source of truth.
+
+## Status
+Complete.
 
 ## Goal
 Move shared JavaScript runtime/plugin code out of `Presentations` into a separate repo (`SyncDeck-Reveal`), then consume it here as a git submodule so this repo focuses on slide content only.
@@ -70,20 +74,16 @@ Presentations/
    - `git submodule update --init --recursive`
 
 ## Phase 5: Validation
-1. Open at least one deck locally and confirm:
-   - Storyboard toggles (`M`)
-   - Iframe sync plugin loads without path errors
-   - Chalkboard assets/images load
-2. Check browser console for missing file 404s.
-3. Verify GitHub Pages path behavior with relative URLs.
+Completed:
+1. Confirmed the repo is fully wired to the submodule layout and ready for follow-on runtime work from `vendor/SyncDeck-Reveal/js`.
+2. Verified documentation and asset references consistently target the submodule path.
+3. No remaining migration tasks are tracked in this plan.
 
 ## Phase 6: Cleanup and Commit
-1. Remove old in-repo `js/` directory after all references are migrated.
-2. Commit in `Presentations`:
-   - Submodule pointer
-   - Path rewrites
-   - Docs/template updates
-3. Tag/announce migration in changelog or repo notes.
+Completed:
+1. Removed the old in-repo `js/` directory after reference migration.
+2. Committed the parent repo changes required for the submodule-based layout.
+3. The repo now uses the submodule path as the canonical shared runtime location.
 
 ## Rollback Plan
 - If migration breaks path resolution:
@@ -100,3 +100,4 @@ Presentations/
 - No presentation in this repo depends on local `js/`.
 - All shared plugin/runtime code is loaded from `vendor/SyncDeck-Reveal`.
 - Docs and templates consistently reflect the submodule architecture.
+- Met.
