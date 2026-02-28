@@ -1,4 +1,4 @@
-# YouTube Video Slide Sync Extension Plan
+# Video Slide Sync Extension Plan
 
 ## Status Snapshot (2026-02-28)
 - Planned now:
@@ -35,11 +35,13 @@ Out of scope:
 - playlist support or multi-video composition on a single slide unless a clear need appears during implementation
 
 ## Product Decisions Locked
-- Plan path uses `.agent/plans`, not `.agents/plans`, because that is the repo's current convention.
 - Sync model is host-authoritative.
 - Student viewers have no local playback control.
 - `standalone` mode keeps normal local playback control because there is no host authority to defer to.
 - The extension is reusable shared runtime code, not a one-off deck-specific script.
+- Existing `reveal-iframe-sync.js` boundary enforcement is assumed to already be broadly sufficient for bounded student navigation within vertical stacks; new work should not redesign core slide-boundary navigation unless implementation proves a gap.
+- Vertical stacks are the planned release mechanism; storyboard boundary changes are the on-the-fly release mechanism.
+- Released media-control region is a horizontal-only inclusive min/max range between the instructor's current `h` position and the granted boundary `h`; `v` may be retained in payload types for compatibility but is ignored for released-region semantics.
 
 ## Proposed Architecture
 
@@ -89,10 +91,13 @@ Rules:
 - `data-youtube-video-id` is required
 - `start`, `end`, `autoplay`, and `muted` are optional
 - add an optional per-slide student-audio policy, for example `data-youtube-student-muted="true"`
+- add an optional stack/slide local-control policy, for example `data-youtube-student-local-control="true"`, so instructors can permit local student playback on eligible slides
 - the runtime should auto-create a default `.youtube-slide-shell` and `.youtube-player-slot` inside `.slide-inner` when the author has not provided one
 - if an author provides `.youtube-player-slot` explicitly, the runtime should reuse it rather than creating a duplicate
 - deck authors do not embed raw YouTube iframes directly for synced slides
 - deck authors should only need to declare YouTube behavior on the `<section>` unless they want custom layout control
+- for vertical Reveal stacks, the parent stack `<section>` should be allowed to define student-controlled behavior inherited by child slides
+- planned release zones should be authored as vertical stacks; ad hoc release zones should be driven by instructor boundary/storyboard controls
 
 ### 3. Extend iframe sync protocol
 Add explicit video commands/events rather than overloading `setState`.
@@ -103,6 +108,7 @@ New host -> iframe commands:
 - `youtubePause`
 - `youtubeSeek`
 - `youtubeSyncState`
+- `youtubeSetLocalControl`
 
 Recommended payload shapes:
 ```json
@@ -129,11 +135,17 @@ Recommended payload shapes:
 { "name": "youtubeSetMuted", "payload": { "slide": { "h": 3, "v": 0, "f": -1 }, "muted": true, "scope": "student" } }
 ```
 
+```json
+{ "name": "youtubeSetLocalControl", "payload": { "slide": { "h": 3, "v": 1, "f": -1 }, "enabled": true, "scope": "student" } }
+```
+
 New iframe -> host events:
 - `youtubeReady`
 - `youtubeState`
 - `youtubeEnded`
 - `youtubeError`
+- `youtubeCapabilities`
+- `youtubePlayerStatus`
 
 Recommended upward event payload:
 ```json
@@ -148,18 +160,57 @@ Recommended upward event payload:
 }
 ```
 
+Recommended capabilities payload:
+```json
+{
+  "slide": { "h": 3, "v": 0, "f": -1 },
+  "videoId": "abc123",
+  "supportsStudentMute": true,
+  "studentMuted": false,
+  "supportsStudentLocalControl": true,
+  "studentLocalControl": false,
+  "withinStudentControlledStack": true,
+  "releasedRegion": {
+    "startH": 3,
+    "endH": 5
+  },
+  "role": "instructor"
+}
+```
+
+Recommended player-status payload:
+```json
+{
+  "slide": { "h": 3, "v": 0, "f": -1 },
+  "videoId": "abc123",
+  "playerReady": true,
+  "playerBlocked": false,
+  "reason": "playerReady",
+  "role": "student"
+}
+```
+
 Protocol rules:
 - only instructor iframes emit authoritative `youtubeState`
 - students never emit authoritative playback changes
 - host relays instructor-originated video state to students
 - a monotonically increasing `seq` prevents stale state from overriding newer commands
 - student mute policy must be relayable independently of play/pause/seek so the host can enforce silent synchronized playback when configured
+- the iframe runtime should advertise whether the active YouTube slide supports student mute controls so the host can show or hide a toolbar toggle without hardcoded slide knowledge
+- the iframe runtime should also advertise whether the active slide is inside a student-controlled vertical stack and whether local student playback control can be toggled from the host toolbar
+- vertical-stack navigation itself should reuse the existing Reveal iframe sync boundary model where possible rather than introducing a second navigation-control system
+- released-region metadata should be available to the host/storyboard so the active released range can be highlighted visually
+- released-region comparison should use horizontal indices only; vertical position remains relevant for current-slide state, not for release-range membership
+- each iframe should report player readiness for the active video slide so the host can aggregate whether students are ready, blocked, or still loading before the instructor starts playback
 
 ### 4. Define sync behavior precisely
 Instructor side:
 - when entering a YouTube slide, initialize/load the player if needed
-- if slide config says `autoplay=true`, start playback and emit state
+- if slide config says `autoplay=true`, prepare playback immediately; in synced mode the host should wait for student readiness before issuing the authoritative play command, while in standalone mode playback starts immediately
 - on local play/pause/seek/end, emit normalized `youtubeState` upward
+- on active YouTube slide entry and whenever mute capability changes, emit `youtubeCapabilities` upward so the host toolbar can expose a student mute toggle
+- on active YouTube slide entry and whenever stack/local-control capability changes, emit `youtubeCapabilities` upward so the host toolbar can expose a student local-control toggle
+- on active video slide entry, emit player-status updates so the host can show whether the instructor player itself is ready
 - send periodic state heartbeats while playing, recommended every 1-2 seconds
 - suppress duplicate emissions caused by remote command application
 
@@ -167,17 +218,21 @@ Student side:
 - local controls are disabled or overlaid
 - apply host-relayed video commands
 - apply host-relayed mute policy when synchronous playback is configured to mute student audio
+- if the active slide is inside the currently released region and local control is enabled, allow local play/pause/seek on that slide
+- emit `youtubePlayerStatus` when the player becomes ready, when API load is still pending, and when autoplay or playback preparation is blocked
 - on `youtubePlay`, seek if drift exceeds threshold, then play
 - on `youtubePause`, pause and snap to authoritative time if drift exceeds threshold
 - on `youtubeSyncState`, correct drift if absolute delta exceeds threshold
 - recommended drift correction threshold: `0.75s`
 - recommended stale command rejection: ignore commands with lower `seq`
+- when local student playback control is enabled, playback freedom is limited to the current released region even though general backward navigation may still be allowed outside it
 
 Standalone side:
 - local controls remain enabled
 - no host sync commands are required or expected
 - local play/pause/seek should not be blocked by sync guardrails intended for `student` role
 - the helper should still provide the same player lifecycle behavior on slide enter/leave
+- `youtubeCapabilities` may still be emitted for internal consistency, but only instructor-originated capability messages should drive host toolbar controls
 
 ### 5. Integrate with slide lifecycle
 Behavior on Reveal events:
@@ -185,6 +240,8 @@ Behavior on Reveal events:
   - if leaving a YouTube slide, pause that slide's player
   - if entering a YouTube slide, ensure the correct player is mounted and synchronized
   - instructor emits an immediate `youtubeState` snapshot after slide activation
+  - when the active slide enters or leaves a planned-release stack or other released region, recompute and emit `youtubeCapabilities` so host toolbar controls and storyboard highlighting update immediately
+  - when the active slide enters a video slide, emit an initial `youtubePlayerStatus` with loading/ready state so the host can aggregate student readiness
 - `fragmentshown` / `fragmenthidden`:
   - no-op unless later requirements tie video behavior to fragments
 - `setRole`:
@@ -207,14 +264,57 @@ session.youtube = {
   currentTime: 42.0,
   muted: false,
   studentMuted: true,
+  studentLocalControl: false,
+  withinStudentControlledStack: true,
+  releasedRegion: {
+    startH: 3,
+    endH: 5
+  },
   seq: 17,
   issuedAt: 1760000000000
 };
 ```
+- maintain per-student player readiness state for the active video slide, for example:
+```js
+session.youtubePlayers = {
+  byClientId: {
+    "student-a": { playerReady: true, playerBlocked: false, reason: "playerReady", slideKey: "3/0/-1" },
+    "student-b": { playerReady: false, playerBlocked: false, reason: "loading", slideKey: "3/0/-1" }
+  },
+  summary: {
+    readyCount: 1,
+    loadingCount: 1,
+    blockedCount: 0,
+    totalCount: 2
+  }
+};
+```
 - when instructor sends `youtubeState`, replace stored state if `seq` is newer
+- when instructor sends `youtubeCapabilities`, update host UI state so the toolbar knows whether to show a student mute toggle and what its current value is
+- the same capability message should tell the host whether to show a student local-control toggle for the active slide/stack
+- when any iframe sends `youtubePlayerStatus`, update the per-client readiness map and recompute an aggregate status for the instructor toolbar
 - when a student iframe becomes ready or is promoted to `student`, host sends the latest `youtubeSyncState` for the active slide
 - when student mute policy is enabled, host also sends `youtubeSetMuted` or includes equivalent `studentMuted` state on resync
-- host may translate container UI actions into `youtubePlay` / `youtubePause` / `youtubeSeek`
+- when local-control policy is enabled for the current stack/slide, host may send `youtubeSetLocalControl` to let students control playback locally
+- host may translate container UI actions into `youtubePlay` / `youtubePause` / `youtubeSeek` / `youtubeSetMuted` / `youtubeSetLocalControl`
+- host/storyboard UI should highlight the currently released region, not just the single boundary marker
+- host toolbar should show aggregated readiness such as `all ready`, `n loading`, or `n blocked`, so the instructor can decide whether to wait before pressing play
+- when synchronized `autoplay=true` is active, host should treat it as coordinated autoplay: wait until all connected student players are ready, then issue play; if readiness stalls, show an explicit instructor override such as `play now anyway`
+
+### 6a. Storyboard representation
+Storyboard requirements:
+- highlight the full released region as an inclusive horizontal range between release start and release end
+- preserve the existing explicit boundary marker so instructors can still see the current hard limit
+- visually distinguish planned release zones (vertical stacks) from ad hoc released regions created via boundary controls
+- represent vertical stacks in a way that makes their child slides legible in the strip; do not flatten them into ambiguous duplicates with no hierarchy cues
+- when a vertical stack is acting as a planned release zone, the storyboard should show both the stack grouping and the currently active child slide
+
+Recommended storyboard treatment:
+- render horizontal slides as primary thumbnails
+- render vertical stacks as grouped thumbnails or an expandable cluster under the parent horizontal position
+- apply a release-range highlight band across every thumbnail in the currently released region
+- keep the current active slide highlight visually distinct from the release-range highlight
+- when the instructor changes the boundary on the fly, animate the release-range highlight update so the changed teaching state is obvious
 
 ### 7. Accessibility and UX defaults
 - provide a visible poster/loading state before player readiness
@@ -224,6 +324,7 @@ session.youtube = {
 - preserve keyboard navigation for Reveal itself
 - do not rely on autoplay with sound; expect browser autoplay restrictions
 - if autoplay is blocked, instructor sees a recoverable ready state and manual play becomes authoritative
+- in synchronized sessions, `autoplay=true` should mean coordinated autoplay after readiness, not immediate instructor-only autoplay
 - when student mute is enabled, communicate clearly in docs that muted student playback is intentional sync policy rather than player failure
 
 ## Public Interfaces and Docs To Add or Change
@@ -239,6 +340,7 @@ Update `vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js` to recognize:
 - `youtubeSeek`
 - `youtubeSyncState`
 - `youtubeSetMuted`
+- `youtubeSetLocalControl`
 
 ### Updated message schema doc
 Update `vendor/SyncDeck-Reveal/js/reveal-iframe-sync-message-schema.md` with:
@@ -247,15 +349,24 @@ Update `vendor/SyncDeck-Reveal/js/reveal-iframe-sync-message-schema.md` with:
 - new upward event types
 - host buffering/relay expectations
 - sequencing and drift-correction rules
+- capability advertisement for host toolbar affordances such as student mute
+- stack-aware capability advertisement and student local-control toggling
+- explicit note that vertical-stack slide navigation continues to rely on the existing boundary model unless a validated implementation gap is found
+- player-readiness reporting and host aggregation rules for instructor wait/go decisions
+- coordinated autoplay semantics in synced mode versus immediate autoplay in standalone mode
 
 ### Updated authoring docs
 Update `AGENTS.md` to document:
 - minimal YouTube slide markup on the `<section>`
 - optional explicit `.youtube-player-slot` override for custom layout
+- vertical-stack authoring for student-controlled series
 - required script include order
 - initialization snippet
 - autoplay and control restrictions
 - optional student mute behavior for synchronized playback
+- host-visible capability advertisement so container toolbars can expose student mute toggles
+- host-visible capability advertisement so container toolbars can expose student local-control toggles
+- storyboard highlighting for released regions and visual treatment for vertical stacks
 - host relay expectations
 
 Update `.claude/skills/slidedeck/SKILL.md` to document:
@@ -263,17 +374,26 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 - authors should not hand-write raw YouTube iframes for synced slides
 - the runtime auto-inserts `.youtube-slide-shell` and `.youtube-player-slot` by default
 - authors may provide `.youtube-player-slot` explicitly when they need custom placement
+- vertical stacks as a student-controlled series pattern
 
 ## Actionable Checklist
 
 ### Phase 1: Design and contract
-- [ ] Confirm final filename and store this plan at `.agent/plans/youtube-video-sync-extension-plan.md`.
+- [ ] Confirm final filename and store this plan at `.agent/plans/video-slide-sync-extension-plan.md`.
 - [ ] Add a short "Status Snapshot" header to the plan file, matching existing plan style.
 - [ ] Specify final declarative HTML contract for YouTube slides.
 - [ ] Specify default auto-generated player-slot behavior and the optional explicit slot override.
 - [ ] Specify final message names and payload schemas.
 - [ ] Specify drift-correction, sequencing, and autoplay fallback rules.
 - [ ] Specify how student mute is configured and how it is represented in sync payloads.
+- [ ] Specify the upward capability message that tells the host when to show a student mute toggle.
+- [ ] Specify stack-level config and capability messages for student local playback control.
+- [ ] Confirm and document that existing iframe-sync boundary handling is the base mechanism for vertical-stack navigation freedom.
+- [ ] Specify released-region semantics as inclusive horizontal min/max between instructor position and boundary.
+- [ ] Document that `v` may remain in TypeScript/message types for consistency but is ignored for release-range calculations.
+- [ ] Specify storyboard representation for released regions and vertical stacks.
+- [ ] Specify player-readiness events and host aggregation semantics so the instructor can see whether students are ready before playback starts.
+- [ ] Specify that synchronized `autoplay=true` means coordinated wait-for-ready autoplay, while standalone `autoplay=true` remains immediate.
 
 ### Phase 2: Shared runtime
 - [ ] Add `reveal-youtube-sync.js` in the submodule.
@@ -285,7 +405,11 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 - [ ] Implement student control lockout.
 - [ ] Preserve full local controls in `standalone` mode.
 - [ ] Implement role-aware mute handling so student playback can be forced muted when configured.
+- [ ] Implement released-region-aware local playback control so students can play locally only on slides inside the active released range.
 - [ ] Implement normalized status reporting API for the sync plugin.
+- [ ] Implement capability reporting so the host can discover student mute support for the active slide.
+- [ ] Implement capability reporting so the host can discover student local-control support for the active slide/stack.
+- [ ] Implement player-status reporting for loading, ready, and blocked states on instructor and student video players.
 
 ### Phase 3: Sync plugin integration
 - [ ] Extend command handling in `reveal-iframe-sync.js` for YouTube commands.
@@ -293,12 +417,21 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 - [ ] Apply remote YouTube commands on student iframes without feedback loops.
 - [ ] Emit current YouTube state on instructor role promotion and active YouTube slide entry.
 - [ ] Relay and reapply student mute policy during initial sync and mid-session changes.
+- [ ] Emit capability messages that let the host show or hide an instructor toolbar mute toggle for students.
+- [ ] Relay and reapply student local-control policy during initial sync and mid-session changes.
+- [ ] Emit capability messages that let the host show or hide an instructor toolbar local-control toggle for students.
 - [ ] Ensure navigation away from a YouTube slide pauses playback cleanly.
+- [ ] Avoid changing core boundary-navigation behavior unless a concrete failing case is found during validation.
+- [ ] Emit enough released-region metadata for the storyboard to highlight the full allowed media-control range.
+- [ ] Emit enough player-status metadata for the host to aggregate student readiness and expose a wait/go indicator in the instructor toolbar.
+- [ ] Ensure synced `autoplay=true` waits for readiness and exposes an explicit instructor override instead of autoplaying silently after a timeout.
 
 ### Phase 4: Documentation and examples
 - [ ] Update `reveal-iframe-sync-message-schema.md` with new commands/events and host examples.
 - [ ] Update `AGENTS.md` with authoring instructions and architectural constraints.
 - [ ] Update `.claude/skills/slidedeck/SKILL.md` so generated decks use the section-only YouTube authoring contract by default.
+- [ ] Update `.claude/skills/slidedeck/EXTENSIONS.md` with vertical-stack student-control guidance.
+- [ ] Document storyboard behavior for released regions and vertical-stack grouping.
 - [ ] Add or update one example deck showing a synced YouTube slide.
 
 ### Phase 5: Validation
@@ -308,6 +441,13 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 - [ ] Validate drift correction after a delayed student join.
 - [ ] Validate reload recovery when instructor or student refreshes mid-video.
 - [ ] Validate behavior when the YouTube API fails or autoplay is blocked.
+- [ ] Validate the instructor host toolbar receives capability state and can toggle student mute live.
+- [ ] Validate the instructor host toolbar receives capability state and can toggle student local control live for an eligible vertical stack.
+- [ ] Validate an eligible vertical stack works with existing iframe-sync boundary navigation without additional navigation changes.
+- [ ] Validate the storyboard highlights the full released region, not just the boundary endpoint.
+- [ ] Validate vertical stacks are represented clearly in the storyboard and the active child slide remains obvious.
+- [ ] Validate the host can tell when all student players are ready, still loading, or blocked before the instructor starts playback.
+- [ ] Validate synchronized `autoplay=true` waits for all ready players and that the instructor can override with `play now anyway`.
 - [ ] Validate no regression to storyboard, pause lock, boundary controls, or chalkboard sync.
 
 ## Test Cases and Scenarios
@@ -322,6 +462,13 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 - Instructor reloads on an active YouTube slide; host rehydrates students from fresh instructor state.
 - Standalone deck user can play, pause, and seek a YouTube slide locally without host messages.
 - A synchronized student session can be configured to play the video muted while the instructor remains unmuted.
+- The instructor host UI can discover that student mute is available for the active YouTube slide and toggle it from the toolbar.
+- A YouTube slide inside an eligible vertical stack can grant student local playback control once the instructor reaches that stack.
+- The instructor host UI can discover that student local playback control is available for the active slide/stack and toggle it from the toolbar.
+- The released region is highlighted clearly in the storyboard as a range, not only as a single boundary marker.
+- Vertical stacks are legible in the storyboard and communicate both grouping and current child-slide position.
+- The instructor can see whether all connected student players are ready before starting playback and choose to wait or proceed.
+- In synchronized mode, `autoplay=true` waits for student readiness before starting, while standalone mode still autoplays immediately.
 - A slide with only `data-youtube-*` attributes and no explicit `.youtube-player-slot` still renders and syncs correctly.
 - A slide with a custom `.youtube-player-slot` uses that slot without creating duplicate player containers.
 
@@ -330,6 +477,12 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 - Same YouTube video ID reused on multiple slides with different `start` offsets.
 - Browser blocks autoplay with sound.
 - Student mute policy changes while a synchronized video is already loaded.
+- Host receives a capability update when navigation enters or leaves a YouTube slide so the toolbar does not show stale student mute controls.
+- Host receives a capability update when navigation enters or leaves a student-controlled vertical stack so the toolbar does not show stale local-control controls.
+- A student moves one slide backward outside the released region and immediately loses local playback control while still retaining normal backward navigation.
+- Storyboard must represent a vertical stack with enough hierarchy that instructors can understand which slides are in the planned release zone.
+- One or more student players remain loading or blocked while the instructor player is ready.
+- Synchronized `autoplay=true` is pending because not all students are ready, and the instructor chooses whether to wait or override.
 - YouTube API script loads slowly.
 - Student receives an older `seq` after a newer one.
 - Network lag causes temporary drift while playing.
@@ -339,7 +492,9 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 - Existing `setState`, `slide`, pause lock, storyboard, and chalkboard sync behavior remain unchanged for decks without YouTube slides.
 - `standalone` role still works without host promotion.
 - `standalone` role retains local YouTube interactivity and is not treated like a locked-down student.
-- Student navigation boundary logic remains independent of media playback state.
+- Student navigation boundary logic remains compatible with media playback state, including bounded local control inside designated vertical stacks.
+- Existing vertical-stack navigation behavior in `reveal-iframe-sync.js` should remain the primary navigation mechanism rather than being replaced by YouTube-specific navigation rules.
+- Storyboard boundary UI remains compatible with the new release-range highlighting and vertical-stack grouping.
 
 ## Risks and Mitigations
 - YouTube API timing races:
@@ -350,6 +505,14 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
   - Mitigation: design around manual instructor play as authoritative and treat autoplay as best-effort.
 - Student drift over time:
   - Mitigation: periodic instructor heartbeats plus threshold-based correction.
+- Over-scoping navigation changes that the existing boundary model already handles:
+  - Mitigation: validate current vertical-stack behavior first and keep new work focused on media control, capability reporting, and documentation.
+- Storyboard complexity makes release state harder to read:
+  - Mitigation: separate visual treatments for active slide, boundary marker, release range, and vertical-stack grouping.
+- Readiness signals may flap during load or reconnect:
+  - Mitigation: aggregate per-client player status with timestamps and display stable summary states in the toolbar rather than reacting to a single transient event.
+- Ambiguity around autoplay semantics between standalone and synced sessions:
+  - Mitigation: define `autoplay=true` as coordinated autoplay in synced mode and immediate autoplay only in standalone mode.
 - Host contract ambiguity:
   - Mitigation: document exact expected relay/storage behavior in the schema doc.
 
@@ -359,6 +522,11 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 - New or reloaded students can recover to the current authoritative playback state.
 - Students cannot independently control synchronized playback.
 - Deck authors can choose whether synchronized student playback is muted.
+- The host/container can discover and toggle student mute from instructor-facing controls without hardcoding slide-specific knowledge.
+- Deck authors can mark vertical stacks/slides as eligible for student local playback control, and the host can toggle that control at runtime.
+- Planned release zones and ad hoc released regions are both represented clearly in the storyboard.
+- The host can aggregate student player readiness and expose that state to the instructor before playback starts.
+- `autoplay=true` behaves predictably: coordinated wait-for-ready in synced sessions, immediate autoplay in standalone.
 - Decks without YouTube slides continue to function unchanged.
 - Docs and schema are detailed enough for host/container integration without reverse engineering source.
 
@@ -372,4 +540,6 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 - Students have no local play/pause/seek permissions.
 - `standalone` users do have local play/pause/seek permissions.
 - Student mute defaults to `false` unless explicitly enabled by slide config or host policy.
+- Student local playback control defaults to `false` unless explicitly enabled by slide/stack config and turned on by the instructor host UI.
+- Released media-control region defaults to disabled until a planned stack is entered or the instructor grants an ad hoc boundary-based release.
 - Raw embedded YouTube iframes are not considered supported authoring for synced slides; the shared helper owns iframe creation.

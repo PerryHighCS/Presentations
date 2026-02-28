@@ -7,7 +7,7 @@ description: Create stunning, animation-rich HTML presentations from scratch or 
 
 Create Reveal.js-powered HTML presentations that run entirely in the browser. This skill helps non-designers discover their preferred aesthetic through visual exploration ("show, don't tell"), then generates production-quality slide decks.
 
-See also: `EXTENSIONS.md` for optional or specialized slide patterns that should not bloat the core skill instructions. Use it when a deck needs feature-specific authoring contracts, such as synchronized YouTube slides, beyond the default Reveal.js structure.
+See also: `EXTENSIONS.md` for optional or specialized slide patterns that should not bloat the core skill instructions. Use it when a deck needs feature-specific authoring contracts, such as synchronized video slides, beyond the default Reveal.js structure.
 
 ## Attribution And License
 
@@ -218,6 +218,20 @@ Key rule:
 - Declare YouTube behavior on the slide `<section>` with `data-youtube-*` attributes.
 - Do not hand-write raw YouTube iframes for synchronized slides.
 - Assume the shared runtime will auto-insert `.youtube-player-slot` unless a custom slot is provided intentionally.
+- Use `EXTENSIONS.md` when you need student-controlled vertical stacks, stack-level local-control behavior, or other advanced sync patterns.
+
+### Add-on: Vertical Stacks
+
+Use vertical stacks as the default pattern for planned student-release sections.
+
+Key guidance:
+
+- Use Reveal's normal nested structure: a parent horizontal `<section>` containing child `<section>` slides.
+- Treat a vertical stack as one horizontal topic area with multiple student-browsable child slides.
+- Prefer declaring student-release behavior on the parent stack so all child slides inherit it consistently.
+- Use vertical stacks for planned release zones; use storyboard boundary controls for ad hoc release during delivery.
+- Keep each child slide coherent on its own, because students may land on any child within the released stack.
+- If a synchronized video slide appears inside the stack, assume local student playback may be enabled only when that stack or released region explicitly allows it.
 
 ### Add-on: Chalkboard
 

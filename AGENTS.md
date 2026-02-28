@@ -90,6 +90,8 @@ Reveal.initialize({
 
 Full message schema: `vendor/SyncDeck-Reveal/js/reveal-iframe-sync-message-schema.md`
 
+**Vertical stack pattern:** a vertical Reveal stack can be used as a student-controlled series once the instructor reaches that horizontal position. Treat vertical stacks as the planned release mechanism, and use storyboard boundary controls as the ad hoc release mechanism. The host/plugin should treat the stack as a bounded local-navigation region rather than unlocking the whole deck. When YouTube slides appear inside such a stack, local student playback control may be enabled if the stack/slide config allows it; student mute should still be honored unless the instructor turns it off from the host toolbar. The storyboard should highlight the full released region and represent vertical stacks with clear grouping rather than a flat list of indistinguishable thumbnails.
+
 ---
 
 ## Adding a New Presentation
