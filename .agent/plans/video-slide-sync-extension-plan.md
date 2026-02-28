@@ -292,6 +292,39 @@ Behavior on Reveal events:
 ### 6. Handle host responsibilities explicitly
 The existing host/container implementation is outside this repo, but the plan must define the expected contract.
 
+### 6a. Host behavior contract
+The host must implement behavior beyond message parsing.
+
+Authority contract:
+- host must track `activeInstructorId` and the active authority lineage `(sourceId, runtimeEpoch)`
+- when multiple instructors are connected, the last instructor to touch playback, student-audio, or student local-control controls becomes the active authority
+- only the active instructor's playback lineage may drive student playback state
+- instructor reload creates a new `runtimeEpoch`; if that instructor next touches controls, the host should treat the new runtime as a new authority lineage
+
+Persistence contract:
+- host must distinguish between per-session video state and persisted instructor-local student-audio preference
+- precedence order for student audio is:
+  1. live in-session host override
+  2. persisted instructor-local preference
+  3. authored slide default
+- persisted student-audio preference is global across decks unless the container intentionally scopes it differently in the future
+
+Readiness aggregation contract:
+- host must aggregate `youtubePlayerStatus` per connected student
+- toolbar summary should distinguish at least `ready`, `loading`, and `blocked`
+- coordinated autoplay should wait for all currently connected students unless zero students are connected
+- if readiness stalls, host should expose an explicit instructor override such as `play now anyway`
+
+Recovery contract:
+- when a student joins or reloads, host must resend the latest active playback state plus current student-audio and local-control policy
+- when the active instructor reloads and later becomes authoritative again, host must switch to that new `(sourceId, runtimeEpoch)` lineage rather than trying to continue the old one
+- late or rejoined students should recover from host-stored state rather than from deck-authored defaults
+
+UI contract:
+- host toolbar should only expose controls supported by the active slide/stack capabilities
+- host should present recoverable error state for `youtubeError`
+- host/storyboard UI should distinguish active slide, release range, boundary marker, and vertical-stack grouping clearly
+
 Host relay/storage model:
 - maintain per-session `youtube` state alongside existing chalkboard buffers
 - persist instructor-side student-audio preference locally across sessions as a global preference across decks, for example:
@@ -360,7 +393,7 @@ session.youtubePlayers = {
 - when synchronized `autoplay=true` is active, host should treat it as coordinated autoplay: wait until all connected student players are ready, then issue play; if readiness stalls, show an explicit instructor override such as `play now anyway`
 - if synchronized `autoplay=true` is active and the connected-student count is zero, treat readiness as immediately satisfied and autoplay without waiting
 
-### 6a. Storyboard representation
+### 6b. Storyboard representation
 Storyboard requirements:
 - highlight the full released region as an inclusive horizontal range between release start and release end
 - preserve the existing explicit boundary marker so instructors can still see the current hard limit
@@ -461,6 +494,7 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 - [ ] Specify `youtubeError` payload fields and host behavior.
 - [ ] Specify multi-instructor authority selection, including last-instructor-wins takeover behavior.
 - [ ] Specify `sourceId`, `runtimeEpoch`, and `seq` ownership plus reload/takeover lineage behavior.
+- [ ] Specify the non-schema host behavior contract for authority, persistence, readiness, recovery, and UI responsibilities.
 
 ### Phase 2: Shared runtime
 - [ ] Add `reveal-youtube-sync.js` in the submodule.
