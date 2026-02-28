@@ -31,17 +31,19 @@ In scope:
 Out of scope:
 - generic support for Vimeo or arbitrary HTML5 video in the first pass
 - peer-to-peer iframe sync without the host as relay
-- student-local playback controls
+- unrestricted student-local playback controls outside explicitly released regions
 - playlist support or multi-video composition on a single slide unless a clear need appears during implementation
 
 ## Product Decisions Locked
 - Sync model is host-authoritative.
-- Student viewers have no local playback control.
+- Student viewers have no local playback control outside explicitly released regions.
 - `standalone` mode keeps normal local playback control because there is no host authority to defer to.
 - The extension is reusable shared runtime code, not a one-off deck-specific script.
 - Existing `reveal-iframe-sync.js` boundary enforcement is assumed to already be broadly sufficient for bounded student navigation within vertical stacks; new work should not redesign core slide-boundary navigation unless implementation proves a gap.
 - Vertical stacks are the planned release mechanism; storyboard boundary changes are the on-the-fly release mechanism.
 - Released media-control region is a horizontal-only inclusive min/max range between the instructor's current `h` position and the granted boundary `h`; `v` may be retained in payload types for compatibility but is ignored for released-region semantics.
+- Student-audio precedence order is: live in-session host override, then persisted instructor-local preference, then authored slide default.
+- When multiple instructors are connected, the last instructor to touch playback/audio/local-control controls becomes the active authority for subsequent student sync until another instructor takes over.
 
 ## Proposed Architecture
 
@@ -90,7 +92,9 @@ Rules:
 - one authoritative YouTube player per slide in v1
 - `data-youtube-video-id` is required
 - `start`, `end`, `autoplay`, and `muted` are optional
+- `data-youtube-muted` controls the local player instance default mute state
 - add an optional per-slide student-audio default policy, for example `data-youtube-student-audio="mute"` or `data-youtube-student-audio="unmute"`
+- `data-youtube-student-audio` controls the student-audio policy default and is separate from player-level `data-youtube-muted`
 - add an optional stack/slide local-control policy, for example `data-youtube-student-local-control="true"`, so instructors can permit local student playback on eligible slides
 - static slide attributes are initial defaults only; host runtime commands are authoritative for the duration of the session
 - the host may persist the instructor's last chosen student-audio mode locally on the instructor machine and use it as the default for future sessions across all decks before any new in-session override occurs
@@ -131,16 +135,20 @@ Recommended payload shapes:
 ```
 
 ```json
-{ "name": "youtubeSyncState", "payload": { "slide": { "h": 3, "v": 0, "f": -1 }, "videoId": "abc123", "playerState": "playing", "currentTime": 42.0, "muted": false, "seq": 17, "issuedAt": 1760000000000 } }
+{ "name": "youtubeSyncState", "payload": { "slide": { "h": 3, "v": 0, "f": -1 }, "videoId": "abc123", "playerState": "playing", "currentTime": 42.0, "instructorMuted": false, "sourceId": "inst-a", "runtimeEpoch": "inst-a-1760000000000", "seq": 17, "issuedAt": 1760000000000 } }
 ```
 
 ```json
-{ "name": "youtubeSetStudentAudio", "payload": { "slide": { "h": 3, "v": 0, "f": -1 }, "mode": "mute", "scope": "student" } }
+{ "name": "youtubeSetStudentAudio", "payload": { "slide": { "h": 3, "v": 0, "f": -1 }, "mode": "mute" } }
 ```
 
+The `slide` field provides context about the active slide at the time the command was issued; in v1, `mode` applies session-wide rather than only to that single slide.
+
 ```json
-{ "name": "youtubeSetLocalControl", "payload": { "slide": { "h": 3, "v": 1, "f": -1 }, "enabled": true, "scope": "student" } }
+{ "name": "youtubeSetLocalControl", "payload": { "slide": { "h": 3, "v": 1, "f": -1 }, "enabled": true } }
 ```
+
+The `slide` field provides context about the active slide at the time the command was issued; in v1, `enabled` applies to the current released region/session policy rather than only to that single slide.
 
 New iframe -> host events:
 - `youtubeState`
@@ -157,7 +165,9 @@ Recommended upward event payload:
   "playerState": "playing",
   "currentTime": 42.0,
   "duration": 120.5,
-  "muted": false,
+  "instructorMuted": false,
+  "sourceId": "inst-a",
+  "runtimeEpoch": "inst-a-1760000000000",
   "seq": 17
 }
 ```
@@ -167,7 +177,7 @@ Recommended capabilities payload:
 {
   "slide": { "h": 3, "v": 0, "f": -1 },
   "videoId": "abc123",
-  "supportsStudentMute": true,
+  "supportsStudentAudio": true,
   "studentAudioMode": "slide",
   "resolvedStudentMuted": false,
   "supportsStudentLocalControl": true,
@@ -177,6 +187,8 @@ Recommended capabilities payload:
     "startH": 3,
     "endH": 5
   },
+  "sourceId": "inst-a",
+  "runtimeEpoch": "inst-a-1760000000000",
   "role": "instructor"
 }
 ```
@@ -207,14 +219,22 @@ Recommended error payload:
 Protocol rules:
 - only instructor iframes emit authoritative `youtubeState`
 - students never emit authoritative playback changes
-- host relays instructor-originated video state to students
+- host relays only the active instructor's video state to students
 - host should treat instructor `youtubeEnded` as authoritative terminal playback state and relay an equivalent ended-state sync so lagging or rejoined students converge on ended playback
-- a monotonically increasing `seq` prevents stale state from overriding newer commands
+- each instructor runtime must have a unique `sourceId`
+- host tracks an `activeInstructorId`; the last instructor to issue a playback/audio/local-control change becomes the active instructor
+- each instructor runtime must also have a unique `runtimeEpoch` generated by that iframe instance on startup/reload
+- active instructor is the authoritative source of `seq` within its own `(sourceId, runtimeEpoch)` lineage
+- active-instructor playback-state `seq` starts at `1` for a fresh runtime instance and increments on each newly emitted authoritative playback-state update
+- host does not generate epochs; it stores and relays the instructor-provided `runtimeEpoch` unchanged
+- students compare playback-state freshness by active authority lineage `(sourceId, runtimeEpoch, seq)` and should ignore messages from inactive instructors
+- a change in active authority to a different `(sourceId, runtimeEpoch)` lineage always wins; within the same lineage, a higher `seq` wins
 - student audio policy must be relayable independently of play/pause/seek so the host can enforce `mute`, `slide`, or `unmute` behavior when configured
+- `instructorMuted` in `youtubeState` / `youtubeSyncState` refers only to the instructor's own player mute state; student audio behavior is controlled separately via `studentAudioMode` and `resolvedStudentMuted`
 - `data-youtube-student-audio` defines only the initial default; host-issued `youtubeSetStudentAudio` becomes authoritative for the session and should win on reload/rejoin
 - for future sessions, an instructor-local persisted student-audio preference may override the authored default before the first live session command is sent
 - `youtubeError` should carry enough context for the host to identify the failing slide/video and present a recoverable indicator to the instructor
-- the iframe runtime should advertise whether the active YouTube slide supports student mute controls so the host can show or hide a toolbar toggle without hardcoded slide knowledge
+- the iframe runtime should advertise whether the active YouTube slide supports student audio controls so the host can show or hide a toolbar control without hardcoded slide knowledge
 - the iframe runtime should also advertise whether the active slide is inside a student-controlled vertical stack and whether local student playback control can be toggled from the host toolbar
 - vertical-stack navigation itself should reuse the existing Reveal iframe sync boundary model where possible rather than introducing a second navigation-control system
 - released-region metadata should be available to the host/storyboard so the active released range can be highlighted visually
@@ -284,11 +304,13 @@ localPrefs.youtube = {
 - latest authoritative video state shape:
 ```js
 session.youtube = {
+  activeInstructorId: 'inst-a',
+  activeRuntimeEpoch: 'inst-a-1760000000000',
   slideKey: '3/0/-1',
   videoId: 'abc123',
   playerState: 'paused',
   currentTime: 42.0,
-  muted: false,
+  instructorMuted: false,
   studentAudioMode: 'slide',
   resolvedStudentMuted: true,
   studentLocalControl: false,
@@ -297,6 +319,8 @@ session.youtube = {
     startH: 3,
     endH: 5
   },
+  sourceId: 'inst-a',
+  runtimeEpoch: 'inst-a-1760000000000',
   seq: 17,
   issuedAt: 1760000000000
 };
@@ -316,7 +340,8 @@ session.youtubePlayers = {
   }
 };
 ```
-- when instructor sends `youtubeState`, replace stored state if `seq` is newer
+- when an instructor issues a playback/audio/local-control change, mark that instructor's `(sourceId, runtimeEpoch)` as the active authority lineage
+- when active instructor sends `youtubeState`, replace stored state if `(sourceId, runtimeEpoch, seq)` is newer within the currently active lineage, or if host just switched active lineage to that instructor instance
 - when instructor sends `youtubeCapabilities`, update host UI state so the toolbar knows whether to show a student audio control and what its current mode/value is
 - the same capability message should tell the host whether to show a student local-control toggle for the active slide/stack
 - when any iframe sends `youtubePlayerStatus`, update the per-client readiness map and recompute an aggregate status for the instructor toolbar
@@ -327,6 +352,7 @@ session.youtubePlayers = {
 - after any host-issued `youtubeSetStudentAudio`, the host-stored audio mode becomes authoritative for the session and must be re-applied on reload or rejoin
 - after any host-issued `youtubeSetStudentAudio`, also update the instructor-local persisted preference unless the container intentionally disables persistence
 - when student audio policy is enabled, host also sends `youtubeSetStudentAudio` or includes equivalent `studentAudioMode` state on resync
+- on instructor reload, the new iframe instance must generate a new `runtimeEpoch`; host should treat that new lineage as distinct from the prior one
 - when local-control policy is enabled for the current stack/slide, host may send `youtubeSetLocalControl` to let students control playback locally
 - host may translate container UI actions into `youtubePlay` / `youtubePause` / `youtubeSeek` / `youtubeSetStudentAudio` / `youtubeSetLocalControl`
 - host/storyboard UI should highlight the currently released region, not just the single boundary marker
@@ -358,7 +384,7 @@ Recommended storyboard treatment:
 - do not rely on autoplay with sound; expect browser autoplay restrictions
 - if autoplay is blocked, instructor sees a recoverable ready state and manual play becomes authoritative
 - in synchronized sessions, `autoplay=true` should mean coordinated autoplay after readiness, not immediate instructor-only autoplay
-- when student mute is enabled, communicate clearly in docs that muted student playback is intentional sync policy rather than player failure
+- when student audio mode resolves to muted playback, communicate clearly in docs that muted student playback is intentional policy rather than player failure
 
 ## Public Interfaces and Docs To Add or Change
 
@@ -415,7 +441,6 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 
 ### Phase 1: Design and contract
 - [x] Confirm final filename and store this plan at `.agent/plans/video-slide-sync-extension-plan.md`.
-- [ ] Add a short "Status Snapshot" header to the plan file, matching existing plan style.
 - [ ] Specify final declarative HTML contract for YouTube slides.
 - [ ] Specify default auto-generated player-slot behavior and the optional explicit slot override.
 - [ ] Specify final message names and payload schemas.
@@ -434,6 +459,8 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 - [ ] Specify authoritative host behavior for `youtubeEnded`.
 - [ ] Specify precedence between authored student-audio default, persisted instructor-local preference, and in-session host override.
 - [ ] Specify `youtubeError` payload fields and host behavior.
+- [ ] Specify multi-instructor authority selection, including last-instructor-wins takeover behavior.
+- [ ] Specify `sourceId`, `runtimeEpoch`, and `seq` ownership plus reload/takeover lineage behavior.
 
 ### Phase 2: Shared runtime
 - [ ] Add `reveal-youtube-sync.js` in the submodule.
@@ -495,6 +522,8 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 - [ ] Validate instructor `youtubeEnded` causes lagging or rejoined students to converge on ended state.
 - [ ] Validate instructor-selected student-audio mode persists locally and seeds future sessions across decks.
 - [ ] Validate `youtubeError` surfaces recoverably in host UI with slide/video context.
+- [ ] Validate instructor reload establishes a new `runtimeEpoch` lineage without students rejecting fresh state as stale.
+- [ ] Validate last-instructor-wins takeover switches authority cleanly when multiple instructors touch controls.
 - [ ] Validate no regression to storyboard, pause lock, boundary controls, or chalkboard sync.
 
 ## Test Cases and Scenarios
@@ -535,6 +564,8 @@ Update `.claude/skills/slidedeck/SKILL.md` to document:
 - A student moves one slide backward outside the released region and immediately loses local playback control while still retaining normal backward navigation.
 - Storyboard must represent a vertical stack with enough hierarchy that instructors can understand which slides are in the planned release zone.
 - Some student players naturally end later than others unless the host relays authoritative ended state.
+- Instructor reloads mid-session after `seq` had advanced; the reloaded instructor must establish a new `runtimeEpoch` lineage so fresh state is not rejected as stale.
+- Two instructors are connected; the last one to touch playback/audio/local-control becomes authoritative and students follow that new authority lineage.
 - One or more student players remain loading or blocked while the instructor player is ready.
 - Synchronized `autoplay=true` is pending because not all students are ready, and the instructor chooses whether to wait or override.
 - Synchronized `autoplay=true` activates while zero students are connected; playback should start immediately rather than waiting forever.
