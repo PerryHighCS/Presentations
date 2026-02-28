@@ -96,7 +96,3 @@ Behavior expectations:
 - By default, students should only gain local control within a vertical stack when the instructor has reached that stack and the stack opts into student-controlled behavior.
 - Instructor and host controls should still determine whether student local control is currently enabled.
 - For YouTube slides inside an enabled student-controlled stack, students may receive local play/pause/seek control.
-- Student audio mode should still be honored inside the stack by default; the instructor can switch between `mute`, `slide`, and `unmute` from the toolbar.
-- The host toolbar should expose local-control and student-audio controls only when the active stack/slide supports them.
-- The storyboard should make vertical stacks visually legible and should highlight the full released region, not only the boundary endpoint.
-- Released-region behavior should be treated as horizontal-only for policy decisions: vertical position helps determine the active child slide, but release-range membership should be based on the parent stack's horizontal index.
