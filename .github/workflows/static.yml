@@ -61,12 +61,18 @@ jobs:
               '.git',
               '.github',
               '.devcontainer',
+              '.vscode',
               '.agent',
               '.claude',
               '_site',
               'node_modules',
           }
           default_file_excludes = {
+              'AGENTS.md',
+              'CLAUDE.md',
+              'README.md',
+              'LICENSE',
+              'LICENSE.md',
               '.gitignore',
               '.gitattributes',
               '.gitmodules',
@@ -110,6 +116,8 @@ jobs:
               parts = rel_path.parts
 
               if any(part in default_dir_excludes for part in parts):
+                  return True
+              if not is_dir and rel_path.suffix.lower() == '.md':
                   return True
               if rel_path.name in default_file_excludes:
                   return True
