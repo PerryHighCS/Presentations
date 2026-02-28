@@ -10,7 +10,7 @@ This is the v1 pattern for synchronized video slides. Name the broader concept "
 
 Authoring contract:
 
-- Mark the slide with `data-youtube-*` attributes such as `data-youtube-video-id`, `data-youtube-start`, and `data-youtube-student-muted`.
+- Mark the slide with `data-youtube-*` attributes such as `data-youtube-video-id`, `data-youtube-start`, and `data-youtube-student-audio`.
 - Do not hand-write a raw YouTube `<iframe>` for synchronized slides.
 - By default, the shared runtime should create the player shell and `.youtube-player-slot` automatically inside `.slide-inner`.
 - Only add an explicit `.youtube-player-slot` when the layout needs a custom placement for the player.
@@ -22,7 +22,7 @@ Recommended minimal markup:
     data-youtube-video-id="VIDEO_ID"
     data-youtube-start="0"
     data-youtube-autoplay="false"
-    data-youtube-student-muted="true"
+    data-youtube-student-audio="mute"
 >
     <div class="slide-inner">
         <h2>Demo Video</h2>
@@ -47,7 +47,7 @@ Optional custom placement:
 Behavior expectations:
 
 - `standalone` mode should keep local YouTube controls enabled.
-- `student` mode should follow synchronized playback commands and may be forced muted when configured.
+- `student` mode should follow synchronized playback commands and use the configured student-audio mode: `mute`, `slide`, or `unmute`.
 - `instructor` mode is the authoritative source for synchronized playback state.
 
 ## Vertical Stack Student-Controlled Series
@@ -68,7 +68,7 @@ Recommended stack markup:
 <section
     data-student-stack="true"
     data-student-local-control="true"
-    data-youtube-student-muted="true"
+    data-youtube-student-audio="mute"
 >
     <section>
         <div class="slide-inner">
@@ -96,7 +96,7 @@ Behavior expectations:
 - By default, students should only gain local control within a vertical stack when the instructor has reached that stack and the stack opts into student-controlled behavior.
 - Instructor and host controls should still determine whether student local control is currently enabled.
 - For YouTube slides inside an enabled student-controlled stack, students may receive local play/pause/seek control.
-- Student mute should still be honored inside the stack by default; the instructor can turn it off from the toolbar if students should hear audio.
-- The host toolbar should expose local-control and mute toggles only when the active stack/slide supports them.
+- Student audio mode should still be honored inside the stack by default; the instructor can switch between `mute`, `slide`, and `unmute` from the toolbar.
+- The host toolbar should expose local-control and student-audio controls only when the active stack/slide supports them.
 - The storyboard should make vertical stacks visually legible and should highlight the full released region, not only the boundary endpoint.
 - Released-region behavior should be treated as horizontal-only for policy decisions: vertical position helps determine the active child slide, but release-range membership should be based on the parent stack's horizontal index.
