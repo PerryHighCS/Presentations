@@ -220,7 +220,7 @@ Key rule:
 - Assume the shared runtime will auto-insert `.youtube-player-slot` unless a custom slot is provided intentionally.
 - Use `EXTENSIONS.md` when you need student-controlled vertical stacks, stack-level local-control behavior, or other advanced sync patterns.
 
-### Add-on: Vertical Stacks
+### Vertical Stacks
 
 Use vertical stacks as the default pattern for planned student-release sections.
 
@@ -649,6 +649,8 @@ Each preview should show:
 
 **IMPORTANT: Never use:**
 - Purple gradients on white backgrounds
+- Em dashes (`—`) in visible slide text; use periods, commas, or colons instead.
+- Contrast-template copy such as "it's not X, it's Y" (or "not X, but Y"); write direct, specific statements instead.
 - Inter, Roboto, or system fonts
 - Standard blue primary colors
 - Predictable centered hero layouts
