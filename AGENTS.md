@@ -97,7 +97,12 @@ Full message schema: `vendor/SyncDeck-Reveal/js/reveal-iframe-sync-message-schem
 ## Adding a New Presentation
 
 1. Create `<topic>/presentation-name.html` (subdirectory keeps the repo organised).
-2. Load the shared plugins with relative paths:
+2. **Check for a shared `theme.css` in the same folder.** If one exists, link it instead of writing a new `<style>` block:
+   ```html
+   <link rel="stylesheet" href="theme.css">
+   ```
+   Only add a `<style>` block after that link for styles that are specific to this presentation. If no `theme.css` exists and the new deck needs its own theme, consider extracting it to a `theme.css` so future decks in the same folder can share it.
+3. Load the shared plugins with relative paths:
    - For decks in subdirectories: `../vendor/SyncDeck-Reveal/js/...`
    - For root-level decks: `vendor/SyncDeck-Reveal/js/...`
    ```html
@@ -107,11 +112,11 @@ Full message schema: `vendor/SyncDeck-Reveal/js/reveal-iframe-sync-message-schem
    <script src="../vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js"></script>  <!-- only if needed -->
    ```
    Register `RevealChalkboard` in `plugins: [RevealNotes, RevealChalkboard, RevealIframeSync]`. **Do not** add a `chalkboard: { storage: '...' }` block — the host manages drawing state.
-3. Follow the architecture in `.claude/skills/frontend-slides/SKILL.md` — in particular:
+4. Follow the architecture in `.claude/skills/frontend-slides/SKILL.md` — in particular:
    - Apply theme colors with explicit CSS rules on `.reveal-viewport`, `.reveal`, `.reveal h1-h6`, etc. — **not** `--r-*` CSS variables (those only work with Reveal's bundled theme files)
    - Use **`px`** for all font sizes and spacing in CSS custom properties (not `em`/`clamp`/`vw`) — Reveal scales the canvas via CSS transform; `em` values double-scale
    - Never set `position` on `.reveal .slides > section` — Reveal needs `position: absolute` there for fade transitions; put padding/centering in a `.slide-inner` div inside each section instead
-4. Check the style tokens for the chosen preset in `.claude/skills/frontend-slides/STYLE_PRESETS.md`.
+5. Check the style tokens for the chosen preset in `.claude/skills/frontend-slides/STYLE_PRESETS.md`.
 
 ---
 
