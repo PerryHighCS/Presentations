@@ -630,10 +630,11 @@ Most people can't articulate design preferences in words. Generate mini-previews
 
 ### Step 2.2: Generate Style Previews
 
-Based on mood, generate **3 style previews** in `.claude-design/slide-previews/`:
+Based on mood, generate **3 style previews** in `.claude-design/slide-previews/`. Provide an index.html that links to each preview with a brief description. Serve the files so the user can open them in their browser and compare using `npx serve .claude-design/slide-previews`.
 
 ```
 .claude-design/slide-previews/
+├── index.html
 ├── style-a.html
 ├── style-b.html
 └── style-c.html

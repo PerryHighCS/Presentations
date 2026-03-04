@@ -1,0 +1,467 @@
+/* ============================================================
+   AR1 SHARED THEME — Schematic Dark Reveal.js theme
+   Shared by all presentations in the AR1/ folder.
+
+   ARCHITECTURE:
+   1. Reveal.js controls reset        → force nav arrows visible
+   2. Explicit theme application      → colors/fonts via CSS rules
+   3. Blueprint grid texture          → persistent background grid
+   4. CSS custom properties           → palette + px sizing tokens
+   5. Structural overrides            → section, slide-inner, progress
+   6. Slide labels & typography       → slide-tag, headings
+   7. Bullet lists                    → .bullets component
+   8. Image utilities                 → .f-img, .c-img, .photo-img, .tri-img
+   9. Glow blobs                      → decorative radial gradients
+  10. Fragment overrides              → custom fade-up easing
+  11. Storyboard strip                → SyncDeck thumbnail strip
+  12. Reduced motion                  → accessibility
+   ============================================================ */
+
+/* ─── 1. Force nav controls visible ──────────────────────── */
+
+.reveal .controls {
+  color: #2a8fff;
+  z-index: 30;
+}
+.reveal .controls .enabled {
+  opacity: 0.95;
+}
+
+/* ─── 2. Explicit Reveal.js theme application ─────────────
+   NOTE: --r-* CSS custom properties (like --r-background-color)
+   are ONLY consumed by Reveal's bundled theme CSS files.
+   Since we load reveal.css alone (no theme), we MUST use
+   explicit CSS rules on the relevant elements.
+   ──────────────────────────────────────────────────────── */
+
+/* .reveal-viewport is the class Reveal adds to <body> at runtime */
+body,
+.reveal-viewport {
+  background: #060b14;
+  background-color: #060b14;
+}
+
+.reveal {
+  background: transparent;
+  color: #e8f2ff;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Headings — reset Reveal defaults (margin, text-transform, etc.) */
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  color: #e8f2ff;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-transform: none;
+  margin: 0;
+}
+
+/* Body text */
+.reveal p,
+.reveal li,
+.reveal blockquote {
+  color: rgba(232,242,255,0.65);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Links */
+.reveal a { color: #2a8fff; }
+.reveal a:hover { color: rgba(42,143,255,0.7); }
+
+/* Selection */
+.reveal ::selection {
+  background: rgba(42,143,255,0.25);
+  color: #fff;
+}
+
+/* ─── 3. Blueprint grid texture ───────────────────────────
+   Subtle grid gives the slide a technical, schematic feel.
+   Fixed so it doesn't scroll/transform with Reveal's canvas.
+   ──────────────────────────────────────────────────────── */
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(42,143,255,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42,143,255,0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── 4. CSS Custom Properties ────────────────────────────
+   IMPORTANT: Use px for all font sizes and spacing.
+   Reveal scales the 1600×900 canvas via CSS transform —
+   px values scale correctly through it. em/clamp/vw
+   reference actual viewport dimensions and double-scale.
+   ──────────────────────────────────────────────────────── */
+
+:root {
+  /* Palette */
+  --bg:          #060b14;
+  --bg-card:     #0a1120;
+  --text:        #e8f2ff;
+  --text-muted:  rgba(232,242,255,0.58);
+  --text-dim:    rgba(232,242,255,0.28);
+  --accent:      #2a8fff;
+  --accent-dim:  rgba(42,143,255,0.12);
+  --accent-border: rgba(42,143,255,0.22);
+  --result:      #4dffb0;   /* answer highlights */
+  --warn:        #ffd166;   /* orange-yellow for attention */
+
+  /* Fonts */
+  --font-ui:   'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Typography — px sized for the 1600×900 slide canvas.
+     Reveal.js JS sets font-size on .reveal as floor(vh*0.04)
+     (~28px at 720px), then scales slides via transform. Using
+     px bypasses the inherited font-size entirely. */
+  --title:  90px;    /* title slide main heading */
+  --h2:     46px;    /* section headings         */
+  --h3:     32px;    /* sub-headings             */
+  --body:   24px;    /* paragraph / bullet text  */
+  --small:  18px;    /* captions / annotations   */
+  --label:  13px;    /* eyebrow labels / tags    */
+  --code:   20px;    /* monospace / formula text */
+
+  /* Spacing */
+  --pad:     64px;   /* slide inner padding      */
+  --gap:     22px;   /* between items            */
+  --gap-sm:  11px;   /* tight gaps               */
+  --gap-lg:  44px;   /* section breaks           */
+
+  /* Animation */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── 5. Structural overrides ─────────────────────────────── */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* CRITICAL: Do NOT set position on sections.
+   Reveal needs position: absolute to layer/fade slides.
+   Overriding it with relative makes slides 2-N appear blank. */
+.reveal .slides > section {
+  height: 100%;
+  padding: 0 !important;   /* override Reveal's default 20px */
+  box-sizing: border-box;
+  text-align: left;
+}
+
+/* Slide inner wrapper: applies padding, centres content.
+   position: relative is safe here (it's a <div>, not <section>). */
+.slide-inner {
+  width: 100%;
+  height: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: var(--pad);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+}
+
+/* Centred layout variant for title/impact slides */
+.slide-center {
+  align-items: center;
+  text-align: center;
+}
+
+/* Progress bar */
+.reveal .progress { height: 3px; }
+.reveal .progress span {
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(42,143,255,0.4);
+}
+
+/* Slide number */
+.reveal .slide-number {
+  font-family: var(--font-mono);
+  font-size: 1em;
+  background: transparent;
+  color: var(--text-dim);
+}
+.reveal .slide-number a,
+.reveal .slide-number a:hover,
+.reveal .slide-number a:focus {
+  color: inherit;
+  text-decoration: none;
+  cursor: default;
+}
+
+/* ─── 6. Slide labels & typography ─────────────────────── */
+
+/* Eyebrow tag above headings */
+.slide-tag {
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: var(--gap);
+  display: block;
+}
+.slide-tag::before { content: '// '; opacity: 0.6; }
+
+/* Title slide heading */
+.title-h1 {
+  font-size: var(--title);
+  font-weight: 700;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin: 0;
+}
+
+/* Accent color helper */
+.accent { color: var(--accent); }
+.result-color { color: var(--result); }
+
+/* Heading sizes */
+.reveal h2 { font-size: var(--h2); margin-bottom: var(--gap); }
+.reveal h3 { font-size: var(--h3); margin-bottom: var(--gap-sm); }
+
+/* ─── 7. Bullet lists ──────────────────────────────────── */
+
+.bullets {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.bullets li {
+  position: relative;
+  padding-left: 28px;
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.bullets li::before {
+  content: '//';
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 700;
+  position: absolute;
+  left: 0;
+  top: 0.3em;
+}
+
+.bullets li strong { color: var(--text); font-weight: 600; }
+
+/* ─── 8. Image utilities ───────────────────────────────────
+   There are three kinds of images in this theme:
+
+   .f-img  — formula PNG (black text, white bg):
+             filter:invert(1) makes bg black, text white.
+             mix-blend-mode:screen then makes the black bg
+             transparent against the slide background,
+             leaving white formula text floating on the slide.
+
+   .c-img  — circuit diagram (shown in white panel so complex
+             line work reads clearly on the dark slide).
+
+   .tri-img — Ohm's triangle and other colored diagrams:
+             shown in white panel to preserve colors.
+
+   .photo-img — color photography, no filter.
+   ──────────────────────────────────────────────────────── */
+
+/* Formula images: white text floating on dark bg */
+.f-img {
+  filter: invert(1);
+  mix-blend-mode: screen;
+  display: block;
+  max-width: 100%;
+}
+
+/* Circuit diagrams in a white lit panel */
+.c-img {
+  display: block;
+  background: #fff;
+  border-radius: 6px;
+  padding: 14px;
+  box-shadow: 0 0 0 1px rgba(42,143,255,0.2), 0 6px 24px rgba(0,0,0,0.5);
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Colored diagrams (e.g. Ohm's triangle) in white panel */
+.tri-img {
+  display: block;
+  background: #fff;
+  border-radius: 6px;
+  padding: 8px 12px;
+  box-shadow: 0 0 0 1px rgba(42,143,255,0.18), 0 4px 14px rgba(0,0,0,0.4);
+  object-fit: contain;
+}
+
+/* Photographs — no filter */
+.photo-img {
+  display: block;
+  border-radius: 8px;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+}
+
+/* ─── 9. Glow blobs ─────────────────────────────────────── */
+
+.glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── 10. Fragment overrides ────────────────────────────── */
+
+.reveal .fragment {
+  transition:
+    opacity 0.45s var(--ease),
+    transform 0.45s var(--ease);
+}
+.reveal .fragment.fade-up {
+  transform: translateY(18px);
+}
+.reveal .fragment.fade-up.visible {
+  transform: translateY(0);
+}
+
+/* ─── 11. Storyboard strip ──────────────────────────────── */
+
+.storyboard {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 0;
+  overflow: hidden;
+  background: rgba(4,8,18,0.97);
+  border-top: 1px solid var(--accent-border);
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.4);
+  z-index: 35;
+  transition: height 0.28s var(--ease);
+}
+
+.storyboard-track {
+  height: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.story-thumb {
+  min-width: 212px;
+  max-width: 212px;
+  height: 150px;
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  background: rgba(8,14,28,0.9);
+  color: var(--text);
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+.story-thumb:hover { border-color: rgba(42,143,255,0.5); }
+.story-thumb.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(42,143,255,0.3) inset;
+}
+
+.story-num {
+  position: absolute;
+  top: 6px; left: 8px;
+  z-index: 2;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(2,6,16,0.8);
+  border: 1px solid var(--accent-border);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--warn);
+  letter-spacing: 0.08em;
+}
+
+.story-preview {
+  width: 192px;
+  height: 108px;
+  flex: 0 0 108px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-border);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.story-scene {
+  width: 1600px;
+  height: 900px;
+  transform: scale(0.12);
+  transform-origin: top left;
+  pointer-events: none;
+}
+
+.story-scene .slides {
+  position: static;
+  width: 1600px;
+  height: 900px;
+  inset: auto;
+  transform: none;
+}
+
+.story-scene .slides > section {
+  position: relative;
+  display: block;
+  top: auto; left: auto;
+  width: 1600px;
+  height: 900px;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.story-caption {
+  flex: 0 0 auto;
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 2px;
+}
+
+body.storyboard-open .storyboard { height: 172px; }
+body.storyboard-open .reveal     { padding-bottom: 172px; }
+
+/* ─── 12. Reduced motion ─────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal .fragment {
+    transition: opacity 0.25s ease !important;
+    transform: none !important;
+  }
+  .storyboard { transition: none; }
+}
