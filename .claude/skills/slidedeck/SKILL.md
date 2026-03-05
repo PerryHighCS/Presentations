@@ -181,6 +181,18 @@ Configuration:
 
 Use shared script **`vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js`** to sync slides via `postMessage` so that for decks embedded in an iframe, the instructor can control navigation and state from the host page, while students view a synced presentation in the iframe.
 
+Communication wiring is **required** whenever the deck is expected to respond to host commands.
+
+Required wiring checklist:
+
+1. Load the sync runtime script in the HTML (correct relative path for the deck location).
+2. Register `RevealIframeSync` in `Reveal.initialize({ plugins: [...] })`.
+3. Add an `iframeSync` config object with a **unique** `deckId` for that deck.
+4. Keep `hostOrigin`/`allowedOrigins` aligned with the host app policy.
+5. Do not rely on `iframeSync.role` in config; host must promote role via `setRole`.
+
+Most common broken state: the script is loaded but `RevealIframeSync` is not listed in `plugins`, or `deckId` does not match what the host targets.
+
 Minimal setup:
 
 ```html
@@ -189,9 +201,9 @@ Minimal setup:
 <script>
 Reveal.initialize({
     // ... your Reveal config ...
-    plugins: [ RevealIframeSync ],
+    plugins: [ RevealIframeSync ].filter(Boolean),
     iframeSync: {
-        deckId: 'my-deck',
+        deckId: 'my-unique-deck-id',
         hostOrigin: '*',
         allowedOrigins: ['*']
     }
@@ -208,6 +220,46 @@ Contract:
 - On connect (and role changes), iframe posts `ready` with current role, deck state, and navigation capabilities.
 - By default, students can navigate backward but not forward beyond the most recent instructor-synced position.
 - Use `studentCanNavigateBack` / `studentCanNavigateForward` in `iframeSync` to tune this behavior.
+
+Reference integration pattern (storyboard + chalkboard + iframe sync together):
+
+```html
+<link rel="stylesheet" href="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.css">
+
+<script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
+<script src="https://unpkg.com/reveal.js@5/plugin/notes/notes.js"></script>
+<script src="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.js"></script>
+<script src="../vendor/SyncDeck-Reveal/js/reveal-storyboard.js"></script>
+<script src="../vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js"></script>
+<script>
+Reveal.initialize({
+    // ... base deck config ...
+    iframeSync: {
+        deckId: 'ar1-parallel-and-mixed-circuits',
+        hostOrigin: '*',
+        allowedOrigins: ['*'],
+        studentCanNavigateBack: true,
+        studentCanNavigateForward: false,
+    },
+    // Keep plugin registration explicit so host commands are actually handled.
+    plugins: [ RevealNotes, RevealChalkboard, RevealIframeSync ].filter(Boolean),
+    chalkboard: {
+        boardmarkerWidth: 4,
+        chalkWidth: 7,
+        // Do not set storage; host owns persistence.
+    }
+});
+
+if (window.initRevealStoryboard) {
+    window.initRevealStoryboard({
+        reveal: Reveal,
+        storyboardId: 'storyboard',
+        trackId: 'storyboard-track',
+        toggleKey: 'm',
+    });
+}
+</script>
+```
 
 ### Add-on: YouTube Slides
 
