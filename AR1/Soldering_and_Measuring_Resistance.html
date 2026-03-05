@@ -687,6 +687,7 @@
 <script src="https://unpkg.com/reveal.js@5/plugin/notes/notes.js"></script>
 <script src="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.js"></script>
 <script src="../vendor/SyncDeck-Reveal/js/reveal-storyboard.js"></script>
+<script src="../vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js"></script>
 
 <script>
 Reveal.initialize({
@@ -708,11 +709,19 @@ Reveal.initialize({
     margin: 0.04,
     minScale: 0.2,
     maxScale: 2.5,
-    plugins: [ RevealNotes, RevealChalkboard ],
+    iframeSync: {
+        deckId: 'soldering-and-measuring-resistance',
+        hostOrigin: '*',
+        allowedOrigins: ['*'],
+        studentCanNavigateBack: true,
+        studentCanNavigateForward: false,
+    },
+    plugins: [RevealNotes, RevealChalkboard, RevealIframeSync].filter(Boolean),
     chalkboard: {
         boardmarkerWidth: 4,
         chalkWidth: 7,
-        // No storage — keep default in-memory state only
+        // NOTE: do NOT set storage — the host page is the source of truth
+        // for drawing state. Setting storage causes divergence on reload.
     },
 });
 
