@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soldering &amp; Measuring Resistance</title>
+
+<link rel="stylesheet" href="https://unpkg.com/reveal.js@5/dist/reveal.css">
+<link rel="stylesheet" href="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Soldering & Measuring Resistance
+   ============================================================ */
+
+/* ── Layout helpers ──────────────────────────────────────── */
+.split-50  { display: grid; grid-template-columns: 1fr 1fr;   gap: var(--gap-lg); align-items: start; flex: 1; min-height: 0; }
+.split-40  { display: grid; grid-template-columns: 3fr 2fr;   gap: var(--gap-lg); align-items: start; flex: 1; min-height: 0; }
+.split-60  { display: grid; grid-template-columns: 2fr 3fr;   gap: var(--gap-lg); align-items: start; flex: 1; min-height: 0; }
+
+/* Top-aligned slide inner for content-heavy slides */
+.slide-top { justify-content: flex-start; padding-top: 48px; }
+
+/* Image containers */
+.img-col  { display: flex; flex-direction: column; gap: var(--gap); align-items: center; }
+.img-center { display: flex; align-items: center; justify-content: center; height: 100%; }
+
+/* ── Part cards ──────────────────────────────────────────── */
+.part-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+.part-name {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+}
+.part-desc { font-size: 19px; color: var(--text-muted); line-height: 1.45; }
+.part-desc strong { color: var(--text); }
+
+/* ── Anatomy grid (tip/wand/base cards) ──────────────────── */
+.anatomy-cards { display: flex; flex-direction: column; gap: 14px; }
+
+/* ── Rule cards ──────────────────────────────────────────── */
+.rule-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex: 1; min-height: 0;
+}
+.rule-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex; gap: 11px; align-items: flex-start;
+}
+.rule-icon { font-size: 20px; flex-shrink: 0; line-height: 1.4; }
+.rule-text { font-size: 18px; color: var(--text-muted); line-height: 1.4; }
+.rule-text strong { color: var(--text); }
+
+/* ── Numbered step list ──────────────────────────────────── */
+.steps {
+  list-style: none;
+  display: flex; flex-direction: column; gap: 12px;
+  flex: 1;
+}
+.steps li {
+  position: relative;
+  padding-left: 44px;
+  font-size: 21px; line-height: 1.5;
+  color: var(--text-muted);
+}
+.steps li::before {
+  content: attr(data-step);
+  position: absolute; left: 0; top: 1px;
+  width: 29px; height: 29px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 50%;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+  color: var(--accent); text-align: center; line-height: 27px;
+}
+.steps li strong { color: var(--text); }
+
+/* ── Photo grid for procedure slides ────────────────────── */
+.photo-col {
+  display: flex; flex-direction: column; gap: var(--gap);
+  align-items: stretch; justify-content: flex-start;
+}
+.photo-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
+}
+.photo-caption {
+  font-family: var(--font-mono);
+  font-size: 13px; color: var(--text-dim);
+  text-align: center; margin-top: 6px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+/* ── Joint comparison ────────────────────────────────────── */
+.joint-compare {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-lg);
+  flex: 1; min-height: 0;
+}
+.joint-card {
+  background: var(--bg-card); border-radius: 10px;
+  padding: 20px 24px;
+  display: flex; flex-direction: column; gap: var(--gap-sm);
+}
+.joint-card.good { border: 1px solid rgba(77,255,176,0.3); }
+.joint-card.bad  { border: 1px solid rgba(255,100,80,0.3);  }
+.joint-label {
+  font-family: var(--font-mono); font-size: 13px;
+  font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+}
+.joint-card.good .joint-label { color: var(--result); }
+.joint-card.bad  .joint-label { color: #ff6450; }
+.joint-visual {
+  display: flex; align-items: center; justify-content: center;
+  flex: 1; min-height: 0; padding: 4px 0;
+}
+
+/* ── Resistor band diagram ───────────────────────────────── */
+.res-diagram {
+  display: flex; align-items: center; justify-content: center; gap: 0;
+  margin: var(--gap-sm) 0;
+}
+.res-lead  { width: 70px; height: 4px; background: #b0b0b0; flex-shrink: 0; }
+.res-body  {
+  display: flex; align-items: stretch;
+  background: #c8a96e; border-radius: 14px; height: 54px;
+  padding: 0 22px; gap: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.res-band  { width: 18px; border-radius: 2px; flex-shrink: 0; }
+.res-gap   { width: 10px; flex-shrink: 0; }
+.band-labels {
+  display: flex; justify-content: center; align-items: flex-start; gap: 0;
+  margin-bottom: var(--gap-sm);
+}
+.bl-inner { display: flex; gap: 16px; padding: 0 22px; }
+.bl-col   {
+  width: 18px; display: flex; flex-direction: column;
+  align-items: center; gap: 3px; text-align: center;
+}
+.bl-col .bl-num  { font-size: 17px; color: var(--text); font-weight: 700; }
+.bl-col .bl-name { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.bl-col .bl-tag  { font-family: var(--font-mono); font-size: 11px; }
+.bl-col.tol .bl-tag { color: var(--warn); }
+.bl-col:not(.tol) .bl-tag { color: var(--accent); }
+
+/* ── Multimeter reading cards ────────────────────────────── */
+.meter-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: var(--gap); }
+.meter-card {
+  background: var(--bg-card); border: 1px solid var(--accent-border);
+  border-radius: 8px; padding: 18px 20px; text-align: center;
+}
+.meter-reading { font-family: var(--font-mono); font-size: 36px; font-weight: 700; margin-bottom: 8px; line-height: 1; }
+.meter-reading.ok   { color: var(--result); }
+.meter-reading.low  { color: var(--warn);   }
+.meter-reading.high { color: var(--text-dim); }
+.meter-meaning { font-size: 17px; color: var(--text-muted); line-height: 1.4; }
+.meter-meaning strong { color: var(--text); }
+
+/* ── Lab data table ──────────────────────────────────────── */
+.board-row {
+  display: flex; align-items: center; gap: 18px; margin-bottom: var(--gap);
+  padding: 12px 20px; background: var(--bg-card);
+  border: 1px solid var(--accent-border); border-radius: 8px;
+}
+.board-field { display: flex; align-items: center; gap: 10px; flex: 1; }
+.board-field-label {
+  font-family: var(--font-mono); font-size: 15px; color: var(--text-muted);
+  letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0;
+}
+.board-field-line { flex: 1; height: 1px; background: var(--accent-border); }
+.table-wrap { background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; overflow: hidden; flex: 1; }
+.lab-table { width: 100%; border-collapse: collapse; }
+.lab-table th {
+  font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent);
+  padding: 10px 18px; border-bottom: 1px solid var(--accent-border);
+  text-align: left; background: rgba(42,143,255,0.04);
+}
+.lab-table td { padding: 8px 18px; border-bottom: 1px solid rgba(42,143,255,0.07); font-size: 18px; }
+.lab-table tr:last-child td { border-bottom: none; }
+.lab-table .r-num { font-family: var(--font-mono); font-size: 16px; color: var(--accent); font-weight: 700; width: 70px; }
+.lab-table .blank-cell { color: var(--text-dim); font-size: 15px; }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ── 1. TITLE ───────────────────────────────────────── -->
+    <section>
+      <div class="slide-inner slide-center">
+        <div class="glow" style="width:700px;height:700px;top:-160px;left:-120px;background:radial-gradient(ellipse,rgba(42,143,255,0.13) 0%,transparent 68%);"></div>
+        <div class="glow" style="width:500px;height:500px;bottom:20px;right:40px;background:radial-gradient(ellipse,rgba(77,255,176,0.09) 0%,transparent 68%);"></div>
+        <div class="glow" style="width:300px;height:300px;top:60px;right:200px;background:radial-gradient(ellipse,rgba(255,209,102,0.06) 0%,transparent 70%);"></div>
+        <span class="slide-tag">Lab Activity</span>
+        <h1 class="title-h1">Soldering <span class="accent">&amp;</span><br>Measuring Resistance</h1>
+        <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-lg);font-weight:400;">Through-Hole Soldering &amp; Multimeter Skills</p>
+      </div>
+    </section>
+
+    <!-- ── 2. INTRODUCTION ────────────────────────────────── -->
+    <section>
+      <div class="slide-inner slide-top">
+        <span class="slide-tag">Introduction</span>
+        <h2>What is Soldering?</h2>
+        <div class="split-40" style="margin-top:var(--gap);">
+          <ul class="bullets">
+            <li class="fragment fade-up">Soldering is one of the most <strong>fundamental skills</strong> in electronics. The two go together like peas and carrots.</li>
+            <li class="fragment fade-up">A whole new world opens up once you can pick up a soldering iron: you can build, repair, and customize electronic circuits at the component level.</li>
+            <li class="fragment fade-up">In this lab we cover <strong>through-hole (PTH) soldering</strong>: components go through holes in the PCB and are soldered on the back side.</li>
+            <li class="fragment fade-up">We will solder <strong>10 resistors</strong> to a Resistor Check PCB, then measure each one with a multimeter and record the results.</li>
+          </ul>
+          <div class="img-center fragment fade-up">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+              <img src="Soldering_Assets/image12.jpg" class="photo-img" style="max-height:460px;width:100%;object-fit:contain;" alt="Resistor Check PCB with a resistor next to it">
+              <span class="photo-caption">Today's project: Resistor Check PCB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3. WHAT IS SOLDER? ─────────────────────────────── -->
+    <section>
+      <div class="slide-inner slide-top">
+        <span class="slide-tag">Materials</span>
+        <h2>What is Solder?</h2>
+        <div class="split-50" style="margin-top:var(--gap);">
+
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="part-card">
+              <div class="part-name">// Solder — the noun</div>
+              <div class="part-desc">An <strong>alloy</strong> of two or more metals, sold as thin wire on <strong>spools or tubes</strong>. Available leaded and lead-free.</div>
+            </div>
+            <div class="part-card">
+              <div class="part-name">// Solder — the verb</div>
+              <div class="part-desc">To <strong>join two pieces of metal</strong> at a solder joint. "We <em>solder</em> with <em>solder</em>!"</div>
+            </div>
+            <div class="part-card fragment fade-up">
+              <div class="part-name">// Leaded (Pb + Sn)</div>
+              <div class="part-desc"><strong>Lower melting point</strong>, excellent flow. Still preferred by many hobbyists — handle with care.</div>
+            </div>
+            <div class="part-card fragment fade-up">
+              <div class="part-name">// Lead-Free (RoHS)</div>
+              <div class="part-desc"><strong>Higher melting point</strong>, uses a <strong>flux core</strong> to aid flow. Industry standard for commercial products.</div>
+            </div>
+          </div>
+
+          <div class="img-col">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;">
+              <img src="Soldering_Assets/image5.jpg" class="c-img" style="max-height:300px;width:100%;object-fit:contain;" alt="Solder wire spool and tube">
+              <span class="photo-caption">Spool (left) &amp; tube (right) — leaded and lead-free varieties</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 4. SOLDERING IRON TYPES ────────────────────────── -->
+    <section>
+      <div class="slide-inner slide-top">
+        <span class="slide-tag">Equipment</span>
+        <h2>Soldering Iron — Types</h2>
+        <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);flex:1;min-height:0;">
+
+          <div class="fragment fade-up" style="display:grid;grid-template-columns:3fr 2fr;gap:var(--gap-lg);align-items:center;">
+            <div class="part-card">
+              <div class="part-name">// Simple Wand Iron</div>
+              <div class="part-desc">Plugs directly into the wall. <strong>No temperature control</strong> — the heating element is built into the wand. Affordable and portable.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+              <img src="Soldering_Assets/image4.png" class="c-img" style="max-height:180px;width:100%;object-fit:contain;" alt="Simple plug-in soldering iron">
+              <span class="photo-caption">Simple wand — no base</span>
+            </div>
+          </div>
+
+          <div class="fragment fade-up" style="display:grid;grid-template-columns:3fr 2fr;gap:var(--gap-lg);align-items:center;">
+            <div class="part-card">
+              <div class="part-name">// Soldering Station</div>
+              <div class="part-desc">A <strong>base + wand</strong> setup. The base controls temperature. <strong>Analog</strong> bases use a dial; <strong>digital</strong> bases show the exact temperature. Some offer heat profiles for different components.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+              <img src="Soldering_Assets/image9.png" class="c-img" style="max-height:180px;width:100%;object-fit:contain;" alt="Digital and analog soldering stations">
+              <span class="photo-caption">Digital station (left) &amp; analog station (right)</span>
+            </div>
+          </div>
+
+          <p class="fragment fade-up" style="font-size:var(--small);color:var(--text-dim);">// All irons have the same key parts: tip, wand, and some form of heat source. The station just adds control.</p>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 5. IRON ANATOMY — TIP, STAND, SPONGE ──────────── -->
+    <section>
+      <div class="slide-inner slide-top">
+        <span class="slide-tag">Equipment</span>
+        <h2>Iron Anatomy — Tips, Stand &amp; Cleaning</h2>
+        <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);flex:1;min-height:0;">
+
+          <div class="fragment fade-up" style="display:grid;grid-template-columns:3fr 2fr;gap:var(--gap-lg);align-items:center;">
+            <div class="part-card">
+              <div class="part-name">// Tip</div>
+              <div class="part-desc">Heats up and allows solder to flow. The tip transfers <strong>heat</strong> — not solder. Solder melts because the <em>joint</em> is hot enough, not because solder touches the tip.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+              <img src="Soldering_Assets/image2.png" class="c-img" style="max-height:130px;width:100%;object-fit:contain;" alt="Four different soldering iron tip shapes">
+              <span class="photo-caption">Common tip shapes — chisel, conical, bevel, fine point</span>
+            </div>
+          </div>
+
+          <div class="fragment fade-up" style="display:grid;grid-template-columns:3fr 2fr;gap:var(--gap-lg);align-items:center;">
+            <div class="part-card">
+              <div class="part-name">// Stand / Cradle</div>
+              <div class="part-desc">Always rest the iron here when not actively soldering. Prevents burns and fire hazards. Premium stands add <strong>auto-shutoff</strong> when the wand is cradled.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+              <img src="Soldering_Assets/image3.png" class="c-img" style="max-height:130px;width:100%;object-fit:contain;" alt="Three iron stand types: plastic with sponge, metal coil, brass wool">
+              <span class="photo-caption">Stand types — sponge cradle, coil stand, brass wool stand</span>
+            </div>
+          </div>
+
+          <div class="fragment fade-up" style="display:grid;grid-template-columns:3fr 2fr;gap:var(--gap-lg);align-items:center;">
+            <div class="part-card">
+              <div class="part-name">// Brass Sponge (not wet sponge!)</div>
+              <div class="part-desc">Tips oxidize over time — turning black and rejecting solder. Wipe on a <strong>brass sponge</strong>: it strips build-up without temperature shock. A wet sponge causes rapid expansion/contraction that eventually holes the tip.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+              <img src="Soldering_Assets/image7.png" class="c-img" style="max-height:130px;width:100%;object-fit:contain;" alt="Soldering iron tip being cleaned in brass sponge">
+              <span class="photo-caption">Brass sponge in use</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 6. SOLDERING VIDEO ────────────────────────────────── -->
+    <section>
+      <div class="slide-inner slide-top">
+        <span class="slide-tag">Technique</span>
+        <h2>Soldering Tutorial</h2>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;min-height:0;margin-top:var(--gap);">
+          <iframe
+            src="https://www.youtube.com/embed/f95i88OSWB4?si=40FZsGSzZe6VnYk6"
+            style="width:100%;aspect-ratio:16/9;max-height:660px;border:none;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.6);"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            title="Soldering Tutorial Video">
+          </iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 7. DAVE'S RULES ────────────────────────────────────── -->
+    <section>
+      <div class="slide-inner slide-top">
+        <span class="slide-tag">Technique</span>
+        <h2>Dave's Rules</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-sm);flex:1;margin-top:var(--gap-sm);">
+          <div class="part-card fragment fade-up">
+            <div class="part-name">// 01</div>
+            <div class="part-desc">Be <strong>cautious</strong> when handling hot irons.</div>
+          </div>
+          <div class="part-card fragment fade-up">
+            <div class="part-name">// 02</div>
+            <div class="part-desc">Use <strong>third hands or vices</strong> to hold boards while you solder.</div>
+          </div>
+          <div class="part-card fragment fade-up">
+            <div class="part-name">// 03</div>
+            <div class="part-desc">Set your iron at a good medium heat: <strong>325–375°C (600-700°F)</strong>.</div>
+          </div>
+          <div class="part-card fragment fade-up">
+            <div class="part-name">// 04</div>
+            <div class="part-desc">If you see smoke from your solder, <strong>turn down the heat</strong>.</div>
+          </div>
+          <div class="part-card fragment fade-up">
+            <div class="part-name">// 05</div>
+            <div class="part-desc"><strong>Tin your tip</strong> with solder before each connection.</div>
+          </div>
+          <div class="part-card fragment fade-up">
+            <div class="part-name">// 06</div>
+            <div class="part-desc">Use the <strong>side of the tip</strong> (the sweet spot), not the very tip.</div>
+          </div>
+          <div class="part-card fragment fade-up">
+            <div class="part-name">// 07</div>
+            <div class="part-desc">Heat <strong>both the pad and the part</strong> evenly and at the same time.</div>
+          </div>
+          <div class="part-card fragment fade-up">
+            <div class="part-name">// 08</div>
+            <div class="part-desc"><strong>Pull the solder away</strong>, then the iron.</div>
+          </div>
+          <div class="part-card fragment fade-up">
+            <div class="part-name">// 09</div>
+            <div class="part-desc">A good joint looks like a <strong style="color:var(--result);">volcano or Hershey kiss</strong>, not a ball or clump.</div>
+          </div>
+          <div class="part-card fragment fade-up">
+            <div class="part-name">// 10</div>
+            <div class="part-desc">When finished, <strong>tin the tip</strong> to extend its life before turning the iron off.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 8. SOLDERING TECHNIQUE ─────────────────────────── -->
+    <section>
+      <div class="slide-inner slide-top">
+        <span class="slide-tag">Technique</span>
+        <h2>Soldering Technique</h2>
+        <div style="display:grid;grid-template-columns:3fr 1fr;gap:var(--gap-lg);margin-top:var(--gap);flex:1;min-height:0;align-items:start;">
+
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;height:100%;">
+            <img src="Soldering_Assets/image6.png" class="c-img" style="width:100%;height:100%;max-height:700px;object-fit:contain;" alt="Technique diagram showing correct iron position, feeding solder, and joint quality grades A through E">
+          </div>
+
+          <ul class="bullets" style="gap:var(--gap);">
+            <li class="fragment fade-up"><strong>Be cautious</strong> with hot irons.</li>
+            <li class="fragment fade-up">Set to <strong>325–375°C (600-700°F)</strong>. Smoke = too hot.</li>
+            <li class="fragment fade-up"><strong>Tin your tip</strong> before each joint.</li>
+            <li class="fragment fade-up">Use the <strong>side of the tip</strong>, not the point.</li>
+            <li class="fragment fade-up">Heat <strong>pad AND part</strong> together.</li>
+            <li class="fragment fade-up">Pull <strong>solder first</strong>, then iron. Good joint = <strong>volcano shape</strong>.</li>
+          </ul>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 7. COLD SOLDER JOINTS ──────────────────────────── -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Quality Check</span>
+        <h2>Solder Joint Quality</h2>
+        <div class="joint-compare" style="margin-top:var(--gap);">
+
+          <div class="joint-card good fragment fade-up">
+            <div class="joint-label">Good Joint</div>
+            <div class="joint-visual">
+              <svg width="160" height="110" viewBox="0 0 160 110" aria-label="Good solder joint shaped like a volcano">
+                <ellipse cx="80" cy="96" rx="60" ry="10" fill="#6a6a6a" opacity="0.7"/>
+                <path d="M38,96 Q52,58 80,28 Q108,58 122,96 Z" fill="#c8a96e"/>
+                <rect x="76" y="0" width="8" height="100" fill="#c0c0c0" rx="2"/>
+                <path d="M55,85 Q66,52 80,28" stroke="rgba(255,255,255,0.28)" stroke-width="3" fill="none" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <ul class="bullets" style="gap:6px;margin-top:auto;">
+              <li><strong>Shiny</strong>, smooth surface</li>
+              <li>Volcano / Hershey kiss profile</li>
+              <li>Solder wets fully up the pin and across the pad</li>
+            </ul>
+          </div>
+
+          <div class="joint-card bad fragment fade-up">
+            <div class="joint-label">Cold Solder Joint</div>
+            <div class="joint-visual">
+              <img src="Soldering_Assets/image8.png" class="photo-img" style="max-height:260px;max-width:100%;object-fit:contain;border-radius:8px;" alt="Macro photo of a cold solder joint showing a dull, balled joint on a green PCB">
+            </div>
+            <ul class="bullets" style="gap:6px;margin-top:auto;">
+              <li><strong>Dull</strong>, grainy or balled-up surface</li>
+              <li>Tiny <strong>gap between solder and pin</strong> — no real connection</li>
+              <li>Cause: <strong>not enough heat</strong> applied to the joint</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 8. RESISTOR CHECK BOARD — PART 1 ───────────────── -->
+    <section>
+      <div class="slide-inner slide-top">
+        <span class="slide-tag">Lab Procedure</span>
+        <h2>Soldering the Resistor Check Board</h2>
+        <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);flex:1;min-height:0;">
+
+          <ol class="steps">
+            <li data-step="1">Get <strong>10 resistors</strong> from your instructor along with your Resistor Check PCB.</li>
+            <li data-step="2" class="fragment fade-up" data-fragment-index="1"><strong>Bend the leads</strong> so they fit through the inner pair of holes on the board. Closer is better, but doesn't need to be exact.</li>
+            <li data-step="3" class="fragment fade-up" data-fragment-index="2">Place a resistor on the <strong>top side</strong> of the PCB (the side with the puma logo), leads going through the inner pair of holes.</li>
+            <li data-step="4" class="fragment fade-up" data-fragment-index="3">On the back side, <strong>pull the leads outward</strong> to hold the resistor tightly against the board.</li>
+          </ol>
+
+          <!-- Images appear in a row below, paired to their steps -->
+          <div style="display:flex;gap:var(--gap-lg);align-items:flex-start;">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+              <img src="Soldering_Assets/image12.jpg" class="photo-img" style="max-height:280px;width:100%;object-fit:contain;" alt="Bare Resistor Check PCB with a loose resistor next to it">
+              <span class="photo-caption">The Resistor Check PCB</span>
+            </div>
+            <div class="fragment fade-up" data-fragment-index="1" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+              <img src="Soldering_Assets/image15.jpg" class="photo-img" style="max-height:280px;width:100%;object-fit:contain;" alt="Completed Resistor Check board — the goal">
+              <span class="photo-caption">Step 2: Bend the leads</span>
+            </div>
+            <div class="fragment fade-up" data-fragment-index="2" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+              <img src="Soldering_Assets/image17.jpg" class="photo-img" style="max-height:280px;width:100%;object-fit:contain;" alt="Resistor placed on the top side of the PCB through the holes">
+              <span class="photo-caption">Step 3: Place on top side</span>
+            </div>
+            <div class="fragment fade-up" data-fragment-index="3" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+              <img src="Soldering_Assets/image14.jpg" class="photo-img" style="max-height:280px;width:100%;object-fit:contain;" alt="Pulling resistor leads outward on the back of the board">
+              <span class="photo-caption">Step 4: Pull leads outward</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 9. RESISTOR CHECK BOARD — PART 2 ───────────────── -->
+    <section>
+      <div class="slide-inner slide-top">
+        <span class="slide-tag">Lab Procedure</span>
+        <h2>Soldering the Resistor Check Board</h2>
+        <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);flex:1;min-height:0;">
+
+          <ol class="steps">
+            <li data-step="5" class="fragment fade-up" data-fragment-index="5">Flip the board leads-up. <strong>Solder both leads</strong> to their pads.</li>
+            <li data-step="6" class="fragment fade-up" data-fragment-index="6"><strong>Trim the leads</strong> with flush cutters so they barely protrude past the solder joint.</li>
+            <li data-step="7" class="fragment fade-up" data-fragment-index="7"><strong>Repeat</strong> for all 10 resistors. When the board is full, show your instructor before measuring.</li>
+          </ol>
+
+          <!-- Images appear in a row below, each paired to its step -->
+          <div style="display:flex;gap:var(--gap-lg);align-items:flex-start;">
+            <div class="fragment fade-up" data-fragment-index="5" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+              <img src="Soldering_Assets/image13.jpg" class="photo-img" style="max-height:300px;width:100%;object-fit:contain;" alt="Soldering iron tip touching leads on the PCB">
+              <span class="photo-caption">Step 5: Soldering</span>
+            </div>
+            <div class="fragment fade-up" data-fragment-index="6" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+              <img src="Soldering_Assets/image11.jpg" class="photo-img" style="max-height:300px;width:100%;object-fit:contain;" alt="Flush cutters trimming resistor leads on the back of the board">
+              <span class="photo-caption">Step 6: Trimming leads</span>
+            </div>
+            <div class="fragment fade-up" data-fragment-index="7" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+              <img src="Soldering_Assets/image16.jpg" class="photo-img" style="max-height:300px;width:100%;object-fit:contain;" alt="All 10 resistors mounted on the Resistor Check board">
+              <span class="photo-caption">Step 7: All 10 mounted</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 10. COLOR CODE ─────────────────────────────────── -->
+    <section>
+      <div class="slide-inner slide-top">
+        <span class="slide-tag">Reading Resistors</span>
+        <h2>Resistor Color Code</h2>
+
+        <div class="split-50" style="margin-top:var(--gap);">
+
+          <!-- Left: diagram + steps -->
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <!-- CSS band diagram -->
+            <div class="res-diagram">
+              <div class="res-lead"></div>
+              <div class="res-body">
+                <div class="res-band" style="background:#1a5dc8;"  title="Blue = 6"></div>
+                <div class="res-band" style="background:#cc2200;"  title="Red = 2"></div>
+                <div class="res-band" style="background:#111;border:1px solid rgba(255,255,255,0.12);" title="Black = ×1"></div>
+                <div class="res-gap"></div>
+                <div class="res-band" style="background:#c9a800;" title="Gold = ±5%"></div>
+              </div>
+              <div class="res-lead"></div>
+            </div>
+            <div class="band-labels">
+              <div style="width:70px;flex-shrink:0;"></div>
+              <div class="bl-inner">
+                <div class="bl-col"><span class="bl-tag">Band 1</span><span class="bl-num">6</span><span class="bl-name">Blue</span></div>
+                <div class="bl-col"><span class="bl-tag">Band 2</span><span class="bl-num">2</span><span class="bl-name">Red</span></div>
+                <div class="bl-col"><span class="bl-tag">Band 3</span><span class="bl-num" style="font-size:13px;">×10⁰</span><span class="bl-name">Black</span></div>
+                <div style="width:10px;flex-shrink:0;"></div>
+                <div class="bl-col tol"><span class="bl-tag">Band 4</span><span class="bl-num">±5%</span><span class="bl-name">Gold</span></div>
+              </div>
+              <div style="width:70px;flex-shrink:0;"></div>
+            </div>
+            <ul class="bullets">
+              <li class="fragment fade-up"><strong>Find Band 1:</strong> gold or silver = Band 4. The other end is Band 1.</li>
+              <li class="fragment fade-up"><strong>Band 1 + Band 2</strong> give the first two digits.</li>
+              <li class="fragment fade-up"><strong>Band 3</strong> is the multiplier: 10<sup>n</sup>. Black = ×1, Yellow = ×10,000.</li>
+              <li class="fragment fade-up"><strong>Band 4</strong> = tolerance. Gold = ±5%.</li>
+            </ul>
+            <div class="part-card fragment fade-up" style="text-align:center;">
+              <div class="part-name" style="text-align:center;">Blue, Red, Black, Gold</div>
+              <div style="font-family:var(--font-mono);font-size:26px;color:var(--result);font-weight:700;margin:6px 0;">62 &times; 1 = <strong>62 &Omega;</strong></div>
+              <div style="font-family:var(--font-mono);font-size:16px;color:var(--text-muted);">&plusmn;5% &rarr; 58.9 &Omega; to 65.1 &Omega;</div>
+            </div>
+          </div>
+
+          <!-- Right: color code table image -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+            <img src="Soldering_Assets/image10.png" class="c-img" style="max-height:520px;width:100%;object-fit:contain;" alt="Full resistor color code reference table showing all digit, multiplier and tolerance colors">
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 11. MEASURING RESISTANCE ───────────────────────── -->
+    <section>
+      <div class="slide-inner slide-top">
+        <span class="slide-tag">Measurement</span>
+        <h2>Measuring Resistance</h2>
+        <ol class="steps" style="margin-top:var(--gap);">
+          <li data-step="1" class="fragment fade-up">Set your multimeter to <strong>Resistance (&Omega;) mode</strong>.</li>
+          <li data-step="2" class="fragment fade-up">Set the range to the <strong>closest value ABOVE the nominal</strong> resistance. (For 62&thinsp;&Omega;, use the 200&thinsp;&Omega; range.)</li>
+          <li data-step="3" class="fragment fade-up">Touch the <strong>probes to the two leads</strong> of the resistor. Be careful not to bridge adjacent pads.</li>
+          <li data-step="4" class="fragment fade-up">Read the display. <strong>Units match the range you set.</strong> (200&thinsp;&Omega; range = Ohms; 2&thinsp;K&Omega; range = kΩ; 2&thinsp;M&Omega; range = MΩ.)</li>
+        </ol>
+        <div class="meter-cards fragment fade-up">
+          <div class="meter-card">
+            <div class="meter-reading ok">62.4</div>
+            <div class="meter-meaning"><strong>Good reading.</strong> Within tolerance. Record it.</div>
+          </div>
+          <div class="meter-card">
+            <div class="meter-reading low">1</div>
+            <div class="meter-meaning"><strong>"1" on left side</strong> — range too low. Increase your range.</div>
+          </div>
+          <div class="meter-card">
+            <div class="meter-reading high">.000</div>
+            <div class="meter-meaning"><strong>".000" shown</strong> — range too high. Decrease your range.</div>
+          </div>
+        </div>
+        <p class="fragment fade-up" style="font-size:var(--small);color:var(--text-dim);margin-top:var(--gap-sm);">// Always set the range ABOVE the expected value first, then work down if needed.</p>
+      </div>
+    </section>
+
+    <!-- ── 12. LAB DATA TABLE ─────────────────────────────── -->
+    <section>
+      <div class="slide-inner slide-top">
+        <span class="slide-tag">Lab Data</span>
+        <h2>Record Your Results</h2>
+        <div class="board-row" style="margin-top:var(--gap);">
+          <div class="board-field"><span class="board-field-label">Board #</span><div class="board-field-line"></div></div>
+          <div class="board-field"><span class="board-field-label">Name</span><div class="board-field-line"></div></div>
+          <div class="board-field" style="max-width:220px;"><span class="board-field-label">Date</span><div class="board-field-line"></div></div>
+          <div class="board-field" style="max-width:180px;"><span class="board-field-label">Period</span><div class="board-field-line"></div></div>
+        </div>
+        <div class="table-wrap">
+          <table class="lab-table">
+            <thead>
+              <tr>
+                <th>Resistor</th>
+                <th>Nominal Value</th>
+                <th>Measured Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="r-num">R1</td> <td class="blank-cell">_______ &Omega;</td><td class="blank-cell">_______ &Omega;</td></tr>
+              <tr><td class="r-num">R2</td> <td class="blank-cell">_______ &Omega;</td><td class="blank-cell">_______ &Omega;</td></tr>
+              <tr><td class="r-num">R3</td> <td class="blank-cell">_______ &Omega;</td><td class="blank-cell">_______ &Omega;</td></tr>
+              <tr><td class="r-num">R4</td> <td class="blank-cell">_______ &Omega;</td><td class="blank-cell">_______ &Omega;</td></tr>
+              <tr><td class="r-num">R5</td> <td class="blank-cell">_______ &Omega;</td><td class="blank-cell">_______ &Omega;</td></tr>
+              <tr><td class="r-num">R6</td> <td class="blank-cell">_______ &Omega;</td><td class="blank-cell">_______ &Omega;</td></tr>
+              <tr><td class="r-num">R7</td> <td class="blank-cell">_______ &Omega;</td><td class="blank-cell">_______ &Omega;</td></tr>
+              <tr><td class="r-num">R8</td> <td class="blank-cell">_______ &Omega;</td><td class="blank-cell">_______ &Omega;</td></tr>
+              <tr><td class="r-num">R9</td> <td class="blank-cell">_______ &Omega;</td><td class="blank-cell">_______ &Omega;</td></tr>
+              <tr><td class="r-num">R10</td><td class="blank-cell">_______ &Omega;</td><td class="blank-cell">_______ &Omega;</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<!-- Storyboard strip (toggle with M) -->
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
+<script src="https://unpkg.com/reveal.js@5/plugin/notes/notes.js"></script>
+<script src="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.js"></script>
+<script src="../vendor/SyncDeck-Reveal/js/reveal-storyboard.js"></script>
+
+<script>
+Reveal.initialize({
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+    plugins: [ RevealNotes, RevealChalkboard ],
+    chalkboard: {
+        boardmarkerWidth: 4,
+        chalkWidth: 7,
+        // No storage — keep default in-memory state only
+    },
+});
+
+if (window.initRevealStoryboard) {
+    window.initRevealStoryboard({
+        reveal: Reveal,
+        storyboardId: 'storyboard',
+        trackId: 'storyboard-track',
+        toggleKey: 'm',
+    });
+}
+</script>
+
+</body>
+</html>
