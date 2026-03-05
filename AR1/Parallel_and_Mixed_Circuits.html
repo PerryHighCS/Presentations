@@ -2168,6 +2168,31 @@ Reveal.initialize({
 // transition always starts from the correct "from" state.
 (function () {
     var slideNums = ['10', '11', '12'];
+  var pendingCleanup = null;
+
+  function getSwapParts(n, section) {
+    if (!section) return null;
+    return {
+      left: section.querySelector('.slide' + n + '-left'),
+      leftArrow: section.querySelector('.slide' + n + '-left-arrow'),
+      right: section.querySelector('.slide' + n + '-right'),
+      rightArrow: section.querySelector('.slide' + n + '-right-arrow'),
+      trigger: section.querySelector('.slide' + n + '-collapse-left-trigger'),
+    };
+  }
+
+  function setInstantStyles(elements, value) {
+    elements.forEach(function (el) {
+      el.style.transition = value;
+      el.style.animation = value;
+    });
+  }
+
+  function forceReflow(elements) {
+    elements.forEach(function (el) {
+      void el.offsetWidth;
+    });
+  }
 
     // Apply/remove both the left-collapse and right-expansion classes together.
     // Forward (fragmentshown): deferred one rAF so left collapse and right
@@ -2176,15 +2201,65 @@ Reveal.initialize({
     // immediately in Reveal's frame, shrinking the center, then left collapsed
     // one rAF later expanding it again).
     // Backward (fragmenthidden): applied immediately — no reflow race going back.
-    function applySwap(n, section, add) {
-        var left       = section.querySelector('.slide' + n + '-left');
-        var leftArrow  = section.querySelector('.slide' + n + '-left-arrow');
-        var right      = section.querySelector('.slide' + n + '-right');
-        var rightArrow = section.querySelector('.slide' + n + '-right-arrow');
-        if (left)       left.classList.toggle('collapsing', add);
-        if (leftArrow)  leftArrow.classList.toggle('collapsing', add);
-        if (right)      right.classList.toggle('expanding', add);
-        if (rightArrow) rightArrow.classList.toggle('expanding', add);
+    function applySwap(n, section, add, instant) {
+      var parts = getSwapParts(n, section);
+      if (!parts) return;
+
+      var elements = [parts.left, parts.leftArrow, parts.right, parts.rightArrow].filter(Boolean);
+      if (elements.length === 0) return;
+
+      if (instant) {
+        setInstantStyles(elements, 'none');
+        forceReflow(elements);
+      }
+
+      if (parts.left) parts.left.classList.toggle('collapsing', add);
+      if (parts.leftArrow) parts.leftArrow.classList.toggle('collapsing', add);
+      if (parts.right) parts.right.classList.toggle('expanding', add);
+      if (parts.rightArrow) parts.rightArrow.classList.toggle('expanding', add);
+
+      if (instant) {
+        forceReflow(elements);
+        requestAnimationFrame(function () {
+          setInstantStyles(elements, '');
+        });
+      }
+    }
+
+    function syncSectionStateInstant(section) {
+      slideNums.forEach(function (n) {
+        var parts = getSwapParts(n, section);
+        if (!parts || !parts.trigger) return;
+        var shouldBeCollapsed = parts.trigger.classList.contains('visible');
+        applySwap(n, section, shouldBeCollapsed, true);
+      });
+    }
+
+    function clearSectionStateInstant(section) {
+      slideNums.forEach(function (n) {
+        var parts = getSwapParts(n, section);
+        if (!parts || !parts.trigger) return;
+        applySwap(n, section, false, true);
+      });
+    }
+
+    function getCleanupDelayMs() {
+      var speed = (Reveal.getConfig().transitionSpeed || '').toLowerCase();
+      if (speed === 'fast') return 420;
+      if (speed === 'slow') return 1100;
+      return 760;
+    }
+
+    function scheduleOutgoingCleanup(section) {
+      if (!section) return;
+      if (pendingCleanup) {
+        clearTimeout(pendingCleanup);
+        pendingCleanup = null;
+      }
+      pendingCleanup = setTimeout(function () {
+        clearSectionStateInstant(section);
+        pendingCleanup = null;
+      }, getCleanupDelayMs());
     }
 
     Reveal.on('fragmentshown', function (event) {
@@ -2192,7 +2267,7 @@ Reveal.initialize({
             if (event.fragment.classList.contains('slide' + n + '-collapse-left-trigger')) {
                 var section = event.fragment.closest('section');
                 requestAnimationFrame(function () {
-                    applySwap(n, section, true);
+            applySwap(n, section, true, false);
                 });
             }
         });
@@ -2201,9 +2276,18 @@ Reveal.initialize({
     Reveal.on('fragmenthidden', function (event) {
         slideNums.forEach(function (n) {
             if (event.fragment.classList.contains('slide' + n + '-collapse-left-trigger')) {
-                applySwap(n, event.fragment.closest('section'), false);
+          applySwap(n, event.fragment.closest('section'), false, false);
             }
         });
+    });
+
+    Reveal.on('slidechanged', function (event) {
+      scheduleOutgoingCleanup(event.previousSlide);
+      syncSectionStateInstant(event.currentSlide);
+    });
+
+    Reveal.on('ready', function (event) {
+      syncSectionStateInstant(event.currentSlide || Reveal.getCurrentSlide());
     });
 }());
 
