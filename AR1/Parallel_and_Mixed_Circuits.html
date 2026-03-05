@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Exercise 7 — Parallel &amp; Mixed Circuits</title>
+<title>Exercise 7: Parallel &amp; Mixed Circuits</title>
 
 <!-- Reveal.js base CSS (no bundled theme — full custom theme below) -->
 <link rel="stylesheet" href="https://unpkg.com/reveal.js@5/dist/reveal.css">
@@ -73,6 +73,43 @@
   display: flex;
 }
 
+/* ── Slides 10-12: circuit swap animation ────────────────────
+   Trigger fragment (invisible) drives simultaneous:
+   - left circuit collapses via flex-basis + scaleX
+   - left arrow fades
+   - right arrow fades in
+   - right circuit expands via flex-basis + translateX
+   Flex layout handles the center shift automatically.
+   ─────────────────────────────────────────────────────────── */
+
+/* ── Shared: rows ─────────────────────────────────────────── */
+.slide10-row,
+.slide11-row,
+.slide12-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.slide10-row .tx-formulas,
+.slide11-row .tx-formulas,
+.slide12-row .tx-formulas {
+  min-width: 0;
+  flex: 1;
+}
+
+/* ── Shared: triggers (invisible, position:absolute) ──────── */
+.slide10-collapse-left-trigger,
+.slide11-collapse-left-trigger,
+.slide12-collapse-left-trigger {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* ── Slide 10 ─────────────────────────────────────────────── */
 .slide10-left {
   flex: 0 0 640px;
   max-width: 640px;
@@ -81,46 +118,29 @@
   transition: transform 760ms ease, opacity 520ms ease, flex-basis 760ms ease, max-width 760ms ease;
 }
 
-.slide10-collapse-left-trigger.visible ~ .tx-row .slide10-left {
-  transform: translateX(-90px) scaleX(0.01);
-  opacity: 0;
-  flex-basis: 0;
-  max-width: 0;
-}
-
 .slide10-left-arrow {
-  transition: transform 760ms ease, opacity 520ms ease;
+  transition: transform 520ms ease, opacity 520ms ease;
 }
 
-.slide10-collapse-left-trigger.visible ~ .tx-row .slide10-left-arrow {
-  transform: translateX(-40px);
-  opacity: 0;
-}
-.slide10-center {
-  transition: transform 760ms ease;
-}
-.slide10-collapse-left-trigger.visible ~ .tx-row .slide10-center {
-  transform: translateX(-70px);
-}
-
-.slide10-collapse-left-trigger {
-  position: absolute;
-  width: 0;
-  height: 0;
+/* Right arrow: starts hidden, expands via JS .expanding class */
+.slide10-right-arrow.fragment {
+  flex: 0 0 0;
+  max-width: 0;
   overflow: hidden;
+  opacity: 0;
+  transition: opacity 520ms ease, flex-basis 760ms ease, max-width 760ms ease;
 }
 
-.slide10-row {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
+/* Right circuit: starts collapsed, expands via JS .expanding class */
+.slide10-right.fragment {
+  flex: 0 0 0;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 760ms ease, flex-basis 760ms ease, max-width 760ms ease;
 }
 
-.slide10-row .tx-formulas {
-  min-width: 0;
-}
-
+/* ── Slide 11 ─────────────────────────────────────────────── */
 .slide11-left {
   flex: 0 0 640px;
   max-width: 640px;
@@ -129,48 +149,27 @@
   transition: transform 760ms ease, opacity 520ms ease, flex-basis 760ms ease, max-width 760ms ease;
 }
 
-.slide11-collapse-left-trigger.visible ~ .tx-row .slide11-left {
-  transform: translateX(-90px) scaleX(0.01);
-  opacity: 0;
-  flex-basis: 0;
-  max-width: 0;
-}
-
 .slide11-left-arrow {
-  transition: transform 760ms ease, opacity 520ms ease;
+  transition: transform 520ms ease, opacity 520ms ease;
 }
 
-.slide11-collapse-left-trigger.visible ~ .tx-row .slide11-left-arrow {
-  transform: translateX(-40px);
-  opacity: 0;
-}
-
-.slide11-center {
-  transition: transform 760ms ease;
-}
-
-.slide11-collapse-left-trigger.visible ~ .tx-row .slide11-center {
-  transform: translateX(-70px);
-}
-
-.slide11-collapse-left-trigger {
-  position: absolute;
-  width: 0;
-  height: 0;
+.slide11-right-arrow.fragment {
+  flex: 0 0 0;
+  max-width: 0;
   overflow: hidden;
+  opacity: 0;
+  transition: opacity 520ms ease, flex-basis 760ms ease, max-width 760ms ease;
 }
 
-.slide11-row {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
+.slide11-right.fragment {
+  flex: 0 0 0;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 760ms ease, flex-basis 760ms ease, max-width 760ms ease;
 }
 
-.slide11-row .tx-formulas {
-  min-width: 0;
-}
-
+/* ── Slide 12 ─────────────────────────────────────────────── */
 .slide12-left {
   flex: 0 0 640px;
   max-width: 640px;
@@ -179,46 +178,81 @@
   transition: transform 760ms ease, opacity 520ms ease, flex-basis 760ms ease, max-width 760ms ease;
 }
 
-.slide12-collapse-left-trigger.visible ~ .tx-row .slide12-left {
-  transform: translateX(-90px) scaleX(0.01);
-  opacity: 0;
-  flex-basis: 0;
-  max-width: 0;
-}
-
 .slide12-left-arrow {
-  transition: transform 760ms ease, opacity 520ms ease;
+  transition: transform 520ms ease, opacity 520ms ease;
 }
 
-.slide12-collapse-left-trigger.visible ~ .tx-row .slide12-left-arrow {
-  transform: translateX(-40px);
+.slide12-right-arrow.fragment {
+  flex: 0 0 0;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 520ms ease, flex-basis 760ms ease, max-width 760ms ease;
+}
+
+.slide12-right.fragment {
+  flex: 0 0 0;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 760ms ease, flex-basis 760ms ease, max-width 760ms ease;
+}
+
+/* ── @keyframes circuit swap ─────────────────────────────────────────────
+   CSS transitions fail going forward because the right-circuit flex-basis
+   change (0→640px) triggers a layout reflow in the same style-recalculation
+   pass, preventing the browser from capturing a valid "from" state for the
+   left circuit's transition.  @keyframes animations define their own
+   explicit "from" values, so they are immune to this reflow race.
+   Transitions still handle the backward direction (animation removed →
+   browser interpolates from animation fill-position to base CSS values).
+   ──────────────────────────────────────────────────────────────────────── */
+@keyframes collapse-circuit {
+  from { transform: none; opacity: 1; flex-basis: 640px; max-width: 640px; }
+  to   { transform: translateX(-60px) scaleX(0.01); opacity: 0; flex-basis: 0; max-width: 0; }
+}
+
+@keyframes expand-circuit {
+  from { flex-basis: 0; max-width: 0; opacity: 0; }
+  to   { flex-basis: 640px; max-width: 640px; opacity: 1; }
+}
+
+/* Applied via JS rAF (fragmentshown) / removed immediately (fragmenthidden) */
+.slide10-left.collapsing,
+.slide11-left.collapsing,
+.slide12-left.collapsing {
+  animation: collapse-circuit 760ms ease forwards;
+}
+
+.slide10-right.expanding,
+.slide11-right.expanding,
+.slide12-right.expanding {
+  animation: expand-circuit 760ms ease forwards;
+}
+
+/* Left arrow: opacity/transform only — no layout impact, transitions fine */
+.slide10-left-arrow.collapsing,
+.slide11-left-arrow.collapsing,
+.slide12-left-arrow.collapsing {
+  transform: translateX(-20px);
   opacity: 0;
 }
 
-.slide12-center {
-  transition: transform 760ms ease;
+/* Right arrow: simple expand, small element */
+.slide10-right-arrow.expanding,
+.slide11-right-arrow.expanding,
+.slide12-right-arrow.expanding {
+  flex-basis: 50px;
+  max-width: 60px;
+  opacity: 1;
 }
 
-.slide12-collapse-left-trigger.visible ~ .tx-row .slide12-center {
-  transform: translateX(-70px);
-}
-
-.slide12-collapse-left-trigger {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
-
-.slide12-row {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-}
-
-.slide12-row .tx-formulas {
-  min-width: 0;
+/* Fixed image height prevents aspect-ratio-driven height collapse during
+   flex-basis animation — only width changes, height stays constant at 440px */
+.slide10-left .c-img, .slide11-left .c-img, .slide12-left .c-img,
+.slide10-right .c-img, .slide11-right .c-img, .slide12-right .c-img {
+  height: 440px;
+  width: auto;
 }
 
 /* ── Formula chain (sequential calculation steps) ─────────── */
@@ -634,7 +668,7 @@
       </svg>
     </div>
 
-    <span class="slide-tag">AR1 &nbsp;·&nbsp; Exercise 7 &nbsp;·&nbsp; Concept Overview</span>
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; DC Circuits Exercise 7 &nbsp;·&nbsp; Concept Overview</span>
     <h1 class="title-h1">Parallel &amp;<br><span class="accent">Mixed Circuits</span></h1>
     <p class="subtitle">// Resistance &nbsp;·&nbsp; Voltage &nbsp;·&nbsp; Current &nbsp;·&nbsp; KCL</p>
   </div>
@@ -973,7 +1007,7 @@
       <h2 class="step-title">Identify &amp; Replace <span class="accent">Series</span> Resistors</h2>
     </div>
 
-    <span class="fragment no-reserve-fragment slide10-collapse-left-trigger" data-fragment-index="5" aria-hidden="true"></span>
+    <span class="fragment slide10-collapse-left-trigger" data-fragment-index="5" aria-hidden="true"></span>
 
     <div class="tx-row slide10-row">
 
@@ -995,10 +1029,10 @@
         </div>
       </div>
 
-      <div class="tx-arrow fragment no-reserve-fragment" data-fragment-index="5">→</div>
+      <div class="tx-arrow fragment slide10-right-arrow" data-fragment-index="5">→</div>
 
       <!-- After: simplified circuit -->
-      <div class="tx-circuit fragment fade-left no-reserve-fragment" data-fragment-index="5">
+      <div class="tx-circuit fragment slide10-right" data-fragment-index="5">
         <div class="tx-label">After Step 1</div>
         <img class="c-img" src="Parallel_and_Mixed_Circuits_Assets/image29.png" alt="Simplified: R1=20Ω in series with parallel pair Req(R2R3)=100Ω and R4=150Ω" style="max-height:440px;">
       </div>
@@ -1022,7 +1056,7 @@
       <h2 class="step-title">Identify &amp; Replace <span class="accent">Parallel</span> Resistors</h2>
     </div>
 
-    <span class="fragment no-reserve-fragment slide11-collapse-left-trigger" data-fragment-index="5" aria-hidden="true"></span>
+    <span class="fragment slide11-collapse-left-trigger" data-fragment-index="5" aria-hidden="true"></span>
 
     <div class="tx-row slide11-row">
 
@@ -1045,10 +1079,10 @@
         </div>
       </div>
 
-      <div class="tx-arrow fragment no-reserve-fragment" data-fragment-index="5">→</div>
+      <div class="tx-arrow fragment slide11-right-arrow" data-fragment-index="5">→</div>
 
       <!-- After -->
-      <div class="tx-circuit fragment fade-left no-reserve-fragment" data-fragment-index="5">
+      <div class="tx-circuit fragment slide11-right" data-fragment-index="5">
         <div class="tx-label">After Step 2</div>
         <img class="c-img" src="Parallel_and_Mixed_Circuits_Assets/image33.png" alt="Simplified: R1=20Ω in series with Req(R2R3R4)=60Ω" style="max-height:440px;">
       </div>
@@ -1072,7 +1106,7 @@
       <h2 class="step-title">Continue <span class="accent">Simplifying</span></h2>
     </div>
 
-    <span class="fragment no-reserve-fragment slide12-collapse-left-trigger" data-fragment-index="5" aria-hidden="true"></span>
+    <span class="fragment slide12-collapse-left-trigger" data-fragment-index="5" aria-hidden="true"></span>
 
     <div class="tx-row slide12-row">
 
@@ -1094,10 +1128,10 @@
         </div>
       </div>
 
-      <div class="tx-arrow fragment no-reserve-fragment" data-fragment-index="5">→</div>
+      <div class="tx-arrow fragment slide12-right-arrow" data-fragment-index="5">→</div>
 
       <!-- After: single equivalent resistor -->
-      <div class="tx-circuit fragment fade-left no-reserve-fragment" data-fragment-index="5">
+      <div class="tx-circuit fragment slide12-right" data-fragment-index="5">
         <div class="tx-label">Fully Simplified</div>
         <img class="c-img" src="Parallel_and_Mixed_Circuits_Assets/image37.png" alt="Single equivalent resistor Req(R1R2R3R4) = 80Ω at 24V" style="max-height:440px;">
       </div>
@@ -2111,6 +2145,56 @@ Reveal.initialize({
         // for drawing state. Setting storage causes divergence on reload.
     }
 });
+
+// ── Circuit collapse animation (slides 10-12) ──────────────────────────────
+// The left-circuit collapse is driven by a JS-added .collapsing class rather
+// than a CSS sibling selector. Reason: when Reveal activates fragment 5, it
+// simultaneously expands the right circuit (flex-basis 0→640px), which causes
+// a layout reflow. That reflow "commits" any pending CSS rule changes before
+// the browser can capture the transition's "from" state, making the forward
+// collapse appear instant. Using requestAnimationFrame delays the .collapsing
+// class addition to the next paint frame — after the reflow — so the
+// transition always starts from the correct "from" state.
+(function () {
+    var slideNums = ['10', '11', '12'];
+
+    // Apply/remove both the left-collapse and right-expansion classes together.
+    // Forward (fragmentshown): deferred one rAF so left collapse and right
+    // expansion land in the same frame — prevents the center column jumping
+    // (it was jumping because .fragment.visible on the right circuit fired
+    // immediately in Reveal's frame, shrinking the center, then left collapsed
+    // one rAF later expanding it again).
+    // Backward (fragmenthidden): applied immediately — no reflow race going back.
+    function applySwap(n, section, add) {
+        var left       = section.querySelector('.slide' + n + '-left');
+        var leftArrow  = section.querySelector('.slide' + n + '-left-arrow');
+        var right      = section.querySelector('.slide' + n + '-right');
+        var rightArrow = section.querySelector('.slide' + n + '-right-arrow');
+        if (left)       left.classList.toggle('collapsing', add);
+        if (leftArrow)  leftArrow.classList.toggle('collapsing', add);
+        if (right)      right.classList.toggle('expanding', add);
+        if (rightArrow) rightArrow.classList.toggle('expanding', add);
+    }
+
+    Reveal.on('fragmentshown', function (event) {
+        slideNums.forEach(function (n) {
+            if (event.fragment.classList.contains('slide' + n + '-collapse-left-trigger')) {
+                var section = event.fragment.closest('section');
+                requestAnimationFrame(function () {
+                    applySwap(n, section, true);
+                });
+            }
+        });
+    });
+
+    Reveal.on('fragmenthidden', function (event) {
+        slideNums.forEach(function (n) {
+            if (event.fragment.classList.contains('slide' + n + '-collapse-left-trigger')) {
+                applySwap(n, event.fragment.closest('section'), false);
+            }
+        });
+    });
+}());
 
 // Storyboard strip — press M to open/close
 if (window.initRevealStoryboard) {
