@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise 8: DC Capacitors</title>
+
+<link rel="stylesheet" href="https://unpkg.com/reveal.js@5/dist/reveal.css">
+<link rel="stylesheet" href="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Exercise 8: DC Capacitors
+   ============================================================ */
+
+/* ── Split grid helpers ──────────────────────────────────── */
+.split        { display: grid; gap: var(--gap-lg); align-items: center; flex: 1; min-height: 0; }
+.split-50     { grid-template-columns: 1fr 1fr; }
+.split-40     { grid-template-columns: 2fr 3fr; }
+.split-35     { grid-template-columns: 3fr 2fr; }
+.split-top    { align-items: start; }
+
+.img-center   { display: flex; align-items: center; justify-content: center; height: 100%; }
+.img-stack    { display: flex; flex-direction: column; gap: var(--gap); align-items: center; justify-content: center; }
+
+/* ── Calc boxes ──────────────────────────────────────────── */
+.calc-col {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 14px 16px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+}
+.calc-cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: var(--gap-sm); }
+
+.col-label {
+  font-family: var(--font-mono); font-size: var(--label); color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 4px; border-bottom: 1px solid var(--accent-border); padding-bottom: 6px;
+}
+
+/* ── Formulas ────────────────────────────────────────────── */
+.yt-formula {
+  font-family: var(--font-mono); font-size: 22px;
+  color: var(--text); line-height: 1.9; display: block;
+}
+.yt-result {
+  font-family: var(--font-mono); font-size: 28px; font-weight: 700;
+  color: var(--result); margin-top: 6px; line-height: 1.4;
+}
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 2px; line-height: 1.3; }
+.frac .num { border-bottom: 1.5px solid currentColor; padding: 0 6px 2px; text-align: center; white-space: nowrap; }
+.frac .den { padding: 2px 6px 0; text-align: center; white-space: nowrap; }
+.formula-chain { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.formula-divider { width: 100%; height: 1px; background: var(--accent-border); margin: 6px 0; }
+
+/* ── Method steps ────────────────────────────────────────── */
+.method-steps { display: flex; flex-direction: column; gap: 8px; }
+.method-step {
+  font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted);
+  padding: 8px 14px; background: var(--accent-dim);
+  border-left: 2px solid var(--accent-border); border-radius: 0 3px 3px 0;
+}
+.method-step strong { color: var(--accent); font-weight: 700; }
+
+/* ── Slide intro text ────────────────────────────────────── */
+.slide-intro { font-size: var(--body); color: var(--text-muted); margin-bottom: var(--gap); }
+
+/* ── Title slide ─────────────────────────────────────────── */
+.subtitle { font-family: var(--font-mono); font-size: 20px; color: var(--text-dim); margin-top: 22px; letter-spacing: 0.04em; }
+.trace-deco { position: absolute; right: 0; top: 0; bottom: 0; width: 420px; pointer-events: none; z-index: 1; opacity: 0.6; }
+
+/* ── Agenda grid ─────────────────────────────────────────── */
+.agenda-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: var(--gap); }
+.agenda-item { display: flex; align-items: flex-start; gap: 14px; padding: 12px 16px; background: var(--accent-dim); border: 1px solid var(--accent-border); border-radius: 6px; }
+.agenda-num  { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--accent); min-width: 22px; padding-top: 2px; opacity: 0.7; }
+.agenda-text { font-size: 20px; color: var(--text-muted); line-height: 1.4; }
+.agenda-text strong { color: var(--text); font-weight: 600; }
+
+/* ── Warning / key point blocks ─────────────────────────── */
+.warn-block {
+  margin-top: var(--gap-sm); padding: 10px 14px;
+  border-left: 3px solid var(--warn); background: rgba(255,209,102,0.06);
+  border-radius: 0 4px 4px 0; display: flex; flex-direction: column; gap: 4px;
+}
+.warn-label { font-family: var(--font-mono); font-size: var(--label); color: var(--warn); text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ── Step header ─────────────────────────────────────────── */
+.step-header { display: flex; align-items: center; gap: 18px; margin-bottom: var(--gap); }
+.step-badge  {
+  width: 44px; height: 44px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-dim); border: 2px solid var(--accent); border-radius: 50%;
+  font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--accent);
+}
+.step-title { font-size: var(--h2); font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.1; margin: 0; }
+
+/* ── RC tau table ────────────────────────────────────────── */
+.tau-table { width: 100%; border-collapse: collapse; font-size: 20px; margin-top: var(--gap-sm); }
+.tau-table th {
+  font-family: var(--font-mono); font-size: var(--label); text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--accent); padding: 8px 14px;
+  border-bottom: 1px solid var(--accent-border); text-align: left;
+}
+.tau-table td { padding: 8px 14px; color: var(--text-muted); border-bottom: 1px solid rgba(42,143,255,0.08); vertical-align: middle; }
+.tau-table td:first-child { color: var(--text); font-family: var(--font-mono); font-weight: 600; }
+.tau-table td strong { color: var(--result); }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ============================================================
+     SLIDE 01 · TITLE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:620px;height:620px;background:radial-gradient(circle,rgba(42,143,255,0.14) 0%,transparent 70%);top:-200px;left:-160px;"></div>
+  <div class="glow" style="width:380px;height:380px;background:radial-gradient(circle,rgba(0,200,255,0.07) 0%,transparent 70%);bottom:-80px;right:12%;"></div>
+
+  <div class="slide-inner slide-center">
+    <div class="trace-deco">
+      <svg viewBox="0 0 420 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M420 160 L310 160 L310 310" stroke="rgba(42,143,255,0.18)" stroke-width="1.5"/>
+        <line x1="280" y1="310" x2="340" y2="310" stroke="rgba(42,143,255,0.45)" stroke-width="3.5"/>
+        <line x1="280" y1="328" x2="340" y2="328" stroke="rgba(42,143,255,0.45)" stroke-width="3.5"/>
+        <path d="M310 328 L310 480 L420 480" stroke="rgba(42,143,255,0.18)" stroke-width="1.5"/>
+        <path d="M420 300 L380 300 L380 210 L350 210" stroke="rgba(42,143,255,0.10)" stroke-width="1.5"/>
+        <line x1="320" y1="210" x2="350" y2="210" stroke="rgba(42,143,255,0.3)" stroke-width="3"/>
+        <line x1="320" y1="224" x2="350" y2="224" stroke="rgba(42,143,255,0.3)" stroke-width="3"/>
+        <path d="M320 217 L270 217 L270 130 L420 130" stroke="rgba(42,143,255,0.10)" stroke-width="1"/>
+        <circle cx="310" cy="160" r="5" fill="rgba(42,143,255,0.45)"/>
+        <circle cx="310" cy="480" r="4" fill="rgba(42,143,255,0.35)"/>
+      </svg>
+    </div>
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; DC Circuits Exercise 8 &nbsp;·&nbsp; Introduction</span>
+    <h1 class="title-h1">DC <span class="accent">Capacitors</span></h1>
+    <p class="subtitle">// Charge &nbsp;·&nbsp; Capacitance &nbsp;·&nbsp; RC Circuits &nbsp;·&nbsp; Applications</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 02 · LEARNING OUTCOMES
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.08) 0%,transparent 70%);top:-80px;right:-100px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Learning Outcomes</span>
+    <h2>After This Section, You Will Be Able To <span class="accent">…</span></h2>
+    <ul class="bullets" style="margin-top:var(--gap);">
+      <li class="fragment fade-up">Explain the <strong>principles of operation</strong> of DC capacitors</li>
+      <li class="fragment fade-up">Explain the importance of <strong>capacitance and voltage ratings</strong> of a capacitor</li>
+      <li class="fragment fade-up"><strong>Measure capacitance</strong> using a capacitance meter</li>
+      <li class="fragment fade-up"><strong>Calculate the capacitance</strong> of series and parallel capacitors</li>
+      <li class="fragment fade-up">Explain the operation of <strong>resistor-capacitor (RC) circuits</strong> during charging and discharging</li>
+      <li class="fragment fade-up"><strong>List applications</strong> of capacitors</li>
+      <li class="fragment fade-up"><strong>Operate</strong> the DC capacitor component of the AC/DC Training System</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 03 · DISCUSSION OUTLINE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.07) 0%,transparent 70%);bottom:-150px;left:-150px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Discussion Outline</span>
+    <h2>Topics <span class="accent">Covered</span></h2>
+    <div class="agenda-grid">
+      <div class="agenda-item fragment fade-up"><span class="agenda-num">01</span><span class="agenda-text"><strong>Introduction</strong> to DC capacitors</span></div>
+      <div class="agenda-item fragment fade-up"><span class="agenda-num">02</span><span class="agenda-text"><strong>Operation</strong> of DC capacitors</span></div>
+      <div class="agenda-item fragment fade-up"><span class="agenda-num">03</span><span class="agenda-text"><strong>Capacitance &amp; voltage rating</strong></span></div>
+      <div class="agenda-item fragment fade-up"><span class="agenda-num">04</span><span class="agenda-text"><strong>Capacitance measurement</strong> using a meter</span></div>
+      <div class="agenda-item fragment fade-up"><span class="agenda-num">05</span><span class="agenda-text"><strong>Series &amp; parallel</strong> capacitor calculations</span></div>
+      <div class="agenda-item fragment fade-up"><span class="agenda-num">06</span><span class="agenda-text"><strong>Resistor-capacitor (RC)</strong> circuits</span></div>
+      <div class="agenda-item fragment fade-up"><span class="agenda-num">07</span><span class="agenda-text"><strong>Applications</strong> of DC capacitors</span></div>
+      <div class="agenda-item fragment fade-up"><span class="agenda-num">08</span><span class="agenda-text"><strong>Training system component:</strong> the capacitor</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 04 · INTRODUCTION TO DC CAPACITORS
+     Fragments: bullets then images.
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Introduction · Topic 01</span>
+    <div class="split split-40" style="align-items:start;">
+
+      <div>
+        <h2>What Is a <span class="accent">Capacitor?</span></h2>
+        <ul class="bullets">
+          <li class="fragment fade-up">Consists of two <strong>conducting materials</strong> (plates) separated by an insulating material called a <strong>dielectric</strong> (e.g., glass, air, paper)</li>
+          <li class="fragment fade-up">Unlike resistors, capacitors do <strong>not convert power to work</strong> — they <strong>store electrical energy</strong> in an electric field</li>
+          <li class="fragment fade-up">Main property: <strong>oppose voltage changes</strong> in a circuit</li>
+          <li class="fragment fade-up">A pair of terminals provides access to the conducting plates</li>
+        </ul>
+        <div class="warn-block fragment fade-up" style="margin-top:var(--gap);">
+          <div class="warn-label">Key Difference</div>
+          <div style="font-size:var(--body); color:var(--text-muted);">Resistors use almost all power supplied to them. Capacitors <strong style="color:var(--text)">store</strong> it instead.</div>
+        </div>
+      </div>
+
+      <div class="img-stack fragment" data-fragment-index="1">
+        <img class="c-img" src="DC_Capacitors_Intro_Assets/p2_img01_1207x642.png"
+             alt="Figure 140a: DC power source with open switch and discharged capacitor (E_C = 0V)"
+             style="max-height:240px; width:auto;">
+        <img class="c-img" src="DC_Capacitors_Intro_Assets/p3_img01_1491x1550.png"
+             alt="Figure 140b: Discharged capacitor cross-section showing random orientation of polar molecules in the dielectric"
+             style="max-height:310px; width:auto;">
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 05 · OPERATION — CHARGING
+     Fragments: step-by-step, then dielectric detail.
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Operation · Topic 02 · Charging</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div class="img-stack">
+        <img class="c-img" src="DC_Capacitors_Intro_Assets/p4_img01_1191x641.png"
+             alt="Figure 141a: DC power source with closed switch charging a capacitor to E_C = 24V, current flowing"
+             style="max-height:260px; width:auto;">
+        <img class="c-img fragment" data-fragment-index="3"
+             src="DC_Capacitors_Intro_Assets/p4_img03_1324x1551.png"
+             alt="Figure 141b: Charged capacitor cross-section showing polar molecules aligned in the polarized dielectric"
+             style="max-height:310px; width:auto;">
+      </div>
+
+      <div>
+        <h2>Charging a <span class="accent">Capacitor</span></h2>
+        <div class="method-steps">
+          <div class="method-step fragment fade-up" data-fragment-index="1">Switch closes → <strong>current flows</strong> from the power source into the capacitor</div>
+          <div class="method-step fragment fade-up" data-fragment-index="1">Conducting material on the <strong>positive side</strong> becomes positive; <strong>negative side</strong> becomes negative</div>
+          <div class="method-step fragment fade-up" data-fragment-index="2">Polar molecules in the dielectric <strong>align with the electric field</strong> — this is polarisation</div>
+          <div class="method-step fragment fade-up" data-fragment-index="2">Aligning the dielectric <strong>increases capacitance</strong> by reducing the effective field between the plates</div>
+          <div class="method-step fragment fade-up" data-fragment-index="4">When E<sub>C</sub> = E<sub>S</sub>, the capacitor is <strong>fully charged</strong> and current stops</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 06 · OPERATION — DISCHARGING
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Operation · Topic 02 · Discharging</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div>
+        <h2>Discharging a <span class="accent">Capacitor</span></h2>
+        <ul class="bullets">
+          <li class="fragment fade-up">A charged capacitor connected to a resistor acts as a <strong>DC power source</strong> — it drives current through the circuit</li>
+          <li class="fragment fade-up">Discharge current flows in the <strong>opposite direction</strong> to charge current</li>
+          <li class="fragment fade-up">The capacitor voltage drops and current decreases until both reach <strong>0</strong></li>
+        </ul>
+        <div class="warn-block fragment fade-up" style="margin-top:var(--gap);">
+          <div class="warn-label">Capacitor Leakage</div>
+          <div style="font-size:var(--body); color:var(--text-muted);">In theory a charged capacitor holds its charge when disconnected. In practice, the voltage <strong style="color:var(--text)">decreases slowly over time</strong> due to self-discharge (leakage).</div>
+        </div>
+      </div>
+
+      <div class="img-center fragment" data-fragment-index="1">
+        <img class="c-img" src="DC_Capacitors_Intro_Assets/p5_img01_841x487.png"
+             alt="Figure 142: Discharging capacitor (E_C = 24V) connected via closed switch through resistor R1, current flowing in reverse direction"
+             style="max-height:400px; width:auto;">
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 07 · CAPACITANCE & VOLTAGE RATING
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Capacitance &amp; Voltage Rating · Topic 03</span>
+    <div class="split split-35" style="align-items:center;">
+
+      <div>
+        <h2>Capacitance <span class="accent">C</span></h2>
+        <p class="slide-intro">Measures the ability to store electrical charge. Named after Michael Faraday.</p>
+
+        <div class="calc-col" style="margin-bottom:var(--gap);">
+          <div class="col-label">Unit: Farad (F)</div>
+          <div class="yt-formula fragment fade-up">1 µF = 10<sup>−6</sup> F &nbsp;<span style="color:var(--text-muted);font-size:18px;">(microfarad — most common)</span></div>
+          <div class="yt-formula fragment fade-up">1 nF = 10<sup>−9</sup> F &nbsp;<span style="color:var(--text-muted);font-size:18px;">(nanofarad)</span></div>
+          <div class="yt-formula fragment fade-up">1 pF = 10<sup>−12</sup> F &nbsp;<span style="color:var(--text-muted);font-size:18px;">(picofarad)</span></div>
+        </div>
+
+        <div class="warn-block fragment fade-up">
+          <div class="warn-label">Voltage Rating</div>
+          <div style="font-size:var(--body); color:var(--text-muted);">Each capacitor has a <strong style="color:var(--text)">working voltage</strong> — the maximum safe voltage. Exceeding it can deform the plates or cause the capacitor to <strong style="color:var(--text)">explode</strong>.</div>
+        </div>
+      </div>
+
+      <div class="img-center">
+        <img class="photo-img" src="DC_Capacitors_Intro_Assets/p5_img02_510x660.png"
+             alt="Figure 143: Portrait of Michael Faraday, English scientist who made significant discoveries in electromagnetism and electrochemistry"
+             style="max-height:520px; width:auto; border-radius:8px;">
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 08 · MEASURING CAPACITANCE
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Capacitance Measurement · Topic 04</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div>
+        <h2>Using a <span class="accent">Capacitance Meter</span></h2>
+        <p class="slide-intro">Connected in parallel across the capacitor terminals — just like a voltmeter.</p>
+        <div class="method-steps">
+          <div class="method-step fragment fade-up"><strong>1</strong> — Power off the circuit before measuring</div>
+          <div class="method-step fragment fade-up"><strong>2</strong> — Connect the capacitance meter <strong>in parallel</strong> with the capacitor under test</div>
+          <div class="method-step fragment fade-up"><strong>3</strong> — Read the capacitance value (in µF or nF)</div>
+        </div>
+        <div class="warn-block fragment fade-up" style="margin-top:var(--gap);">
+          <div class="warn-label">Important</div>
+          <div style="font-size:var(--body); color:var(--text-muted);">Never use a capacitance meter in a <strong style="color:var(--text)">live circuit</strong> — it will give inaccurate readings and may be damaged. Also note that capacitors have a <strong style="color:var(--text)">tolerance</strong>, like resistors.</div>
+        </div>
+      </div>
+
+      <div class="img-center fragment" data-fragment-index="1">
+        <img class="c-img" src="DC_Capacitors_Intro_Assets/p6_img01_958x589.png"
+             alt="Figure 144: Capacitance meter connected in parallel with a 16 µF capacitor, reading 16.0 µF on display"
+             style="max-height:460px; width:auto;">
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 09 · SERIES & PARALLEL CAPACITORS (vertical stack)
+     Sub-slides: 09a original circuit, 09b parallel step, 09c series step
+     ============================================================ -->
+<section>
+
+  <!-- 09a · Original mixed circuit -->
+  <section>
+    <div class="slide-inner">
+      <span class="slide-tag">Series &amp; Parallel Capacitors · Topic 05</span>
+      <div class="split split-40" style="align-items:center;">
+
+        <div class="img-center">
+          <img class="c-img" src="DC_Capacitors_Intro_Assets/p8_img00_1185x778.png"
+               alt="Figure 146: Mixed circuit with C1=60µF in series, and C2=16µF parallel with C3=24µF, powered by 24V DC source"
+               style="max-height:520px; width:auto;">
+        </div>
+
+        <div>
+          <h2>Mixed <span class="accent">Capacitor Circuit</span></h2>
+          <p class="slide-intro">To find the equivalent capacitance, simplify step by step — same approach as mixed resistor circuits.</p>
+
+          <div class="calc-col" style="margin-bottom:var(--gap);">
+            <div class="col-label">Series Formula</div>
+            <div class="yt-formula"><span class="frac"><span class="num">1</span><span class="den">C<sub>eq</sub></span></span> = <span class="frac"><span class="num">1</span><span class="den">C₁</span></span> + <span class="frac"><span class="num">1</span><span class="den">C₂</span></span> + …</div>
+          </div>
+
+          <div class="calc-col fragment fade-up">
+            <div class="col-label">Parallel Formula</div>
+            <div class="yt-formula">C<sub>eq</sub> = C₁ + C₂ + …</div>
+          </div>
+
+          <div class="warn-block fragment fade-up" style="margin-top:var(--gap);">
+            <div class="warn-label">Note</div>
+            <div style="font-size:var(--body); color:var(--text-muted);">Capacitor combinations are the <strong style="color:var(--text)">opposite</strong> of resistors: series = smaller total; parallel = larger total.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 09b · Step 1: Simplify the parallel pair (C2 ∥ C3) -->
+  <section>
+    <div class="slide-inner">
+      <span class="slide-tag">Series &amp; Parallel Capacitors · Step 1</span>
+      <div class="split split-40" style="align-items:center;">
+
+        <div class="img-center">
+          <img class="c-img" src="DC_Capacitors_Intro_Assets/p9_img01_999x749.png"
+               alt="Figure 147: Simplified circuit after combining C2 and C3 in parallel: C1=60µF series with Ceq(C2,C3)=40µF"
+               style="max-height:480px; width:auto;">
+        </div>
+
+        <div>
+          <div class="step-header">
+            <div class="step-badge">1</div>
+            <h2 class="step-title">Combine <span class="accent">C₂ ∥ C₃</span> (Parallel)</h2>
+          </div>
+
+          <div class="calc-col">
+            <div class="col-label">C₂ = 16 µF, C₃ = 24 µF</div>
+            <div class="formula-chain">
+              <div class="yt-formula fragment fade-up">C<sub>eq(C₂,C₃)</sub> = C₂ + C₃</div>
+              <div class="yt-formula fragment fade-up">= 16 + 24</div>
+              <div class="yt-result fragment fade-up">C<sub>eq(C₂,C₃)</sub> = 40 µF</div>
+            </div>
+          </div>
+
+          <p class="slide-intro fragment fade-up" style="margin-top:var(--gap); margin-bottom:0;">
+            Now the circuit has <strong>C₁ = 60 µF</strong> in <strong>series</strong> with <strong>C<sub>eq</sub> = 40 µF</strong>.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 09c · Step 2: Simplify the series pair (C1 + Ceq) -->
+  <section>
+    <div class="slide-inner">
+      <span class="slide-tag">Series &amp; Parallel Capacitors · Step 2</span>
+      <div class="split split-40" style="align-items:center;">
+
+        <div class="img-center">
+          <img class="c-img" src="DC_Capacitors_Intro_Assets/p9_img03_999x641.png"
+               alt="Figure 148: Fully simplified circuit with single equivalent capacitor Ceq(C1,C2,C3) = 24µF"
+               style="max-height:440px; width:auto;">
+        </div>
+
+        <div>
+          <div class="step-header">
+            <div class="step-badge">2</div>
+            <h2 class="step-title">Combine <span class="accent">C₁ + C<sub>eq</sub></span> (Series)</h2>
+          </div>
+
+          <div class="calc-col">
+            <div class="col-label">C₁ = 60 µF, C<sub>eq(C₂,C₃)</sub> = 40 µF</div>
+            <div class="formula-chain">
+              <div class="yt-formula fragment fade-up"><span class="frac"><span class="num">1</span><span class="den">C<sub>eq</sub></span></span> = <span class="frac"><span class="num">1</span><span class="den">60</span></span> + <span class="frac"><span class="num">1</span><span class="den">40</span></span></div>
+              <div class="yt-formula fragment fade-up">= <span class="frac"><span class="num">2</span><span class="den">120</span></span> + <span class="frac"><span class="num">3</span><span class="den">120</span></span> = <span class="frac"><span class="num">5</span><span class="den">120</span></span></div>
+              <div class="yt-formula fragment fade-up">C<sub>eq</sub> = <span class="frac"><span class="num">120</span><span class="den">5</span></span></div>
+              <div class="yt-result fragment fade-up">C<sub>eq(C₁,C₂,C₃)</sub> = 24 µF</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</section><!-- end stack 09 -->
+
+
+<!-- ============================================================
+     SLIDE 10 · RC CIRCUITS — CHARGING
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">RC Circuits · Topic 06 · Charging</span>
+    <div class="split split-40" style="align-items:start;">
+
+      <div class="img-center">
+        <img class="c-img" src="DC_Capacitors_Intro_Assets/p10_img00_1225x734.png"
+             alt="Figure 149: RC circuit during charge — DC power source E_S with switch, resistor R, and capacitor C in series. Charge current I_Charge flows when switch closes."
+             style="max-height:460px; width:auto;">
+      </div>
+
+      <div>
+        <h2>The <span class="accent">RC Circuit</span></h2>
+        <p class="slide-intro">Adding a resistor to a capacitor circuit controls how quickly the capacitor charges by limiting current.</p>
+
+        <div class="calc-col" style="margin-bottom:var(--gap);">
+          <div class="col-label">Time Constant τ (tau)</div>
+          <div class="yt-formula">τ = R × C</div>
+          <div style="font-size:var(--small); color:var(--text-muted); margin-top:6px;">τ in seconds &nbsp;|&nbsp; R in ohms (Ω) &nbsp;|&nbsp; C in farads (F)</div>
+        </div>
+
+        <table class="tau-table fragment fade-up">
+          <thead><tr><th>Charge time</th><th>Capacitor charged to</th></tr></thead>
+          <tbody>
+            <tr><td>1τ</td><td><strong>63%</strong> of E<sub>S</sub></td></tr>
+            <tr><td>2τ</td><td>86% of E<sub>S</sub></td></tr>
+            <tr><td>3τ</td><td>95% of E<sub>S</sub></td></tr>
+            <tr><td>5τ</td><td><strong>≈ 100%</strong> — fully charged</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 11 · RC CHARGING CURVES
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">RC Circuits · Topic 06 · Charging Curves</span>
+    <h2>Capacitor Voltage &amp; Current <span class="accent">During Charge</span></h2>
+
+    <div class="calc-cols-2" style="margin-top:var(--gap); flex:1;">
+      <div>
+        <img class="c-img" src="DC_Capacitors_Intro_Assets/p11_img00_1671x941.png"
+             alt="Figure 150a: Capacitor voltage E_C as a percentage of source voltage E_S vs. charge time — exponential rise reaching 63% at τ, approaching 100% at 5τ"
+             style="max-height:440px; width:100%; object-fit:contain;">
+      </div>
+      <div class="fragment">
+        <img class="c-img" src="DC_Capacitors_Intro_Assets/p12_img01_1671x946.png"
+             alt="Figure 150b: Charge current I_Charge as a percentage of initial current I_0 vs. charge time — exponential decay from 100% to 37% at τ, approaching 0 at 5τ"
+             style="max-height:440px; width:100%; object-fit:contain;">
+      </div>
+    </div>
+
+    <div class="warn-block fragment fade-up" style="margin-top:var(--gap-sm);">
+      <div class="warn-label">Key Insight</div>
+      <div style="font-size:var(--body); color:var(--text-muted);">As E<sub>C</sub> rises toward E<sub>S</sub>, the current <strong style="color:var(--text)">decreases</strong> — less voltage difference means less driving force. Both curves take <strong style="color:var(--text)">5τ</strong> to complete.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 12 · RC CIRCUITS — DISCHARGING
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">RC Circuits · Topic 06 · Discharging</span>
+    <div class="split split-40" style="align-items:start;">
+
+      <div class="img-center">
+        <img class="c-img" src="DC_Capacitors_Intro_Assets/p12_img03_913x734.png"
+             alt="Figure 151: RC circuit during discharge — DC power source removed, capacitor C acts as the source driving discharge current I_Discharge (reverse direction) through resistor R"
+             style="max-height:480px; width:auto;">
+      </div>
+
+      <div>
+        <h2>Discharging the <span class="accent">RC Circuit</span></h2>
+        <p class="slide-intro">Once fully charged, disconnecting the DC source causes the capacitor to act as a power source itself.</p>
+        <ul class="bullets">
+          <li class="fragment fade-up">The capacitor applies its voltage E<sub>C</sub> to the circuit</li>
+          <li class="fragment fade-up">A <strong>discharge current</strong> flows — in the <strong>opposite direction</strong> to the charge current</li>
+          <li class="fragment fade-up">E<sub>C</sub> decreases exponentially, as does the discharge current</li>
+          <li class="fragment fade-up">After <strong>5τ</strong>, the capacitor is considered fully discharged: E<sub>C</sub> ≈ 0 V, I<sub>Discharge</sub> ≈ 0 A</li>
+        </ul>
+        <div class="calc-col fragment fade-up" style="margin-top:var(--gap);">
+          <div class="col-label">Same time constant applies</div>
+          <div class="yt-formula">τ = R × C</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 13 · RC DISCHARGING CURVES
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">RC Circuits · Topic 06 · Discharging Curves</span>
+    <h2>Capacitor Voltage &amp; Current <span class="accent">During Discharge</span></h2>
+
+    <div class="calc-cols-2" style="margin-top:var(--gap); flex:1;">
+      <div>
+        <img class="c-img" src="DC_Capacitors_Intro_Assets/p13_img01_1671x941.png"
+             alt="Figure 152a: Capacitor voltage E_C as a percentage of initial discharge voltage E_0 vs. discharge time — exponential decay from 100% to 37% at τ, approaching 0 at 5τ"
+             style="max-height:440px; width:100%; object-fit:contain;">
+      </div>
+      <div class="fragment">
+        <img class="c-img" src="DC_Capacitors_Intro_Assets/p14_img01_1679x962.png"
+             alt="Figure 152b: Discharge current I_Discharge as a percentage of initial discharge current I_0 vs. discharge time — negative exponential, 37% at τ, approaching 0 at 5τ"
+             style="max-height:440px; width:100%; object-fit:contain;">
+      </div>
+    </div>
+
+    <div class="warn-block fragment fade-up" style="margin-top:var(--gap-sm);">
+      <div class="warn-label">Note on Current Direction</div>
+      <div style="font-size:var(--body); color:var(--text-muted);">The discharge current is shown as <strong style="color:var(--text)">negative</strong> — it flows opposite to the charge current. Its magnitude decays the same way as the voltage.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 14 · APPLICATIONS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Applications of DC Capacitors · Topic 07</span>
+    <div class="split split-50" style="align-items:start;">
+
+      <div>
+        <h2>Applications <span class="accent">in DC Circuits</span></h2>
+
+        <ul class="bullets" style="margin-bottom:var(--gap);">
+          <li class="fragment fade-up"><strong>Energy storage</strong> — store charge at one voltage, release it as a momentary power source</li>
+          <li class="fragment fade-up"><strong>Camera flash</strong> — electrical energy stored in the capacitor discharges in a very short time through the flashbulb</li>
+          <li class="fragment fade-up"><strong>Voltage spike absorption</strong> — capacitors oppose sudden voltage rises, protecting equipment from high current surges</li>
+          <li class="fragment fade-up"><strong>Timer circuits</strong> — RC time constant defines operating and delay times in time-delay relays and timers</li>
+        </ul>
+
+        <div class="img-center fragment" data-fragment-index="2">
+          <img class="photo-img" src="DC_Capacitors_Intro_Assets/p14_img03_1116x734.png"
+               alt="Figure 153: Camera taken apart showing the cylindrical capacitor used to power the camera flash"
+               style="max-height:220px; width:auto;">
+        </div>
+      </div>
+
+      <div class="img-center fragment" data-fragment-index="1">
+        <img class="photo-img" src="DC_Capacitors_Intro_Assets/p15_img01_1181x800.png"
+             alt="Figure 154: Various capacitor types shown together — electrolytic (large black cylinder), ceramic disc, film, tantalum, and others in different shapes and sizes"
+             style="max-height:480px; width:auto;">
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 15 · TRAINING SYSTEM COMPONENT
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.07) 0%,transparent 70%);bottom:-150px;right:-100px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Training System Component · Topic 08</span>
+    <div class="split split-50" style="align-items:start;">
+
+      <div>
+        <h2>The <span class="accent">Capacitor</span> in the AC/DC Training System</h2>
+        <p class="slide-intro">The Festo AC/DC Training System includes three capacitors for lab exercises.</p>
+
+        <div class="calc-col" style="margin-bottom:var(--gap);">
+          <div class="col-label">Component Specifications</div>
+          <div class="yt-formula" style="font-size:20px;">2 × capacitor: <strong style="color:var(--result);">8.8 µF</strong> &nbsp;(tolerance ±3%)</div>
+          <div class="yt-formula" style="font-size:20px;">1 × capacitor: <strong style="color:var(--result);">4950 µF</strong> &nbsp;(tolerance ±20%)</div>
+          <div class="yt-formula" style="font-size:20px;">Voltage rating: <strong style="color:var(--warn);">230 V max</strong></div>
+        </div>
+
+        <ul class="bullets">
+          <li class="fragment fade-up">Do <strong>not exceed 230 V</strong> — the capacitor will be damaged</li>
+          <li class="fragment fade-up">The large 4950 µF capacitor stores significantly more energy</li>
+        </ul>
+      </div>
+
+      <div>
+        <h2>Lab <span class="accent">Safety Checklist</span></h2>
+        <div class="method-steps" style="margin-top:var(--gap-sm);">
+          <div class="method-step fragment fade-up"><strong>✓</strong> Power off the circuit before connecting or disconnecting capacitors</div>
+          <div class="method-step fragment fade-up"><strong>✓</strong> Verify voltage does not exceed the 230 V rating</div>
+          <div class="method-step fragment fade-up"><strong>✓</strong> Discharge capacitors before measuring or reconfiguring</div>
+          <div class="method-step fragment fade-up"><strong>✓</strong> Use a capacitance meter to verify values before use</div>
+          <div class="method-step fragment fade-up"><strong>✓</strong> Report any swollen, warm, or leaking capacitors immediately</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
+<script src="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.js"></script>
+<script src="../vendor/SyncDeck-Reveal/js/reveal-storyboard.js"></script>
+<script src="../vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js"></script>
+
+<script>
+Reveal.initialize({
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+    iframeSync: {
+        deckId: 'dc-capacitors-intro',
+        hostOrigin: '*',
+        allowedOrigins: ['*'],
+        studentCanNavigateBack: true,
+        studentCanNavigateForward: false,
+    },
+    plugins: [RevealChalkboard, RevealIframeSync].filter(Boolean),
+    chalkboard: {
+        boardmarkerWidth: 4,
+        chalkWidth: 7
+    }
+});
+
+if (window.initRevealStoryboard) {
+    window.initRevealStoryboard({
+        reveal: Reveal,
+        storyboardId: 'storyboard',
+        trackId: 'storyboard-track',
+        toggleKey: 'm',
+    });
+}
+</script>
+</body>
+</html>
