@@ -109,9 +109,28 @@ Full message schema: `vendor/SyncDeck-Reveal/js/reveal-iframe-sync-message-schem
    <link rel="stylesheet" href="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.css">
    <script src="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.js"></script>
    <script src="../vendor/SyncDeck-Reveal/js/reveal-storyboard.js"></script>
-   <script src="../vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js"></script>  <!-- only if needed -->
+   <script src="../vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js"></script>
    ```
-   Register `RevealChalkboard` in `plugins: [RevealNotes, RevealChalkboard, RevealIframeSync]`. **Do not** add a `chalkboard: { storage: '...' }` block — the host manages drawing state.
+   All three plugins are required for every deck. Include `iframeSync` config and register all plugins in `Reveal.initialize()`. Use a unique `deckId` derived from the presentation filename (kebab-case). **Do not** add a `chalkboard: { storage: '...' }` block — the host manages drawing state.
+   ```js
+   Reveal.initialize({
+       // ... base Reveal config ...
+       iframeSync: {
+           deckId: 'your-deck-name',   // kebab-case, unique per deck
+           hostOrigin: '*',
+           allowedOrigins: ['*'],
+           studentCanNavigateBack: true,
+           studentCanNavigateForward: false,
+       },
+       plugins: [RevealNotes, RevealChalkboard, RevealIframeSync].filter(Boolean),
+       chalkboard: {
+           boardmarkerWidth: 4,
+           chalkWidth: 7,
+           // NOTE: do NOT set storage — the host page is the source of truth
+           // for drawing state. Setting storage causes divergence on reload.
+       },
+   });
+   ```
 4. Follow the architecture in `.claude/skills/frontend-slides/SKILL.md` — in particular:
    - Apply theme colors with explicit CSS rules on `.reveal-viewport`, `.reveal`, `.reveal h1-h6`, etc. — **not** `--r-*` CSS variables (those only work with Reveal's bundled theme files)
    - Use **`px`** for all font sizes and spacing in CSS custom properties (not `em`/`clamp`/`vw`) — Reveal scales the canvas via CSS transform; `em` values double-scale
