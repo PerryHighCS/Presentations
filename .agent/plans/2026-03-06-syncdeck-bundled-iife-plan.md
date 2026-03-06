@@ -1,13 +1,13 @@
-# Bundled IIFE Runtime Plan (SyncDeck-Reveal + Presentations)
+# Bundled Runtime Plan (SyncDeck-Reveal + Presentations)
 
 ## Summary
-Build and ship a single browser IIFE runtime from the `vendor/SyncDeck-Reveal/js` submodule that includes Reveal core, Reveal Notes, and all SyncDeck plugins. Migrate all presentation decks and the submodule manual regression deck to import that single runtime script.
+Build and ship a single browser runtime from the `vendor/SyncDeck-Reveal/js` submodule that includes Reveal core, Reveal Notes, and all SyncDeck plugins, plus a single public CSS file. Migrate all presentation decks and the submodule manual regression deck to import only those public SyncDeck assets.
 
 Target deck HTML shape:
 
 ```html
-<link rel="stylesheet" href="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.css">
-<script src="../vendor/SyncDeck-Reveal/js/dist/syncdeck-runtime.iife.js"></script>
+<link rel="stylesheet" href="../vendor/SyncDeck-Reveal/js/dist/syncdeck-reveal.css">
+<script src="../vendor/SyncDeck-Reveal/js/dist/syncdeck-reveal.js"></script>
 <script>
   initSyncDeckReveal({ deckId: 'your-deck-id' });
 </script>
@@ -16,7 +16,7 @@ Target deck HTML shape:
 ## Implementation Changes
 
 ### 1. Submodule bundler pipeline
-- Add bundler config in `vendor/SyncDeck-Reveal/js` (Rollup preferred for stable IIFE output).
+- Add bundler config in `vendor/SyncDeck-Reveal/js` (Rollup preferred for stable outputs).
 - Add source entrypoint `src/syncdeck-runtime.js` that imports and wires:
   - Reveal core (`reveal.js/dist/reveal.esm.js`)
   - Reveal Notes (`reveal.js/plugin/notes/notes.esm.js`)
@@ -24,9 +24,10 @@ Target deck HTML shape:
   - `reveal-storyboard.js`
   - `reveal-iframe-sync.js`
   - `syncdeck-bootstrap.js`
-- Emit one output artifact:
-  - `dist/syncdeck-runtime.iife.js` (stable filename, no hash)
-- Keep `chalkboard/chalkboard.css` as separate stylesheet (do not inject CSS via JS).
+- Emit public output artifacts:
+  - `dist/syncdeck-reveal.js` (stable filename, no hash)
+  - `dist/syncdeck-reveal.css` (stable filename, no hash)
+- `dist/syncdeck-reveal.css` should include required runtime styles (including chalkboard styles) so deck authors never import `chalkboard/chalkboard.css` directly.
 
 ### 2. Runtime/global API contract
 - Ensure bundle defines globals expected by existing decks:
@@ -44,7 +45,7 @@ Target deck HTML shape:
 ### 3. Submodule scripts and guardrails
 - Update `vendor/SyncDeck-Reveal/js/package.json` scripts:
   - `build`: bundle IIFE runtime
-  - `build:check`: fail if `dist/syncdeck-runtime.iife.js` is out of date vs source
+  - `build:check`: fail if `dist/syncdeck-reveal.js` or `dist/syncdeck-reveal.css` are out of date vs source
   - `ship`: `lint && test && build && build:check`
 - Add bundler dependencies and Reveal package dependency in submodule lockfile.
 - Optional but recommended: submodule pre-commit hook runs `build` on relevant source changes.
@@ -58,12 +59,16 @@ Target deck HTML shape:
 - For each:
   - remove Reveal CDN script
   - remove Notes CDN script
+  - remove direct `chalkboard/chalkboard.css` link
   - remove individual plugin scripts (`chalkboard.js`, `reveal-storyboard.js`, `reveal-iframe-sync.js`, `syncdeck-bootstrap.js`)
-  - add single bundled script: `../vendor/SyncDeck-Reveal/js/dist/syncdeck-runtime.iife.js`
+  - add bundled public assets:
+    - `../vendor/SyncDeck-Reveal/js/dist/syncdeck-reveal.css`
+    - `../vendor/SyncDeck-Reveal/js/dist/syncdeck-reveal.js`
   - keep `initSyncDeckReveal(...)` call and deck-specific overrides/hook behavior intact.
 
 ### 5. Submodule test presentation update
 - Update `vendor/SyncDeck-Reveal/js/test/manual-regression-lab.html` imports to use bundled runtime script instead of separate Reveal/Notes/plugin scripts.
+- Replace direct chalkboard stylesheet import with `dist/syncdeck-reveal.css`.
 - Keep deck behavior, controls, and `deckId: 'manual-regression-lab'` unchanged.
 
 ### 6. Docs updates
@@ -78,7 +83,7 @@ Target deck HTML shape:
 
 ### Submodule validation
 - Run `npm run ship` in `vendor/SyncDeck-Reveal/js`.
-- Confirm `dist/syncdeck-runtime.iife.js` is generated and committed.
+- Confirm `dist/syncdeck-reveal.js` and `dist/syncdeck-reveal.css` are generated and committed.
 - Verify static smoke in browser for `test/manual-regression-lab.html`:
   - deck loads without console errors
   - storyboard toggles
@@ -99,7 +104,7 @@ Target deck HTML shape:
 
 ## Assumptions
 - Reveal core and Notes are bundled into submodule runtime (no CDN runtime dependency).
-- Bundled JS uses a stable filename (`syncdeck-runtime.iife.js`) without hash.
+- Public assets use stable filenames (`syncdeck-reveal.js` and `syncdeck-reveal.css`) without hash.
 - `dist` artifacts are committed in submodule git history.
 - Presentations deploy workflow remains static publish with recursive submodules; it does not run bundling.
 
