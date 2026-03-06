@@ -107,27 +107,30 @@ Full message schema: `vendor/SyncDeck-Reveal/js/reveal-iframe-sync-message-schem
    - For root-level decks: `vendor/SyncDeck-Reveal/js/...`
    ```html
    <link rel="stylesheet" href="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.css">
+   <script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
    <script src="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.js"></script>
    <script src="../vendor/SyncDeck-Reveal/js/reveal-storyboard.js"></script>
    <script src="../vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js"></script>
+   <script src="../vendor/SyncDeck-Reveal/js/syncdeck-bootstrap.js"></script>
    ```
-   All three plugins are required for every deck. Include `iframeSync` config and register all plugins in `Reveal.initialize()`. Use a unique `deckId` derived from the presentation filename (kebab-case). **Do not** add a `chalkboard: { storage: '...' }` block — the host manages drawing state.
+   All shared plugins are required for every deck. Use `initSyncDeckReveal(...)` from `syncdeck-bootstrap.js` instead of writing `Reveal.initialize(...)` inline. Use a unique `deckId` derived from the presentation filename (kebab-case). `RevealNotes` is optional and auto-included only when notes.js is loaded. **Do not** add a `chalkboard.storage` value — the host manages drawing state.
    ```js
-   Reveal.initialize({
-       // ... base Reveal config ...
-       iframeSync: {
-           deckId: 'your-deck-name',   // kebab-case, unique per deck
-           hostOrigin: '*',
-           allowedOrigins: ['*'],
-           studentCanNavigateBack: true,
-           studentCanNavigateForward: false,
+   initSyncDeckReveal({
+       deckId: 'your-deck-name', // kebab-case, unique per deck
+       iframeSyncOverrides: {
+           // Optional per-deck iframeSync overrides
        },
-       plugins: [RevealNotes, RevealChalkboard, RevealIframeSync].filter(Boolean),
-       chalkboard: {
-           boardmarkerWidth: 4,
-           chalkWidth: 7,
-           // NOTE: do NOT set storage — the host page is the source of truth
-           // for drawing state. Setting storage causes divergence on reload.
+       revealOverrides: {
+           // Optional per-deck Reveal overrides
+       },
+       chalkboardOverrides: {
+           // Optional per-deck chalkboard overrides (no storage)
+       },
+       storyboard: {
+           // Optional: storyboardId / trackId / toggleKey
+       },
+       afterInit: function (Reveal) {
+           // Optional deck-specific hooks/listeners
        },
    });
    ```

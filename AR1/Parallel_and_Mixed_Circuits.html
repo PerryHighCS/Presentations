@@ -2118,55 +2118,24 @@
 <script src="../vendor/SyncDeck-Reveal/js/reveal-storyboard.js"></script>
 <!-- Iframe sync plugin (host <-> deck postMessage bridge) -->
 <script src="../vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js"></script>
+<script src="../vendor/SyncDeck-Reveal/js/syncdeck-bootstrap.js"></script>
 
 <script>
-Reveal.initialize({
-    hash: true,
-    hashOneBasedIndex: true,
-    transition: 'fade',
-    transitionSpeed: 'fast',
-    backgroundTransition: 'none',
-    center: false,           // we handle centring via flex in .slide-inner
-    controls: true,
-    controlsLayout: 'edges',
-    progress: true,
-    slideNumber: 'c/t',
-    keyboard: true,
-    touch: true,
-    fragments: true,
-    width: 1600,
-    height: 900,
-    margin: 0.04,
-    minScale: 0.2,
-    maxScale: 2.5,
-    iframeSync: {
-      // Host currently targets the same sync channel as the working 2d-arrays deck.
-      // Keep this value aligned with host routing until host-side deck mapping is updated.
-      deckId: 'parallel-and-mixed-circuits',
-      hostOrigin: '*',
-      allowedOrigins: ['*'],
-      studentCanNavigateBack: true,
-      studentCanNavigateForward: false,
-    },
-    plugins: [RevealChalkboard, RevealIframeSync].filter(Boolean),
-    chalkboard: {
-        boardmarkerWidth: 4,
-        chalkWidth: 7
-        // NOTE: do NOT set storage — the host page is the source of truth
-        // for drawing state. Setting storage causes divergence on reload.
-    }
-});
-
-// ── Circuit collapse animation (slides 10-12) ──────────────────────────────
-// The left-circuit collapse is driven by a JS-added .collapsing class rather
-// than a CSS sibling selector. Reason: when Reveal activates fragment 5, it
-// simultaneously expands the right circuit (flex-basis 0→640px), which causes
-// a layout reflow. That reflow "commits" any pending CSS rule changes before
-// the browser can capture the transition's "from" state, making the forward
-// collapse appear instant. Using requestAnimationFrame delays the .collapsing
-// class addition to the next paint frame — after the reflow — so the
-// transition always starts from the correct "from" state.
-(function () {
+initSyncDeckReveal({
+    // Host currently targets the same sync channel as the working 2d-arrays deck.
+    // Keep this value aligned with host routing until host-side deck mapping is updated.
+    deckId: 'parallel-and-mixed-circuits',
+    afterInit: function (Reveal) {
+    // ── Circuit collapse animation (slides 10-12) ────────────────────────────
+    // The left-circuit collapse is driven by a JS-added .collapsing class rather
+    // than a CSS sibling selector. Reason: when Reveal activates fragment 5, it
+    // simultaneously expands the right circuit (flex-basis 0→640px), which causes
+    // a layout reflow. That reflow "commits" any pending CSS rule changes before
+    // the browser can capture the transition's "from" state, making the forward
+    // collapse appear instant. Using requestAnimationFrame delays the .collapsing
+    // class addition to the next paint frame — after the reflow — so the
+    // transition always starts from the correct "from" state.
+    (function () {
     var slideNums = ['10', '11', '12'];
   var pendingCleanup = null;
 
@@ -2289,17 +2258,9 @@ Reveal.initialize({
     Reveal.on('ready', function (event) {
       syncSectionStateInstant(event.currentSlide || Reveal.getCurrentSlide());
     });
-}());
-
-// Storyboard strip — press M to open/close
-if (window.initRevealStoryboard) {
-    window.initRevealStoryboard({
-        reveal: Reveal,
-        storyboardId: 'storyboard',
-        trackId: 'storyboard-track',
-        toggleKey: 'm',
-    });
-}
+    }());
+  },
+});
 </script>
 
 </body>
