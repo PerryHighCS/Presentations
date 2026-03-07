@@ -1,18 +1,20 @@
 # AGENTS.md
 
-This repository contains HTML slide presentations built with **Reveal.js**, published via GitHub Pages. Shared runtime/plugin code is consumed from the `SyncDeck-Reveal` git submodule at `vendor/SyncDeck-Reveal/js/`.
+This repository contains HTML slide presentations built with **Reveal.js**, published via GitHub Pages. Shared runtime/plugin code is consumed from the `SyncDeck-Reveal` git submodule at `vendor/SyncDeck-Reveal/`.
 
 ## Runtime Source
 
-- Shared runtime source: `vendor/SyncDeck-Reveal/js/` git submodule.
+- Shared runtime source: `vendor/SyncDeck-Reveal/` git submodule.
 - CI readiness: `.github/workflows/static.yml` is configured with `submodules: recursive` so Pages deployments include submodule contents.
-- Local submodule workflow: for local testing, edit files directly in `vendor/SyncDeck-Reveal/js/`; the parent repo will use those working-tree changes immediately.
-- Detached HEAD warning: submodules are often checked out at a raw commit hash, which makes local commits easy to lose track of. Before committing inside the submodule, create or switch to a branch, e.g. `git -C vendor/SyncDeck-Reveal/js switch -c fix/my-bug`.
-- Commit model: commit and push code changes from inside the submodule repo first, then commit the updated submodule pointer in the parent repo with `git add vendor/SyncDeck-Reveal/js`.
+- Local submodule workflow: for local testing, edit files directly in `vendor/SyncDeck-Reveal/`; the parent repo will use those working-tree changes immediately.
+- Detached HEAD warning: submodules are often checked out at a raw commit hash, which makes local commits easy to lose track of. Before committing inside the submodule, create or switch to a branch, e.g. `git -C vendor/SyncDeck-Reveal switch -c fix/my-bug`.
+- Commit model: commit and push code changes from inside the submodule repo first, then commit the updated submodule pointer in the parent repo with `git add vendor/SyncDeck-Reveal`.
 
-## Shared Plugins
+## Shared Runtime
 
-Both plugins are plain IIFE scripts — no build step, no npm. Reference them with a `<script>` tag relative to the presentation file (for decks inside a subdirectory, use `../vendor/SyncDeck-Reveal/js/...`).
+Presentations load the bundled public runtime from `vendor/SyncDeck-Reveal/dist/`.
+The bundler, source entrypoint, and npm workflow live in the submodule; the
+parent repo should only reference the built assets.
 
 **Required HTML inside the presentation:**
 ```html
@@ -21,16 +23,15 @@ Both plugins are plain IIFE scripts — no build step, no npm. Reference them wi
 </div>
 ```
 
-**Initialise after `Reveal.initialize()`:**
-```js
-if (window.initRevealStoryboard) {
-    window.initRevealStoryboard({
-        reveal: Reveal,
-        storyboardId: 'storyboard',
-        trackId: 'storyboard-track',
-        toggleKey: 'm',
-    });
-}
+**Initialise with the bundled runtime:**
+```html
+<link rel="stylesheet" href="../vendor/SyncDeck-Reveal/dist/syncdeck-reveal.css">
+<script src="../vendor/SyncDeck-Reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+    deckId: 'your-deck-name',
+});
+</script>
 ```
 
 **DOM events (dispatched on `window`):**
@@ -44,7 +45,9 @@ These events are the integration point for `reveal-iframe-sync.js` and any conta
 
 ---
 
-### `vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.js`
+### Submodule Internal: `vendor/SyncDeck-Reveal/chalkboard/chalkboard.js`
+
+This section is for contributors working inside the `SyncDeck-Reveal` submodule. Presentations in this repo should continue to load only the bundled `dist/` assets described above.
 
 Vendored and extended copy of the [reveal.js-plugins chalkboard](https://github.com/rajgoel/reveal.js-plugins/tree/master/chalkboard). **Do not replace with a CDN link** — the local copy has two additions required for iframe sync:
 
@@ -67,7 +70,9 @@ iframe.contentWindow.postMessage({
 
 ---
 
-### `vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js`
+### Submodule Internal: `vendor/SyncDeck-Reveal/reveal-iframe-sync.js`
+
+This section is for contributors working inside the `SyncDeck-Reveal` submodule. Presentations in this repo should continue to load only the bundled `dist/` assets described above.
 
 Registers a Reveal.js **plugin** (`RevealIframeSync`) that syncs navigation and state between an instructor page and one or more student iframes via `window.postMessage`.
 
@@ -88,7 +93,7 @@ Reveal.initialize({
 
 **Supported commands (host → iframe):** `next`, `prev`, `slide`, `setState`, `togglePause`, `pause`, `resume`, `setRole`, `allowStudentForwardTo`, `setStudentBoundary`, `toggleOverview`, `showOverview`, `hideOverview`, `chalkboardCall`, `toggleChalkboard`, `toggleNotesCanvas`, `clearChalkboard`, `resetChalkboard`, `chalkboardStroke`, `chalkboardState`, `requestChalkboardState`, `ping`
 
-Full message schema: `vendor/SyncDeck-Reveal/js/reveal-iframe-sync-message-schema.md`
+Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.md`
 
 **Vertical stack pattern:** a vertical Reveal stack can be used as a student-controlled series once the instructor reaches that horizontal position. Treat vertical stacks as the planned release mechanism, and use storyboard boundary controls as the ad hoc release mechanism. The host/plugin should treat the stack as a bounded local-navigation region rather than unlocking the whole deck. When YouTube slides appear inside such a stack, local student playback control may be enabled if the stack/slide config allows it; student audio mode should still be honored unless the instructor changes it from the host toolbar. The storyboard should highlight the full released region and represent vertical stacks with clear grouping rather than a flat list of indistinguishable thumbnails.
 
@@ -102,18 +107,14 @@ Full message schema: `vendor/SyncDeck-Reveal/js/reveal-iframe-sync-message-schem
    <link rel="stylesheet" href="theme.css">
    ```
    Only add a `<style>` block after that link for styles that are specific to this presentation. If no `theme.css` exists and the new deck needs its own theme, consider extracting it to a `theme.css` so future decks in the same folder can share it.
-3. Load the shared plugins with relative paths:
-   - For decks in subdirectories: `../vendor/SyncDeck-Reveal/js/...`
-   - For root-level decks: `vendor/SyncDeck-Reveal/js/...`
+3. Load the bundled runtime with relative paths:
+   - For decks in subdirectories: `../vendor/SyncDeck-Reveal/dist/...`
+   - For root-level decks: `vendor/SyncDeck-Reveal/dist/...`
    ```html
-   <link rel="stylesheet" href="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.css">
-   <script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
-   <script src="../vendor/SyncDeck-Reveal/js/chalkboard/chalkboard.js"></script>
-   <script src="../vendor/SyncDeck-Reveal/js/reveal-storyboard.js"></script>
-   <script src="../vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js"></script>
-   <script src="../vendor/SyncDeck-Reveal/js/syncdeck-bootstrap.js"></script>
+   <link rel="stylesheet" href="../vendor/SyncDeck-Reveal/dist/syncdeck-reveal.css">
+   <script src="../vendor/SyncDeck-Reveal/dist/syncdeck-reveal.js"></script>
    ```
-   All shared plugins are required for every deck. Use `initSyncDeckReveal(...)` from `syncdeck-bootstrap.js` instead of writing `Reveal.initialize(...)` inline. Use a unique `deckId` derived from the presentation filename (kebab-case). `RevealNotes` is optional and auto-included only when notes.js is loaded. **Do not** add a `chalkboard.storage` value — the host manages drawing state.
+   Use `initSyncDeckReveal(...)` from the bundled runtime instead of writing `Reveal.initialize(...)` inline. Use a unique `deckId` derived from the presentation filename (kebab-case). The bundle provides `Reveal`, `RevealNotes`, `RevealChalkboard`, `RevealIframeSync`, `initRevealStoryboard`, and `initSyncDeckReveal`. **Do not** add a `chalkboard.storage` value — the host manages drawing state.
    ```js
    initSyncDeckReveal({
        deckId: 'your-deck-name', // kebab-case, unique per deck
