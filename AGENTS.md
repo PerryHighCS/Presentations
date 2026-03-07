@@ -45,7 +45,9 @@ These events are the integration point for `reveal-iframe-sync.js` and any conta
 
 ---
 
-### `vendor/SyncDeck-Reveal/chalkboard/chalkboard.js`
+### Submodule Internal: `vendor/SyncDeck-Reveal/chalkboard/chalkboard.js`
+
+This section is for contributors working inside the `SyncDeck-Reveal` submodule. Presentations in this repo should continue to load only the bundled `dist/` assets described above.
 
 Vendored and extended copy of the [reveal.js-plugins chalkboard](https://github.com/rajgoel/reveal.js-plugins/tree/master/chalkboard). **Do not replace with a CDN link** — the local copy has two additions required for iframe sync:
 
@@ -68,7 +70,9 @@ iframe.contentWindow.postMessage({
 
 ---
 
-### `vendor/SyncDeck-Reveal/reveal-iframe-sync.js`
+### Submodule Internal: `vendor/SyncDeck-Reveal/reveal-iframe-sync.js`
+
+This section is for contributors working inside the `SyncDeck-Reveal` submodule. Presentations in this repo should continue to load only the bundled `dist/` assets described above.
 
 Registers a Reveal.js **plugin** (`RevealIframeSync`) that syncs navigation and state between an instructor page and one or more student iframes via `window.postMessage`.
 
@@ -104,8 +108,8 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
    ```
    Only add a `<style>` block after that link for styles that are specific to this presentation. If no `theme.css` exists and the new deck needs its own theme, consider extracting it to a `theme.css` so future decks in the same folder can share it.
 3. Load the bundled runtime with relative paths:
-   - For decks in subdirectories: `../vendor/SyncDeck-Reveal/...`
-   - For root-level decks: `vendor/SyncDeck-Reveal/...`
+   - For decks in subdirectories: `../vendor/SyncDeck-Reveal/dist/...`
+   - For root-level decks: `vendor/SyncDeck-Reveal/dist/...`
    ```html
    <link rel="stylesheet" href="../vendor/SyncDeck-Reveal/dist/syncdeck-reveal.css">
    <script src="../vendor/SyncDeck-Reveal/dist/syncdeck-reveal.js"></script>
