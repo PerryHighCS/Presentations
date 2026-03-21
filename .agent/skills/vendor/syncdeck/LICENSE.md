@@ -1,6 +1,7 @@
 MIT License
 
-Copyright (c) 2025 Zara Zhang
+Copyright (c) 2026 Brian Dahlem
+Portions copyright (c) 2026 Zara Zhang
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this skill and associated documentation files (the "Skill"), to deal
