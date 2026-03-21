@@ -84,32 +84,60 @@ jobs:
               shutil.rmtree(site)
           site.mkdir()
 
-          rules = []
+          manifest_rules = []
           for manifest in root.rglob(manifest_name):
               manifest_base = manifest.parent.relative_to(root).as_posix()
+              entry = {
+                  'base': manifest_base,
+                  'manifest': manifest.relative_to(root).as_posix(),
+                  'includes': [],
+                  'excludes': [],
+              }
               for line_number, raw_line in enumerate(manifest.read_text(encoding='utf-8').splitlines(), start=1):
                   line = raw_line.strip()
                   if not line or line.startswith('#'):
                       continue
-                  if not line.startswith('exclude '):
+                  if line.startswith('include '):
+                      directive = 'include'
+                  elif line.startswith('exclude '):
+                      directive = 'exclude'
+                  else:
                       raise SystemExit(
                           f'Unsupported directive in {manifest}: line {line_number}: {raw_line}'
                       )
-                  value = line[len('exclude '):].strip()
+                  value = line[len(directive + ' '):].strip()
                   if not value:
-                      raise SystemExit(f'Empty exclude rule in {manifest}: line {line_number}')
+                      raise SystemExit(f'Empty {directive} rule in {manifest}: line {line_number}')
                   is_dir = value.endswith('/')
                   normalized = value[:-1] if is_dir else value
                   if normalized.startswith('./'):
                       normalized = normalized[2:]
                   if not normalized:
-                      raise SystemExit(f'Invalid exclude rule in {manifest}: line {line_number}')
+                      raise SystemExit(f'Invalid {directive} rule in {manifest}: line {line_number}')
                   joined = Path(manifest_base, normalized) if manifest_base != '.' else Path(normalized)
-                  rules.append({
+                  entry[directive + 's'].append({
                       'path': joined.as_posix(),
                       'is_dir': is_dir,
-                      'manifest': manifest.relative_to(root).as_posix(),
+                      'line_number': line_number,
                   })
+              manifest_rules.append(entry)
+
+          def path_is_within(rel_posix: str, base: str) -> bool:
+              return base == '.' or rel_posix == base or rel_posix.startswith(base + '/')
+
+          def include_allows(rel_posix: str, is_dir: bool, rule: dict) -> bool:
+              rule_path = rule['path']
+              if rule['is_dir']:
+                  if rel_posix == rule_path or rel_posix.startswith(rule_path + '/'):
+                      return True
+                  if is_dir and rule_path.startswith(rel_posix + '/'):
+                      return True
+                  return False
+              if rel_posix == rule_path:
+                  return True
+              if is_dir and rule_path.startswith(rel_posix + '/'):
+                  return True
+              return False
 
           def is_excluded(rel_path: Path, is_dir: bool) -> bool:
               rel_posix = rel_path.as_posix()
@@ -124,13 +152,21 @@ jobs:
               if rel_path.name == manifest_name:
                   return True
 
-              for rule in rules:
-                  rule_path = rule['path']
-                  if rule['is_dir']:
-                      if rel_posix == rule_path or rel_posix.startswith(rule_path + '/'):
-                          return True
-                  elif rel_posix == rule_path:
+              for manifest_rule in manifest_rules:
+                  if not path_is_within(rel_posix, manifest_rule['base']):
+                      continue
+
+                  includes = manifest_rule['includes']
+                  if includes and not any(include_allows(rel_posix, is_dir, rule) for rule in includes):
                       return True
+
+                  for rule in manifest_rule['excludes']:
+                      rule_path = rule['path']
+                      if rule['is_dir']:
+                          if rel_posix == rule_path or rel_posix.startswith(rule_path + '/'):
+                              return True
+                      elif rel_posix == rule_path:
+                          return True
 
               return False
 
@@ -161,7 +197,8 @@ jobs:
                   copied_files += 1
 
           print(f'Staged {copied_files} file(s) into {site.relative_to(root)}.')
-          print(f'Applied {len(rules)} manifest rule(s).')
+          total_rules = sum(len(entry['includes']) + len(entry['excludes']) for entry in manifest_rules)
+          print(f'Applied {total_rules} manifest rule(s).')
           PY
       - name: List staged site files
         run: |
