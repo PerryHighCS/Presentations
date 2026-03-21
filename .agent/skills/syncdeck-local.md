@@ -141,18 +141,22 @@ complete CSS token blocks and font pairings — see
 
 ---
 
-## 10. Stale Paths in AGENTS.md / CLAUDE.md
+## 10. Current Path Status
 
-`AGENTS.md` and `CLAUDE.md` contain references such as:
+`AGENTS.md` and `CLAUDE.md` have already been updated to the current paths:
 
 ```
-.claude/skills/frontend-slides/SKILL.md
-.claude/skills/frontend-slides/STYLE_PRESETS.md
+.agent/skills/vendor/syncdeck/SKILL.md
+.agent/skills/syncdeck-local.md
+.agent/skills/STYLE_PRESETS_EXTENDED.md
 ```
 
-These are stale. The canonical skill is now
-`.agent/skills/vendor/syncdeck/SKILL.md`. Ignore the old paths; follow this
-file and the vendored upstream instead.
+The old `.claude/skills/frontend-slides/...` references are no longer present
+in those files.
+
+At the moment, the only remaining stale mentions are historical notes in this
+local override document (and any mirrored copy of it), not active agent-facing
+instructions.
 
 ---
 

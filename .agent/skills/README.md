@@ -21,16 +21,16 @@ The subtree was added with:
 
 ```bash
 git remote add syncdeck-agent-skills https://github.com/PerryHighCS/syncdeck-agent-skills.git
-GIT_EXEC_PATH=/usr/lib/git-core PATH=/usr/lib/git-core:$PATH git subtree add \
+git subtree add \
   --prefix=.agent/skills/vendor/syncdeck \
-  syncdeck-agent-skills/main --squash
+  syncdeck-agent-skills main --squash
 ```
 
 ### Pulling upstream updates
 
 ```bash
 git fetch syncdeck-agent-skills
-GIT_EXEC_PATH=/usr/lib/git-core PATH=/usr/lib/git-core:$PATH git subtree pull \
+git subtree pull \
   --prefix=.agent/skills/vendor/syncdeck \
   syncdeck-agent-skills main --squash
 ```
@@ -41,7 +41,7 @@ Only edits inside `.agent/skills/vendor/syncdeck/` are eligible to push back.
 Do not push repo-specific files from `.agent/skills/` root.
 
 ```bash
-GIT_EXEC_PATH=/usr/lib/git-core PATH=/usr/lib/git-core:$PATH git subtree push \
+git subtree push \
   --prefix=.agent/skills/vendor/syncdeck \
   syncdeck-agent-skills main
 ```
