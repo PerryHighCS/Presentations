@@ -135,11 +135,11 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
        },
    });
    ```
-4. Follow the architecture in `.claude/skills/frontend-slides/SKILL.md` — in particular:
+4. Follow the architecture in `.agent/skills/vendor/syncdeck/SKILL.md` and the repo-specific overrides in `.agent/skills/syncdeck-local.md` — in particular:
    - Apply theme colors with explicit CSS rules on `.reveal-viewport`, `.reveal`, `.reveal h1-h6`, etc. — **not** `--r-*` CSS variables (those only work with Reveal's bundled theme files)
    - Use **`px`** for all font sizes and spacing in CSS custom properties (not `em`/`clamp`/`vw`) — Reveal scales the canvas via CSS transform; `em` values double-scale
    - Never set `position` on `.reveal .slides > section` — Reveal needs `position: absolute` there for fade transitions; put padding/centering in a `.slide-inner` div inside each section instead
-5. Check the style tokens for the chosen preset in `.claude/skills/frontend-slides/STYLE_PRESETS.md`.
+5. Check the style tokens for the chosen preset in `.agent/skills/STYLE_PRESETS_EXTENDED.md` (full library) or `.agent/skills/vendor/syncdeck/references/STYLE_PRESETS.md` (short reference).
 
 ---
 
