@@ -29,9 +29,13 @@ should only reference the built assets through the public runtime path.
 ```
 
 **Initialise with the bundled runtime:**
+
+The runtime lives at `/runtime/syncdeck-reveal/` in the published site. Use a
+relative path from the deck's published location:
+
 ```html
-<link rel="stylesheet" href="../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
-<script src="../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
 <script>
 initSyncDeckReveal({
     deckId: 'your-deck-name',
@@ -106,18 +110,18 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
 
 ## Adding a New Presentation
 
-1. Create `classes/<topic>/presentation-name.html` (subdirectory keeps the repo organised).
+1. Create `classes/<topic>/<subfolder>/presentation-name.html` (subdirectory keeps the repo organised).
 2. **Check for a shared `theme.css` in the same folder.** If one exists, link it instead of writing a new `<style>` block:
    ```html
    <link rel="stylesheet" href="theme.css">
    ```
    Only add a `<style>` block after that link for styles that are specific to this presentation. If no `theme.css` exists and the new deck needs its own theme, consider extracting it to a `theme.css` so future decks in the same folder can share it.
-3. Load the bundled runtime with public relative paths:
-   - For decks published in a subdirectory like `/AR1/...`: `../runtime/syncdeck-reveal/dist/...`
-   - For root-level decks: `runtime/syncdeck-reveal/dist/...`
+3. Load the bundled runtime with a relative path from the deck's published
+   location. For the current `classes/<course>/<unit>/deck.html` layout, use
+   `../../runtime/`:
    ```html
-   <link rel="stylesheet" href="../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
-   <script src="../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+   <link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+   <script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
    ```
    Use `initSyncDeckReveal(...)` from the bundled runtime instead of writing `Reveal.initialize(...)` inline. Use a unique `deckId` derived from the presentation filename (kebab-case). The bundle provides `Reveal`, `RevealNotes`, `RevealChalkboard`, `RevealIframeSync`, `initRevealStoryboard`, and `initSyncDeckReveal`. **Do not** add a `chalkboard.storage` value — the host manages drawing state.
    ```js
