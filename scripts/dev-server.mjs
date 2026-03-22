@@ -3,6 +3,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 
+import { buildIndexPages, defaultTitleForFile } from './site-indexes.mjs';
 import {
   collectHtmlFiles,
   createExclusionChecker,
@@ -63,6 +64,16 @@ function stripMountPrefix(pathname, mount) {
   return pathname.slice(mount.publicPath.length + 1);
 }
 
+function resolvePublicPathToSource(publicPath, mounts) {
+  const pathname = publicPath.startsWith('/') ? publicPath : `/${publicPath}`;
+  const mount = findMountForPath(pathname, mounts);
+  if (!mount) {
+    return null;
+  }
+  const relativePath = stripMountPrefix(pathname, mount);
+  return path.join(rootDir, mount.sourcePath, relativePath);
+}
+
 async function exists(filePath) {
   try {
     await fs.access(filePath);
@@ -72,72 +83,37 @@ async function exists(filePath) {
   }
 }
 
-function buildIndexHtml(htmlFiles) {
-  const items = htmlFiles
-    .map((file) => `<li><a href="/${escapeHtml(file)}">${escapeHtml(file)}</a></li>`)
-    .join('\n');
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Presentations Preview</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: system-ui, sans-serif;
-      background: #0b1220;
-      color: #e5ecff;
-    }
-    main {
-      max-width: 920px;
-      margin: 0 auto;
-      padding: 32px 20px 48px;
-    }
-    a {
-      color: #9fd4ff;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-    ul {
-      line-height: 1.8;
-      padding-left: 20px;
-    }
-    code {
-      color: #9bb0d8;
-    }
-  </style>
-</head>
-<body>
-  <main>
-    <h1>Presentations Preview</h1>
-    <p>Serving the deployed site layout directly from source folders. Refresh the browser after edits.</p>
-    <p><code>classes/*</code> mounts at site root and <code>vendor/SyncDeck-Reveal</code> mounts at <code>/runtime/syncdeck-reveal</code>.</p>
-    <ul>
-      ${items}
-    </ul>
-  </main>
-</body>
-</html>`;
-}
-
 async function main() {
   const mounts = getNormalizedMounts();
   const manifestRules = await loadManifestRules(rootDir);
   const isExcluded = createExclusionChecker(rootDir, manifestRules);
-  const htmlFiles = await collectHtmlFiles(rootDir, manifestRules);
-  const indexHtml = buildIndexHtml(htmlFiles);
 
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url || '/', `http://${host}:${port}`);
     let pathname = decodePathname(url.pathname);
 
-    if (pathname === '/') {
-      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-      res.end(indexHtml);
+    const htmlFiles = await collectHtmlFiles(rootDir, manifestRules);
+    const indexPages = await buildIndexPages(htmlFiles, async (publicPath) => {
+      const sourcePath = resolvePublicPathToSource(publicPath, mounts);
+      if (!sourcePath) {
+        return publicPath;
+      }
+      return defaultTitleForFile(sourcePath);
+    });
+
+    const indexKey =
+      pathname === '/'
+        ? 'index.html'
+        : pathname.endsWith('/')
+          ? `${pathname.slice(1)}index.html`
+          : pathname.startsWith('/') ? pathname.slice(1) : pathname;
+
+    if (indexPages.has(indexKey)) {
+      res.writeHead(200, {
+        'cache-control': 'no-store',
+        'content-type': 'text/html; charset=utf-8',
+      });
+      res.end(indexPages.get(indexKey));
       return;
     }
 
@@ -169,6 +145,15 @@ async function main() {
     }
 
     if (stat && stat.isDirectory()) {
+      const generatedIndexPath = path.posix.join(pathname, 'index.html').replace(/^\/+/, '');
+      if (indexPages.has(generatedIndexPath)) {
+        res.writeHead(200, {
+          'cache-control': 'no-store',
+          'content-type': 'text/html; charset=utf-8',
+        });
+        res.end(indexPages.get(generatedIndexPath));
+        return;
+      }
       const htmlIndexPath = path.join(sourcePath, 'index.html');
       if (await exists(htmlIndexPath)) {
         pathname = path.posix.join(pathname, 'index.html');
