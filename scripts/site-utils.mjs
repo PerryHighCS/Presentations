@@ -82,7 +82,8 @@ export function includeAllows(relPosix, isDir, rule) {
   return false;
 }
 
-export async function loadManifestRules(rootDir) {
+export async function loadManifestRules(rootDir, options = {}) {
+  const mode = options.mode === 'dev' ? 'dev' : 'publish';
   const manifestPaths = [];
 
   async function walk(dir) {
@@ -121,7 +122,11 @@ export async function loadManifestRules(rootDir) {
         continue;
       }
       let directive = null;
-      if (line.startsWith('include ')) {
+      if (line.startsWith('include-dev ')) {
+        directive = 'include-dev';
+      } else if (line.startsWith('exclude-dev ')) {
+        directive = 'exclude-dev';
+      } else if (line.startsWith('include ')) {
         directive = 'include';
       } else if (line.startsWith('exclude ')) {
         directive = 'exclude';
@@ -141,7 +146,12 @@ export async function loadManifestRules(rootDir) {
         throw new Error(`Invalid ${directive} rule in ${manifestPath}: line ${lineNumber}`);
       }
       const joined = manifestBase !== '.' ? path.posix.join(manifestBase, normalized) : normalized;
-      entry[directive + 's'].push({
+      const isDevOnly = directive.endsWith('-dev');
+      if (isDevOnly && mode !== 'dev') {
+        continue;
+      }
+      const targetKey = directive.startsWith('include') ? 'includes' : 'excludes';
+      entry[targetKey].push({
         path: joined,
         isDir,
         lineNumber,

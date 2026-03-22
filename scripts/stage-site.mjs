@@ -13,7 +13,7 @@ async function main() {
   await fs.mkdir(siteDir, { recursive: true });
 
   const mounts = getNormalizedMounts();
-  const manifestRules = await loadManifestRules(rootDir);
+  const manifestRules = await loadManifestRules(rootDir, { mode: 'publish' });
 
   let copiedFiles = 0;
   await walkMountedFiles(rootDir, manifestRules, async (file) => {

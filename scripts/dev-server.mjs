@@ -85,7 +85,7 @@ async function exists(filePath) {
 
 async function main() {
   const mounts = getNormalizedMounts();
-  const manifestRules = await loadManifestRules(rootDir);
+  const manifestRules = await loadManifestRules(rootDir, { mode: 'dev' });
   const isExcluded = createExclusionChecker(rootDir, manifestRules);
 
   const server = http.createServer(async (req, res) => {
