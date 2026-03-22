@@ -110,9 +110,9 @@ ${listing}
 function renderTree(node, indent = '      ', pathPrefix = '') {
   const lines = [];
 
-  for (const file of [...node.files].sort((a, b) => a.href.localeCompare(b.href))) {
+  for (const file of [...node.files].sort((a, b) => a.rel.localeCompare(b.rel))) {
     lines.push(
-      `${indent}<li class="file"><a href="${escapeHtml(file.href)}">${escapeHtml(file.title)}</a></li>`
+      `${indent}<li class="file"><a href="${escapeHtml(`${pathPrefix}${file.name}`)}">${escapeHtml(file.title)}</a></li>`
     );
   }
 
@@ -148,17 +148,9 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath) {
   }
 
   const tree = { files: [], dirs: new Map() };
-  const byFolder = new Map();
-
   for (const entry of titledEntries) {
     const relPath = entry.rel;
     const parsed = path.posix.parse(relPath);
-    const folder = parsed.dir || '.';
-
-    if (!byFolder.has(folder)) {
-      byFolder.set(folder, []);
-    }
-    byFolder.get(folder).push(entry);
 
     let node = tree;
     const parts = parsed.dir ? parsed.dir.split('/').filter(Boolean) : [];
@@ -169,7 +161,8 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath) {
       node = node.dirs.get(folderName);
     }
     node.files.push({
-      href: relPath,
+      name: parsed.base,
+      rel: relPath,
       title: entry.title,
     });
   }
@@ -193,31 +186,32 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath) {
     )
   );
 
-  for (const [folder, files] of [...byFolder.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
-    if (folder === '.') {
-      continue;
-    }
-    const listing = files
-      .sort((a, b) => path.posix.basename(a.rel).localeCompare(path.posix.basename(b.rel)))
-      .map((file) => {
-        const name = path.posix.basename(file.rel);
-        return `      <li class="file"><a href="${escapeHtml(name)}">${escapeHtml(file.title)}</a></li>`;
-      })
-      .join('\n');
+  function addFolderPages(node, folder = '.') {
+    for (const [dirname, child] of [...node.dirs.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+      const childFolder = folder === '.' ? dirname : `${folder}/${dirname}`;
+      const listingLines = renderTree(child);
+      const listing = listingLines.length
+        ? listingLines.join('\n')
+        : '      <li>No presentations found.</li>';
 
-    pages.set(
-      `${folder}/index.html`,
-      makePage(
-        `${folder} — Presentations`,
-        folder,
-        `HTML presentations in ${folder}/`,
-        listing || '      <li>No presentations found.</li>',
-        generatedAt,
-        generatedAtIso,
-        '../index.html'
-      )
-    );
+      pages.set(
+        `${childFolder}/index.html`,
+        makePage(
+          `${childFolder} — Presentations`,
+          childFolder,
+          `HTML presentations in ${childFolder}/`,
+          listing,
+          generatedAt,
+          generatedAtIso,
+          '../index.html'
+        )
+      );
+
+      addFolderPages(child, childFolder);
+    }
   }
+
+  addFolderPages(tree);
 
   return pages;
 }
