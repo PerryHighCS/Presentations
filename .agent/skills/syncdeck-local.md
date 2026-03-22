@@ -27,7 +27,7 @@ to `theme.css` so future decks in the same folder can share it.
 ## 2. `deckId` Naming Convention
 
 Derive `deckId` from the presentation's filename in kebab-case. For example,
-`AR1/DC_Capacitors_Intro.html` → `deckId: 'dc-capacitors-intro'`.
+`classes/AR1/DC_Capacitors_Intro.html` → `deckId: 'dc-capacitors-intro'`.
 
 ---
 
