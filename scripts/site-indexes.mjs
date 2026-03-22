@@ -9,6 +9,35 @@ function escapeHtml(value) {
     .replaceAll('"', '&quot;');
 }
 
+function decodeHtmlEntities(value) {
+  return String(value).replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z][a-zA-Z0-9]+);/g, (match, entity) => {
+    const named = {
+      amp: '&',
+      apos: "'",
+      gt: '>',
+      lt: '<',
+      nbsp: ' ',
+      quot: '"',
+    };
+
+    if (entity[0] === '#') {
+      const isHex = entity[1]?.toLowerCase() === 'x';
+      const raw = isHex ? entity.slice(2) : entity.slice(1);
+      const codePoint = Number.parseInt(raw, isHex ? 16 : 10);
+      if (Number.isFinite(codePoint)) {
+        try {
+          return String.fromCodePoint(codePoint);
+        } catch {
+          return match;
+        }
+      }
+      return match;
+    }
+
+    return Object.hasOwn(named, entity) ? named[entity] : match;
+  });
+}
+
 export const PAGE_STYLE = `
   :root {
     color-scheme: dark;
@@ -67,7 +96,7 @@ export async function defaultTitleForFile(filePath) {
     const text = await fs.readFile(filePath, 'utf8');
     const match = text.match(/<title>(.*?)<\/title>/is);
     if (match) {
-      const value = match[1].replace(/\s+/g, ' ').trim();
+      const value = decodeHtmlEntities(match[1]).replace(/\s+/g, ' ').trim();
       if (value) {
         return value;
       }
