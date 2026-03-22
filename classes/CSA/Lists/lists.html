@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArrayLists — CSA</title>
+
+<!-- SyncDeck bundled runtime CSS (includes Reveal core + shared plugin styles) -->
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap">
+
+<!-- Shared CSA theme -->
+<link rel="stylesheet" href="../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Lists / ArrayLists
+   ============================================================ */
+
+/* FRQ prompt box */
+.frq-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,224,51,0.45);
+  border-left: 3px solid var(--amber);
+  border-radius: 3px;
+  padding: 1em 1.4em;
+}
+.frq-box p {
+  font-size: var(--body);
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* MCQ options list */
+.mcq-opts {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin-top: var(--gap);
+}
+.mcq-opts li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--gap-sm);
+  font-family: var(--font-mono);
+  font-size: var(--body);
+  color: var(--text-muted);
+}
+.opt-key {
+  display: inline-block;
+  min-width: 2.2em;
+  padding: 0.1em 0.45em;
+  background: rgba(0,255,65,0.07);
+  border: 1px solid var(--phosphor-border);
+  border-radius: 2px;
+  font-size: 0.8em;
+  color: var(--phosphor);
+  font-weight: 700;
+  text-align: center;
+  flex-shrink: 0;
+}
+.mcq-opts li.answer { color: var(--phosphor); }
+.mcq-opts li.answer .opt-key {
+  background: rgba(0,255,65,0.18);
+  border-color: var(--phosphor);
+}
+
+/* Memory chain diagrams */
+.mem-chain {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  flex-wrap: nowrap;
+}
+.mem-obj {
+  background: var(--bg-card);
+  border: 1px solid var(--phosphor-border);
+  border-radius: 3px;
+  padding: 0.4em 0.9em;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--text);
+  white-space: nowrap;
+  text-align: center;
+}
+.mem-obj.hi-p { border-color: var(--phosphor); color: var(--phosphor); background: rgba(0,255,65,0.09); }
+.mem-obj.hi-a { border-color: var(--amber); color: var(--amber); background: rgba(255,224,51,0.07); }
+.mem-obj.hi-g { border-color: rgba(77,255,180,0.5); color: var(--green); background: rgba(77,255,180,0.07); }
+.mem-obj.dim  { opacity: 0.28; border-style: dashed; }
+.mem-arrow { color: var(--phosphor-dim); font-size: var(--h3); flex-shrink: 0; }
+
+/* Error / warning callout boxes */
+.err-box {
+  background: rgba(255,77,106,0.06);
+  border: 1px solid rgba(255,77,106,0.4);
+  border-left: 3px solid var(--red);
+  border-radius: 3px;
+  padding: 0.65em 1em;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--red);
+  line-height: 1.6;
+}
+.warn-box {
+  background: rgba(255,224,51,0.05);
+  border: 1px solid rgba(255,224,51,0.35);
+  border-left: 3px solid var(--amber);
+  border-radius: 3px;
+  padding: 0.65em 1em;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--amber);
+  line-height: 1.6;
+}
+
+/* Open-in-browser link card */
+.link-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.65em 1.3em;
+  background: rgba(0,255,65,0.08);
+  border: 1px solid rgba(0,255,65,0.45);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: var(--body);
+  color: var(--phosphor);
+  text-decoration: none;
+  transition: background 0.18s, border-color 0.18s;
+}
+.link-card:hover {
+  background: rgba(0,255,65,0.15);
+  border-color: var(--phosphor);
+  color: var(--phosphor);
+}
+.link-card::before { content: '⬡ '; font-size: 0.85em; }
+
+/* Wrapper-class comparison table */
+.wrap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-sm) var(--gap-lg);
+  margin-top: var(--gap);
+}
+.wrap-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  font-family: var(--font-mono);
+  font-size: var(--body);
+}
+.wp { color: var(--amber); font-weight: 700; }
+.ws { color: var(--text-dim); }
+.wo { color: var(--phosphor); font-weight: 700; }
+
+/* Two-column code comparison */
+.code-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  width: 100%;
+}
+
+/* remove/insert summary table */
+.remove-table {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--gap-sm) var(--gap-lg);
+  margin-top: var(--gap);
+}
+.rt-key { color: var(--amber); font-family: var(--font-mono); font-size: var(--body); font-weight: 700; }
+.rt-val { color: var(--phosphor); font-family: var(--font-mono); font-size: var(--body); }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ============================================================
+     SLIDE 01 · TITLE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:600px;height:600px;background:radial-gradient(circle,rgba(0,255,65,0.12) 0%,transparent 70%);top:-180px;left:-100px;"></div>
+  <div class="glow" style="width:380px;height:380px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);bottom:-60px;right:6%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AP CSA</span>
+    <h1 class="title-h1">
+      <span style="color:var(--phosphor);">Array</span><span>Lists</span>
+    </h1>
+    <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap);">dynamic collections in Java</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 02 · FRQ — Recall arrays
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);top:-100px;right:8%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">FRQ</span>
+    <h2 style="margin-bottom:var(--gap-lg);">What do you use a lot?</h2>
+    <div class="frq-box" style="max-width:680px;">
+      <p>Create an array of <strong style="color:var(--text);">3 things</strong> you use a lot — your favorite games, apps, foods, whatever.</p>
+      <p style="margin-top:var(--gap-sm);">Write the Java code. Be ready to share.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 03 · REVIEW — What arrays give us
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(0,255,65,0.08) 0%,transparent 70%);bottom:-80px;left:-60px;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Review</span>
+    <h2>We've been using <span style="color:var(--phosphor);">arrays</span> for a while.</h2>
+    <p style="margin-bottom:var(--gap);">What features do arrays have?</p>
+
+    <ul class="bullets" style="max-width:820px;">
+      <li class="fragment fade-up"><strong>Same type</strong> — all elements share one data type</li>
+      <li class="fragment fade-up"><strong>Indexed</strong> — each item has a numbered position
+        <ul class="bullets" style="margin-top:var(--gap-sm);margin-left:var(--gap);">
+          <li class="fragment fade-up">What item is at <code>index[0]</code>?</li>
+        </ul>
+      </li>
+      <li class="fragment fade-up"><strong>Ordered</strong> — items stay in the order you placed them
+        <ul class="bullets" style="margin-top:var(--gap-sm);margin-left:var(--gap);">
+          <li class="fragment fade-up">Why did you put that particular item at <code>index[1]</code>?</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 04 · PROBLEM — What is hard with arrays?
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(255,77,106,0.08) 0%,transparent 70%);top:-100px;right:5%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Problem</span>
+    <h2>What is <span style="color:var(--red);">hard</span> with arrays?</h2>
+    <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-lg);max-width:44ch;line-height:1.5;">
+      What if I want to <strong style="color:var(--text);">add one more thing</strong>?
+    </p>
+    <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap);max-width:44ch;line-height:1.5;">
+      Is it <em style="font-style:normal;color:var(--red);">impossible</em> — or just <em style="font-style:normal;color:var(--amber);">inconvenient</em>?
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 05 · DEMO — Adding items (live code)
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);bottom:-60px;right:3%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Demo</span>
+    <h2>Let's prove it's <span style="color:var(--phosphor);">not impossible</span>.</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-bottom:var(--gap-lg);">Open this in a new tab and work through the code:</p>
+    <a class="link-card"
+       href="https://run.mycode.run/?runlocal=true&noproject=true&nofiles=true&code=XQAAAQAMAgAAAAAAAAA9iIpHPJkiDSD3eirckGfVDlyCzGKafDiNdzYcptq24WYsABZXK1m1qc4UVyDjDdEKGWF8ybteMLx7oJeIiuj2%2BC0JTF8n0KFHn9jGSHktoS3Hs3Um7pu3ppPKE7f6bu5f3znuK%2BbLu2udCCBEPIa9x%2BUvJg%2BOSE1CrcqjYPEaxx6A6Cos7tv2Z0vF0%2FKU4tREmHlgIP59f1x6zxJercnHB%2FzwPmi5QKGoRRtgAb4KCUZ1pskDD0HPPhz%2Br8oT%2BggLngT7XbgjZYgaInhN5xDmjxBp8fZWR7i7xoT22XdRKqdtQneHet8PJYlRGxmXAboBC5tmvfl9bmJhcC3yOan6noNh"
+       target="_blank" rel="noopener">
+      Open adding items →
+    </a>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 06 · REFLECT — What did we just do?
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:550px;height:550px;background:radial-gradient(circle,rgba(0,255,65,0.07) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Reflect</span>
+    <h2>What did we just do?</h2>
+    <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-lg);max-width:44ch;line-height:1.5;">
+      Did we actually <strong style="color:var(--text);">change the array</strong>?
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 07 · FRQ — Insert / Delete
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(255,224,51,0.1) 0%,transparent 70%);top:-80px;right:4%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">FRQ</span>
+    <h2>But what about <span style="color:var(--amber);">inserting / deleting?</span></h2>
+    <div class="frq-box" style="max-width:700px;margin-top:var(--gap-lg);">
+      <p>What would you need to do if you wanted to <strong style="color:var(--text);">insert something in the middle</strong>?</p>
+      <p style="margin-top:var(--gap-sm);">Be specific. What steps would your code take?</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 08 · CONCEPT — Insert/Delete is painful
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:380px;height:380px;background:radial-gradient(circle,rgba(255,77,106,0.07) 0%,transparent 70%);bottom:-60px;left:-40px;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">The Problem</span>
+    <h2>Insert / Delete in <span style="color:var(--red);">arrays</span></h2>
+
+    <div class="split split-60 split-top" style="margin-top:var(--gap);">
+      <div>
+        <p style="margin-bottom:var(--gap);">We didn't change the original array. We made a <strong style="color:var(--text);">new one</strong> and copied everything into it.</p>
+        <ul class="bullets" style="gap:var(--gap-sm);">
+          <li class="fragment fade-up">more code</li>
+          <li class="fragment fade-up">more chances for bugs</li>
+          <li class="fragment fade-up">references to the old array <strong>don't update</strong><br>
+            <span style="font-size:var(--small);color:var(--text-dim);">If our program holds a reference to the original, it won't see the changes.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap-lg);justify-content:center;">
+        <!-- Before diagram -->
+        <div class="fragment fade-up">
+          <p style="font-size:var(--tag);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Before</p>
+          <div class="mem-chain">
+            <div class="mem-obj hi-a">arr[]</div>
+            <span class="mem-arrow" style="font-size:var(--body);">→</span>
+            <div class="arr-1d">
+              <div class="arr-cell hl-c">a</div>
+              <div class="arr-cell">b</div>
+              <div class="arr-cell">c</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- After diagram -->
+        <div class="fragment fade-up">
+          <p style="font-size:var(--tag);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">After — arr[] points to new array</p>
+          <div class="mem-chain" style="margin-bottom:var(--gap-sm);">
+            <div class="mem-obj hi-a">arr[]</div>
+            <span class="mem-arrow" style="font-size:var(--body);">→</span>
+            <div class="arr-1d">
+              <div class="arr-cell hl-c">a</div>
+              <div class="arr-cell">b</div>
+              <div class="arr-cell">c</div>
+              <div class="arr-cell hl-p">d</div>
+            </div>
+          </div>
+          <div class="mem-chain" style="opacity:0.3;">
+            <div class="mem-obj" style="border-style:dashed;">arr[]</div>
+            <span style="font-size:var(--body);color:var(--text-dim);">→</span>
+            <div class="arr-1d">
+              <div class="arr-cell">a</div>
+              <div class="arr-cell">b</div>
+              <div class="arr-cell">c</div>
+            </div>
+          </div>
+          <p style="font-size:var(--tag);color:var(--text-dim);margin-top:4px;">old array (still in memory, references unchanged)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 09 · SOLUTION — Introducing ArrayList
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:600px;height:600px;background:radial-gradient(circle,rgba(0,255,65,0.10) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">The Solution</span>
+    <h2>A better way</h2>
+    <p style="font-size:var(--h3);color:var(--text-muted);max-width:48ch;line-height:1.6;margin-top:var(--gap);">
+      You know programmers are lazy.<br>If something is annoying to do... we automate it.
+    </p>
+    <p class="fragment fade-up" style="font-size:var(--h2);font-weight:700;color:var(--phosphor);margin-top:var(--gap-lg);">
+      Introducing: the ArrayList
+    </p>
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:52ch;line-height:1.6;margin-top:var(--gap);">
+      Java has a class that handles all of that work. There's still an array under the hood — but we don't have to manage it.
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 10 · DEMO — ArrayList in action
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(0,255,65,0.08) 0%,transparent 70%);bottom:-40px;right:3%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Demo</span>
+    <h2>Let's see it with an <span style="color:var(--phosphor);">ArrayList</span></h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-bottom:var(--gap-lg);">Go back to the same code — we'll rewrite it using ArrayList.</p>
+    <a class="link-card"
+       href="https://run.mycode.run/?runlocal=true&noproject=true&nofiles=true&code=XQAAAQAMAgAAAAAAAAA9iIpHPJkiDSD3eirckGfVDlyCzGKafDiNdzYcptq24WYsABZXK1m1qc4UVyDjDdEKGWF8ybteMLx7oJeIiuj2%2BC0JTF8n0KFHn9jGSHktoS3Hs3Um7pu3ppPKE7f6bu5f3znuK%2BbLu2udCCBEPIa9x%2BUvJg%2BOSE1CrcqjYPEaxx6A6Cos7tv2Z0vF0%2FKU4tREmHlgIP59f1x6zxJercnHB%2FzwPmi5QKGoRRtgAb4KCUZ1pskDD0HPPhz%2Br8oT%2BggLngT7XbgjZYgaInhN5xDmjxBp8fZWR7i7xoT22XdRKqdtQneHet8PJYlRGxmXAboBC5tmvfl9bmJhcC3yOan6noNh"
+       target="_blank" rel="noopener">
+      Open same code →
+    </a>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 11 · CONCEPT — ArrayLists are Objects
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);top:-100px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Key Idea</span>
+    <h2>ArrayLists are <span style="color:var(--phosphor);">Objects</span></h2>
+
+    <p style="margin-bottom:var(--gap);">The ArrayList object is <em style="font-style:normal;color:var(--text);">always the same object</em>. We don't have to replace the list — we just add to it. It updates its own internal array reference so we don't have to.</p>
+
+    <!-- Diagram: list var → ArrayList object → internal array -->
+    <div class="fragment fade-up" style="display:flex;flex-direction:column;gap:var(--gap-lg);">
+      <div>
+        <p style="font-size:var(--tag);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Normal operation</p>
+        <div class="mem-chain">
+          <div class="mem-obj hi-a" style="min-width:120px;">List&lt;String&gt;<br><span style="font-size:0.85em;opacity:0.7;">list</span></div>
+          <span class="mem-arrow">→</span>
+          <div class="mem-obj hi-p" style="min-width:130px;">ArrayList<br><span style="font-size:0.85em;opacity:0.8;">object</span></div>
+          <span class="mem-arrow">→</span>
+          <div class="arr-1d">
+            <div class="arr-cell">a</div>
+            <div class="arr-cell">b</div>
+            <div class="arr-cell">c</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fragment fade-up">
+        <p style="font-size:var(--tag);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">After growth — same object, new internal array</p>
+        <div class="mem-chain" style="margin-bottom:var(--gap-sm);">
+          <div class="mem-obj hi-a" style="min-width:120px;">List&lt;String&gt;<br><span style="font-size:0.85em;opacity:0.7;">list</span></div>
+          <span class="mem-arrow">→</span>
+          <div class="mem-obj hi-p" style="min-width:130px;">ArrayList<br><span style="font-size:0.85em;opacity:0.8;">object</span></div>
+          <span class="mem-arrow">→</span>
+          <div class="arr-1d">
+            <div class="arr-cell">a</div>
+            <div class="arr-cell">b</div>
+            <div class="arr-cell">c</div>
+            <div class="arr-cell hl-p">d</div>
+          </div>
+        </div>
+        <div class="mem-chain" style="opacity:0.28;margin-left:calc(120px + var(--gap) + 20px + var(--gap) + 130px + var(--gap) + 20px + var(--gap));">
+          <div class="arr-1d" style="">
+            <div class="arr-cell">a</div>
+            <div class="arr-cell">b</div>
+            <div class="arr-cell">c</div>
+          </div>
+        </div>
+        <p style="font-size:var(--tag);color:var(--text-dim);margin-top:4px;margin-left:calc(120px + var(--gap) + 20px + var(--gap) + 130px + var(--gap) + 20px + var(--gap));">old internal array (handled automatically)</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 12 · CODE — ArrayList declaration and initialization
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(255,224,51,0.08) 0%,transparent 70%);bottom:-60px;right:5%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Syntax</span>
+    <h2>ArrayLists in <span style="color:var(--phosphor);">Code</span></h2>
+    <p style="margin-bottom:var(--gap);">Like other objects, you must declare <em style="font-style:normal;color:var(--text);">and</em> initialize before use.</p>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);">
+      <div class="code-card fragment fade-up">
+        <div class="code-hdr"><span class="clang">JAVA</span></div>
+        <div class="code-body">
+          <pre><code><span class="cm">// Declaration only</span>
+<span class="tp">ArrayList</span>&lt;<span class="tp">String</span>&gt; myStuff;</code></pre>
+        </div>
+      </div>
+
+      <div class="code-card fragment fade-up">
+        <div class="code-hdr"><span class="clang">JAVA</span></div>
+        <div class="code-body">
+          <pre><code><span class="cm">// Declaration and Initialization</span>
+<span class="tp">ArrayList</span>&lt;<span class="tp">String</span>&gt; <span class="nm">myStuff</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;<span class="tp">String</span>&gt;();</code></pre>
+        </div>
+      </div>
+
+      <div class="code-card accent fragment fade-up">
+        <div class="code-hdr"><span class="clang">JAVA</span></div>
+        <div class="code-body">
+          <pre><code><span class="cm">// Better — Java infers the type in the second &lt;&gt;</span>
+<span class="tp">ArrayList</span>&lt;<span class="tp">String</span>&gt; <span class="nm">myStuff</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 13 · CONCEPT — A quick note about List
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(0,255,65,0.08) 0%,transparent 70%);top:-90px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Real World</span>
+    <h2>A quick note about <code>List</code></h2>
+
+    <div class="split split-top" style="margin-top:var(--gap);gap:var(--gap-lg);">
+      <div>
+        <p style="margin-bottom:var(--gap-sm);">In this class you'll mostly see:</p>
+        <div class="code-card">
+          <div class="code-hdr"><span class="clang">This class</span></div>
+          <div class="code-body">
+            <pre><code><span class="tp">ArrayList</span>&lt;<span class="tp">String</span>&gt; <span class="nm">myStuff</span>
+  = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="fragment fade-up">
+        <p style="margin-bottom:var(--gap-sm);">In the real world, you'll often see:</p>
+        <div class="code-card">
+          <div class="code-hdr"><span class="clang">Real world</span></div>
+          <div class="code-body">
+            <pre><code><span class="tp">List</span>&lt;<span class="tp">String</span>&gt; <span class="nm">myStuff</span>
+  = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();</code></pre>
+          </div>
+        </div>
+        <div class="code-card" style="margin-top:var(--gap-sm);">
+          <div class="code-hdr"><span class="clang">Swap easily</span></div>
+          <div class="code-body">
+            <pre><code><span class="tp">List</span>&lt;<span class="tp">String</span>&gt; <span class="nm">myStuff</span>
+  = <span class="kw">new</span> <span class="tp">Vector</span>&lt;&gt;();</code></pre>
+          </div>
+        </div>
+        <p style="font-size:var(--small);color:var(--text-dim);margin-top:var(--gap-sm);">
+          <code>List</code> is a more general type. Swapping implementations (ArrayList, LinkedList, Vector...) takes just one line.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 14 · DEMO — Using an ArrayList (live code)
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(0,255,65,0.08) 0%,transparent 70%);bottom:-40px;left:3%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Demo</span>
+    <h2>Using an <span style="color:var(--phosphor);">ArrayList</span></h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-bottom:var(--gap-lg);">Let's look at a few methods we can use. Open this in a new tab:</p>
+    <a class="link-card"
+       href="https://run.mycode.run/?noproject=true&nofiles=true&code=XQAAAQAZAQAAAAAAAAA9iIpHPJkiDSD3eirckGfVDlyCzGKafDiNdzYcptq24WYsABZXK1m1qc4UVyDjDdEKGWF8ybteMLx7oJeIiuj2%2BC0JTF8HKQCBEtXplEMFtP%2BzsO7Xj7u2pTMtHN%2F6uH2BJ%2FLOGGc4J8%2B1NehzoFTN29cHELDfP5SUePtRlcWkRnF4rbDxoRLsE2C%2FEh%2B8buj%2FETTnmDn9gC9gfb7UTom0jBiPAoBSIoj3ISMvjBiANn%2FMS55bZQB0jgIJsf6bSrsUFBi8%2F%2FNdXUo%3D"
+       target="_blank" rel="noopener">
+      Let's Go! →
+    </a>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 15 · CODE — Step by step: first run
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(255,77,106,0.07) 0%,transparent 70%);top:-80px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Step by Step</span>
+    <h2>Run the code. What happens?</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);">
+      <div class="err-box fragment fade-up">
+        ERROR in /Main.java (at line 8)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;System.out.println(myPoints);<br>
+        The local variable myPoints may not have been initialized
+      </div>
+
+      <div class="fragment fade-up">
+        <p style="margin-bottom:var(--gap-sm);">Let's fix it by <strong style="color:var(--text);">initializing</strong> the ArrayList:</p>
+        <div class="code-card accent">
+          <div class="code-hdr"><span class="clang">Fix</span></div>
+          <div class="code-body">
+            <pre><code><span class="tp">ArrayList</span> <span class="nm">myPoints</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>();</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 16 · CODE — Raw type warning
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);bottom:-60px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Step by Step</span>
+    <h2>Run again. What happens?</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);">
+      <div class="warn-box fragment fade-up">
+        ArrayList is a raw type. References to generic type ArrayList&lt;E&gt; should be parameterized
+      </div>
+
+      <ul class="bullets fragment fade-up" style="max-width:820px;">
+        <li>This works, but Java warns us it's unsafe — the list can hold <em>anything</em></li>
+        <li class="fragment fade-up">We fix it by telling Java what type we'll store:</li>
+      </ul>
+
+      <div class="code-card accent fragment fade-up">
+        <div class="code-hdr"><span class="clang">Fix</span></div>
+        <div class="code-body">
+          <pre><code><span class="tp">ArrayList</span>&lt;<span class="tp">int</span>&gt; <span class="nm">myPoints</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 17 · CODE — Type error (int is a primitive)
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(255,77,106,0.08) 0%,transparent 70%);top:-90px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Step by Step</span>
+    <h2>Run again. Now what?</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);">
+      <div class="err-box fragment fade-up">
+        ERROR in /Main.java (at line 6)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;ArrayList&lt;int&gt; myPoints = new ArrayList&lt;&gt;();<br>
+        Syntax error, insert "Dimensions" to complete ReferenceType
+      </div>
+
+      <ul class="bullets fragment fade-up" style="max-width:820px;">
+        <li>This <em>feels</em> like it should work — but it doesn't. Why?</li>
+        <li class="fragment fade-up">Lists <strong>must</strong> contain <strong style="color:var(--text);">objects</strong>, not primitives</li>
+        <li class="fragment fade-up">Java thinks you forgot to write <code>int[]</code> (an array of ints). We don't want a list of arrays — we want ints!</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 18 · CONCEPT — Wrapper classes
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);bottom:-80px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Wrapper Classes</span>
+    <h2>You can't have a list of <code>int</code>s.</h2>
+    <p style="margin-bottom:var(--gap);">Lists store objects, not primitives. But Java has our back with <strong style="color:var(--phosphor);">object versions</strong> of every primitive type:</p>
+
+    <div class="wrap-grid fragment fade-up" style="max-width:700px;">
+      <div class="wrap-row"><span class="wp">int</span><span class="ws">→</span><span class="wo">Integer</span></div>
+      <div class="wrap-row"><span class="wp">long</span><span class="ws">→</span><span class="wo">Long</span></div>
+      <div class="wrap-row"><span class="wp">double</span><span class="ws">→</span><span class="wo">Double</span></div>
+      <div class="wrap-row"><span class="wp">char</span><span class="ws">→</span><span class="wo">Character</span></div>
+      <div class="wrap-row"><span class="wp">boolean</span><span class="ws">→</span><span class="wo">Boolean</span></div>
+    </div>
+
+    <div class="code-card accent fragment fade-up" style="margin-top:var(--gap);max-width:640px;">
+      <div class="code-hdr"><span class="clang">Fix</span></div>
+      <div class="code-body">
+        <pre><code><span class="tp">ArrayList</span>&lt;<span class="tp">Integer</span>&gt; <span class="nm">myPoints</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();</code></pre>
+      </div>
+    </div>
+
+    <p class="fragment fade-up" style="font-size:var(--h3);color:var(--phosphor);margin-top:var(--gap);">Does it work now?!</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 19 · CODE — Add some data
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(0,255,65,0.08) 0%,transparent 70%);top:-80px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">add()</span>
+    <h2>Add some data</h2>
+
+    <div class="code-card" style="margin-top:var(--gap);">
+      <div class="code-hdr"><span class="clang">Java</span></div>
+      <div class="code-body">
+        <pre><code><span class="tp">ArrayList</span>&lt;<span class="tp">Integer</span>&gt; <span class="nm">myPoints</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();
+
+<span class="nm">myPoints</span>.<span class="kw">add</span>(3);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(2);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(5);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(1);
+
+<span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>);</code></pre>
+      </div>
+    </div>
+
+    <div class="callout accent-p fragment fade-up" style="margin-top:var(--gap);max-width:480px;">
+      <h3 style="color:var(--amber);">Think first</h3>
+      <p>What do you think this will print?</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 20 · CONCEPT — Wait, autoboxing
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:480px;height:480px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Wait a minute...</span>
+    <h2>What about objects?</h2>
+    <p style="font-size:var(--h3);color:var(--text-muted);max-width:50ch;line-height:1.6;margin-top:var(--gap);">
+      "MrD, you just said ArrayLists can only store objects — but you just added <code>int</code>s to it!"
+    </p>
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:56ch;line-height:1.65;margin-top:var(--gap-lg);">
+      Java is doing behind-the-scenes work. This is called <strong style="color:var(--phosphor);">autoboxing and unboxing</strong>.
+    </p>
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:56ch;line-height:1.65;margin-top:var(--gap-sm);">
+      When Java needs an object, it wraps the <code>int</code> in an <code>Integer</code> "box". When it needs the value back, it unwraps it.
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 21 · CODE — Proof of autoboxing
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(0,255,65,0.08) 0%,transparent 70%);bottom:-60px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Proof</span>
+    <h2>Let's prove it to ourselves</h2>
+
+    <div class="code-card" style="margin-top:var(--gap);">
+      <div class="code-hdr"><span class="clang">Java</span></div>
+      <div class="code-body">
+        <pre><code><span class="tp">ArrayList</span>&lt;<span class="tp">Integer</span>&gt; <span class="nm">myPoints</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();
+
+<span class="nm">myPoints</span>.<span class="kw">add</span>(3);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(2);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(5);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(1);
+
+<span class="tp">int</span> <span class="nm">x</span> = <span class="nm">myPoints</span>.<span class="kw">get</span>(0);   <span class="cm">// unboxed automatically</span>
+<span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">x</span> + 5);
+
+<span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>);</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 22 · CODE — Change the data (set)
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:380px;height:380px;background:radial-gradient(circle,rgba(255,224,51,0.08) 0%,transparent 70%);top:-80px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">set()</span>
+    <h2>Change the data</h2>
+    <p style="margin-bottom:var(--gap);">5 points? I wish.</p>
+
+    <div class="code-card">
+      <div class="code-hdr"><span class="clang">Java</span></div>
+      <div class="code-body">
+        <pre><code><span class="tp">ArrayList</span>&lt;<span class="tp">Integer</span>&gt; <span class="nm">myPoints</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();
+
+<span class="nm">myPoints</span>.<span class="kw">add</span>(3);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(2);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(5);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(1);
+
+<span class="nm">myPoints</span>.<span class="kw">set</span>(2, 0);   <span class="cm">// index 2 was 5, now 0</span>
+
+<span class="tp">int</span> <span class="nm">x</span> = <span class="nm">myPoints</span>.<span class="kw">get</span>(0);
+<span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">x</span> + 5);
+
+<span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>);</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 23 · CODE — Remove some data (by index)
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:380px;height:380px;background:radial-gradient(circle,rgba(255,77,106,0.07) 0%,transparent 70%);bottom:-60px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">remove()</span>
+    <h2>Remove some data</h2>
+    <p style="margin-bottom:var(--gap);">Oops, we messed up with that 2:</p>
+
+    <div class="code-card">
+      <div class="code-hdr"><span class="clang">Java</span></div>
+      <div class="code-body">
+        <pre><code><span class="nm">myPoints</span>.<span class="kw">add</span>(3);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(2);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(5);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(1);
+
+<span class="nm">myPoints</span>.<span class="kw">set</span>(2, 0);
+
+<span class="nm">myPoints</span>.<span class="kw">remove</span>(2);   <span class="cm">// removes item at index 2</span>
+
+<span class="tp">int</span> <span class="nm">x</span> = <span class="nm">myPoints</span>.<span class="kw">get</span>(0);
+<span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">x</span> + 5);</code></pre>
+      </div>
+    </div>
+
+    <div class="callout accent-r fragment fade-up" style="margin-top:var(--gap);max-width:500px;">
+      <h3 style="color:var(--red);">Wait...</h3>
+      <p>What does the list look like now?</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 24 · CODE — Removed the wrong data
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(255,77,106,0.07) 0%,transparent 70%);top:-80px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">remove() — Gotcha</span>
+    <h2>Removed the <span style="color:var(--red);">wrong data</span></h2>
+
+    <div class="split split-60 split-top" style="margin-top:var(--gap);">
+      <div>
+        <p style="margin-bottom:var(--gap-sm);">If <code>remove</code> gets an <code>int</code>, it treats it as an <strong style="color:var(--text);">index</strong>. If it gets an <code>Integer</code> object, it removes the <strong style="color:var(--text);">first matching value</strong>.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);margin-bottom:var(--gap);">Java sees a number and assumes you mean an index… unless you explicitly cast:</p>
+        <div class="code-card accent">
+          <div class="code-hdr"><span class="clang">Fix</span></div>
+          <div class="code-body">
+            <pre><code><span class="nm">myPoints</span>.<span class="kw">remove</span>((<span class="tp">Integer</span>) 2);</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-card fragment fade-up">
+        <div class="code-hdr"><span class="clang">Full code</span></div>
+        <div class="code-body">
+          <pre><code><span class="nm">myPoints</span>.<span class="kw">add</span>(3);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(2);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(5);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(1);
+
+<span class="nm">myPoints</span>.<span class="kw">set</span>(2, 0);
+
+<span class="nm">myPoints</span>.<span class="kw">remove</span>((<span class="tp">Integer</span>) 2);
+
+<span class="tp">int</span> <span class="nm">x</span> = <span class="nm">myPoints</span>.<span class="kw">get</span>(0);
+<span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">x</span> + 5);</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 25 · CONCEPT — int vs Integer in remove()
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(0,255,65,0.07) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Make sure it's right</span>
+    <h2>When removing:</h2>
+
+    <div class="remove-table fragment fade-up" style="margin-top:var(--gap-lg);">
+      <span class="rt-key">int</span>
+      <span style="font-family:var(--font-mono);font-size:var(--body);color:var(--text-muted);">→ treated as an <strong style="color:var(--text);">index</strong></span>
+      <span class="rt-key">Integer</span>
+      <span style="font-family:var(--font-mono);font-size:var(--body);color:var(--text-muted);">→ treated as a <strong style="color:var(--text);">value</strong></span>
+    </div>
+
+    <div class="code-pair fragment fade-up" style="margin-top:var(--gap-lg);">
+      <div class="code-card">
+        <div class="code-hdr"><span class="clang">removes index 2</span></div>
+        <div class="code-body">
+          <pre><code><span class="nm">list</span>.<span class="kw">remove</span>(2);</code></pre>
+        </div>
+      </div>
+      <div class="code-card accent">
+        <div class="code-hdr"><span class="clang">removes value 2</span></div>
+        <div class="code-body">
+          <pre><code><span class="nm">list</span>.<span class="kw">remove</span>((<span class="tp">Integer</span>) 2);</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 26 · CODE — Insert some data (add with index)
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:380px;height:380px;background:radial-gradient(circle,rgba(0,255,65,0.08) 0%,transparent 70%);bottom:-60px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">add(index, item)</span>
+    <h2>We can add wherever we want</h2>
+
+    <div class="code-card" style="margin-top:var(--gap);">
+      <div class="code-hdr"><span class="clang">Java</span></div>
+      <div class="code-body">
+        <pre><code><span class="nm">myPoints</span>.<span class="kw">add</span>(3);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(2);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(5);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(1);
+
+<span class="nm">myPoints</span>.<span class="kw">set</span>(2, 0);
+
+<span class="nm">myPoints</span>.<span class="kw">remove</span>((<span class="tp">Integer</span>) 2);
+
+<span class="nm">myPoints</span>.<span class="kw">add</span>(4, 1);   <span class="cm">// insert 1 at index 4</span>
+
+<span class="tp">int</span> <span class="nm">x</span> = <span class="nm">myPoints</span>.<span class="kw">get</span>(0);
+<span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">x</span> + 5);</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 27 · FRQ — Index out of bounds
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(255,77,106,0.08) 0%,transparent 70%);top:-90px;right:4%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">FRQ</span>
+    <h2>Maybe not <span style="color:var(--red);">anywhere</span></h2>
+    <div class="err-box fragment fade-up" style="max-width:700px;margin-top:var(--gap-lg);text-align:left;">
+      IndexOutOfBoundsException: Index: 4, Size: 3
+    </div>
+    <div class="frq-box fragment fade-up" style="max-width:700px;margin-top:var(--gap);">
+      <p>We just got an error. I wanted to insert a 4 at index 1.</p>
+      <p style="margin-top:var(--gap-sm);">What happened? Why did the code fail?</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 28 · CODE — Index then Item
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);bottom:-80px;left:3%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Syntax</span>
+    <h2>Index then Item</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-bottom:var(--gap-lg);">When adding, you tell it <strong style="color:var(--text);">where</strong> first, then <strong style="color:var(--text);">what</strong>:</p>
+
+    <div class="code-pair">
+      <div class="code-card">
+        <div class="code-hdr"><span class="clang">add to end</span></div>
+        <div class="code-body">
+          <pre><code><span class="nm">list</span>.<span class="kw">add</span>(4);</code></pre>
+        </div>
+      </div>
+      <div class="code-card accent">
+        <div class="code-hdr"><span class="clang">insert at index</span></div>
+        <div class="code-body">
+          <pre><code><span class="nm">list</span>.<span class="kw">add</span>(1, 4); <span class="cm">// index, then item</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 29 · MCQ — How many items?
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);top:-80px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">MCQ</span>
+    <h2>How many items?</h2>
+    <p style="margin-bottom:var(--gap);">What code will tell us how many items are in a list?</p>
+
+    <ul class="mcq-opts">
+      <li class="fragment fade-up answer"><span class="opt-key">A</span> <code>myPoints.size()</code></li>
+      <li class="fragment fade-up"><span class="opt-key">B</span> <code>myPoints.length</code></li>
+      <li class="fragment fade-up"><span class="opt-key">C</span> <code>myPoints.length()</code></li>
+      <li class="fragment fade-up"><span class="opt-key">D</span> <code>myPoints.numItems()</code></li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 30 · CODE — size() in action
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:380px;height:380px;background:radial-gradient(circle,rgba(0,255,65,0.08) 0%,transparent 70%);bottom:-60px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">size()</span>
+    <h2>How many items?</h2>
+
+    <div class="code-card" style="margin-top:var(--gap);">
+      <div class="code-hdr"><span class="clang">Java</span></div>
+      <div class="code-body">
+        <pre><code><span class="nm">myPoints</span>.<span class="kw">add</span>(3);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(2);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(5);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(1);
+
+<span class="nm">myPoints</span>.<span class="kw">set</span>(2, 0);
+<span class="nm">myPoints</span>.<span class="kw">remove</span>((<span class="tp">Integer</span>) 2);
+<span class="nm">myPoints</span>.<span class="kw">add</span>(1, 4);   <span class="cm">// index, then item</span>
+
+<span class="tp">int</span> <span class="nm">x</span> = <span class="nm">myPoints</span>.<span class="kw">get</span>(0);
+<span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">x</span> + 5);
+
+<span class="tp">System</span>.out.<span class="kw">print</span>(<span class="nm">myPoints</span>.<span class="kw">size</span>());</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 31 · MCQ — Check yourself
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);top:-80px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">MCQ</span>
+    <h2>Check yourself</h2>
+
+    <div class="split split-top" style="margin-top:var(--gap);gap:var(--gap-lg);">
+      <div>
+        <p style="margin-bottom:var(--gap-sm);font-size:var(--body);color:var(--text-muted);">Which correctly creates an empty ArrayList of Strings?</p>
+        <ul class="mcq-opts" style="margin-top:var(--gap-sm);">
+          <li class="fragment fade-up answer"><span class="opt-key">A</span> <code>ArrayList&lt;String&gt; list = new ArrayList&lt;&gt;();</code></li>
+          <li class="fragment fade-up"><span class="opt-key">B</span> <code>ArrayList&lt;String&gt; list;</code></li>
+          <li class="fragment fade-up"><span class="opt-key">C</span> <code>ArrayList&lt;String&gt; list = new ArrayList();</code></li>
+          <li class="fragment fade-up"><span class="opt-key">D</span> <code>ArrayList list = new ArrayList&lt;String&gt;();</code></li>
+        </ul>
+      </div>
+
+      <div>
+        <p style="margin-bottom:var(--gap-sm);font-size:var(--body);color:var(--text-muted);">What is wrong with this code?</p>
+        <div class="code-card" style="margin-bottom:var(--gap-sm);">
+          <div class="code-hdr"><span class="clang">Java</span></div>
+          <div class="code-body">
+            <pre><code><span class="tp">ArrayList</span>&lt;<span class="tp">int</span>&gt; <span class="nm">nums</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();</code></pre>
+          </div>
+        </div>
+        <ul class="mcq-opts">
+          <li class="fragment fade-up answer"><span class="opt-key">A</span> ArrayLists cannot store primitives</li>
+          <li class="fragment fade-up"><span class="opt-key">B</span> Missing import</li>
+          <li class="fragment fade-up"><span class="opt-key">C</span> Syntax is wrong</li>
+          <li class="fragment fade-up"><span class="opt-key">D</span> Nothing is wrong</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 32 · CONCEPT — Real objects in lists
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:550px;height:550px;background:radial-gradient(circle,rgba(0,255,65,0.08) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Next Level</span>
+    <h2>What about <em style="font-style:normal;color:var(--phosphor);">real</em> objects?</h2>
+    <p style="font-size:var(--h3);color:var(--text-muted);max-width:46ch;line-height:1.6;margin-top:var(--gap-lg);">
+      So far we've stored Strings and numbers —<br>but lists can store <strong style="color:var(--text);">any</strong> object.
+    </p>
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:44ch;line-height:1.6;margin-top:var(--gap);">
+      Let's work with something a little more interesting.
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 33 · CODE — The Grade class
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:380px;height:380px;background:radial-gradient(circle,rgba(255,224,51,0.08) 0%,transparent 70%);top:-80px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">The Grade Class</span>
+    <h2>Meet the <span style="color:var(--amber);">Grade</span> class</h2>
+    <p style="margin-bottom:var(--gap);">Each Grade stores a score and can tell us the letter grade.</p>
+
+    <div class="code-card">
+      <div class="code-hdr"><span class="clang">Grade.java</span></div>
+      <div class="code-body">
+        <pre><code><span class="kw">public class</span> <span class="tp">Grade</span> {
+
+  <span class="kw">private</span> <span class="tp">double</span> <span class="nm">myGrade</span>;
+
+  <span class="cm">/** @param score  numeric grade, 0.0–100.0 */</span>
+  <span class="kw">public</span> <span class="tp">Grade</span>(<span class="tp">double</span> <span class="nm">score</span>) { <span class="cm">/* code omitted */</span> }
+
+  <span class="cm">/** @return numeric value 0–100 */</span>
+  <span class="kw">public</span> <span class="tp">double</span> <span class="nm">getGrade</span>() { <span class="cm">/* code omitted */</span> }
+
+  <span class="cm">/** @return letter grade "A"–"F" */</span>
+  <span class="kw">public</span> <span class="tp">String</span> <span class="nm">getLetter</span>() { <span class="cm">/* code omitted */</span> }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 34 · CODE — Using the Grade class
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:380px;height:380px;background:radial-gradient(circle,rgba(0,255,65,0.08) 0%,transparent 70%);bottom:-60px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Using Grade</span>
+    <h2>Build it up</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap-sm);margin-top:var(--gap);">
+      <div class="callout fragment fade-up" style="display:flex;justify-content:space-between;align-items:center;gap:var(--gap);">
+        <p style="color:var(--text-muted);">Declare and initialize a list of Grades:</p>
+        <code style="font-size:var(--body);color:var(--phosphor);white-space:nowrap;">ArrayList&lt;Grade&gt; grades = new ArrayList&lt;&gt;();</code>
+      </div>
+
+      <div class="callout fragment fade-up" style="display:flex;justify-content:space-between;align-items:center;gap:var(--gap);">
+        <p style="color:var(--text-muted);">Create a Grade of 100%:</p>
+        <code style="font-size:var(--body);color:var(--phosphor);white-space:nowrap;">new Grade(100)</code>
+      </div>
+
+      <div class="callout fragment fade-up" style="display:flex;justify-content:space-between;align-items:center;gap:var(--gap);">
+        <p style="color:var(--text-muted);">Add that Grade to the list:</p>
+        <code style="font-size:var(--body);color:var(--phosphor);white-space:nowrap;">grades.add(new Grade(100))</code>
+      </div>
+
+      <div class="callout accent-p fragment fade-up" style="display:flex;justify-content:space-between;align-items:center;gap:var(--gap);">
+        <p style="color:var(--text-muted);">Create a random Grade 0–100%:</p>
+        <code style="font-size:var(--body);color:var(--amber);white-space:nowrap;">new Grade(100 * Math.random())</code>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 35 · PROBLEM — Printing all grades
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,77,106,0.08) 0%,transparent 70%);top:-80px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">The Problem</span>
+    <h2>Using <span style="color:var(--red);">ALL</span> the Grades</h2>
+    <p style="margin-bottom:var(--gap);">How can we print all of the grades? Not like this:</p>
+
+    <div class="code-card fragment fade-up">
+      <div class="code-hdr"><span class="clang">Don't do this</span></div>
+      <div class="code-body">
+        <pre><code><span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">grades</span>);
+
+<span class="cm">// [Grade@7d6f77cc, Grade@5aaa6d82, Grade@73a28541,
+//  Grade@6f75e721, Grade@69222c14, Grade@606d8acf,
+//  Grade@782830e,  Grade@470e2030, Grade@3fb4f649 ...]</span></code></pre>
+      </div>
+    </div>
+
+    <p class="fragment fade-up" style="margin-top:var(--gap);font-size:var(--body);color:var(--text-muted);">
+      We need to use the <strong style="color:var(--text);">Grade methods</strong> and...
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 37 · DEMO — Loops
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(0,255,65,0.08) 0%,transparent 70%);bottom:-40px;right:3%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Loops</span>
+    <h2>...our old friend: the <span style="color:var(--phosphor);">for loop</span></h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-bottom:var(--gap-lg);">Open this in a new tab:</p>
+    <a class="link-card"
+       href="https://run.mycode.run/?noproject=true&code=XQAAAQBIBQAAAAAAAAA9iIpHPJkiDSD3eirckGfVDlyCzGKafDiNdzYcptq1BX%2Bvu3dmbAqz0TlQZJMY0FOJBoeDrUNzGyJqsgAkXvnkdd%2BViSQPJZ4284ZIZIZryhiDRhqEcE%2BOUf%2Fmn76JxbIUH8yiFEODDZKYkjENcTIDZ616SPe7S1AKp9DejJ7GfQkmQRfdR1zy53%2FBQ2xO9GGj8OtNtMao%2FWpVGUNxw0pBT7J7wr3n86eaOC2yDLpCrdGZx%2B3hGiRji4mo%2Fved8hg072Z2hgTVhevJsPa6NPrtow38D9VemSqlodLHmdOk6SYLa3GG8HApplgY4lryLCnMuWHEUvWd5KxzkwTjnWXErrDPXTwAUbpGgyKBUNhelX9isxMWDGf%2FvA6W7rFkD%2BviPu%2FKp7uW0o7Vkq3X3amPjR9iiJmJKb%2BgZMneQniUovpuyRAqrg5BqYTv51FbPDPQuQF8UvUouEYPcTaBE5SeA5qipmGbTpCPP%2FL%2B1pdQs29QMTETT3D0Ix2BIj%2BSTtWo7h9ca6OJGMVcBaE8u6WYSW1iuhN7o8MKWUkcIDnu4jK0xFDVzdKjek9EfNA7cjicZX1wzE2YiOL3FJXjZrve5hpAmEhuhA3w3RDb5TNJSTIb415C3ylAD05cnqsDAwdIcxjj0Jq%2BWRh0bAkEgNYMc8%2F%2FJ%2BfjqBGB3oDdvdrBzJQTiSxHBvlmco4SnlPnbyn9qd4JKuIkUNYq7lCUcN80KUPIKRbC%2FrcJkQAR4XeKc0qOJjCSzVe2Zf8hfOQA"
+       target="_blank" rel="noopener">
+      Open Grades demo →
+    </a>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 38 · CODE — Standard for loop
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(255,224,51,0.08) 0%,transparent 70%);top:-80px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Standard For Loop</span>
+    <h2>Fill in the blank</h2>
+
+    <div class="code-card" style="margin-top:var(--gap);">
+      <div class="code-hdr"><span class="clang">Java</span></div>
+      <div class="code-body">
+        <pre><code><span class="kw">for</span> ( <span class="tp">int</span> <span class="nm">i</span> = 0 ; <span style="color:var(--amber);">___</span> ; <span class="nm">i</span>++ ) {
+    <span class="tp">System</span>.out.<span class="kw">println</span>( <span class="nm">grades</span>.<span class="kw">get</span>(<span class="nm">i</span>).<span class="kw">getGrade</span>() );
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="callout accent-p fragment fade-up" style="margin-top:var(--gap);max-width:520px;">
+      <h3 style="color:var(--amber);">What goes in the blank?</h3>
+      <p>What condition should we use? <em style="font-style:normal;color:var(--text);">Hint: how do we get the size of a list?</em></p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 39 · CODE — Enhanced for loop
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(0,255,65,0.08) 0%,transparent 70%);bottom:-60px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Enhanced For Loop</span>
+    <h2>There's a cleaner way</h2>
+
+    <div class="code-card" style="margin-top:var(--gap);">
+      <div class="code-hdr"><span class="clang">Java</span></div>
+      <div class="code-body">
+        <pre><code><span class="kw">for</span> ( <span style="color:var(--amber);">___</span> <span class="nm">g</span> : <span style="color:var(--amber);">___</span> ) {
+    <span class="tp">System</span>.out.<span class="kw">println</span>( <span class="nm">g</span>.<span class="kw">getLetter</span>() );
+}</code></pre>
+      </div>
+    </div>
+
+    <ul class="bullets fragment fade-up" style="margin-top:var(--gap);max-width:700px;">
+      <li>Fill in the blanks — what type is each grade? What are we looping over?</li>
+      <li class="fragment fade-up">The enhanced for loop works with any collection that implements <code>Iterable</code></li>
+      <li class="fragment fade-up">No index needed — Java handles the stepping for you</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 40 · FRQ — Closing reflection
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:550px;height:550px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">FRQ</span>
+    <h2>In your own words...</h2>
+    <div class="frq-box" style="max-width:720px;margin-top:var(--gap-lg);">
+      <p>Why do <strong style="color:var(--text);">ArrayLists</strong> exist if we already have arrays?</p>
+      <p style="margin-top:var(--gap-sm);">What problems do they solve? What trade-offs do they make?</p>
+    </div>
+  </div>
+</section>
+
+
+</div><!-- .slides -->
+</div><!-- .reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'lists',
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
