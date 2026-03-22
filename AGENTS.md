@@ -2,6 +2,10 @@
 
 This repository contains HTML slide presentations built with **Reveal.js**, published via GitHub Pages. Shared runtime/plugin code is consumed from the `SyncDeck-Reveal` git submodule at `vendor/SyncDeck-Reveal/`.
 
+Presentation source folders now live under `classes/`, while deployment remaps
+their contents to the site root. For example, `classes/AR1/...` is published as
+`/AR1/...`.
+
 ## Runtime Source
 
 - Shared runtime source: `vendor/SyncDeck-Reveal/` git submodule.
@@ -12,9 +16,10 @@ This repository contains HTML slide presentations built with **Reveal.js**, publ
 
 ## Shared Runtime
 
-Presentations load the bundled public runtime from `vendor/SyncDeck-Reveal/dist/`.
-The bundler, source entrypoint, and npm workflow live in the submodule; the
-parent repo should only reference the built assets.
+Presentations load the bundled public runtime from
+`runtime/syncdeck-reveal/dist/` in the published site. The bundler, source
+entrypoint, and npm workflow live in `vendor/SyncDeck-Reveal/`; the parent repo
+should only reference the built assets through the public runtime path.
 
 **Required HTML inside the presentation:**
 ```html
@@ -25,8 +30,8 @@ parent repo should only reference the built assets.
 
 **Initialise with the bundled runtime:**
 ```html
-<link rel="stylesheet" href="../vendor/SyncDeck-Reveal/dist/syncdeck-reveal.css">
-<script src="../vendor/SyncDeck-Reveal/dist/syncdeck-reveal.js"></script>
+<link rel="stylesheet" href="../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<script src="../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
 <script>
 initSyncDeckReveal({
     deckId: 'your-deck-name',
@@ -101,18 +106,18 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
 
 ## Adding a New Presentation
 
-1. Create `<topic>/presentation-name.html` (subdirectory keeps the repo organised).
+1. Create `classes/<topic>/presentation-name.html` (subdirectory keeps the repo organised).
 2. **Check for a shared `theme.css` in the same folder.** If one exists, link it instead of writing a new `<style>` block:
    ```html
    <link rel="stylesheet" href="theme.css">
    ```
    Only add a `<style>` block after that link for styles that are specific to this presentation. If no `theme.css` exists and the new deck needs its own theme, consider extracting it to a `theme.css` so future decks in the same folder can share it.
-3. Load the bundled runtime with relative paths:
-   - For decks in subdirectories: `../vendor/SyncDeck-Reveal/dist/...`
-   - For root-level decks: `vendor/SyncDeck-Reveal/dist/...`
+3. Load the bundled runtime with public relative paths:
+   - For decks published in a subdirectory like `/AR1/...`: `../runtime/syncdeck-reveal/dist/...`
+   - For root-level decks: `runtime/syncdeck-reveal/dist/...`
    ```html
-   <link rel="stylesheet" href="../vendor/SyncDeck-Reveal/dist/syncdeck-reveal.css">
-   <script src="../vendor/SyncDeck-Reveal/dist/syncdeck-reveal.js"></script>
+   <link rel="stylesheet" href="../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+   <script src="../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
    ```
    Use `initSyncDeckReveal(...)` from the bundled runtime instead of writing `Reveal.initialize(...)` inline. Use a unique `deckId` derived from the presentation filename (kebab-case). The bundle provides `Reveal`, `RevealNotes`, `RevealChalkboard`, `RevealIframeSync`, `initRevealStoryboard`, and `initSyncDeckReveal`. **Do not** add a `chalkboard.storage` value — the host manages drawing state.
    ```js
@@ -155,3 +160,12 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
 | Overview → storyboard | `overview: true` in any synced state is intercepted and routed to `reveal-storyboard-set` rather than `deck.setState()`, so students see the custom strip, not Reveal's grid. |
 | No `chalkboard.storage` | The vendored chalkboard plugin does not write to `sessionStorage`. The host page is the source of truth (snapshot + delta buffer). Setting `storage` would cause divergence on reload. |
 | Role starts as `standalone` | `reveal-iframe-sync.js` always initialises in `standalone` mode. The host must send `setRole` to promote to `instructor` or `student`. Never rely on the `role` config field. |
+
+## Local Preview
+
+- Use `npm run dev` from the repo root for day-to-day presentation authoring.
+- The dev server serves the deployed site layout directly from source mounts:
+  `classes/AR1 -> /AR1`, `classes/CSA -> /CSA`, and
+  `vendor/SyncDeck-Reveal -> /runtime/syncdeck-reveal`.
+- Refresh the browser after edits; no separate staging step is needed for
+  normal deck work.
