@@ -31,7 +31,7 @@ should only reference the built assets through the public runtime path.
 **Initialise with the bundled runtime:**
 
 The runtime lives at `/runtime/syncdeck-reveal/` in the published site. Use a
-relative path from the deck's published location:
+relative path from the deck's published location (eg. `/classes/CSA/2DArrays/2d-arrays.html` will publish to `/CSA/2DArrays/2d-arrays.html` and use the following):
 
 ```html
 <link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
