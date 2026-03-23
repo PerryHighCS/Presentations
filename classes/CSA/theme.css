@@ -102,7 +102,7 @@ body,
   --bg-card:       #0b1a0e;
   --text:          #ddeeff;
   --text-muted:    rgba(221,238,255,0.55);
-  --text-dim:      rgba(221,238,255,0.25);
+  --text-dim:      rgba(221,238,255,0.42);
 
   /* Fonts */
   --font-ui:   'JetBrains Mono', monospace;
@@ -377,7 +377,7 @@ body::before {
 .kw { color: var(--phosphor);   font-weight: 500; }
 .tp { color: var(--amber); }
 .nm { color: var(--gold);   }
-.cm { color: rgba(221,238,255,0.3); font-style: italic; }
+.cm { color: rgba(221,238,255,0.6); font-style: italic; }
 
 /* ─── 9. Array / memory visualizations ────────────────────────────── */
 
@@ -551,13 +551,23 @@ body::before {
 }
 
 /* ─── 11. Fragment overrides ───────────────────────────────────────── */
-/* Override Reveal's default fragment transition with our easing curve */
+/* Override Reveal's default fragment transition with our easing curve.
+   Transition is placed on .visible so it only fires when a fragment is
+   being revealed — not during slide entry, which avoids the brief flash
+   where the first fragment appears visible as the slide fades in. */
 
 .reveal .fragment {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: none !important;
+}
+.reveal .fragment.visible {
+  opacity: 1 !important;
+  visibility: inherit !important;
   transition:
     opacity 0.55s var(--ease),
     transform 0.55s var(--ease),
-    filter 0.55s var(--ease);
+    filter 0.55s var(--ease) !important;
 }
 .reveal .fragment.fade-up {
   transform: translateY(22px);
