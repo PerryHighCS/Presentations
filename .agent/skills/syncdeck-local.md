@@ -9,7 +9,21 @@ wherever they conflict with the upstream.
 
 ---
 
-## 1. Shared `theme.css` Convention
+## 1. Runtime Path
+
+This repo publishes decks from `classes/<course>/<unit>/deck.html` and serves
+the SyncDeck runtime at `/runtime/syncdeck-reveal/`. The relative path from a
+deck's published URL (`/<course>/<unit>/deck.html`) to the runtime root is two
+levels up, so substitute `{runtime-path}` with `../../runtime`:
+
+```html
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+```
+
+---
+
+## 2. Shared `theme.css` Convention
 
 Before writing a new `<style>` block, check whether the deck's folder already
 has a `theme.css`. If it does, link it first:
@@ -24,14 +38,14 @@ to `theme.css` so future decks in the same folder can share it.
 
 ---
 
-## 2. `deckId` Naming Convention
+## 3. `deckId` Naming Convention
 
 Derive `deckId` from the presentation's filename in kebab-case. For example,
 `classes/AR1/DC_Capacitors_Intro.html` → `deckId: 'dc-capacitors-intro'`.
 
 ---
 
-## 3. Extended Style Presets
+## 4. Extended Style Presets
 
 The upstream `references/STYLE_PRESETS.md` contains the canonical short
 reference. For the full 12-preset visual library used in this repo — with
@@ -44,6 +58,7 @@ complete CSS token blocks and font pairings — see
 
 | Topic | Upstream says | This repo does |
 |-------|---------------|----------------|
+| Runtime path | Use `{runtime-path}` placeholder; see local overrides | `../../runtime` (decks live at `classes/<course>/<unit>/`) |
 | Shared theme handling | Optional in general | Reuse folder-level `theme.css` before adding deck-specific `<style>` |
 | `deckId` naming | Unique per deck | Derive from the presentation filename in kebab-case |
 | Style preset reference | `references/STYLE_PRESETS.md` (short) | Also `.agent/skills/STYLE_PRESETS_EXTENDED.md` |
