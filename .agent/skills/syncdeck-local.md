@@ -54,6 +54,36 @@ complete CSS token blocks and font pairings — see
 
 ---
 
+## 5. Standalone Hosting Opt-In
+
+Decks in this repo should opt into the standalone top-right CTA by passing
+`standaloneHosting.activeBitsOrigin` to `initSyncDeckReveal(...)`:
+
+```html
+<script>
+initSyncDeckReveal({
+  deckId: 'my-deck-name',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+    // Optional:
+    // launchPath: '/util/syncdeck/launch-presentation',
+    // presentationUrl: 'https://slides.example/my-deck.html',
+    // ctaLabel: 'Host in SyncDeck',
+    // ctaTimeoutMs: 9000,
+  },
+});
+</script>
+```
+
+Repo-specific notes:
+
+- the CTA is opt-in; it does not appear unless `standaloneHosting.activeBitsOrigin` is set
+- the runtime opens ActiveBits at `/util/syncdeck/launch-presentation`
+- omit `presentationUrl` unless the deck has a better canonical URL than the current published page URL
+- the runtime bundle copies `assets/syncdeck.png` into `dist/assets/`, so decks should keep loading the bundled runtime rather than linking the button asset directly
+
+---
+
 ## Summary of Override Hierarchy
 
 | Topic | Upstream says | This repo does |
@@ -62,3 +92,4 @@ complete CSS token blocks and font pairings — see
 | Shared theme handling | Optional in general | Reuse folder-level `theme.css` before adding deck-specific `<style>` |
 | `deckId` naming | Unique per deck | Derive from the presentation filename in kebab-case |
 | Style preset reference | `references/STYLE_PRESETS.md` (short) | Also `.agent/skills/STYLE_PRESETS_EXTENDED.md` |
+| Standalone hosting CTA | Optional runtime feature | Opt in with `standaloneHosting.activeBitsOrigin` |
