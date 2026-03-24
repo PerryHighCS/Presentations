@@ -68,7 +68,7 @@ initSyncDeckReveal({
     // Optional:
     // launchPath: '/util/syncdeck/launch-presentation',
     // presentationUrl: 'https://slides.example/my-deck.html',
-    // ctaLabel: 'Host in SyncDeck',
+    // ctaLabel: 'Activate SyncDeck',
     // ctaTimeoutMs: 9000,
   },
 });
