@@ -2,8 +2,8 @@
 
 This repository contains HTML slide presentations built with **Reveal.js**, published via GitHub Pages. Shared runtime/plugin code is consumed from the `SyncDeck-Reveal` git submodule at `vendor/SyncDeck-Reveal/`.
 
-Presentation source folders now live under `classes/`, while deployment remaps
-their contents to the site root. For example, `classes/AR1/...` is published as
+Presentation source folders now live under `Decks/`, while deployment remaps
+their contents to the site root. For example, `Decks/AR1/...` is published as
 `/AR1/...`.
 
 ## Agent Skills Subtree
@@ -55,7 +55,7 @@ should only reference the built assets through the public runtime path.
 **Initialise with the bundled runtime:**
 
 The runtime lives at `/runtime/syncdeck-reveal/` in the published site. Use a
-relative path from the deck's published location (eg. `/classes/CSA/2DArrays/2d-arrays.html` will publish to `/CSA/2DArrays/2d-arrays.html` and use the following):
+relative path from the deck's published location (eg. `/Decks/CSA/2DArrays/2d-arrays.html` will publish to `/CSA/2DArrays/2d-arrays.html` and use the following):
 
 ```html
 <link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
@@ -134,14 +134,14 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
 
 ## Adding a New Presentation
 
-1. Create `classes/<topic>/<subfolder>/presentation-name.html` (subdirectory keeps the repo organised).
+1. Create `Decks/<topic>/<subfolder>/presentation-name.html` (subdirectory keeps the repo organised).
 2. **Check for a shared `theme.css` in the same folder.** If one exists, link it instead of writing a new `<style>` block:
    ```html
    <link rel="stylesheet" href="theme.css">
    ```
    Only add a `<style>` block after that link for styles that are specific to this presentation. If no `theme.css` exists and the new deck needs its own theme, consider extracting it to a `theme.css` so future decks in the same folder can share it.
 3. Load the bundled runtime with a relative path from the deck's published
-   location. For the current `classes/<course>/<unit>/deck.html` layout, use
+   location. For the current `Decks/<course>/<unit>/deck.html` layout, use
    `../../runtime/`:
    ```html
    <link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
@@ -193,7 +193,7 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
 
 - Use `npm run dev` from the repo root for day-to-day presentation authoring.
 - The dev server serves the deployed site layout directly from source mounts:
-  `classes/AR1 -> /AR1`, `classes/CSA -> /CSA`, and
+  `Decks/AR1 -> /AR1`, `Decks/CSA -> /CSA`, and
   `vendor/SyncDeck-Reveal -> /runtime/syncdeck-reveal`.
 - Refresh the browser after edits; no separate staging step is needed for
   normal deck work.

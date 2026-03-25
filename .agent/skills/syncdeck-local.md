@@ -11,7 +11,7 @@ wherever they conflict with the upstream.
 
 ## 1. Runtime Path
 
-This repo publishes decks from `classes/<course>/<unit>/deck.html` and serves
+This repo publishes decks from `Decks/<course>/<unit>/deck.html` and serves
 the SyncDeck runtime at `/runtime/syncdeck-reveal/`. The relative path from a
 deck's published URL (`/<course>/<unit>/deck.html`) to the runtime root is two
 levels up, so substitute `{runtime-path}` with `../../runtime`:
@@ -41,7 +41,7 @@ to `theme.css` so future decks in the same folder can share it.
 ## 3. `deckId` Naming Convention
 
 Derive `deckId` from the presentation's filename in kebab-case. For example,
-`classes/AR1/DC_Capacitors_Intro.html` → `deckId: 'dc-capacitors-intro'`.
+`Decks/AR1/DC_Capacitors_Intro.html` → `deckId: 'dc-capacitors-intro'`.
 
 ---
 
@@ -88,7 +88,7 @@ Repo-specific notes:
 
 | Topic | Upstream says | This repo does |
 |-------|---------------|----------------|
-| Runtime path | Use `{runtime-path}` placeholder; see local overrides | `../../runtime` (decks live at `classes/<course>/<unit>/`) |
+| Runtime path | Use `{runtime-path}` placeholder; see local overrides | `../../runtime` (decks live at `Decks/<course>/<unit>/`) |
 | Shared theme handling | Optional in general | Reuse folder-level `theme.css` before adding deck-specific `<style>` |
 | `deckId` naming | Unique per deck | Derive from the presentation filename in kebab-case |
 | Style preset reference | `references/STYLE_PRESETS.md` (short) | Also `.agent/skills/STYLE_PRESETS_EXTENDED.md` |

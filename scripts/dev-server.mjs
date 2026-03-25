@@ -1,4 +1,5 @@
-import fs from 'node:fs/promises';
+import fs from 'node:fs';
+import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
@@ -15,6 +16,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 const port = Number.parseInt(process.env.PORT || '4173', 10);
 const host = process.env.HOST || '127.0.0.1';
+const liveReloadPath = '/__dev__/live-reload';
 
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -40,6 +42,32 @@ function escapeHtml(value) {
     .replaceAll('"', '&quot;');
 }
 
+const liveReloadClientScript = `<script>
+(() => {
+  if (!window.EventSource) {
+    return;
+  }
+
+  const source = new EventSource(${JSON.stringify(liveReloadPath)});
+  source.addEventListener('message', (event) => {
+    if (event.data === 'reload') {
+      window.location.reload();
+    }
+  });
+})();
+</script>`;
+
+function injectLiveReload(html) {
+  const bodyCloseTag = '</body>';
+  if (html.includes(liveReloadClientScript)) {
+    return html;
+  }
+  if (html.includes(bodyCloseTag)) {
+    return html.replace(bodyCloseTag, `${liveReloadClientScript}\n${bodyCloseTag}`);
+  }
+  return `${html}\n${liveReloadClientScript}`;
+}
+
 function decodePathname(urlPath) {
   try {
     return decodeURIComponent(urlPath);
@@ -50,6 +78,12 @@ function decodePathname(urlPath) {
 
 function findMountForPath(pathname, mounts) {
   for (const mount of mounts) {
+    if (mount.publicPath === '/') {
+      if (pathname.startsWith('/')) {
+        return mount;
+      }
+      continue;
+    }
     if (pathname === mount.publicPath || pathname.startsWith(mount.publicPath + '/')) {
       return mount;
     }
@@ -58,6 +92,9 @@ function findMountForPath(pathname, mounts) {
 }
 
 function stripMountPrefix(pathname, mount) {
+  if (mount.publicPath === '/') {
+    return pathname.replace(/^\/+/, '');
+  }
   if (pathname === mount.publicPath) {
     return '';
   }
@@ -76,21 +113,148 @@ function resolvePublicPathToSource(publicPath, mounts) {
 
 async function exists(filePath) {
   try {
-    await fs.access(filePath);
+    await fsPromises.access(filePath);
     return true;
   } catch {
     return false;
   }
 }
 
+async function listWatchDirectories(mounts, isExcluded) {
+  const directories = new Set();
+
+  async function walk(absoluteDir, repoRelativeDir) {
+    if (isExcluded(repoRelativeDir, true)) {
+      return;
+    }
+
+    directories.add(absoluteDir);
+
+    let entries = [];
+    try {
+      entries = await fsPromises.readdir(absoluteDir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) {
+        continue;
+      }
+      const childAbsoluteDir = path.join(absoluteDir, entry.name);
+      const childRepoRelativeDir = path.posix.join(repoRelativeDir, entry.name);
+      await walk(childAbsoluteDir, childRepoRelativeDir);
+    }
+  }
+
+  for (const mount of mounts) {
+    await walk(path.join(rootDir, mount.sourcePath), mount.sourcePath);
+  }
+
+  return directories;
+}
+
 async function main() {
   const mounts = getNormalizedMounts();
   const manifestRules = await loadManifestRules(rootDir, { mode: 'dev' });
   const isExcluded = createExclusionChecker(rootDir, manifestRules);
+  const liveReloadClients = new Set();
+  const directoryWatchers = new Map();
+
+  let watcherRefreshPromise = null;
+  let reloadTimer = null;
+
+  const broadcastReload = () => {
+    for (const client of liveReloadClients) {
+      try {
+        client.write('data: reload\n\n');
+      } catch {
+        liveReloadClients.delete(client);
+      }
+    }
+  };
+
+  const refreshWatchers = async () => {
+    if (watcherRefreshPromise) {
+      return watcherRefreshPromise;
+    }
+
+    watcherRefreshPromise = (async () => {
+      const nextDirectories = await listWatchDirectories(mounts, isExcluded);
+
+      for (const watchedDir of directoryWatchers.keys()) {
+        if (!nextDirectories.has(watchedDir)) {
+          directoryWatchers.get(watchedDir)?.close();
+          directoryWatchers.delete(watchedDir);
+        }
+      }
+
+      for (const absoluteDir of nextDirectories) {
+        if (directoryWatchers.has(absoluteDir)) {
+          continue;
+        }
+
+        try {
+          const watcher = fs.watch(absoluteDir, () => {
+            if (reloadTimer) {
+              clearTimeout(reloadTimer);
+            }
+            reloadTimer = setTimeout(async () => {
+              reloadTimer = null;
+              await refreshWatchers();
+              broadcastReload();
+            }, 100);
+          });
+
+          watcher.on('error', () => {
+            watcher.close();
+            directoryWatchers.delete(absoluteDir);
+          });
+
+          directoryWatchers.set(absoluteDir, watcher);
+        } catch {
+          // Ignore directories that cannot be watched.
+        }
+      }
+    })();
+
+    try {
+      await watcherRefreshPromise;
+    } finally {
+      watcherRefreshPromise = null;
+    }
+  };
+
+  await refreshWatchers();
+
+  const keepAliveInterval = setInterval(() => {
+    for (const client of liveReloadClients) {
+      try {
+        client.write(': keepalive\n\n');
+      } catch {
+        liveReloadClients.delete(client);
+      }
+    }
+  }, 15000);
 
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url || '/', `http://${host}:${port}`);
     let pathname = decodePathname(url.pathname);
+
+    if (pathname === liveReloadPath) {
+      res.writeHead(200, {
+        'cache-control': 'no-store',
+        connection: 'keep-alive',
+        'content-type': 'text/event-stream; charset=utf-8',
+      });
+      res.write(': connected\n\n');
+      liveReloadClients.add(res);
+
+      req.on('close', () => {
+        liveReloadClients.delete(res);
+      });
+      return;
+    }
 
     const htmlFiles = await collectHtmlFiles(rootDir, manifestRules);
     const indexPages = await buildIndexPages(htmlFiles, async (publicPath) => {
@@ -113,7 +277,7 @@ async function main() {
         'cache-control': 'no-store',
         'content-type': 'text/html; charset=utf-8',
       });
-      res.end(indexPages.get(indexKey));
+      res.end(injectLiveReload(indexPages.get(indexKey)));
       return;
     }
 
@@ -139,7 +303,7 @@ async function main() {
 
     let stat = null;
     try {
-      stat = await fs.stat(sourcePath);
+      stat = await fsPromises.stat(sourcePath);
     } catch {
       stat = null;
     }
@@ -151,7 +315,7 @@ async function main() {
           'cache-control': 'no-store',
           'content-type': 'text/html; charset=utf-8',
         });
-        res.end(indexPages.get(generatedIndexPath));
+        res.end(injectLiveReload(indexPages.get(generatedIndexPath)));
         return;
       }
       const htmlIndexPath = path.join(sourcePath, 'index.html');
@@ -176,8 +340,19 @@ async function main() {
     const finalSourcePath = path.join(rootDir, mount.sourcePath, finalRelativePath);
 
     try {
-      const content = await fs.readFile(finalSourcePath);
       const ext = path.extname(finalSourcePath).toLowerCase();
+
+      if (ext === '.html') {
+        const content = await fsPromises.readFile(finalSourcePath, 'utf8');
+        res.writeHead(200, {
+          'cache-control': 'no-store',
+          'content-type': 'text/html; charset=utf-8',
+        });
+        res.end(injectLiveReload(content));
+        return;
+      }
+
+      const content = await fsPromises.readFile(finalSourcePath);
       res.writeHead(200, {
         'cache-control': 'no-store',
         'content-type': contentTypes[ext] || 'application/octet-stream',
@@ -191,6 +366,19 @@ async function main() {
 
   server.listen(port, host, () => {
     console.log(`Serving preview at http://${host}:${port}`);
+  });
+
+  server.on('close', () => {
+    clearInterval(keepAliveInterval);
+    if (reloadTimer) {
+      clearTimeout(reloadTimer);
+      reloadTimer = null;
+    }
+    for (const watcher of directoryWatchers.values()) {
+      watcher.close();
+    }
+    directoryWatchers.clear();
+    liveReloadClients.clear();
   });
 }
 
