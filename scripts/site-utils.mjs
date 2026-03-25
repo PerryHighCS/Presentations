@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import { siteMounts } from '../site-map.mjs';
+import { siteMounts } from '../config/site-map.mjs';
 
 export const manifestName = '.pages-manifest';
 
@@ -12,6 +12,8 @@ export const defaultDirExcludes = new Set([
   '.vscode',
   '.agent',
   '.claude',
+  '.build',
+  'build',
   '_site',
   'node_modules',
 ]);

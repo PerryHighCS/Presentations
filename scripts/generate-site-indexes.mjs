@@ -6,7 +6,7 @@ import { buildIndexPages, defaultTitleForFile } from './site-indexes.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
-const siteDir = path.resolve(rootDir, process.argv[2] || '_site');
+const siteDir = path.resolve(rootDir, process.argv[2] || '.build/site');
 
 function isHidden(relPath) {
   return relPath.split('/').some((part) => part.startsWith('.'));

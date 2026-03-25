@@ -6,7 +6,7 @@ import { getNormalizedMounts, loadManifestRules, walkMountedFiles } from './site
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
-const siteDir = path.join(rootDir, '_site');
+const siteDir = path.join(rootDir, '.build', 'site');
 
 async function main() {
   await fs.rm(siteDir, { recursive: true, force: true });

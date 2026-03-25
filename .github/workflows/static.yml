@@ -62,23 +62,23 @@ jobs:
         run: node scripts/stage-site.mjs
       - name: List staged site files
         run: |
-          echo "Files that will be published from _site:"
-          if [ -d _site ]; then
-            find _site -type f -printf '%P\n' | sort
+          echo "Files that will be published from .build/site:"
+          if [ -d .build/site ]; then
+            find .build/site -type f -printf '%P\n' | sort
             echo
-            echo "Total files: $(find _site -type f | wc -l)"
+            echo "Total files: $(find .build/site -type f | wc -l)"
           else
-            echo "_site directory was not created."
+            echo ".build/site directory was not created."
             exit 1
           fi
       - name: Generate index.html
-        run: node scripts/generate-site-indexes.mjs _site
+        run: node scripts/generate-site-indexes.mjs .build/site
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: '_site'
+          path: '.build/site'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
