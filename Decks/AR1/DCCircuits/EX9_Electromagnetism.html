@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise 9: Electromagnetism</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Exercise 9: Electromagnetism
+   ============================================================ */
+
+/* ── Split grid helpers ──────────────────────────────────── */
+.split        { display: grid; gap: var(--gap-lg); align-items: center; flex: 1; min-height: 0; }
+.split-50     { grid-template-columns: 1fr 1fr; }
+.split-40     { grid-template-columns: 2fr 3fr; }
+.split-35     { grid-template-columns: 3fr 2fr; }
+.split-top    { align-items: start; }
+
+.img-center   { display: flex; align-items: center; justify-content: center; height: 100%; }
+.img-stack    { display: flex; flex-direction: column; gap: var(--gap); align-items: center; justify-content: center; }
+
+/* ── Slide intro text ────────────────────────────────────── */
+.slide-intro { font-size: var(--body); color: var(--text-muted); margin-bottom: var(--gap); }
+
+/* ── Title slide ─────────────────────────────────────────── */
+.subtitle { font-family: var(--font-mono); font-size: 20px; color: var(--text-dim); margin-top: 22px; letter-spacing: 0.04em; }
+.trace-deco { position: absolute; right: 0; top: 0; bottom: 0; width: 420px; pointer-events: none; z-index: 1; opacity: 0.6; }
+
+/* ── Agenda grid ─────────────────────────────────────────── */
+.agenda-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: var(--gap); }
+.agenda-item { display: flex; align-items: flex-start; gap: 14px; padding: 12px 16px; background: var(--accent-dim); border: 1px solid var(--accent-border); border-radius: 6px; }
+.agenda-num  { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--accent); min-width: 22px; padding-top: 2px; opacity: 0.7; }
+.agenda-text { font-size: 20px; color: var(--text-muted); line-height: 1.4; }
+.agenda-text strong { color: var(--text); font-weight: 600; }
+
+/* ── Warning / key point blocks ─────────────────────────── */
+.warn-block {
+  margin-top: var(--gap-sm); padding: 10px 14px;
+  border-left: 3px solid var(--warn); background: rgba(255,209,102,0.06);
+  border-radius: 0 4px 4px 0; display: flex; flex-direction: column; gap: 4px;
+}
+.warn-label { font-family: var(--font-mono); font-size: var(--label); color: var(--warn); text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ── Method steps ────────────────────────────────────────── */
+.method-steps { display: flex; flex-direction: column; gap: 8px; }
+.method-step {
+  font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted);
+  padding: 8px 14px; background: var(--accent-dim);
+  border-left: 2px solid var(--accent-border); border-radius: 0 3px 3px 0;
+}
+.method-step strong { color: var(--accent); font-weight: 700; }
+
+/* ── Step header ─────────────────────────────────────────── */
+.step-header { display: flex; align-items: center; gap: 18px; margin-bottom: var(--gap); }
+.step-badge  {
+  width: 44px; height: 44px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-dim); border: 2px solid var(--accent); border-radius: 50%;
+  font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--accent);
+}
+.step-title { font-size: var(--h2); font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1.1; margin: 0 !important; }
+
+/* ── Formula / result display ────────────────────────────── */
+.yt-formula {
+  font-family: var(--font-mono); font-size: 22px;
+  color: var(--text); line-height: 1.9; display: block;
+}
+.yt-result {
+  font-family: var(--font-mono); font-size: 28px; font-weight: 700;
+  color: var(--result); margin-top: 6px; line-height: 1.4;
+}
+.calc-col {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 14px 16px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+}
+.col-label {
+  font-family: var(--font-mono); font-size: var(--label); color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 4px; border-bottom: 1px solid var(--accent-border); padding-bottom: 6px;
+}
+
+/* ── Motor part labels ───────────────────────────────────── */
+.part-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  margin-top: var(--gap-sm);
+}
+.part-card {
+  padding: 12px 14px;
+  background: var(--accent-dim); border: 1px solid var(--accent-border);
+  border-radius: 6px;
+}
+.part-name {
+  font-family: var(--font-mono); font-size: 15px; font-weight: 700;
+  color: var(--accent); margin-bottom: 4px;
+}
+.part-desc {
+  font-size: 19px; color: var(--text-muted); line-height: 1.4;
+}
+.part-desc strong { color: var(--text); }
+
+/* ── Speed-voltage graph ─────────────────────────────────── */
+.graph-wrap { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 0 1px rgba(42,143,255,0.2), 0 6px 24px rgba(0,0,0,0.5); }
+
+/* ── Application list ───────────────────────────────────── */
+.app-list { display: flex; flex-direction: column; gap: 8px; margin-top: var(--gap-sm); }
+.app-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  font-size: var(--body); color: var(--text-muted); line-height: 1.4;
+}
+.app-dot {
+  flex-shrink: 0; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent); margin-top: 9px;
+}
+.app-item strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ============================================================
+     SLIDE 01 · TITLE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:680px;height:680px;background:radial-gradient(circle,rgba(42,143,255,0.13) 0%,transparent 70%);top:-220px;left:-180px;"></div>
+  <div class="glow" style="width:360px;height:360px;background:radial-gradient(circle,rgba(0,200,255,0.07) 0%,transparent 70%);bottom:-60px;right:14%;"></div>
+
+  <div class="slide-inner slide-center">
+    <!-- Solenoid coil trace decoration -->
+    <div class="trace-deco">
+      <svg viewBox="0 0 420 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Horizontal lead in -->
+        <path d="M420 200 L340 200" stroke="rgba(42,143,255,0.18)" stroke-width="1.5"/>
+        <!-- Coil loops (solenoid helix suggestion) -->
+        <path d="M340 200 C330 200 320 190 320 180 C320 170 330 160 340 160 C350 160 360 170 360 180 C360 190 370 200 380 200" stroke="rgba(42,143,255,0.45)" stroke-width="2.5" fill="none"/>
+        <path d="M340 160 C330 160 320 150 320 140 C320 130 330 120 340 120 C350 120 360 130 360 140 C360 150 370 160 380 160" stroke="rgba(42,143,255,0.45)" stroke-width="2.5" fill="none"/>
+        <path d="M340 120 C330 120 320 110 320 100 C320 90 330 80 340 80 C350 80 360 90 360 100 C360 110 370 120 380 120" stroke="rgba(42,143,255,0.38)" stroke-width="2.5" fill="none"/>
+        <path d="M340 80 C330 80 320 70 320 60 C320 50 330 40 340 40 C350 40 360 50 360 60 C360 70 370 80 380 80" stroke="rgba(42,143,255,0.28)" stroke-width="2" fill="none"/>
+        <!-- Lead down and back -->
+        <path d="M340 200 L340 260" stroke="rgba(42,143,255,0.18)" stroke-width="1.5"/>
+        <!-- Second coil group lower -->
+        <path d="M340 400 C330 400 320 390 320 380 C320 370 330 360 340 360 C350 360 360 370 360 380 C360 390 370 400 380 400" stroke="rgba(42,143,255,0.3)" stroke-width="2" fill="none"/>
+        <path d="M340 360 C330 360 320 350 320 340 C320 330 330 320 340 320 C350 320 360 330 360 340 C360 350 370 360 380 360" stroke="rgba(42,143,255,0.3)" stroke-width="2" fill="none"/>
+        <path d="M340 320 C330 320 320 310 320 300 C320 290 330 280 340 280 C350 280 360 290 360 300 C360 310 370 320 380 320" stroke="rgba(42,143,255,0.22)" stroke-width="1.5" fill="none"/>
+        <!-- Core line through solenoid -->
+        <line x1="310" y1="40" x2="310" y2="200" stroke="rgba(42,143,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+        <line x1="370" y1="40" x2="370" y2="200" stroke="rgba(42,143,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+        <!-- Field direction arrows -->
+        <line x1="340" y1="460" x2="340" y2="500" stroke="rgba(42,143,255,0.25)" stroke-width="1.5"/>
+        <path d="M420 500 L350 500" stroke="rgba(42,143,255,0.15)" stroke-width="1"/>
+        <!-- Dots -->
+        <circle cx="340" cy="260" r="4" fill="rgba(42,143,255,0.4)"/>
+        <circle cx="340" cy="400" r="3" fill="rgba(42,143,255,0.3)"/>
+      </svg>
+    </div>
+
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; DC Circuits Exercise 9 &nbsp;·&nbsp; Introduction</span>
+    <h1 class="title-h1">Electro<span class="accent">magnetism</span></h1>
+    <p class="subtitle">// Magnets &nbsp;·&nbsp; Electromagnets &nbsp;·&nbsp; Solenoids &nbsp;·&nbsp; DC Motors</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 02 · LEARNING OUTCOMES
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.08) 0%,transparent 70%);top:-80px;right:-100px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Learning Outcomes</span>
+    <h2>After This Section, You Will Be Able To <span class="accent">…</span></h2>
+    <ul class="bullets" style="margin-top:var(--gap);">
+      <li class="fragment fade-up"><strong>Define</strong> magnetism, magnets, and magnetic field, as well as <strong>electromagnetism</strong> and electromagnets</li>
+      <li class="fragment fade-up"><strong>Operate</strong> the solenoid component of the AC/DC Training System</li>
+      <li class="fragment fade-up">Explain the <strong>principles of operation</strong> of DC motors</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 03 · DISCUSSION OUTLINE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.07) 0%,transparent 70%);bottom:-150px;left:-150px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Discussion Outline</span>
+    <h2>Topics <span class="accent">Covered</span></h2>
+    <div class="agenda-grid">
+      <div class="agenda-item fragment fade-up"><span class="agenda-num">01</span><span class="agenda-text"><strong>Magnetism,</strong> magnets, and magnetic field</span></div>
+      <div class="agenda-item fragment fade-up"><span class="agenda-num">02</span><span class="agenda-text"><strong>Electromagnetism</strong> and electromagnets</span></div>
+      <div class="agenda-item fragment fade-up"><span class="agenda-num">03</span><span class="agenda-text"><strong>Training system component:</strong> the solenoid</span></div>
+      <div class="agenda-item fragment fade-up"><span class="agenda-num">04</span><span class="agenda-text"><strong>Introduction</strong> to DC motors</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 04 · MAGNETISM — WHAT IS IT?
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.08) 0%,transparent 70%);top:-100px;right:-80px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Magnetism · Topic 01</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div>
+        <h2>What Is <span class="accent">Magnetism?</span></h2>
+        <ul class="bullets">
+          <li class="fragment fade-up">A material's property to exert a <strong>magnetic force</strong> (attraction or repulsion) on another material from a distance</li>
+          <li class="fragment fade-up"><strong>Ferromagnetic materials</strong> — strongly attracted to magnets: primarily iron, nickel, cobalt, and some rare earth metals</li>
+          <li class="fragment fade-up">Every magnet has two poles: <strong>North (N)</strong> and <strong>South (S)</strong></li>
+          <li class="fragment fade-up"><strong>Opposite poles attract; like poles repel</strong></li>
+          <li class="fragment fade-up">The Earth itself is a giant magnet — geographic North is the <em>magnetic south</em> pole</li>
+        </ul>
+      </div>
+
+      <!-- Bar magnet with poles and attraction/repulsion diagram -->
+      <div class="img-center">
+        <div class="c-img" style="padding:24px 28px; background:#fff; border-radius:8px; width:100%;">
+          <svg viewBox="0 0 340 310" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
+            <!-- Single bar magnet -->
+            <text x="170" y="18" text-anchor="middle" font-size="13" fill="#555" font-weight="600">Bar Magnet</text>
+            <rect x="60" y="30" width="100" height="50" rx="4" fill="#1565c0"/>
+            <rect x="160" y="30" width="100" height="50" rx="4" fill="#c62828"/>
+            <text x="110" y="62" text-anchor="middle" font-size="22" font-weight="bold" fill="#fff">N</text>
+            <text x="210" y="62" text-anchor="middle" font-size="22" font-weight="bold" fill="#fff">S</text>
+            <!-- Divider line -->
+            <line x1="30" y1="108" x2="310" y2="108" stroke="#e0e0e0" stroke-width="1"/>
+            <!-- Repulsion: two N poles facing -->
+            <text x="170" y="130" text-anchor="middle" font-size="12" fill="#555" font-weight="600">Like poles → REPEL</text>
+            <rect x="30" y="140" width="80" height="36" rx="4" fill="#1565c0"/>
+            <rect x="230" y="140" width="80" height="36" rx="4" fill="#1565c0"/>
+            <text x="70" y="163" text-anchor="middle" font-size="18" font-weight="bold" fill="#fff">N</text>
+            <text x="270" y="163" text-anchor="middle" font-size="18" font-weight="bold" fill="#fff">N</text>
+            <!-- Repulsion arrows -->
+            <defs>
+              <marker id="arr-out" markerWidth="7" markerHeight="5" refX="5" refY="2.5" orient="auto">
+                <polygon points="0 0, 7 2.5, 0 5" fill="#e53935"/>
+              </marker>
+              <marker id="arr-in" markerWidth="7" markerHeight="5" refX="2" refY="2.5" orient="auto">
+                <polygon points="7 0, 0 2.5, 7 5" fill="#2e7d32"/>
+              </marker>
+            </defs>
+            <line x1="112" y1="158" x2="140" y2="158" stroke="#e53935" stroke-width="2.5" marker-end="url(#arr-out)"/>
+            <line x1="228" y1="158" x2="200" y2="158" stroke="#e53935" stroke-width="2.5" marker-end="url(#arr-out)"/>
+            <!-- Attraction: N facing S -->
+            <text x="170" y="210" text-anchor="middle" font-size="12" fill="#555" font-weight="600">Opposite poles → ATTRACT</text>
+            <rect x="30" y="220" width="80" height="36" rx="4" fill="#1565c0"/>
+            <rect x="230" y="220" width="80" height="36" rx="4" fill="#c62828"/>
+            <text x="70" y="243" text-anchor="middle" font-size="18" font-weight="bold" fill="#fff">N</text>
+            <text x="270" y="243" text-anchor="middle" font-size="18" font-weight="bold" fill="#fff">S</text>
+            <!-- Attraction arrows -->
+            <line x1="112" y1="238" x2="148" y2="238" stroke="#2e7d32" stroke-width="2.5" marker-end="url(#arr-in)"/>
+            <line x1="228" y1="238" x2="192" y2="238" stroke="#2e7d32" stroke-width="2.5" marker-end="url(#arr-in)"/>
+            <!-- Caption -->
+            <text x="170" y="290" text-anchor="middle" font-size="11" fill="#888">Force is strongest at the poles (extremities)</text>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 05 · MAGNETIC FIELD — LINES OF FORCE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.07) 0%,transparent 70%);bottom:-150px;right:-80px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Magnetism · Topic 01 · Magnetic Field</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <!-- Field line diagram -->
+      <div class="img-center">
+        <div class="c-img" style="padding:20px 24px; background:#fff; border-radius:8px; width:100%;">
+          <svg viewBox="0 0 340 280" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
+            <defs>
+              <marker id="farr" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+                <polygon points="0 0, 6 2.5, 0 5" fill="#1565c0"/>
+              </marker>
+            </defs>
+            <!-- Magnet body -->
+            <rect x="115" y="115" width="50" height="52" rx="4" fill="#1565c0"/>
+            <rect x="165" y="115" width="50" height="52" rx="4" fill="#c62828"/>
+            <text x="140" y="146" text-anchor="middle" font-size="16" font-weight="bold" fill="#fff">N</text>
+            <text x="190" y="146" text-anchor="middle" font-size="16" font-weight="bold" fill="#fff">S</text>
+            <!-- Field lines exiting N, arcing around, entering S -->
+            <!-- Top arc: N → S -->
+            <path d="M140 115 C140 55 190 55 190 115" stroke="#1565c0" stroke-width="1.8" fill="none" marker-end="url(#farr)"/>
+            <!-- Wide top arc -->
+            <path d="M135 115 C135 30 195 30 195 115" stroke="#1565c0" stroke-width="1.5" fill="none" opacity="0.65" marker-end="url(#farr)"/>
+            <!-- Bottom arc: N → S -->
+            <path d="M140 167 C140 225 190 225 190 167" stroke="#1565c0" stroke-width="1.8" fill="none" marker-end="url(#farr)"/>
+            <!-- Wide bottom arc -->
+            <path d="M135 167 C135 248 195 248 195 167" stroke="#1565c0" stroke-width="1.5" fill="none" opacity="0.65" marker-end="url(#farr)"/>
+            <!-- Labels -->
+            <text x="167" y="22" text-anchor="middle" font-size="11" fill="#555">Lines exit N pole …</text>
+            <text x="167" y="268" text-anchor="middle" font-size="11" fill="#555">… and enter S pole</text>
+          </svg>
+        </div>
+      </div>
+
+      <div>
+        <h2>Lines of <span class="accent">Force</span></h2>
+        <ul class="bullets">
+          <li class="fragment fade-up">Magnetic fields are visualised using <strong>lines of force</strong></li>
+          <li class="fragment fade-up">Lines <strong>exit</strong> through the North pole and <strong>enter</strong> through the South pole</li>
+          <li class="fragment fade-up">A <strong>compass needle</strong> aligns itself along these lines — the red (N) end points toward Earth's magnetic South (geographic North)</li>
+          <li class="fragment fade-up">Iron filings sprinkled around a magnet <strong>align along the lines</strong> of force, making the field visible</li>
+        </ul>
+        <div class="warn-block fragment fade-up" style="margin-top:var(--gap);">
+          <div class="warn-label">Historical Note</div>
+          <div style="font-size:var(--body); color:var(--text-muted);">Earth's geographic South Pole is actually its <strong style="color:var(--text)">north magnetic pole</strong> — opposite poles attract, so the compass N always points "north."</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 06 · ELECTROMAGNETISM — CURRENT IN A WIRE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.09) 0%,transparent 70%);top:-80px;left:-80px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Electromagnetism · Topic 02</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div>
+        <h2>Current Creates a <span class="accent">Magnetic Field</span></h2>
+        <p class="slide-intro">Natural magnets are rare. But any wire carrying current produces its own magnetic field.</p>
+        <ul class="bullets">
+          <li class="fragment fade-up">The field is <strong>circular</strong> and centered on the wire</li>
+          <li class="fragment fade-up"><strong>Right-hand rule:</strong> wrap the right hand around the wire with the <strong>thumb pointing in the direction of current flow</strong> — the fingers indicate the direction of the magnetic field lines</li>
+          <li class="fragment fade-up">Reverse the current direction → field direction <strong>reverses</strong></li>
+        </ul>
+        <div class="warn-block fragment fade-up" style="margin-top:var(--gap);">
+          <div class="warn-label">Key Idea</div>
+          <div style="font-size:var(--body); color:var(--text-muted);">Electricity and magnetism are two aspects of the <strong style="color:var(--text)">same fundamental force</strong> — electromagnetism.</div>
+        </div>
+      </div>
+
+      <!-- Right-hand rule / wire cross-section diagram -->
+      <div class="img-center">
+        <div class="c-img" style="padding:24px; background:#fff; border-radius:8px; width:100%;">
+          <svg viewBox="0 0 300 300" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
+            <defs>
+              <marker id="carr" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#1565c0"/>
+              </marker>
+            </defs>
+            <!-- Wire (cross-section dot = current coming out) -->
+            <circle cx="150" cy="150" r="18" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+            <!-- Dot symbol (current toward viewer) -->
+            <circle cx="150" cy="150" r="5" fill="#1565c0"/>
+            <text x="150" y="182" text-anchor="middle" font-size="11" fill="#1565c0" font-weight="600">current →</text>
+            <!-- Circular field lines (concentric arcs with arrows) -->
+            <!-- Inner ring -->
+            <path d="M150 110 A40 40 0 1 1 149.9 110" stroke="#1565c0" stroke-width="1.8" fill="none" marker-end="url(#carr)" opacity="0.8"/>
+            <!-- Middle ring -->
+            <path d="M150 80 A70 70 0 1 1 149.9 80" stroke="#1565c0" stroke-width="1.5" fill="none" marker-end="url(#carr)" opacity="0.55"/>
+            <!-- Outer ring -->
+            <path d="M150 50 A100 100 0 1 1 149.9 50" stroke="#1565c0" stroke-width="1.2" fill="none" marker-end="url(#carr)" opacity="0.35"/>
+            <!-- Axis labels -->
+            <text x="150" y="22" text-anchor="middle" font-size="11" fill="#888">Field circles the wire</text>
+            <text x="150" y="285" text-anchor="middle" font-size="11" fill="#888">Stronger near wire, weaker farther away</text>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 07 · ELECTROMAGNETS — WIRE LOOP
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.08) 0%,transparent 70%);bottom:-120px;right:-80px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Electromagnetism · Topic 02 · Electromagnets</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <!-- Coil / electromagnet diagram -->
+      <div class="img-center">
+        <div class="c-img" style="padding:20px 24px; background:#fff; border-radius:8px; width:100%;">
+          <svg viewBox="0 0 300 260" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
+            <defs>
+              <marker id="farr2" markerWidth="7" markerHeight="5" refX="5.5" refY="2.5" orient="auto">
+                <polygon points="0 0, 7 2.5, 0 5" fill="#1565c0"/>
+              </marker>
+            </defs>
+            <!-- Simple loop of wire (oval) -->
+            <ellipse cx="150" cy="130" rx="72" ry="45" fill="none" stroke="#1565c0" stroke-width="4"/>
+            <!-- Field lines through the loop -->
+            <!-- Center line (strong) -->
+            <line x1="150" y1="20" x2="150" y2="85" stroke="#1565c0" stroke-width="2" marker-end="url(#farr2)"/>
+            <line x1="150" y1="175" x2="150" y2="240" stroke="#1565c0" stroke-width="2" marker-end="url(#farr2)"/>
+            <!-- External loop of field lines -->
+            <path d="M150 20 C80 20 30 75 30 130 C30 185 80 240 150 240" stroke="#1565c0" stroke-width="1.5" fill="none" opacity="0.5" marker-end="url(#farr2)"/>
+            <path d="M150 20 C220 20 270 75 270 130 C270 185 220 240 150 240" stroke="#1565c0" stroke-width="1.5" fill="none" opacity="0.5"/>
+            <!-- N / S labels -->
+            <rect x="126" y="6" width="48" height="22" rx="3" fill="#1565c0"/>
+            <text x="150" y="22" text-anchor="middle" font-size="14" font-weight="bold" fill="#fff">N</text>
+            <rect x="126" y="232" width="48" height="22" rx="3" fill="#c62828"/>
+            <text x="150" y="248" text-anchor="middle" font-size="14" font-weight="bold" fill="#fff">S</text>
+            <!-- Current direction label -->
+            <text x="236" y="134" text-anchor="start" font-size="11" fill="#888">I (current)</text>
+          </svg>
+        </div>
+      </div>
+
+      <div>
+        <h2>The <span class="accent">Electromagnet</span></h2>
+        <p class="slide-intro">Wind the wire in a loop and the circular fields combine to create distinct north and south poles — just like a natural magnet.</p>
+        <ul class="bullets">
+          <li class="fragment fade-up">Current in a <strong>loop of wire</strong> produces north and south magnetic poles</li>
+          <li class="fragment fade-up">Use the <strong>right-hand rule</strong> to find the field direction inside the loop → locate N and S</li>
+          <li class="fragment fade-up"><strong>More current</strong> → stronger magnetic field</li>
+          <li class="fragment fade-up"><strong>No current</strong> → field disappears instantly — unlike natural magnets</li>
+        </ul>
+        <div class="warn-block fragment fade-up" style="margin-top:var(--gap);">
+          <div class="warn-label">Advantage Over Natural Magnets</div>
+          <div style="font-size:var(--body); color:var(--text-muted);">An electromagnet can be <strong style="color:var(--text)">turned on and off</strong> and its strength <strong style="color:var(--text)">controlled</strong> by adjusting the current.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 08 · THE SOLENOID
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.09) 0%,transparent 70%);top:-80px;left:-120px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Solenoid · Topic 03</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div>
+        <h2>The <span class="accent">Solenoid</span></h2>
+        <p class="slide-intro">A single wire loop rarely produces enough field for a real application. Winding the wire into a helix solves this.</p>
+        <ul class="bullets">
+          <li class="fragment fade-up">A wire wound regularly in the form of a <strong>helix</strong> is called a <strong>solenoid</strong></li>
+          <li class="fragment fade-up">Each loop produces a field in the <strong>same direction</strong> — they all <strong>add together</strong></li>
+          <li class="fragment fade-up">Total field ≈ field of one loop × <strong>number of loops</strong></li>
+          <li class="fragment fade-up">The center of the solenoid is called the <strong>core</strong></li>
+        </ul>
+        <div class="warn-block fragment fade-up" style="margin-top:var(--gap);">
+          <div class="warn-label">Iron Core Upgrade</div>
+          <div style="font-size:var(--body); color:var(--text-muted);">Replacing the air core with an <strong style="color:var(--text)">iron core</strong> greatly increases the magnetic field strength. These are what most people mean by "electromagnets."</div>
+        </div>
+      </div>
+
+      <!-- Solenoid diagram (helix with field lines) -->
+      <div class="img-center">
+        <div class="c-img" style="padding:20px 24px; background:#fff; border-radius:8px; width:100%;">
+          <svg viewBox="0 0 300 280" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
+            <defs>
+              <marker id="sarr" markerWidth="7" markerHeight="5" refX="5.5" refY="2.5" orient="auto">
+                <polygon points="0 0, 7 2.5, 0 5" fill="#1565c0"/>
+              </marker>
+            </defs>
+            <!-- Core (iron core suggestion) -->
+            <rect x="60" y="115" width="180" height="50" rx="3" fill="#e8eaf6" stroke="#9fa8da" stroke-width="1.5"/>
+            <text x="150" y="145" text-anchor="middle" font-size="12" fill="#5c6bc0" font-weight="600">Iron Core</text>
+            <!-- Coil loops (front half, drawn as arcs) -->
+            <!-- Loop 1 -->
+            <path d="M75 115 C60 115 55 165 75 165" stroke="#1565c0" stroke-width="3" fill="none"/>
+            <path d="M75 115 C88 100 100 100 100 115" stroke="#1565c0" stroke-width="3" fill="none"/>
+            <path d="M75 165 C88 178 100 178 100 165" stroke="#1565c0" stroke-width="3" fill="none"/>
+            <!-- Loop 2 -->
+            <path d="M100 115 C113 100 126 100 126 115" stroke="#1565c0" stroke-width="3" fill="none"/>
+            <path d="M100 165 C113 178 126 178 126 165" stroke="#1565c0" stroke-width="3" fill="none"/>
+            <!-- Loop 3 -->
+            <path d="M126 115 C139 100 152 100 152 115" stroke="#1565c0" stroke-width="3" fill="none"/>
+            <path d="M126 165 C139 178 152 178 152 165" stroke="#1565c0" stroke-width="3" fill="none"/>
+            <!-- Loop 4 -->
+            <path d="M152 115 C165 100 178 100 178 115" stroke="#1565c0" stroke-width="3" fill="none"/>
+            <path d="M152 165 C165 178 178 178 178 165" stroke="#1565c0" stroke-width="3" fill="none"/>
+            <!-- Loop 5 (last, right side) -->
+            <path d="M178 115 C191 100 204 100 204 115" stroke="#1565c0" stroke-width="3" fill="none"/>
+            <path d="M178 165 C191 178 204 178 204 165" stroke="#1565c0" stroke-width="3" fill="none"/>
+            <path d="M204 115 C220 115 225 165 204 165" stroke="#1565c0" stroke-width="3" fill="none"/>
+            <!-- Lead wires -->
+            <line x1="55" y1="140" x2="30" y2="140" stroke="#1565c0" stroke-width="2.5"/>
+            <line x1="225" y1="140" x2="250" y2="140" stroke="#1565c0" stroke-width="2.5"/>
+            <!-- Field line through core -->
+            <line x1="60" y1="140" x2="30" y2="140" stroke="#1565c0" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+            <!-- External field arcs -->
+            <path d="M60 140 C60 60 240 60 240 140" stroke="#1565c0" stroke-width="1.5" fill="none" opacity="0.4" marker-end="url(#sarr)"/>
+            <path d="M60 140 C60 220 240 220 240 140" stroke="#1565c0" stroke-width="1.5" fill="none" opacity="0.4"/>
+            <!-- N / S end labels -->
+            <rect x="20" y="128" width="30" height="24" rx="3" fill="#1565c0"/>
+            <text x="35" y="145" text-anchor="middle" font-size="13" font-weight="bold" fill="#fff">N</text>
+            <rect x="248" y="128" width="30" height="24" rx="3" fill="#c62828"/>
+            <text x="263" y="145" text-anchor="middle" font-size="13" font-weight="bold" fill="#fff">S</text>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 09 · SOLENOID WITH PLUNGER
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.07) 0%,transparent 70%);bottom:-100px;left:-100px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Solenoid · Topic 03 · Plunger</span>
+    <div class="split split-50" style="align-items:start;">
+
+      <div>
+        <h2>Solenoid with a <span class="accent">Plunger</span></h2>
+        <p class="slide-intro">Add a removable iron core — the <strong>plunger</strong> — and the solenoid produces useful linear mechanical motion.</p>
+        <div class="method-steps">
+          <div class="method-step fragment fade-up"><strong>Current ON</strong> → solenoid field strongly attracts the plunger into its center</div>
+          <div class="method-step fragment fade-up"><strong>Current OFF</strong> → field disappears; a spring returns the plunger to its rest position</div>
+          <div class="method-step fragment fade-up">Converts <strong>electrical energy → linear mechanical motion</strong></div>
+        </div>
+        <div class="warn-block fragment fade-up" style="margin-top:var(--gap);">
+          <div class="warn-label">Symbol</div>
+          <div style="font-family:var(--font-mono); font-size:var(--body); color:var(--text-muted); margin-top:6px;">
+            <!-- Inline solenoid schematic symbol -->
+            <svg viewBox="0 0 160 36" width="160" height="36" xmlns="http://www.w3.org/2000/svg">
+              <line x1="0" y1="18" x2="18" y2="18" stroke="rgba(42,143,255,0.7)" stroke-width="2"/>
+              <path d="M18 18 C22 8 30 8 34 18 C38 28 46 28 50 18 C54 8 62 8 66 18 C70 28 78 28 82 18 C86 8 94 8 98 18 C102 28 110 28 114 18 C118 8 126 8 130 18" stroke="rgba(42,143,255,0.9)" stroke-width="2" fill="none"/>
+              <line x1="130" y1="18" x2="160" y2="18" stroke="rgba(42,143,255,0.7)" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <h3 style="margin-bottom:0;">Real-World <span class="accent">Applications</span></h3>
+        <div class="app-list">
+          <div class="app-item fragment fade-up"><div class="app-dot"></div><span><strong>Door bells</strong> — plunger strikes a chime</span></div>
+          <div class="app-item fragment fade-up"><div class="app-dot"></div><span><strong>Magnetic locks</strong> — plunger engages/releases a latch</span></div>
+          <div class="app-item fragment fade-up"><div class="app-dot"></div><span><strong>Circuit breakers</strong> — trips when overcurrent detected</span></div>
+          <div class="app-item fragment fade-up"><div class="app-dot"></div><span><strong>Relays</strong> — low-power signal switches high-power circuit</span></div>
+          <div class="app-item fragment fade-up"><div class="app-dot"></div><span><strong>Valves</strong> — controls fluid or gas flow</span></div>
+          <div class="app-item fragment fade-up"><div class="app-dot"></div><span><strong>Magnetic brakes</strong> — used in cranes, elevators</span></div>
+          <div class="app-item fragment fade-up"><div class="app-dot"></div><span><strong>Magnet cranes</strong> — lift and release metallic materials</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 10 · DC MOTORS — CONSTRUCTION
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.09) 0%,transparent 70%);top:-80px;right:-80px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">DC Motors · Topic 04 · Construction</span>
+    <div class="split split-50" style="align-items:start;">
+
+      <div>
+        <h2>DC Motor <span class="accent">Construction</span></h2>
+        <p class="slide-intro">A DC motor converts electrical energy into rotary mechanical motion through the interaction of magnetic fields.</p>
+        <div class="part-grid">
+          <div class="part-card fragment fade-up">
+            <div class="part-name">Stator</div>
+            <div class="part-desc">Fixed outer shell. Contains a <strong>pair of magnets</strong> with opposite poles facing each other, creating a field across the armature.</div>
+          </div>
+          <div class="part-card fragment fade-up">
+            <div class="part-name">Rotor (Armature)</div>
+            <div class="part-desc">Rotating part. Made of one or more <strong>wire loops</strong> wound on a metallic armature.</div>
+          </div>
+          <div class="part-card fragment fade-up">
+            <div class="part-name">Commutator</div>
+            <div class="part-desc">Segmented ring connected to the wire loops. <strong>Reverses current direction</strong> in the loop as the rotor spins.</div>
+          </div>
+          <div class="part-card fragment fade-up">
+            <div class="part-name">Brushes</div>
+            <div class="part-desc">Stationary contacts that slide on the commutator, providing a <strong>continuous electrical connection</strong> to the rotating loops.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Simplified DC motor cross-section diagram -->
+      <div class="img-center">
+        <div class="c-img" style="padding:20px; background:#fff; border-radius:8px; width:100%;">
+          <svg viewBox="0 0 280 280" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
+            <!-- Stator outline -->
+            <circle cx="140" cy="140" r="120" fill="#e8eaf6" stroke="#9fa8da" stroke-width="2"/>
+            <!-- Stator magnet N (top) -->
+            <rect x="100" y="12" width="80" height="36" rx="4" fill="#1565c0"/>
+            <text x="140" y="36" text-anchor="middle" font-size="16" font-weight="bold" fill="#fff">N</text>
+            <!-- Stator magnet S (bottom) -->
+            <rect x="100" y="232" width="80" height="36" rx="4" fill="#c62828"/>
+            <text x="140" y="256" text-anchor="middle" font-size="16" font-weight="bold" fill="#fff">S</text>
+            <!-- Field arrows through center -->
+            <defs>
+              <marker id="farr3" markerWidth="7" markerHeight="5" refX="5.5" refY="2.5" orient="auto">
+                <polygon points="0 0, 7 2.5, 0 5" fill="#1565c0"/>
+              </marker>
+            </defs>
+            <line x1="140" y1="50" x2="140" y2="110" stroke="#1565c0" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#farr3)" opacity="0.5"/>
+            <line x1="140" y1="170" x2="140" y2="228" stroke="#1565c0" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.5"/>
+            <!-- Rotor armature (circle) -->
+            <circle cx="140" cy="140" r="50" fill="#fff3e0" stroke="#ff8f00" stroke-width="2"/>
+            <!-- Wire loop in rotor -->
+            <line x1="140" y1="90" x2="140" y2="190" stroke="#ff8f00" stroke-width="3"/>
+            <line x1="90" y1="140" x2="190" y2="140" stroke="#ff8f00" stroke-width="2" stroke-dasharray="5,4" opacity="0.5"/>
+            <!-- Commutator (two halves) -->
+            <path d="M130 186 A10 10 0 0 1 150 186" fill="#f57f17" stroke="#e65100" stroke-width="1.5"/>
+            <path d="M130 194 A10 10 0 0 0 150 194" fill="#f57f17" stroke="#e65100" stroke-width="1.5"/>
+            <!-- Brushes -->
+            <rect x="104" y="186" width="22" height="8" rx="2" fill="#795548"/>
+            <rect x="154" y="186" width="22" height="8" rx="2" fill="#795548"/>
+            <!-- Labels -->
+            <text x="52" y="144" text-anchor="middle" font-size="11" fill="#5c6bc0" font-weight="600">Stator</text>
+            <text x="140" y="136" text-anchor="middle" font-size="10" fill="#e65100" font-weight="600">Rotor</text>
+            <text x="140" y="218" text-anchor="middle" font-size="10" fill="#f57f17">Commutator</text>
+            <text x="92" y="200" text-anchor="end" font-size="10" fill="#795548">Brushes</text>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 11 · DC MOTORS — OPERATION
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.08) 0%,transparent 70%);bottom:-120px;left:-80px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">DC Motors · Topic 04 · Operation</span>
+    <div class="split split-40" style="align-items:start;">
+
+      <div>
+        <h2>How the Motor <span class="accent">Spins</span></h2>
+        <p class="slide-intro">The interaction between the armature's electromagnet and the stator's magnets produces the rotation.</p>
+        <div class="method-steps">
+          <div class="method-step fragment fade-up"><strong>1</strong> — Current flows in the armature wire loop → creates an electromagnet (N and S poles on the rotor)</div>
+          <div class="method-step fragment fade-up"><strong>2</strong> — The rotor's poles are attracted and repelled by the stator's fixed poles → <strong>rotation begins</strong></div>
+          <div class="method-step fragment fade-up"><strong>3</strong> — As the rotor turns, the commutator <strong>switches which loop carries current</strong> every 90°</div>
+          <div class="method-step fragment fade-up"><strong>4</strong> — This keeps the force in the same rotational direction → <strong>continuous spinning</strong></div>
+        </div>
+        <div class="warn-block fragment fade-up" style="margin-top:var(--gap);">
+          <div class="warn-label">Key Result</div>
+          <div style="font-size:var(--body); color:var(--text-muted);">The N and S poles of the armature electromagnet <strong style="color:var(--text)">oscillate</strong> within a fixed 90° window — effectively behaving as a stationary electromagnet while the rotor rotates.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap);align-items:stretch;">
+        <!-- Commutation summary table -->
+        <div class="calc-col">
+          <div class="col-label">Commutation Summary</div>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:6px 12px;font-size:19px;margin-top:4px;">
+            <span style="color:var(--accent);font-family:var(--font-mono);font-size:14px;">POSITION</span>
+            <span style="color:var(--accent);font-family:var(--font-mono);font-size:14px;">WHAT HAPPENS</span>
+
+            <span style="color:var(--text);font-weight:600;">0°</span>
+            <span style="color:var(--text-muted);">Loop A–B carries current; poles set</span>
+
+            <span style="color:var(--text);font-weight:600;">+45°</span>
+            <span style="color:var(--text-muted);">Rotor turns; poles rotate with it</span>
+
+            <span style="color:var(--text);font-weight:600;">+90°</span>
+            <span style="color:var(--text-muted);">Commutation — loop C–D now active; poles jump back 90°</span>
+
+            <span style="color:var(--text);font-weight:600;">Repeats</span>
+            <span style="color:var(--text-muted);">Every 90°, same commutation cycle</span>
+          </div>
+        </div>
+        <div class="warn-block" style="margin-top:0;">
+          <div class="warn-label">Real Motors</div>
+          <div style="font-size:var(--body); color:var(--text-muted);">Actual DC motors use <strong style="color:var(--text)">multiple wire loops</strong> and commutator segments for smoother, more consistent torque.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 12 · DC MOTORS — SPEED vs VOLTAGE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.09) 0%,transparent 70%);top:-80px;right:-60px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">DC Motors · Topic 04 · Speed vs Voltage</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <!-- Speed vs voltage graph -->
+      <div class="img-center">
+        <div class="graph-wrap" style="width:100%;">
+          <svg viewBox="0 0 320 260" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, sans-serif">
+            <defs>
+              <marker id="axarr" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#333"/>
+              </marker>
+            </defs>
+            <!-- Axes -->
+            <line x1="50" y1="210" x2="290" y2="210" stroke="#333" stroke-width="2" marker-end="url(#axarr)"/>
+            <line x1="50" y1="210" x2="50" y2="20" stroke="#333" stroke-width="2" marker-end="url(#axarr)"/>
+            <!-- Grid lines (light) -->
+            <line x1="50" y1="165" x2="285" y2="165" stroke="#e0e0e0" stroke-width="1"/>
+            <line x1="50" y1="120" x2="285" y2="120" stroke="#e0e0e0" stroke-width="1"/>
+            <line x1="50" y1="75" x2="285" y2="75" stroke="#e0e0e0" stroke-width="1"/>
+            <line x1="110" y1="210" x2="110" y2="25" stroke="#e0e0e0" stroke-width="1"/>
+            <line x1="170" y1="210" x2="170" y2="25" stroke="#e0e0e0" stroke-width="1"/>
+            <line x1="230" y1="210" x2="230" y2="25" stroke="#e0e0e0" stroke-width="1"/>
+            <!-- Direct proportion line (speed = k * V) -->
+            <line x1="50" y1="210" x2="270" y2="38" stroke="#1565c0" stroke-width="3"/>
+            <!-- Axis tick labels -->
+            <text x="110" y="224" text-anchor="middle" font-size="12" fill="#666">V₁</text>
+            <text x="170" y="224" text-anchor="middle" font-size="12" fill="#666">V₂</text>
+            <text x="230" y="224" text-anchor="middle" font-size="12" fill="#666">V₃</text>
+            <text x="38" y="168" text-anchor="end" font-size="12" fill="#666">n₁</text>
+            <text x="38" y="123" text-anchor="end" font-size="12" fill="#666">n₂</text>
+            <text x="38" y="78" text-anchor="end" font-size="12" fill="#666">n₃</text>
+            <!-- Dotted guide lines to points on graph -->
+            <line x1="110" y1="147" x2="50" y2="147" stroke="#1565c0" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>
+            <line x1="170" y1="123" x2="50" y2="123" stroke="#1565c0" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>
+            <line x1="230" y1="98" x2="50" y2="98" stroke="#1565c0" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>
+            <line x1="110" y1="210" x2="110" y2="147" stroke="#1565c0" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>
+            <line x1="170" y1="210" x2="170" y2="123" stroke="#1565c0" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>
+            <line x1="230" y1="210" x2="230" y2="98" stroke="#1565c0" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>
+            <!-- Points on the line -->
+            <circle cx="110" cy="147" r="5" fill="#1565c0"/>
+            <circle cx="170" cy="123" r="5" fill="#1565c0"/>
+            <circle cx="230" cy="98" r="5" fill="#1565c0"/>
+            <!-- Axis labels -->
+            <text x="170" y="248" text-anchor="middle" font-size="13" fill="#333" font-weight="600">Voltage (V)</text>
+            <text x="18" y="120" text-anchor="middle" font-size="13" fill="#333" font-weight="600" transform="rotate(-90 18 120)">Speed (rpm)</text>
+            <!-- Title -->
+            <text x="175" y="55" text-anchor="middle" font-size="12" fill="#1565c0" font-weight="600">Speed ∝ Voltage</text>
+          </svg>
+        </div>
+      </div>
+
+      <div>
+        <h2>Speed vs <span class="accent">Voltage</span></h2>
+        <p class="slide-intro">The rotational speed of a DC motor's rotor is directly determined by the voltage applied to its terminals.</p>
+        <ul class="bullets">
+          <li class="fragment fade-up">Speed is <strong>directly proportional</strong> to voltage — double the voltage, roughly double the speed</li>
+          <li class="fragment fade-up"><strong>Higher voltage</strong> → stronger current → greater force on armature → <strong>faster rotation</strong></li>
+          <li class="fragment fade-up">Speed control is simple: adjust the supply voltage with a <strong>variable resistor or power supply</strong></li>
+        </ul>
+        <div class="calc-col fragment fade-up" style="margin-top:var(--gap);">
+          <div class="col-label">Relationship</div>
+          <div class="yt-formula">n &nbsp;∝&nbsp; V<sub>terminal</sub></div>
+          <div class="yt-result" style="color:var(--result);">↑ V &nbsp;→&nbsp; ↑ speed</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 13 · DC MOTORS — APPLICATIONS
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.07) 0%,transparent 70%);bottom:-120px;right:-80px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">DC Motors · Topic 04 · Applications</span>
+    <h2>DC Motor <span class="accent">Applications</span></h2>
+    <p class="slide-intro" style="margin-bottom:var(--gap-lg);">DC motors are among the most common motors in the world due to their ease of construction and precise speed control.</p>
+
+    <div class="split split-35" style="align-items:start;">
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+
+        <div class="calc-col fragment fade-up">
+          <div class="col-label">Consumer Electronics &amp; Portable Devices</div>
+          <div class="app-list" style="margin-top:6px;">
+            <div class="app-item"><div class="app-dot"></div><span>Disk drives and cooling fans in computers</span></div>
+            <div class="app-item"><div class="app-dot"></div><span>Motors in toys and small electronic devices</span></div>
+            <div class="app-item"><div class="app-dot"></div><span>Battery-powered tools (the DC source makes them ideal)</span></div>
+          </div>
+        </div>
+
+        <div class="calc-col fragment fade-up">
+          <div class="col-label">Electric Vehicles</div>
+          <div class="app-list" style="margin-top:6px;">
+            <div class="app-item"><div class="app-dot"></div><span>Electric bikes, cars, carts, and lifts</span></div>
+            <div class="app-item"><div class="app-dot"></div><span>Battery-powered forklifts and golf carts</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+
+        <div class="calc-col fragment fade-up">
+          <div class="col-label">Industrial — Constant Speed</div>
+          <div class="app-list" style="margin-top:6px;">
+            <div class="app-item"><div class="app-dot"></div><span><strong>Lathes, drills, boring mills</strong> — require stable speed regardless of load</span></div>
+          </div>
+        </div>
+
+        <div class="calc-col fragment fade-up">
+          <div class="col-label">Industrial — High Starting Torque</div>
+          <div class="app-list" style="margin-top:6px;">
+            <div class="app-item"><div class="app-dot"></div><span><strong>Cranes and elevators</strong> — need high force to start moving heavy loads</span></div>
+            <div class="app-item"><div class="app-dot"></div><span><strong>Air compressors</strong> — high torque needed on startup</span></div>
+          </div>
+        </div>
+
+        <div class="warn-block fragment fade-up" style="margin-top:0;">
+          <div class="warn-label">Many Types of DC Motor</div>
+          <div style="font-size:var(--body); color:var(--text-muted);">DC motors come in many configurations: <strong style="color:var(--text)">shunt, series, compound</strong> — each suited to different speed and torque profiles.</div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'ex9-electromagnetism',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+});
+</script>
+</body>
+</html>
