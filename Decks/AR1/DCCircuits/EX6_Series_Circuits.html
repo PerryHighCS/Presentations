@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise 6: Solving Series Circuits and Kirchhoff's Voltage Law</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — EX6 Series Circuits & KVL
+   ============================================================ */
+
+/* ── Split grid helpers ──────────────────────────────────── */
+.split {
+  display: grid;
+  gap: var(--gap-lg);
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+}
+.split-50  { grid-template-columns: 1fr 1fr; }
+.split-40  { grid-template-columns: 2fr 3fr; }
+.split-60  { grid-template-columns: 3fr 2fr; }
+.split-top { align-items: start; }
+
+/* ── Image helpers ───────────────────────────────────────── */
+.img-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* ── Formula styling ─────────────────────────────────────── */
+.formula-box {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 20px 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 28px;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.formula-box sub {
+  font-size: 0.62em;
+  position: relative;
+  top: 0.3em;
+  line-height: 0;
+}
+
+.formula-lg {
+  font-size: 32px;
+}
+
+/* ── Vertical fraction ───────────────────────────────────── */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  font-family: var(--font-mono);
+}
+
+.frac-num {
+  border-bottom: 2px solid currentColor;
+  padding: 0 6px 4px;
+  text-align: center;
+}
+
+.frac-den {
+  padding: 4px 6px 0;
+  text-align: center;
+}
+
+/* ── Worked example step list ────────────────────────────── */
+.steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.steps li {
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  color: var(--text-muted);
+  line-height: 1.6;
+  padding-left: 0;
+}
+
+.steps li .step-label {
+  color: var(--accent);
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.steps li .step-result {
+  color: var(--result);
+  font-weight: 700;
+}
+
+/* ── KVL sum display ─────────────────────────────────────── */
+.kvl-sum {
+  background: rgba(77,255,176,0.06);
+  border: 1px solid rgba(77,255,176,0.25);
+  border-radius: 8px;
+  padding: 16px 24px;
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  color: var(--result);
+  display: inline-block;
+}
+
+/* ── Outcome card ────────────────────────────────────────── */
+.outcome-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  flex: 1;
+  min-height: 0;
+}
+
+.outcome-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  padding: 28px 28px;
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.outcome-num {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.outcome-text {
+  font-size: 22px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* ── Info callout ────────────────────────────────────────── */
+.callout {
+  background: var(--accent-dim);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 18px 22px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.callout strong { color: var(--text); }
+
+/* ── Section divider ─────────────────────────────────────── */
+.section-rule {
+  width: 48px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin-bottom: var(--gap);
+  box-shadow: 0 0 10px rgba(42,143,255,0.4);
+}
+
+/* ── Portrait slide ──────────────────────────────────────── */
+.portrait-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.portrait-caption {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--text-dim);
+  text-align: center;
+  letter-spacing: 0.06em;
+}
+
+/* ── Glow blob for title slide ──────────────────────────── */
+.glow-blue {
+  background: radial-gradient(circle, rgba(42,143,255,0.18) 0%, transparent 70%);
+  width: 700px; height: 700px;
+  top: -100px; right: -100px;
+}
+
+.glow-green {
+  background: radial-gradient(circle, rgba(77,255,176,0.09) 0%, transparent 70%);
+  width: 500px; height: 500px;
+  bottom: -80px; left: 80px;
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ══════════════════════════════════════════════════════
+         SLIDE 1 — Title
+         ══════════════════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner slide-center">
+        <div class="glow glow-blue"></div>
+        <div class="glow glow-green"></div>
+        <span class="slide-tag">AR1 · DC Circuits · Exercise 6</span>
+        <h1 class="title-h1">Solving Series Circuits<br>&amp; <span class="accent">Kirchhoff's</span><br>Voltage Law</h1>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         SLIDE 2 — Learning Outcomes + Topics Covered
+         ══════════════════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner">
+        <div class="split split-50" style="height: 100%;">
+          <div style="display: flex; flex-direction: column; justify-content: center; gap: var(--gap);">
+            <span class="slide-tag">Learning Outcomes</span>
+            <h2 style="font-size: 36px;">After this exercise, you will be able to:</h2>
+            <div class="outcome-grid" style="grid-template-columns: 1fr; gap: var(--gap-sm);">
+              <div class="outcome-card">
+                <span class="outcome-num">01</span>
+                <span class="outcome-text">Calculate the <strong style="color:var(--text)">equivalent resistance</strong> of multiple resistors in series circuits</span>
+              </div>
+              <div class="outcome-card">
+                <span class="outcome-num">02</span>
+                <span class="outcome-text"><strong style="color:var(--text)">State</strong> Kirchhoff's voltage law</span>
+              </div>
+              <div class="outcome-card">
+                <span class="outcome-num">03</span>
+                <span class="outcome-text"><strong style="color:var(--text)">Apply</strong> Kirchhoff's voltage law to electrical circuits</span>
+              </div>
+              <div class="outcome-card">
+                <span class="outcome-num">04</span>
+                <span class="outcome-text">Explain the principles of operation of <strong style="color:var(--text)">voltage dividers</strong></span>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; justify-content: center; gap: var(--gap);">
+            <span class="slide-tag">Topics Covered</span>
+            <ul class="bullets" style="gap: var(--gap);">
+              <li style="font-size: 26px;">Calculating the <strong>equivalent resistance</strong> in series circuits</li>
+              <li style="font-size: 26px;"><strong>Kirchhoff's</strong> voltage law</li>
+              <li style="font-size: 26px;"><strong>Voltage dividers</strong></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         SLIDE 3 — Equivalent Resistance: Concept
+         ══════════════════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Equivalent Resistance</span>
+        <h2>Resistors in Series</h2>
+        <div style="display: flex; gap: var(--gap-lg); margin-top: var(--gap); flex: 1; min-height: 0;">
+          <div style="display: flex; flex-direction: column; gap: var(--gap); flex: 1;">
+            <ul class="bullets">
+              <li class="fragment fade-up" data-fragment-index="1">In a series circuit, there is <strong>only one path</strong> for current to flow</li>
+              <li class="fragment fade-up" data-fragment-index="2">The current through every component is <strong>equal</strong></li>
+              <li class="fragment fade-up" data-fragment-index="3">With multiple loads, the <strong>equivalent resistance</strong> equals the combined resistance of all loads</li>
+            </ul>
+            <div class="callout fragment fade-up" data-fragment-index="4" >
+              The equivalent resistance of any resistors connected in series is simply equal to the <strong>sum of all their resistance values</strong>.
+            </div>
+            <div style="display: flex; justify-content: center;">
+              <div class="formula-box formula-lg fragment fade-up" data-fragment-index="6">
+                R<sub>eq</sub>&nbsp;= R<sub>1</sub>&nbsp;+ R<sub>2</sub>&nbsp;+ ··· + R<sub>n</sub>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         SLIDE 4 — Equivalent Resistance: Worked Example
+         ══════════════════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Equivalent Resistance · Worked Example</span>
+        <h2>Example Series Circuit Simplification</h2>
+        <div class="split split-60" style="margin-top: var(--gap);">
+          <div class="img-center">
+            <img src="EX6_Series_Circuits_Assets/fig-000.png" alt="Figure 101: Calculating equivalent resistance of series resistors" class="c-img" style="max-height: 460px;">
+          </div>
+          <div>
+            <ul class="steps">
+              <li class="fragment fade-up">
+                <span class="step-label">Step 1 — Equivalent Resistance</span><br>
+                <span class="fragment fade-up">R<sub>eq</sub> = R<sub>1</sub> + R<sub>2</sub> + R<sub>3</sub></span><br>
+                <span class="fragment fade-up">R<sub>eq</sub> = 15 Ω + 40 Ω + 25 Ω</span><br>
+                <span class="fragment fade-up">R<sub>eq</sub> = <span class="step-result">80 Ω</span></span>
+              </li>
+              <li class="fragment fade-up" style="margin-top: var(--gap);">
+                <span class="step-label">Step 2 — Circuit Current (Ohm's Law)</span><br>
+                <span class="fragment fade-up">I<sub>S</sub> = E<sub>S</sub> / R<sub>eq</sub></span><br>
+                <span class="fragment fade-up">I<sub>S</sub> = 24 V / 80 Ω</span><br>
+                <span class="fragment fade-up">I<sub>S</sub> = <span class="step-result">0.30 A</span></span>
+              </li>
+              <li class="fragment fade-up" style="margin-top: var(--gap);">
+                <div class="callout" style="font-family: var(--font-mono); font-size: 18px;">
+                  Both circuits carry the same
+                  <span style="color: var(--result);">0.30 A</span>. They have the same R<sub>eq</sub> of 80 Ω.
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         SLIDE 5 — Kirchhoff's Voltage Law: Introduction
+         ══════════════════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Kirchhoff's Voltage Law</span>
+        <div class="split split-40">
+          <div>
+            <div class="section-rule"></div>
+            <h2>Kirchhoff's<br>Voltage Law</h2>
+            <p style="font-size: var(--body); color: var(--text-muted); margin-top: var(--gap); line-height: 1.6;">
+              Described by German physicist <strong style="color:var(--text)">Gustav Kirchhoff</strong>, this law is fundamental to the study of series circuits.
+            </p>
+            <div class="formula-box fragment fade-up" style="margin-top: var(--gap-lg); font-size: 22px; display: block; text-align: center;">
+              The sum of all voltages in a<br>closed circuit loop equals <span class="result-color">0 V</span>
+            </div>
+            <p class="fragment fade-up" style="font-size: var(--small); color: var(--text-muted); margin-top: var(--gap); line-height: 1.6;">
+              In practice: the sum of the voltage <em>drops</em> across all loads equals the supply voltage.
+            </p>
+          </div>
+          <div class="portrait-wrap img-center">
+            <img src="EX6_Series_Circuits_Assets/fig-002.png" alt="Portrait of Gustav Kirchhoff" class="photo-img" style="max-height: 520px; max-width: 340px;">
+            <span class="portrait-caption">Gustav Kirchhoff (1824 – 1887)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         SLIDE 6 — KVL: Polarity &amp; Voltage Drops
+         ══════════════════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Kirchhoff's Voltage Law · Polarity</span>
+        <h2>Voltage Drops and Polarity</h2>
+        <div class="split split-60" style="margin-top: var(--gap);">
+          <div>
+            <ul class="bullets">
+              <li>Voltage across a <strong>passive element</strong> (resistor) is a <strong>voltage drop</strong></li>
+              <li>Its polarity is <strong>inverted</strong> with respect to the power source</li>
+              <li>If source voltage is <strong>+24 V</strong>, the voltage across the load is <strong>−24 V</strong></li>
+              <li>The <strong>+ terminals oppose</strong> each other in the circuit (+ against +, − against −)</li>
+            </ul>
+            <div class="kvl-sum fragment fade-up" style="margin-top: var(--gap-lg);">
+              E<sub>S</sub> + E<sub>R</sub> = 0 V<br>
+              24.0 V + (−24.0 V) = <strong>0 V</strong> ✓
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX6_Series_Circuits_Assets/fig-003.png" alt="Figure 103: KVL applied to a circuit with a single resistor" class="c-img" style="max-height: 440px;">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         SLIDE 7 — KVL: Three-Resistor Circuit
+         ══════════════════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Kirchhoff's Voltage Law · Example</span>
+        <h2>Three-Resistor Series Circuit</h2>
+        <div class="split split-50" style="margin-top: var(--gap);">
+          <div class="img-center">
+            <div class="r-stack" style="height: 100%; width: 100%;">
+              <img src="EX6_Series_Circuits_Assets/fig-005.png" alt="KVL applied to a series circuit with three resistors" class="c-img fragment fade-out" data-fragment-index="4" style="max-height: 640px;">
+              <div class="fragment fade-out" data-fragment-index="10" style="display: flex; align-items: center; justify-content: center;">
+                <img src="EX6_Series_Circuits_Assets/fig-006.png" alt="Equivalent circuit with single 48 Ω resistor" class="c-img fragment fade-in" data-fragment-index="4" style="max-height: 520px;">
+              </div>
+              <img src="EX6_Series_Circuits_Assets/fig-005.png" alt="KVL applied to a series circuit with three resistors" class="c-img fragment fade-in" data-fragment-index="10" style="max-height: 640px;">
+            </div>
+          </div>
+          <div>
+            <ul class="steps">
+              <li>
+                <span class="step-label">Given</span><br>
+                E<sub>S</sub> = 24 V&nbsp;,&nbsp;
+                R<sub>1</sub> = 8 Ω&nbsp;,&nbsp;
+                R<sub>2</sub> = 24 Ω&nbsp;,&nbsp;
+                R<sub>3</sub> = 16 Ω
+              </li>
+              <li class="fragment fade-up" data-fragment-index="1" style="margin-top: var(--gap);">
+                <span class="step-label">Step 1 — Find R<sub>eq</sub></span><br>
+                R<sub>eq</sub> = <span class="fragment fade-up" data-fragment-index="2">R<sub>1</sub> + R<sub>2</sub> + R<sub>3</sub> = </span><span class="fragment fade-up" data-fragment-index="3">8 + 24 + 16 = </span><span class="step-result fragment fade-up" data-fragment-index="4">48 Ω</span>
+              </li>
+              <li class="fragment fade-up" style="margin-top: var(--gap);" data-fragment-index="5">
+                <span class="step-label">Step 2 — Find I<sub>S</sub></span>
+                <div style="display: flex; gap: var(--gap-lg); margin-top: var(--gap-sm); align-items: flex-start;">
+                  <img src="EX6_Series_Circuits_Assets/ohmsTriangle.png" class="tri-img fragment fade-up" style="height: 120px; flex-shrink: 0;" data-fragment-index="6">
+                  <div style="display: flex; flex-direction: column; gap: var(--gap); font-family: var(--font-mono); font-size: var(--code);">
+                    <span class="fragment fade-up" data-fragment-index="7">I<sub>S</sub>&nbsp;=&nbsp;<span class="frac"><span class="frac-num">V</span><span class="frac-den">R<sub>eq</sub></span></span></span>
+                    <span class="fragment fade-up" data-fragment-index="8">I<sub>S</sub>&nbsp;=&nbsp;<span class="frac"><span class="frac-num">24 V</span><span class="frac-den">48 Ω</span></span>&nbsp;= <span class="step-result fragment fade-up" data-fragment-index="9">0.50 A</span></span>
+                  </div>
+                </div>
+              </li>
+              <li class="fragment fade-up" style="margin-top: var(--gap);" data-fragment-index="10">
+                <span class="step-label">Step 3 — Voltage across each R</span>
+                <div style="display: flex; flex-direction: column; gap: var(--gap-sm); margin-top: var(--gap-sm); font-family: var(--font-mono); font-size: var(--code);">
+                  <span class="fragment fade-up" data-fragment-index="11">E<sub>R</sub>&nbsp;= <span class="fragment fade-up" data-fragment-index="12">I<sub>S</sub> × R</span></span>
+                  <span class="fragment fade-up" data-fragment-index="13">E<sub>R1</sub> = <span class="fragment fade-up" data-fragment-index="14">0.50 × 8&nbsp;&nbsp;= </span><span class="step-result fragment fade-up" data-fragment-index="15">4.00 V</span></span></span>
+                  <span class="fragment fade-up" data-fragment-index="16">E<sub>R2</sub> = <span class="fragment fade-up" data-fragment-index="17">0.50 × 24 = </span><span class="step-result fragment fade-up" data-fragment-index="18">12.0 V</span></span>
+                  <span class="fragment fade-up" data-fragment-index="19">E<sub>R3</sub> = <span class="fragment fade-up" data-fragment-index="20">0.50 × 16 = </span><span class="step-result fragment fade-up" data-fragment-index="21">8.00 V</span></span>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         SLIDE 8 — KVL: Verification
+         ══════════════════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Kirchhoff's Voltage Law · Verification</span>
+        <h2>Verify the Law Holds</h2>
+        <div class="split split-40" style="margin-top: var(--gap);">
+          <div class="img-center">
+            <img src="EX6_Series_Circuits_Assets/fig-005.png" alt="KVL applied to a series circuit with three resistors" class="c-img" style="max-height: 620px;">
+          </div>
+          <div style="display: flex; flex-direction: column; justify-content: center; gap: var(--gap);">
+            <div class="formula-box fragment fade-up" style="margin-top: var(--gap-lg); font-size: 22px; display: block; text-align: center;">
+              The sum of all voltages in a<br>closed circuit loop equals <span class="result-color">0 V</span>
+            </div>
+            <div class="fragment fade-up" style="font-family: var(--font-mono); font-size: 22px; color: var(--text-muted); text-align: center;">
+              E<sub>S</sub> + E<sub>R1</sub> + E<sub>R2</sub> + E<sub>R3</sub> = 0V
+            </div>
+            <div class="kvl-sum fragment fade-up" style="font-size: 24px; padding: 18px 28px;  text-align: center;">
+              24.0V + (−4.00V) + (−12.0V) + (−8.00V) = <strong>0V</strong> ✓
+            </div>
+            <div class="callout fragment fade-up">
+              Kirchhoff's voltage law is verified — the algebraic sum of all voltages around any closed loop is always <strong>zero</strong>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         SLIDE 9 — Voltage Dividers: Introduction
+         ══════════════════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Voltage Dividers</span>
+        <h2>What is a Voltage Divider?</h2>
+        <div style="display: flex; flex-direction: column; gap: var(--gap); margin-top: var(--gap); max-width: 860px;">
+          <p style="font-size: var(--body); color: var(--text-muted); line-height: 1.6;">
+            Kirchhoff's voltage law is used in electronics and electrical engineering to build <strong style="color:var(--text)">voltage dividers</strong> — circuits that produce an output voltage equal to a <em>fraction</em> of the input voltage.
+          </p>
+          <ul class="bullets" style="margin-top: var(--gap-sm);">
+            <li class="fragment fade-up">The output can be set to <strong>any value</strong> from 0 V up to the supply voltage</li>
+            <li class="fragment fade-up">Output voltage depends on the <strong>ratio of resistances</strong>, not the absolute values alone</li>
+            <li class="fragment fade-up">Three common configurations: <strong>two fixed resistors</strong>, <strong>rheostat + resistor</strong>, and a <strong>potentiometer</strong></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         SLIDE 10 — Voltage Divider: Two Resistors
+         ══════════════════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Voltage Dividers · Fixed Resistors</span>
+        <h2>Two-Resistor Voltage Divider</h2>
+        <div class="split split-40" style="margin-top: var(--gap);">
+          <div>
+            <ul class="bullets">
+              <li>Output terminals connect across <strong>R<sub>2</sub></strong> (the lower resistor)</li>
+              <li>Voltage across each resistor depends on its <strong>resistance ratio</strong> relative to R<sub>eq</sub></li>
+              <li class="fragment fade-up">With R<sub>1</sub> = 45 Ω, R<sub>2</sub> = 15 Ω, E<sub>S</sub> = 48 V:
+                <div style="display: flex; flex-direction: column; gap: var(--gap-sm); margin-top: var(--gap-sm); font-family: var(--font-mono); font-size: var(--code);">
+                  <span class="fragment fade-up">E<sub>out</sub>&nbsp;= E<sub>S</sub> ×&nbsp;<span class="frac"><span class="frac-num">R<sub>2</sub></span><span class="frac-den">R<sub>eq</sub></span></span></span>
+                  <span class="fragment fade-up">E<sub>out</sub>&nbsp;= 48 V ×&nbsp;<span class="frac"><span class="frac-num">15 Ω</span><span class="frac-den">45 Ω + 15 Ω</span></span>&nbsp;= <span class="step-result" style="color: var(--result);">12 V</span></span>
+                </div>
+              </li>
+            
+              <li class="fragment fade-up">Swap R<sub>1</sub> for 30 Ω → <span style="color: var(--result);" class="fragment fade-in">16 V</span></li>
+              <li class="fragment fade-up">Swap R<sub>1</sub> for 15 Ω → <span style="color: var(--result);" class="fragment fade-in">24 V</span></li>
+            </ul>
+            <div class="callout fragment fade-up" style="margin-top: var(--gap);">
+              Carefully selecting resistor values lets you <strong>tailor the output voltage</strong> for any application.
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX6_Series_Circuits_Assets/fig-007.png" alt="Figure 105: Voltage divider circuit with two fixed resistors" class="c-img" style="max-height: 460px;">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         SLIDE 11 — Voltage Divider: Rheostat + Resistor
+         ══════════════════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Voltage Dividers · Variable</span>
+        <h2>Rheostat &amp; Resistor Divider</h2>
+        <div class="split split-40" style="margin-top: var(--gap);">
+          <div>
+            <ul class="bullets">
+              <li>R<sub>1</sub> is a <strong>rheostat</strong> — its resistance can be <strong>dynamically adjusted</strong></li>
+              <li>R<sub>2</sub> is a fixed resistor providing the output terminals</li>
+              <li class="fragment fade-up">The same divider can serve <strong>multiple purposes</strong> or supply a variable-voltage load</li>
+              <li class="fragment fade-up">With R<sub>2</sub> = 15 Ω and E<sub>S</sub> = 48 V:
+                <div style="display: flex; flex-direction: column; gap: var(--gap-sm); margin-top: var(--gap-sm); font-family: var(--font-mono); font-size: var(--code);">
+                  <span class="fragment fade-up">E<sub>out</sub>&nbsp;= E<sub>S</sub> ×&nbsp;<span class="frac"><span class="frac-num">R<sub>2</sub></span><span class="frac-den">R<sub>eq</sub></span></span></span>
+                  <span class="fragment fade-up">R<sub>1</sub> = 45 Ω → <span class="fragment fade-in">E<sub>out</sub> = 48 V ×&nbsp;<span class="frac"><span class="frac-num">15 Ω</span><span class="frac-den">60 Ω</span></span>&nbsp;= <span class="step-result fragment fade-in" style="color: var(--result);">12 V</span></span>
+                  <span class="fragment fade-up">R<sub>1</sub> = 15 Ω → <span class="fragment fade-in">E<sub>out</sub> = 48 V ×&nbsp;<span class="frac"><span class="frac-num">15 Ω</span><span class="frac-den">30 Ω</span></span>&nbsp;= <span class="step-result fragment fade-in" style="color: var(--result);">24 V</span></span>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div class="img-center">
+            <img src="EX6_Series_Circuits_Assets/fig-009.png" alt="Figure 106: Variable voltage divider with rheostat and resistor" class="c-img" style="max-height: 460px;">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         SLIDE 12 — Voltage Divider: Potentiometer
+         ══════════════════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Voltage Dividers · Potentiometer</span>
+        <h2>Potentiometer Voltage Divider</h2>
+        <div class="split split-40" style="margin-top: var(--gap);">
+          <div>
+            <ul class="bullets">
+              <li>A <strong>potentiometer's wiper</strong> physically divides it into two resistors with their R<sub>eq</sub> equalling the total resistance</li>
+              <li>Resistance values on each side depend on <strong>wiper position</strong></li>
+              <li class="fragment fade-up">The higher the resistance across the output branch, the <strong>higher the output voltage</strong></li>
+              <li class="fragment fade-up">With E<sub>S</sub> = 48 V, total pot = 60 Ω:
+                <div style="display: flex; flex-direction: column; gap: var(--gap-sm); margin-top: var(--gap-sm); font-family: var(--font-mono); font-size: var(--code);">
+                  <span class="fragment fade-up">If we set R<sub>1</sub>, then </sub>R<sub>2</sub> = 60 Ω − R<sub>1</sub></span>
+                  <span class="fragment fade-up">E<sub>out</sub>&nbsp;= E<sub>S</sub> ×&nbsp;<span class="frac"><span class="frac-num">R<sub>2</sub></span><span class="frac-den">R<sub>eq</sub></span></span></span>
+                  <span class="fragment fade-up"><span style="color:var(--text);">R<sub>1</sub> = 0 Ω </span>→ <span class="fragment fade-up">E<sub>out</sub> = 48 V ×&nbsp;<span class="frac"><span class="frac-num">60 Ω</span><span class="frac-den">60 Ω</span></span>&nbsp;= </span><span class="step-result fragment fade-up" style="color:var(--result);">48V</span></span>
+                  <span class="fragment fade-up"><span style="color:var(--text);">R<sub>1</sub> = 60 Ω </span>→ <span class="fragment fade-up">E<sub>out</sub> = 48 V ×&nbsp;<span class="frac"><span class="frac-num">0 Ω</span><span class="frac-den">60 Ω</span></span>&nbsp;= </span><span class="step-result fragment fade-up" style="color:var(--result);">0V</span></span>
+                </div>
+              </li>
+            </ul>
+
+          </div>
+          <div class="img-stack">
+            <img src="EX6_Series_Circuits_Assets/fig-011.png" alt="Figure 107: Variable voltage divider using a potentiometer" class="c-img" style="max-height: 380px;">
+            <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);">
+              A potentiometer provides a <strong>continuously variable</strong> output across the full supply range.
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'ex6-series-circuits',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+});
+</script>
+
+</body>
+</html>
