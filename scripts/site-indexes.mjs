@@ -1,6 +1,11 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+const NATURAL_COLLATOR = new Intl.Collator(undefined, {
+  numeric: true,
+  sensitivity: 'base',
+});
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll('&', '&amp;')
@@ -139,13 +144,13 @@ ${listing}
 function renderTree(node, indent = '      ', pathPrefix = '') {
   const lines = [];
 
-  for (const file of [...node.files].sort((a, b) => a.rel.localeCompare(b.rel))) {
+  for (const file of [...node.files].sort((a, b) => NATURAL_COLLATOR.compare(a.title, b.title))) {
     lines.push(
       `${indent}<li class="file"><a href="${escapeHtml(`${pathPrefix}${file.name}`)}">${escapeHtml(file.title)}</a></li>`
     );
   }
 
-  for (const [dirname, child] of [...node.dirs.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+  for (const [dirname, child] of [...node.dirs.entries()].sort((a, b) => NATURAL_COLLATOR.compare(a[0], b[0]))) {
     lines.push(
       `${indent}<li class="folder"><a class="folder-name" href="${escapeHtml(`${pathPrefix}${dirname}/index.html`)}">${escapeHtml(dirname)}/</a>`
     );
@@ -166,7 +171,7 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath) {
   const normalized = [...htmlFiles]
     .map((file) => file.replace(/\\/g, '/'))
     .filter((file) => file.toLowerCase().endsWith('.html') && path.posix.basename(file) !== 'index.html')
-    .sort((a, b) => a.localeCompare(b));
+    .sort((a, b) => NATURAL_COLLATOR.compare(a, b));
 
   const titledEntries = [];
   for (const rel of normalized) {
@@ -216,7 +221,7 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath) {
   );
 
   function addFolderPages(node, folder = '.') {
-    for (const [dirname, child] of [...node.dirs.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+    for (const [dirname, child] of [...node.dirs.entries()].sort((a, b) => NATURAL_COLLATOR.compare(a[0], b[0]))) {
       const childFolder = folder === '.' ? dirname : `${folder}/${dirname}`;
       const listingLines = renderTree(child);
       const listing = listingLines.length
