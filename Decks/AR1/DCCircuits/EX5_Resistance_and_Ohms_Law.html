@@ -268,6 +268,7 @@
   text-align: center;
   background: var(--bg-card);
 }
+.sym-table td img { margin: 0 auto; }
 
 /* ── Resistor training spec box ──────────────────────────── */
 .spec-box {
@@ -307,6 +308,41 @@
   margin-bottom: 18px;
 }
 .section-eyebrow::before { content: '// '; opacity: 0.5; }
+
+/* ── Image modal / lightbox ──────────────────────────────── */
+#img-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.82);
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+#img-modal.open { display: flex; }
+#img-modal-img {
+  max-width: 90vw;
+  max-height: 88vh;
+  border-radius: 8px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+  cursor: default;
+}
+#img-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  font-size: 36px;
+  color: #fff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.7;
+  padding: 0;
+}
+#img-modal-close:hover { opacity: 1; }
+.img-zoomable { cursor: zoom-in; }
 
 </style>
 </head>
@@ -918,35 +954,84 @@
       <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
         <span class="slide-tag">Electrical Power</span>
         <h2>Power Calculations</h2>
-        <div class="split split-50" style="flex:1;margin-top:var(--gap);">
-          <div class="img-center" style="flex-direction:column;gap:10px;">
-            <img src="EX5_Ohms_Law_Assets/img-031.png" class="c-img" style="max-height:260px;max-width:100%;" alt="Power circuit diagram">
-            <img src="EX5_Ohms_Law_Assets/img-028.png" class="photo-img" style="max-height:180px;max-width:100%;margin-top:8px;" alt="Ball mill driven by electric motor">
+        <div class="split split-60" style="flex:1;margin-top:var(--gap);align-items:start;">
+
+          <!-- Left: reference circuit + power circle -->
+          <div class="img-center" style="flex-direction:column;gap:10px;padding-top:8px;">
+            <img src="EX5_Ohms_Law_Assets/img-031.png" class="c-img" style="max-width:100%;" alt="Power circuit diagram">
+            <img src="EX5_Ohms_Law_Assets/img-029.png" class="tri-img img-zoomable" style="max-height:200px; max-width:100%;" alt="Power circle P/E/I/R" onclick="openImgModal(this.src, this.alt)">
           </div>
-          <div>
-            <ul class="steps">
-              <li>
-                <span class="step-label">Find P →</span>
-                E<sub>Light</sub> = 40 V, R<sub>Light</sub> = 50 Ω<br>
-                P = E² ÷ R = 1600 ÷ 50
-                <span class="step-result"> = 32 W</span>
-              </li>
-              <li style="margin-top:var(--gap-sm);">
-                <span class="step-label">Find I →</span>
-                P = 40 W, R<sub>Light</sub> = 25 Ω<br>
-                I = √(P ÷ R) = √(40 ÷ 25)
-                <span class="step-result"> = 1.26 A</span>
-              </li>
-              <li style="margin-top:var(--gap-sm);">
-                <span class="step-label">Source rating →</span>
-                E<sub>DC</sub> = 24 V, I<sub>DC</sub> = 4 A<br>
-                P = E × I = 24 × 4
-                <span class="step-result"> = 96 W</span>
-              </li>
-            </ul>
-            <div class="callout-warn" style="margin-top:var(--gap);">
-              <strong>Warning:</strong> Supplying more power than the source's rating can cause overheating and serious damage.
+
+          <!-- Right: three stepped example cards -->
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+
+            <!-- Example 1: Find P -->
+            <div style="background:var(--bg-card);border:1px solid var(--accent-border);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 16px;display:grid;grid-template-columns:72px 1fr;gap:4px 12px;align-items:baseline;font-size:19px;">
+              <span style="font-family:var(--font-mono);font-size:13px;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;grid-column:1/-1;margin-bottom:2px;">Find Power</span>
+              <span style="font-family:var(--font-mono);font-size:13px;color:var(--text-dim);text-transform:uppercase;">Given</span>
+              <span class="fragment" data-fragment-index="0" style="color:var(--text-muted);">E<sub>L</sub> = 40 V,&nbsp; R<sub>L</sub> = 50 Ω</span>
+              <span class="fragment" data-fragment-index="1" style="font-family:var(--font-mono);font-size:13px;color:var(--text-dim);text-transform:uppercase;">Formula</span>
+              <span class="fragment" data-fragment-index="1" style="color:var(--text-muted);">P =
+                <span class="frac" style="font-size:17px;vertical-align:middle;">
+                  <span class="frac-num">E²</span><span class="frac-den">R</span>
+                </span>
+              </span>
+              <span class="fragment" data-fragment-index="2" style="font-family:var(--font-mono);font-size:13px;color:var(--text-dim);text-transform:uppercase;">Sub</span>
+              <span class="fragment" data-fragment-index="2" style="color:var(--text-muted);">P =
+                <span class="frac" style="font-size:17px;vertical-align:middle;">
+                  <span class="frac-num">40²</span><span class="frac-den">50 Ω</span>
+                </span>
+                &nbsp;=
+                <span class="frac" style="font-size:17px;vertical-align:middle;">
+                  <span class="frac-num">1600</span><span class="frac-den">50</span>
+                </span>
+              </span>
+              <span class="fragment" data-fragment-index="3" style="font-family:var(--font-mono);font-size:13px;color:var(--result);text-transform:uppercase;">Answer</span>
+              <span class="fragment" data-fragment-index="3" style="color:var(--result);font-weight:600;">P = 32 W</span>
             </div>
+
+            <!-- Example 2: Find I -->
+            <div class="fragment fade-in" data-fragment-index="4" style="background:var(--bg-card);border:1px solid var(--accent-border);border-left:3px solid var(--warn);border-radius:0 8px 8px 0;padding:10px 16px;display:grid;grid-template-columns:72px 1fr;gap:4px 12px;align-items:baseline;font-size:19px;">
+              <span style="font-family:var(--font-mono);font-size:13px;color:var(--warn);letter-spacing:0.1em;text-transform:uppercase;grid-column:1/-1;margin-bottom:2px;">Find Current</span>
+              <span style="font-family:var(--font-mono);font-size:13px;color:var(--text-dim);text-transform:uppercase;">Given</span>
+              <span class="fragment" data-fragment-index="5" style="color:var(--text-muted);">P = 40 W,&nbsp; R<sub>L</sub> = 25 Ω</span>
+              <span class="fragment" data-fragment-index="6" style="font-family:var(--font-mono);font-size:13px;color:var(--text-dim);text-transform:uppercase;">Formula</span>
+              <span class="fragment" data-fragment-index="6" style="color:var(--text-muted);">I =
+                <math display="inline" style="font-size:24px;">
+                  <msqrt><mfrac><mi>P</mi><mi>R</mi></mfrac></msqrt>
+                </math>
+              </span>
+              <span class="fragment" data-fragment-index="7" style="font-family:var(--font-mono);font-size:13px;color:var(--text-dim);text-transform:uppercase;">Sub</span>
+              <span class="fragment" data-fragment-index="7" style="color:var(--text-muted);">I =
+                <math display="inline" style="font-size:24px;">
+                  <msqrt><mfrac><mn>40</mn><mn>25</mn></mfrac></msqrt>
+                </math>
+                =
+                <math display="inline" style="font-size:19px;">
+                  <msqrt><mn>1.6</mn></msqrt>
+                </math>
+              </span>
+              <span class="fragment" data-fragment-index="8" style="font-family:var(--font-mono);font-size:13px;color:var(--result);text-transform:uppercase;">Answer</span>
+              <span class="fragment" data-fragment-index="8" style="color:var(--result);font-weight:600;">I ≈ 1.26 A</span>
+            </div>
+
+            <!-- Example 3: Source rating -->
+            <div class="fragment fade-in" data-fragment-index="9" style="background:var(--bg-card);border:1px solid var(--accent-border);border-left:3px solid rgba(77,255,176,0.6);border-radius:0 8px 8px 0;padding:10px 16px;display:grid;grid-template-columns:72px 1fr;gap:4px 12px;align-items:baseline;font-size:19px;">
+              <span style="font-family:var(--font-mono);font-size:13px;color:rgba(77,255,176,0.8);letter-spacing:0.1em;text-transform:uppercase;grid-column:1/-1;margin-bottom:2px;">Source Rating</span>
+              <span style="font-family:var(--font-mono);font-size:13px;color:var(--text-dim);text-transform:uppercase;">Given</span>
+              <span class="fragment" data-fragment-index="10" style="color:var(--text-muted);">E<sub>DC</sub> = 24 V,&nbsp; I<sub>DC</sub> = 4 A</span>
+              <span class="fragment" data-fragment-index="11" style="font-family:var(--font-mono);font-size:13px;color:var(--text-dim);text-transform:uppercase;">Formula</span>
+              <span class="fragment" data-fragment-index="11" style="color:var(--text-muted);">P = E × I</span>
+              <span class="fragment" data-fragment-index="12" style="font-family:var(--font-mono);font-size:13px;color:var(--text-dim);text-transform:uppercase;">Sub</span>
+              <span class="fragment" data-fragment-index="12" style="color:var(--text-muted);">P = 24 V × 4 A</span>
+              <span class="fragment" data-fragment-index="13" style="font-family:var(--font-mono);font-size:13px;color:var(--result);text-transform:uppercase;">Answer</span>
+              <span class="fragment" data-fragment-index="13" style="color:var(--result);font-weight:600;">P = 96 W</span>
+            </div>
+
+            <div class="callout-warn fragment fade-up" data-fragment-index="14" style="font-size:var(--small);margin-top:4px;">
+              <strong>Warning:</strong> Drawing more power than the source's rating can cause overheating and serious damage.
+            </div>
+
           </div>
         </div>
       </div>
@@ -967,11 +1052,11 @@
               <div class="spec-row"><span class="spec-label">Resistor 2 &amp; 3</span><span class="spec-value">120 Ω &nbsp;·&nbsp; ±5%</span></div>
               <div class="spec-row"><span class="spec-label">Resistor 4</span><span class="spec-value">200 kΩ &nbsp;·&nbsp; ±1% (capacitor exercises)</span></div>
             </div>
-            <table class="sym-table" style="margin-top:var(--gap);max-width:380px;">
+            <table class="sym-table" style="margin:var(--gap) auto 0;max-width:380px;">
               <tr><th>Component</th><th>Symbol</th></tr>
               <tr>
                 <td>Resistor</td>
-                <td><img src="EX5_Ohms_Law_Assets/img-034.png" class="f-img" style="height:28px;" alt="Resistor symbol"></td>
+                <td style="text-align:center;"><img src="EX5_Ohms_Law_Assets/img-034.png" class="f-img" style="height:28px;" alt="Resistor symbol"></td>
               </tr>
             </table>
           </div>
@@ -1001,11 +1086,15 @@
               <div class="spec-row"><span class="spec-label">Range</span><span class="spec-value">0 Ω to 125 Ω</span></div>
               <div class="spec-row"><span class="spec-label">Tolerance</span><span class="spec-value">±10%</span></div>
             </div>
-            <table class="sym-table" style="margin-top:var(--gap);max-width:380px;">
+            <table class="sym-table" style="margin:var(--gap) auto 0;max-width:380px;">
               <tr><th>Component</th><th>Symbol</th></tr>
               <tr>
+                <td>Rheostat</td>
+                <td style="text-align:center;"><img src="EX5_Ohms_Law_Assets/img-038.png" class="f-img" style="height:64px;" alt="Potentiometer symbol"></td>
+              </tr>
+              <tr>
                 <td>Potentiometer</td>
-                <td><img src="EX5_Ohms_Law_Assets/img-040.png" class="f-img" style="height:40px;" alt="Potentiometer symbol"></td>
+                <td style="text-align:center;"><img src="EX5_Ohms_Law_Assets/img-040.png" class="f-img" style="height:64px;" alt="Potentiometer symbol"></td>
               </tr>
             </table>
           </div>
@@ -1030,11 +1119,11 @@
               <div class="spec-row"><span class="spec-label">Type</span><span class="spec-value">Piezoelectric</span></div>
               <div class="spec-row"><span class="spec-label">Nominal voltage</span><span class="spec-value">24 V DC</span></div>
             </div>
-            <table class="sym-table" style="margin-top:var(--gap);max-width:380px;">
+            <table class="sym-table" style="margin:var(--gap) auto 0;max-width:380px;">
               <tr><th>Component</th><th>Symbol</th></tr>
               <tr>
                 <td style="font-size:22px;">Buzzer</td>
-                <td style="font-size:32px;letter-spacing:-2px;">⊓ )</td>
+                <td style="text-align:center;"><img src="EX5_Ohms_Law_Assets/img-044.png" class="f-img" style="height:64px;" alt="Buzzer symbol"></td>
               </tr>
             </table>
           </div>
@@ -1057,14 +1146,6 @@
             <p style="font-size:19px;color:var(--text-muted);line-height:1.5;">Opposition to current flow. Measured in ohms (Ω) with an ohmmeter connected in parallel.</p>
           </div>
           <div class="spec-box">
-            <div class="spec-row" style="font-family:var(--font-mono);font-size:20px;color:var(--accent);">Ohm's Law</div>
-            <p style="font-size:19px;color:var(--text-muted);line-height:1.5;">I = E/R &nbsp;·&nbsp; E = IR &nbsp;·&nbsp; R = E/I<br>Current ∝ voltage for constant R.</p>
-          </div>
-          <div class="spec-box">
-            <div class="spec-row" style="font-family:var(--font-mono);font-size:20px;color:var(--accent);">Power</div>
-            <p style="font-size:19px;color:var(--text-muted);line-height:1.5;">P = EI (watts). Combined with Ohm's law: P = E²/R or P = I²R.</p>
-          </div>
-          <div class="spec-box">
             <div class="spec-row" style="font-family:var(--font-mono);font-size:20px;color:var(--accent);">Conductors</div>
             <p style="font-size:19px;color:var(--text-muted);line-height:1.5;">Low-R materials (metals, copper) that allow current to flow easily.</p>
           </div>
@@ -1073,8 +1154,19 @@
             <p style="font-size:19px;color:var(--text-muted);line-height:1.5;">High-R materials (glass, plastic, ceramic) that block current flow.</p>
           </div>
           <div class="spec-box">
+            <div class="spec-row" style="font-family:var(--font-mono);font-size:20px;color:var(--accent);">Ohm's Law</div>
+            <img src="EX5_Ohms_Law_Assets/ohmsTriangle.png" class="tri-img" style="max-height:110px;margin-left:auto;margin-right:auto;" alt="Ohm's law triangle">
+            <p style="font-size:19px;color:var(--text-muted);line-height:1.5;">I = E/R &nbsp;·&nbsp; E = IR &nbsp;·&nbsp; R = E/I<br>Current ∝ voltage for constant R.</p>
+          </div>
+          <div class="spec-box">
+            <div class="spec-row" style="font-family:var(--font-mono);font-size:20px;color:var(--accent);">Power</div>
+            <img src="EX5_Ohms_Law_Assets/img-029.png" class="tri-img img-zoomable" style="max-height:110px; max-width:100%;margin-left:auto;margin-right:auto;" alt="Power circle P/E/I/R"">
+            <p style="font-size:19px;color:var(--text-muted);line-height:1.5;">P = EI (watts). Combined with Ohm's law: P = E²/R or P = I²R.</p>
+          </div>
+          <div class="spec-box">
             <div class="spec-row" style="font-family:var(--font-mono);font-size:20px;color:var(--accent);">Faults</div>
-            <p style="font-size:19px;color:var(--text-muted);line-height:1.5;">Short circuit → R ≈ 0, dangerously high I.<br>Open circuit → R = ∞, I = 0 A.</p>
+            <p style="font-size:19px;color:var(--text-muted);line-height:1.5;">Short circuit:<br/>&nbsp;&nbsp;R ≈ 0, dangerously high I.</p>
+            <p style="font-size:19px;color:var(--text-muted);line-height:1.5;">Open circuit:<br/>&nbsp;&nbsp;R = ∞, I = 0 A.</p>
           </div>
         </div>
       </div>
@@ -1086,6 +1178,32 @@
 <div id="storyboard" class="storyboard" aria-hidden="true">
   <div id="storyboard-track" class="storyboard-track"></div>
 </div>
+
+<div id="img-modal" role="dialog" aria-modal="true" aria-label="Image preview">
+  <button id="img-modal-close" onclick="closeImgModal()" aria-label="Close">&#x2715;</button>
+  <img id="img-modal-img" src="" alt="">
+</div>
+
+<script>
+  function openImgModal(src, alt) {
+    var modal = document.getElementById('img-modal');
+    document.getElementById('img-modal-img').src = src;
+    document.getElementById('img-modal-img').alt = alt || '';
+    modal.classList.add('open');
+    modal.focus();
+    document.addEventListener('keydown', _modalKeydown);
+  }
+  function closeImgModal() {
+    document.getElementById('img-modal').classList.remove('open');
+    document.removeEventListener('keydown', _modalKeydown);
+  }
+  function _modalKeydown(e) {
+    if (e.key === 'Escape') { e.stopPropagation(); closeImgModal(); }
+  }
+  document.getElementById('img-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeImgModal();
+  });
+</script>
 
 <script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
 <script>
