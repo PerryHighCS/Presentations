@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise 2: Switches</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — EX2 Switches
+   ============================================================ */
+
+/* ── Split grid helpers ──────────────────────────────────── */
+.split {
+  display: grid;
+  gap: var(--gap-lg);
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+}
+.split-50 { grid-template-columns: 1fr 1fr; }
+.split-40 { grid-template-columns: 2fr 3fr; }
+.split-60 { grid-template-columns: 3fr 2fr; }
+
+/* ── Image helpers ───────────────────────────────────────── */
+.img-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.img-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* ── Outcome card ────────────────────────────────────────── */
+.outcome-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.outcome-num {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 2px;
+}
+.outcome-text {
+  font-size: 18px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* ── Topic list ──────────────────────────────────────────── */
+.topic-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.topic-list li {
+  position: relative;
+  padding-left: 24px;
+  font-size: 21px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.topic-list li::before {
+  content: '▸';
+  color: var(--accent);
+  position: absolute;
+  left: 0;
+}
+
+/* ── Callout boxes ───────────────────────────────────────── */
+.callout {
+  background: var(--accent-dim);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.callout strong { color: var(--text); }
+
+.callout-warn {
+  background: rgba(255,209,102,0.08);
+  border-left: 3px solid var(--warn);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.callout-warn strong { color: var(--warn); }
+
+.callout-result {
+  background: rgba(77,255,176,0.06);
+  border-left: 3px solid var(--result);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.callout-result strong { color: var(--result); }
+
+/* ── Key property pill ───────────────────────────────────── */
+.key-prop {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.key-prop strong { color: var(--text); display: inline; }
+
+/* ── Component / Symbol table ────────────────────────────── */
+.sym-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--body);
+}
+.sym-table th {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  padding: 8px 20px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--text-dim);
+}
+.sym-table th:first-child { color: var(--accent); }
+.sym-table td {
+  border: 1px solid var(--accent-border);
+  padding: 12px 18px;
+  background: var(--bg-card);
+  text-align: center;
+  color: var(--text-muted);
+  vertical-align: middle;
+}
+.sym-table td:first-child {
+  text-align: left;
+  color: var(--text-muted);
+  font-size: 20px;
+}
+.sym-table td img {
+  margin: 0 auto;
+  max-width: 160px;
+}
+
+/* ── Image modal / lightbox ──────────────────────────────── */
+#img-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.82);
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+#img-modal.open { display: flex; }
+#img-modal-img {
+  max-width: 90vw;
+  max-height: 88vh;
+  border-radius: 8px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+  cursor: default;
+}
+#img-modal-close {
+  position: absolute;
+  top: 18px; right: 22px;
+  font-size: 36px;
+  color: #fff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.7;
+  padding: 0;
+}
+#img-modal-close:hover { opacity: 1; }
+.img-zoomable { cursor: zoom-in; }
+
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ═══ 1. TITLE ══════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner slide-center">
+        <div class="glow" style="width:700px;height:700px;background:radial-gradient(circle,rgba(42,143,255,0.12) 0%,transparent 70%);top:-200px;left:-100px;"></div>
+        <span class="slide-tag">Exercise 2</span>
+        <h1 class="title-h1"><span class="accent">Switches</span></h1>
+      </div>
+    </section>
+
+    <!-- ═══ 2. LEARNING OUTCOMES + TOPICS ════════════════════ -->
+    <section>
+      <div class="slide-inner">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-lg);width:100%;">
+
+          <div>
+            <span class="slide-tag" style="margin-bottom:12px;">Learning Outcomes</span>
+            <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+              <div class="outcome-card">
+                <div class="outcome-num">01</div>
+                <div class="outcome-text">List the most common <strong style="color:var(--text);">types of switches</strong></div>
+              </div>
+              <div class="outcome-card">
+                <div class="outcome-num">02</div>
+                <div class="outcome-text">Explain the <strong style="color:var(--text);">principles of operation</strong> of switches in electrical circuits</div>
+              </div>
+              <div class="outcome-card">
+                <div class="outcome-num">03</div>
+                <div class="outcome-text">Define the main <strong style="color:var(--text);">configurations</strong> of switches in electrical circuits</div>
+              </div>
+              <div class="outcome-card">
+                <div class="outcome-num">04</div>
+                <div class="outcome-text">Operate a training component: the <strong style="color:var(--text);">indicator light</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <span class="slide-tag" style="margin-bottom:12px;">Topics</span>
+            <ul class="topic-list">
+              <li>Switch types</li>
+              <li>Switch configurations</li>
+              <li>Training system component: the indicator light</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 3. WHAT IS A SWITCH? ══════════════════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Switch Types</span>
+        <h2>What is a Switch?</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              Switches are basic components of electrical circuits. Their main use is to <strong style="color:var(--accent);">prevent or allow</strong> the flow of electrical current at a particular point in a circuit.
+            </p>
+            <div class="key-prop fragment fade-up" data-fragment-index="0">
+              <strong>Open state:</strong> switch prevents current from flowing; the circuit is open and the load is off.
+            </div>
+            <div class="key-prop fragment fade-up" data-fragment-index="1">
+              <strong>Closed state:</strong> switch allows current to flow as if no switch were present; the load is on.
+            </div>
+            <div class="callout fragment fade-up" data-fragment-index="2">
+              Some switches can also <strong>divert</strong> current, allowing selection between which loads are powered.
+            </div>
+          </div>
+          <div class="img-center fragment fade-up" data-fragment-index="0">
+            <img src="EX2_Switches_Assets/img-002.png" class="photo-img img-zoomable"
+              style="max-height:400px;"
+              alt="Standard residential light switch"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 4. TOGGLE SWITCH ══════════════════════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Switch Types</span>
+        <h2>Toggle Switch</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              Operated manually using a <strong style="color:var(--text);">lever or handle</strong>. Allows selection between two states determined by the lever position. The most common example is the residential light switch.
+            </p>
+            <table class="sym-table" style="margin-top:var(--gap-sm);">
+              <thead>
+                <tr><th>Component</th><th>Symbol</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Toggle switch</td>
+                  <td><img src="EX2_Switches_Assets/img-000.png" class="f-img" alt="Toggle switch symbol"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="img-stack">
+            <img src="EX2_Switches_Assets/img-002.png" class="photo-img img-zoomable"
+              style="max-height:200px;max-width:100%;"
+              alt="Residential wall light switch"
+              onclick="openImgModal(this.src, this.alt)">
+            <img src="EX2_Switches_Assets/img-003.png" class="photo-img img-zoomable"
+              style="max-height:200px;max-width:100%;"
+              alt="Toggle switch hardware"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 5. KNIFE SWITCH ═══════════════════════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Switch Types</span>
+        <h2>Knife Switch</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              Consists of a <strong style="color:var(--text);">hinged metal lever</strong> that can be inserted into a slot (allowing contact) or removed from the slot (preventing contact).
+            </p>
+            <table class="sym-table" style="margin-top:var(--gap-sm);">
+              <thead>
+                <tr><th>Component</th><th>Symbol</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Knife switch</td>
+                  <td><img src="EX2_Switches_Assets/img-004.png" class="f-img" alt="Knife switch symbol"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="img-center">
+            <img src="EX2_Switches_Assets/img-006.png" class="photo-img img-zoomable"
+              style="max-height:380px;max-width:100%;"
+              alt="Knife switch hardware — metal lever inserted in slot"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 6. NO PUSH-BUTTON SWITCH ═════════════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Switch Types</span>
+        <h2>Normally Open Push-button Switch</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              Operated by a push button. When the button is <strong style="color:var(--text);">released</strong>, the switch is <strong style="color:var(--accent);">open</strong>. When the button is <strong style="color:var(--text);">pressed</strong>, the switch <strong style="color:var(--result);">closes</strong>.
+            </p>
+            <div class="callout fragment fade-up" data-fragment-index="0">
+              <strong>Example:</strong> a car horn is an NO push-button switch. Releasing the horn button opens the circuit; pressing it closes the circuit and produces sound.
+            </div>
+          </div>
+          <div>
+            <table class="sym-table">
+              <thead>
+                <tr><th>State</th><th>Symbol</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Open (button released)</td>
+                  <td><img src="EX2_Switches_Assets/img-007.png" class="f-img" alt="NO push-button open state symbol"></td>
+                </tr>
+                <tr>
+                  <td>Closed (button pressed)</td>
+                  <td><img src="EX2_Switches_Assets/img-009.png" class="f-img" alt="NO push-button closed state symbol"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 7. NC PUSH-BUTTON SWITCH ═════════════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Switch Types</span>
+        <h2>Normally Closed Push-button Switch</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              When the button is <strong style="color:var(--text);">released</strong>, the switch is <strong style="color:var(--result);">closed</strong>. When the button is <strong style="color:var(--text);">pressed</strong>, the switch <strong style="color:var(--accent);">opens</strong>.
+            </p>
+            <div class="callout fragment fade-up" data-fragment-index="0">
+              <strong>Example:</strong> a refrigerator door light. When the door is closed (button pressed), the circuit is open and the light is off. When the door opens, the circuit closes and the light turns on.
+            </div>
+            <div class="callout-warn fragment fade-up" data-fragment-index="1">
+              <strong>Emergency stop buttons</strong> are NC switches. Current flows normally until the button is pressed, cutting power in an emergency.
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:var(--gap);">
+            <table class="sym-table">
+              <thead>
+                <tr><th>State</th><th>Symbol</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Closed (button released)</td>
+                  <td><img src="EX2_Switches_Assets/img-011.png" class="f-img" alt="NC push-button closed state symbol"></td>
+                </tr>
+                <tr>
+                  <td>Open (button pressed)</td>
+                  <td><img src="EX2_Switches_Assets/img-013.png" class="f-img" alt="NC push-button open state symbol"></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="img-center fragment fade-up" data-fragment-index="1">
+              <img src="EX2_Switches_Assets/img-017.png" class="photo-img img-zoomable"
+                style="max-height:180px;"
+                alt="Emergency stop push-button (NC switch)"
+                onclick="openImgModal(this.src, this.alt)">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 8. SELECTOR SWITCH ════════════════════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Switch Types</span>
+        <h2>Selector Switch</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              Manually operated using a <strong style="color:var(--text);">rotating knob</strong>. Allows selection between two or more positions, each making contact at a different branch in the circuit.
+            </p>
+            <div class="callout fragment fade-up" data-fragment-index="0">
+              From a single circuit branch, the selector switch allows connection to any of several different circuit branches.
+            </div>
+            <table class="sym-table" style="margin-top:var(--gap-sm);">
+              <thead>
+                <tr><th>Component</th><th>Symbol</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Selector switch</td>
+                  <td><img src="EX2_Switches_Assets/img-015.png" class="f-img" alt="Selector switch symbol (3-position)"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="img-center">
+            <img src="EX2_Switches_Assets/img-018.png" class="photo-img img-zoomable"
+              style="max-height:380px;max-width:100%;"
+              alt="Selector switch hardware with rotating knob"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 9. POLES AND THROWS ═══════════════════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Switch Configurations</span>
+        <h2>Poles and Throws</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              In addition to switch type, switches are also classified by their <strong style="color:var(--accent);">configuration</strong>, defined by the number of poles and throws.
+            </p>
+            <div class="key-prop fragment fade-up" data-fragment-index="0">
+              <strong>Poles</strong> indicate the number of separate circuits (or circuit branches) controlled by the switch. A double-pole switch controls two circuits simultaneously.
+            </div>
+            <div class="key-prop fragment fade-up" data-fragment-index="1">
+              <strong>Throws</strong> indicate the number of contacts (circuit paths) the switch can connect to. A double-throw switch can connect to two different circuit paths.
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX2_Switches_Assets/img-019.png" class="c-img img-zoomable"
+              style="max-width:100%;"
+              alt="Diagram labelling switch pole and switch throws"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 10. SPST ══════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Switch Configurations</span>
+        <h2>Single-Pole Single-Throw (SPST)</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              The simplest switch configuration. Controls <strong style="color:var(--text);">one circuit</strong> and can make contact with <strong style="color:var(--text);">one circuit path</strong>.
+            </p>
+            <div class="key-prop fragment fade-up" data-fragment-index="0">
+              <strong>On/off switch:</strong> the SPST either opens or closes a single circuit branch.
+            </div>
+            <div class="callout fragment fade-up" data-fragment-index="1">
+              The toggle switch and knife switch are typically SPST configurations.
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX2_Switches_Assets/img-021.png" class="c-img img-zoomable"
+              style="max-width:100%;"
+              alt="SPST circuit with DC power source, SPST switch, and indicator light"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 11. DPST ══════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Switch Configurations</span>
+        <h2>Double-Pole Single-Throw (DPST)</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              Operates as <strong style="color:var(--text);">two SPST switches</strong> actuated by the same mechanism. Controls <strong style="color:var(--text);">two circuits</strong> simultaneously with a single throw.
+            </p>
+            <div class="key-prop fragment fade-up" data-fragment-index="0">
+              <strong>On/off for two circuits:</strong> both circuit branches are opened or closed together at the same time.
+            </div>
+            <div class="callout fragment fade-up" data-fragment-index="1">
+              The dashed line in the symbol indicates the two switch contacts are mechanically linked and actuated together.
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX2_Switches_Assets/img-023.png" class="c-img img-zoomable"
+              style="max-width:100%;"
+              alt="DPST circuit with DC power source, DPST switch, and two indicator lights"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 12. SPDT ══════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Switch Configurations</span>
+        <h2>Single-Pole Double-Throw (SPDT)</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              Controls <strong style="color:var(--text);">one circuit</strong> but can connect to <strong style="color:var(--text);">two different circuit paths</strong>. The switch selects which of the two branches receives current.
+            </p>
+            <div class="key-prop fragment fade-up" data-fragment-index="0">
+              <strong>Always connected:</strong> the SPDT cannot fully open the circuit; current always flows through one of the two branches.
+            </div>
+            <div class="callout fragment fade-up" data-fragment-index="1">
+              The selector switch is typically used in an SPDT configuration when selecting between two circuit branches.
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX2_Switches_Assets/img-025.png" class="c-img img-zoomable"
+              style="max-width:100%;"
+              alt="SPDT circuit with DC power source, SPDT switch, and two indicator lights"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 13. DPDT ══════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Switch Configurations</span>
+        <h2>Double-Pole Double-Throw (DPDT)</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              Operates as <strong style="color:var(--text);">two SPDT switches</strong> actuated together. Controls <strong style="color:var(--text);">two circuits</strong> and selects between <strong style="color:var(--text);">two paths</strong> in each.
+            </p>
+            <div class="key-prop fragment fade-up" data-fragment-index="0">
+              In the upper position: lights 1 and 3 are on; lights 2 and 4 are off.
+            </div>
+            <div class="key-prop fragment fade-up" data-fragment-index="1">
+              In the lower position: lights 2 and 4 are on; lights 1 and 3 are off.
+            </div>
+            <div class="callout-warn fragment fade-up" data-fragment-index="2">
+              Like the SPDT, the DPDT cannot fully open the circuit; current always flows through two branches.
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX2_Switches_Assets/img-029.png" class="c-img img-zoomable"
+              style="max-width:100%;"
+              alt="DPDT circuit with DC power source, DPDT switch, and four indicator lights"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 14. INDICATOR LIGHT ═══════════════════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Training Component</span>
+        <h2>The Indicator Light</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              A basic circuit component consisting of a lamp, designed to produce light from electricity.
+            </p>
+            <table class="sym-table">
+              <thead>
+                <tr><th>Component</th><th>Symbol</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Indicator light</td>
+                  <td><img src="EX2_Switches_Assets/img-027.png" class="f-img" alt="Indicator light symbol"></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="key-prop fragment fade-up" data-fragment-index="0">
+              <strong>Incandescent:</strong> passes current through a tungsten filament; the filament heats up and glows (incandescence).
+            </div>
+            <div class="key-prop fragment fade-up" data-fragment-index="1">
+              <strong>LED:</strong> emits light through a semiconductor when a voltage is applied (electroluminescence). More energy efficient and durable.
+            </div>
+            <div class="callout fragment fade-up" data-fragment-index="2">
+              The AC/DC Training System uses <strong>24 V, 2 W LED indicator lamps</strong> (newer versions replaced the original incandescent lamps).
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX2_Switches_Assets/img-031.png" class="photo-img img-zoomable"
+              style="max-height:420px;max-width:100%;"
+              alt="Incandescent light bulb anatomy: tungsten filament, contact wires, support wires, electrical contact"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 15. SUMMARY ═══════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Summary</span>
+        <h2>Switches: Types &amp; Configurations</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-lg);margin-top:var(--gap);flex:1;align-content:start;">
+
+          <div>
+            <p style="font-family:var(--font-mono);font-size:15px;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:var(--gap-sm);">Switch Types</p>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div class="key-prop fragment fade-up" data-fragment-index="0" style="padding:10px 16px;">
+                <strong>Toggle:</strong> lever-operated; two states
+              </div>
+              <div class="key-prop fragment fade-up" data-fragment-index="1" style="padding:10px 16px;">
+                <strong>Knife:</strong> hinged lever inserted/removed from slot
+              </div>
+              <div class="key-prop fragment fade-up" data-fragment-index="2" style="padding:10px 16px;">
+                <strong>NO push-button:</strong> open at rest; closed when pressed
+              </div>
+              <div class="key-prop fragment fade-up" data-fragment-index="3" style="padding:10px 16px;">
+                <strong>NC push-button:</strong> closed at rest; open when pressed
+              </div>
+              <div class="key-prop fragment fade-up" data-fragment-index="4" style="padding:10px 16px;">
+                <strong>Selector:</strong> rotating knob; connects to one of several branches
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p style="font-family:var(--font-mono);font-size:15px;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:var(--gap-sm);">Switch Configurations</p>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div class="key-prop fragment fade-up" data-fragment-index="5" style="padding:10px 16px;">
+                <strong>SPST:</strong> 1 pole, 1 throw &mdash; simple on/off for one circuit
+              </div>
+              <div class="key-prop fragment fade-up" data-fragment-index="6" style="padding:10px 16px;">
+                <strong>DPST:</strong> 2 poles, 1 throw &mdash; on/off for two circuits simultaneously
+              </div>
+              <div class="key-prop fragment fade-up" data-fragment-index="7" style="padding:10px 16px;">
+                <strong>SPDT:</strong> 1 pole, 2 throws &mdash; selects between two paths; always connected
+              </div>
+              <div class="key-prop fragment fade-up" data-fragment-index="8" style="padding:10px 16px;">
+                <strong>DPDT:</strong> 2 poles, 2 throws &mdash; two linked SPDT; always connected in two branches
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div id="img-modal" role="dialog" aria-modal="true" aria-label="Image preview">
+  <button id="img-modal-close" onclick="closeImgModal()" aria-label="Close">&#x2715;</button>
+  <img id="img-modal-img" src="" alt="">
+</div>
+
+<script>
+  function openImgModal(src, alt) {
+    var modal = document.getElementById('img-modal');
+    document.getElementById('img-modal-img').src = src;
+    document.getElementById('img-modal-img').alt = alt || '';
+    modal.classList.add('open');
+    modal.focus();
+    document.addEventListener('keydown', _modalKeydown);
+  }
+  function closeImgModal() {
+    document.getElementById('img-modal').classList.remove('open');
+    document.removeEventListener('keydown', _modalKeydown);
+  }
+  function _modalKeydown(e) {
+    if (e.key === 'Escape') { e.stopPropagation(); closeImgModal(); }
+  }
+  document.getElementById('img-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeImgModal();
+  });
+</script>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'ex2-switches',
+  revealOverrides: {
+    slideNumber: 'c/t',
+  },
+});
+</script>
+</body>
+</html>
