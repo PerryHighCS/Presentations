@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise 3: Series and Parallel Circuits</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — EX3 Series and Parallel Circuits
+   ============================================================ */
+
+/* ── Split grid helpers ──────────────────────────────────── */
+.split {
+  display: grid;
+  gap: var(--gap-lg);
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+}
+.split-50 { grid-template-columns: 1fr 1fr; }
+.split-40 { grid-template-columns: 2fr 3fr; }
+.split-60 { grid-template-columns: 3fr 2fr; }
+
+/* ── Image helpers ───────────────────────────────────────── */
+.img-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* ── Outcome card ────────────────────────────────────────── */
+.outcome-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.outcome-num {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 2px;
+}
+.outcome-text {
+  font-size: 18px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* ── Topic list ──────────────────────────────────────────── */
+.topic-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.topic-list li {
+  position: relative;
+  padding-left: 24px;
+  font-size: 21px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.topic-list li::before {
+  content: '▸';
+  color: var(--accent);
+  position: absolute;
+  left: 0;
+}
+
+/* ── Callout boxes ───────────────────────────────────────── */
+.callout {
+  background: var(--accent-dim);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.callout strong { color: var(--text); }
+
+.callout-warn {
+  background: rgba(255,209,102,0.08);
+  border-left: 3px solid var(--warn);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.callout-warn strong { color: var(--warn); }
+
+.callout-result {
+  background: rgba(77,255,176,0.06);
+  border-left: 3px solid var(--result);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.callout-result strong { color: var(--result); }
+
+/* ── Key property pill ───────────────────────────────────── */
+.key-prop {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.key-prop strong { color: var(--text); display: inline; }
+
+/* ── Comparison table ────────────────────────────────────── */
+.cmp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--body);
+  margin-top: var(--gap);
+}
+.cmp-table th {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  padding: 10px 20px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.cmp-table th:nth-child(2) { color: var(--accent); }
+.cmp-table th:nth-child(3) { color: var(--warn); }
+.cmp-table td {
+  border: 1px solid var(--accent-border);
+  padding: 12px 18px;
+  background: var(--bg-card);
+  text-align: center;
+  color: var(--text-muted);
+}
+.cmp-table tr td:first-child {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+/* ── Image modal / lightbox ──────────────────────────────── */
+#img-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.82);
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+#img-modal.open { display: flex; }
+#img-modal-img {
+  max-width: 90vw;
+  max-height: 88vh;
+  border-radius: 8px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+  cursor: default;
+}
+#img-modal-close {
+  position: absolute;
+  top: 18px; right: 22px;
+  font-size: 36px;
+  color: #fff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.7;
+  padding: 0;
+}
+#img-modal-close:hover { opacity: 1; }
+.img-zoomable { cursor: zoom-in; }
+
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ═══ 1. TITLE ══════════════════════════════════════════ -->
+    <section>
+      <div class="slide-inner slide-center">
+        <div class="glow" style="width:700px;height:700px;background:radial-gradient(circle,rgba(42,143,255,0.12) 0%,transparent 70%);top:-200px;left:-100px;"></div>
+        <span class="slide-tag">Exercise 3</span>
+        <h1 class="title-h1">Series &amp;<br><span class="accent">Parallel Circuits</span></h1>
+      </div>
+    </section>
+
+    <!-- ═══ 2. LEARNING OUTCOME + TOPICS ═════════════════════ -->
+    <section>
+      <div class="slide-inner">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-lg);width:100%;">
+
+          <div>
+            <span class="slide-tag" style="margin-bottom:12px;">Learning Outcome</span>
+            <div class="outcome-card">
+              <div class="outcome-num">01</div>
+              <div class="outcome-text">Explain the principles of operation of <strong style="color:var(--text);">series circuits</strong> and <strong style="color:var(--text);">parallel circuits</strong></div>
+            </div>
+          </div>
+
+          <div>
+            <span class="slide-tag" style="margin-bottom:12px;">Topics</span>
+            <ul class="topic-list">
+              <li>What is a series circuit?</li>
+              <li>Series circuit examples: switches and loads</li>
+              <li>What is a parallel circuit?</li>
+              <li>Parallel circuit examples: independent control</li>
+              <li>Real-world application: car interior light</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 3. SERIES CIRCUITS: INTRODUCTION ═════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Series Circuits</span>
+        <h2>What is a Series Circuit?</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              In a <strong style="color:var(--accent);">series circuit</strong>, components are connected along a <strong style="color:var(--text);">single path</strong>. The same electrical current flows through every component in the circuit.
+            </p>
+            <div class="key-prop fragment fade-up">
+              <strong>One path only:</strong> current has no alternative route through the circuit.
+            </div>
+            <div class="key-prop fragment fade-up">
+              <strong>Same current everywhere:</strong> I<sub>S</sub> is identical through every component.
+            </div>
+            <div class="callout-warn fragment fade-up">
+              <strong>Break = total failure:</strong> removing any one component opens the circuit and stops current flow to all others.
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX3_Series_Parallel_Assets/img-000.png" class="c-img img-zoomable" style="max-width:100%;" alt="Series circuit with three indicator lights showing I_S through each"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 4. SERIES CIRCUIT: SWITCH CONTROL ════════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Series Circuits</span>
+        <h2>Switch Control in a Series Circuit</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              A switch placed in a series circuit controls <strong style="color:var(--text);">all components at the same time</strong>.
+            </p>
+            <div class="key-prop fragment fade-up">
+              <strong>Switch open:</strong> no current flows; the indicator light and the buzzer are both off.
+            </div>
+            <div class="key-prop fragment fade-up">
+              <strong>Switch closed:</strong> current flows through both the indicator light and the buzzer simultaneously.
+            </div>
+            <div class="callout fragment fade-up" style="margin-top:4px;">
+              In a series circuit, <strong>independent control</strong> of individual components is not possible. One switch governs everything.
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX3_Series_Parallel_Assets/img-002.png" class="c-img img-zoomable" style="max-width:100%;" alt="Series circuit with toggle switch controlling indicator light and buzzer"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 5. SERIES CIRCUIT: MULTIPLE SWITCHES ═════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Series Circuits</span>
+        <h2>Series Circuit: Multiple Switches</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              Multiple NO push-button switches can be wired in series with several indicator lights. Since there is only one current path, the rule is strict:
+            </p>
+            <div class="callout-warn fragment fade-up">
+              <strong>All switches must be pressed simultaneously</strong> for current to flow and any light to turn on.
+            </div>
+            <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              Releasing even one switch opens the circuit, stopping current and turning all lights off.
+            </p>
+            <div class="callout fragment fade-up">
+              This is an AND logic gate in hardware: output is on only when input 1 <strong>AND</strong> input 2 <strong>AND</strong> input 3 are all active.
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX3_Series_Parallel_Assets/img-004.png" class="c-img img-zoomable" style="max-width:100%;" alt="Series circuit with three NO push-button switches and three indicator lights"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 6. PARALLEL CIRCUITS: INTRODUCTION ═══════════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Parallel Circuits</span>
+        <h2>What is a Parallel Circuit?</h2>
+        <div class="split split-40" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              In a <strong style="color:var(--warn);">parallel circuit</strong>, components are connected along <strong style="color:var(--text);">more than one path</strong>. The source current I<sub>S</sub> splits into separate branch currents (I<sub>1</sub>, I<sub>2</sub>, I<sub>3</sub>) at each junction.
+            </p>
+            <div class="key-prop fragment fade-up">
+              <strong>Multiple paths:</strong> current divides across branches; each component gets its own current.
+            </div>
+            <div class="key-prop fragment fade-up">
+              <strong>I<sub>S</sub> = I<sub>1</sub> + I<sub>2</sub> + I<sub>3</sub>:</strong> branch currents recombine to equal the source current.
+            </div>
+            <div class="callout-result fragment fade-up">
+              <strong>Fault tolerance:</strong> removing one component only breaks that branch. All other branches continue to operate normally.
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX3_Series_Parallel_Assets/img-006.png" class="c-img img-zoomable" style="max-width:100%;" alt="Parallel circuit with three indicator lights showing I1, I2, I3 branch currents"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 7. PARALLEL CIRCUIT: INDEPENDENT CONTROL ═════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Parallel Circuits</span>
+        <h2>Independent Branch Control</h2>
+        <div class="split split-40" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              Placing a toggle switch in each branch of a parallel circuit gives <strong style="color:var(--text);">independent control</strong> over each component.
+            </p>
+            <div class="key-prop fragment fade-up">
+              <strong>S<sub>1</sub> open:</strong> light 1 is off. Lights 2 and 3 (with S<sub>2</sub> and S<sub>3</sub> closed) stay on.
+            </div>
+            <div class="key-prop fragment fade-up">
+              <strong>Any combination:</strong> each switch controls only its own branch, with no effect on the others.
+            </div>
+            <div class="callout fragment fade-up" style="margin-top:4px;">
+              This is the fundamental advantage of parallel wiring over series: each branch can be switched on or off independently.
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX3_Series_Parallel_Assets/img-008.png" class="c-img img-zoomable" style="max-width:100%;" alt="Parallel circuit with toggle switches S1 S2 S3 independently controlling three lights"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 8. REAL-WORLD EXAMPLE: CAR INTERIOR LIGHT ════════ -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Parallel Circuits</span>
+        <h2>Real-World Example: Car Interior Light</h2>
+        <div class="split split-50" style="flex:1;margin-top:var(--gap);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">
+              A car interior light uses four <strong style="color:var(--text);">NC push-button switches</strong> wired in parallel, one in each door hinge.
+            </p>
+            <div class="key-prop fragment fade-up">
+              <strong>All doors closed:</strong> all four NC switches are pressed open; no current path exists; light is off.
+            </div>
+            <div class="key-prop fragment fade-up">
+              <strong>Any door opens:</strong> its NC switch releases and closes; a current path forms; the light turns on.
+            </div>
+            <div class="callout-result fragment fade-up" style="margin-top:4px;">
+              Because the switches are in <strong>parallel</strong>, opening any single door is sufficient to complete the circuit. This is an OR logic gate: light on when door 1 <strong>OR</strong> door 2 <strong>OR</strong> door 3 <strong>OR</strong> door 4 is open.
+            </div>
+          </div>
+          <div class="img-center">
+            <img src="EX3_Series_Parallel_Assets/img-010.png" class="c-img img-zoomable" style="max-width:100%;" alt="Car interior light circuit with four parallel NC push-button switches"
+              onclick="openImgModal(this.src, this.alt)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ 9. SUMMARY: SERIES vs PARALLEL ═══════════════════ -->
+    <section>
+      <div class="slide-inner slide-center" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Exercise 3: Summary</span>
+        <h2>Series vs. Parallel</h2>
+        <table class="cmp-table" style="margin-top:var(--gap);">
+          <tr>
+            <th></th>
+            <th>Series Circuit</th>
+            <th style="color:var(--warn);">Parallel Circuit</th>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);">Current paths</td>
+            <td>One single path</td>
+            <td>Multiple paths (branches)</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);">Current value</td>
+            <td>Same through all components (I<sub>S</sub>)</td>
+            <td>Divides across branches (I<sub>1</sub> + I<sub>2</sub> + … = I<sub>S</sub>)</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);">Component removed</td>
+            <td>Circuit opens; all components stop</td>
+            <td>Only that branch stops; others continue</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);">Switch control</td>
+            <td>One switch controls everything</td>
+            <td>Each branch switch controls only its branch</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent);">Switch logic</td>
+            <td>AND (all switches must be closed)</td>
+            <td>OR (any one switch can complete the circuit)</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div id="img-modal" role="dialog" aria-modal="true" aria-label="Image preview">
+  <button id="img-modal-close" onclick="closeImgModal()" aria-label="Close">&#x2715;</button>
+  <img id="img-modal-img" src="" alt="">
+</div>
+
+<script>
+  function openImgModal(src, alt) {
+    var modal = document.getElementById('img-modal');
+    document.getElementById('img-modal-img').src = src;
+    document.getElementById('img-modal-img').alt = alt || '';
+    modal.classList.add('open');
+    modal.focus();
+    document.addEventListener('keydown', _modalKeydown);
+  }
+  function closeImgModal() {
+    document.getElementById('img-modal').classList.remove('open');
+    document.removeEventListener('keydown', _modalKeydown);
+  }
+  function _modalKeydown(e) {
+    if (e.key === 'Escape') { e.stopPropagation(); closeImgModal(); }
+  }
+  document.getElementById('img-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeImgModal();
+  });
+</script>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'ex3-series-and-parallel-circuits',
+  revealOverrides: {
+    slideNumber: 'c/t',
+  },
+});
+</script>
+</body>
+</html>
