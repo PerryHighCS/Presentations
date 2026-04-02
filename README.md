@@ -3,6 +3,11 @@ Manageable HTML presentations using the [SyncDeck-Reveal](https://github.com/per
 SyncDeck Activity on [ActiveBits](https://bits.mycode.run/manage) to synchronize presentation and activities across
 instructor and students.
 
+# Development
+Claude has the syncdeck skill to convert notes/pdfs to a base syncdeck presentation in html.
+
+`npm run dev` will start a HMR dev server to allow live editing of the html presentations.
+
 ## License
 Presentation content in this repository is licensed under
 **CC BY-NC 4.0**.
