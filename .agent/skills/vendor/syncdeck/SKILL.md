@@ -90,7 +90,7 @@ Required implications:
         // Optional override. Defaults to the current page URL.
         // presentationUrl: 'https://slides.example/my-deck.html',
         // Optional CTA label / timeout tuning.
-        // ctaLabel: 'Activate SyncDeck',
+        // ctaLabel: 'Host in SyncDeck',
         // ctaTimeoutMs: 9000,
       },
       storyboard: {
