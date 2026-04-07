@@ -48,7 +48,7 @@ Required implications:
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Presentation Title</title>
-  <link rel="stylesheet" href="https://unpkg.com/reveal.js@5/dist/reveal.css">
+  <link rel="stylesheet" href="{runtime-path}/syncdeck-reveal/dist/syncdeck-reveal.css">
   <style>
     /* Add custom theme CSS here. See references/STYLE_PRESETS.md */
   </style>
@@ -65,32 +65,57 @@ Required implications:
     </div>
   </div>
 
-  <script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
+  <div id="storyboard" class="storyboard" aria-hidden="true">
+    <div id="storyboard-track" class="storyboard-track"></div>
+  </div>
+
+  <script src="{runtime-path}/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
   <script>
-    Reveal.initialize({
-      hash: true,
-      hashOneBasedIndex: true,
-      transition: 'fade',
-      transitionSpeed: 'fast',
-      backgroundTransition: 'none',
-      center: false,
-      controls: true,
-      controlsLayout: 'edges',
-      progress: true,
-      slideNumber: 'c/t',
-      keyboard: true,
-      touch: true,
-      fragments: true,
-      width: 1600,
-      height: 900,
-      margin: 0.04,
-      minScale: 0.2,
-      maxScale: 2.5,
+    initSyncDeckReveal({
+      deckId: 'my-deck-name',
+      iframeSyncOverrides: {
+        // Optional per-deck iframeSync overrides
+      },
+      revealOverrides: {
+        // Optional per-deck Reveal overrides
+      },
+      chalkboardOverrides: {
+        // Optional chalkboard overrides. Do not set storage.
+      },
+      standaloneHosting: {
+        // Standalone CTA that opens the deck in ActiveBits SyncDeck.
+        activeBitsOrigin: 'https://bits.mycode.run',
+        // Optional override. Defaults to /util/syncdeck/launch-presentation
+        // launchPath: '/util/syncdeck/launch-presentation',
+        // Optional override. Defaults to the current page URL.
+        // presentationUrl: 'https://slides.example/my-deck.html',
+        // Optional CTA label / timeout tuning.
+        // ctaLabel: 'Host in SyncDeck',
+        // ctaTimeoutMs: 9000,
+      },
+      storyboard: {
+        // Optional: storyboardId / trackId / toggleKey
+      },
+      afterInit: function (Reveal) {
+        // Optional deck-specific hooks
+      },
     });
   </script>
 </body>
 </html>
 ```
+
+Replace `{runtime-path}` with a relative path from the deck's published URL to
+the directory that hosts the SyncDeck runtime bundle. The correct value depends
+on your deployment's directory structure — check the local repo's skill overrides
+or deployment docs for the concrete path used in your environment.
+
+The bundle provides `Reveal`, `RevealNotes`, `RevealChalkboard`, `RevealIframeSync`, `initRevealStoryboard`, and `initSyncDeckReveal`. Do not add CDN links for Reveal.js or its plugins when authoring SyncDeck decks.
+
+The bundle also exposes `buildSyncDeckLaunchUrl(...)` and
+`launchPresentationInSyncDeck(...)`, but deck authors should usually enable the
+behavior through `initSyncDeckReveal({ standaloneHosting: ... })` so the
+runtime can show the short-lived standalone CTA automatically.
 
 ## Required Layout Conventions
 
@@ -98,13 +123,6 @@ Required implications:
 - Keep each top-level slide visually complete at 16:9.
 - Use fragments for progressive reveal when a presenter needs pacing.
 - Use semantic controls and accessible names for any custom buttons or toggles.
-
-## Default Add-Ons
-
-Unless the user asks otherwise, deck builds should include:
-
-1. A toggleable storyboard strip driven by `vendor/SyncDeck-Reveal/js/reveal-storyboard.js`
-2. Iframe sync wiring driven by `vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js` when the deck will be hosted in SyncDeck or another parent shell
 
 ## Storyboard Contract
 
@@ -116,22 +134,7 @@ Include storyboard markup:
 </div>
 ```
 
-Include runtime wiring after `Reveal.initialize(...)`:
-
-```html
-<script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
-<script src="../vendor/SyncDeck-Reveal/js/reveal-storyboard.js"></script>
-<script>
-if (window.initRevealStoryboard) {
-  window.initRevealStoryboard({
-    reveal: Reveal,
-    storyboardId: 'storyboard',
-    trackId: 'storyboard-track',
-    toggleKey: 'm',
-  });
-}
-</script>
-```
+Place it as a sibling of `.reveal`, not inside `.slides`.
 
 Storyboard expectations:
 
@@ -143,24 +146,22 @@ Storyboard expectations:
 
 ## Iframe Sync Contract
 
-When a parent host should control the deck, load the iframe sync runtime and register the plugin:
+When a parent host should control the deck, initialize with `initSyncDeckReveal(...)` and pass any sync-specific settings through `iframeSyncOverrides`:
 
 ```html
-<script src="https://unpkg.com/reveal.js@5/dist/reveal.js"></script>
-<script src="../vendor/SyncDeck-Reveal/js/reveal-iframe-sync.js"></script>
+<script src="{runtime-path}/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
 <script>
-Reveal.initialize({
-  plugins: [RevealIframeSync].filter(Boolean),
-  iframeSync: {
-    deckId: 'my-unique-deck-id',
+initSyncDeckReveal({
+  deckId: 'my-unique-deck-id',
+  iframeSyncOverrides: {
     // IMPORTANT:
     // - In development you may be tempted to use hostOrigin: '*' and allowedOrigins: ['*'].
     //   That disables origin validation and MUST NOT be used in production decks.
     // - In production, always restrict to the exact host origin(s) that are allowed to
     //   control this deck via postMessage.
-    hostOrigin: 'https://bits.mycode.run',
+    hostOrigin: 'https://your-host.example',
     allowedOrigins: [
-      'https://bits.mycode.run',
+      'https://your-host.example',
     ],
   },
 });
@@ -169,9 +170,32 @@ Reveal.initialize({
 
 Non-negotiable checks:
 
-- `RevealIframeSync` must be listed in `plugins`
 - `deckId` must be unique and must match what the host targets
+- use `initSyncDeckReveal(...)` rather than calling `Reveal.initialize(...)` directly
 - the host, not the deck markup, should decide runtime role changes
+
+Role lifecycle:
+
+- decks always initialize in `standalone` mode
+- the host must send `setRole` to promote to `instructor` or `student`
+- do not rely on a `role` config field to set the initial role
+
+Standalone hosting launch:
+
+- the standalone CTA is opt-in and only appears when `standaloneHosting.activeBitsOrigin` is provided
+- the deck should provide a canonical absolute `http(s)` presentation URL; if omitted, the runtime uses the current page URL without the hash
+- the runtime opens ActiveBits at `/util/syncdeck/launch-presentation`
+- this launch flow is separate from normal hosted iframe sync behavior
+
+Overview routing:
+
+- Reveal's built-in grid overview is intentionally routed to the storyboard strip in synced student views
+- `overview: true/false` inside synced `setState` traffic becomes `reveal-storyboard-set` DOM events rather than a native Reveal overview state
+
+Chalkboard persistence:
+
+- do not set `chalkboard.storage`
+- the host is the source of truth for drawing state and local storage would diverge after reloads
 
 For command details and message shapes, read `references/IFRAME_SYNC_PROTOCOL.md`.
 
