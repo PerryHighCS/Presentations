@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inheritance — AP CSA</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap">
+
+<link rel="stylesheet" href="../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Inheritance
+   ============================================================ */
+
+/* Body paragraph — full sentences, readable at a glance */
+.p-body {
+  font-size: 24px;
+  line-height: 1.8;
+  color: rgba(221,238,255,0.62);
+  max-width: 940px;
+  margin: 0;
+}
+.p-body + .p-body {
+  margin-top: 0.9em;
+}
+.p-body strong {
+  color: rgba(221,238,255,0.88);
+  font-weight: 700;
+}
+
+/* Smaller body for tighter slides */
+.p-sm {
+  font-size: 21px;
+  line-height: 1.75;
+  color: rgba(221,238,255,0.60);
+  margin: 0;
+}
+.p-sm + .p-sm { margin-top: 0.7em; }
+.p-sm strong { color: rgba(221,238,255,0.85); }
+
+/* Diagram image wrapper */
+.diagram-img {
+  display: block;
+  max-width: 100%;
+  max-height: 460px;
+  object-fit: contain;
+  border: 1px solid rgba(0,255,65,0.15);
+  border-radius: 4px;
+}
+.diagram-img.portrait { max-height: 400px; max-width: 260px; }
+.diagram-img.wide     { max-height: 380px; }
+
+/* Link card — matches lists.html */
+.link-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.65em 1.3em;
+  background: rgba(0,255,65,0.08);
+  border: 1px solid rgba(0,255,65,0.45);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: var(--body);
+  color: var(--phosphor);
+  text-decoration: none;
+  transition: background 0.18s, border-color 0.18s;
+}
+.link-card:hover {
+  background: rgba(0,255,65,0.15);
+  border-color: var(--phosphor);
+  color: var(--phosphor);
+}
+.link-card::before { content: '⬡ '; font-size: 0.85em; }
+
+.link-card.amber {
+  background: rgba(255,224,51,0.07);
+  border-color: rgba(255,224,51,0.45);
+  color: var(--amber);
+}
+.link-card.amber:hover {
+  background: rgba(255,224,51,0.14);
+  border-color: var(--amber);
+  color: var(--amber);
+}
+.link-card.amber::before { content: '▶ '; }
+
+/* MCQ answer reveal list */
+.mcq-reveal {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  margin-top: var(--gap);
+}
+.mcq-reveal li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  font-size: 22px;
+  font-family: var(--font-mono);
+}
+.mcq-reveal .mk { font-size: 18px; flex-shrink: 0; width: 1.4em; }
+.mcq-reveal .correct { color: var(--green); }
+.mcq-reveal .wrong   { color: rgba(255,77,106,0.65); }
+.mcq-reveal .why     { font-size: 17px; color: var(--text-dim); }
+
+/* Hint / info note box */
+.hint-box {
+  background: rgba(0,255,65,0.04);
+  border: 1px solid rgba(0,255,65,0.18);
+  border-left: 3px solid rgba(0,255,65,0.45);
+  border-radius: 3px;
+  padding: 0.55em 1em;
+  font-size: 19px;
+  color: rgba(221,238,255,0.5);
+  line-height: 1.6;
+}
+
+/* Karl pixel zombie centering block */
+.karl-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap);
+}
+
+/* Error callout */
+.err-box {
+  background: rgba(255,77,106,0.06);
+  border: 1px solid rgba(255,77,106,0.4);
+  border-left: 3px solid var(--red);
+  border-radius: 3px;
+  padding: 0.6em 1em;
+  font-size: 21px;
+  color: var(--red);
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ============================================================
+     SLIDE 01 · TITLE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:600px;height:600px;background:radial-gradient(circle,rgba(0,255,65,0.12) 0%,transparent 70%);top:-180px;left:-120px;"></div>
+  <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);bottom:-80px;right:6%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AP CSA · Unit 9</span>
+    <h1 class="title-h1">
+      <span style="color:var(--phosphor);">Inherit</span><span>ance</span>
+    </h1>
+    <p style="font-size:30px;color:var(--text-dim);margin-top:var(--gap);">Passing down the riches</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 02 · WHAT IS INHERITANCE?
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);top:-110px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Concept</span>
+    <h2>What is <span style="color:var(--phosphor);">Inheritance</span>?</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        In the real world, inheritance involves passing down family wealth from one generation to the next — grandparents to parents to their children, generally at the end of life.
+      </p>
+      <p class="p-body">
+        In computer science, <strong>wealth doesn't mean money</strong> — wealth is <strong>data and methods</strong>. Fortunately, nobody has to die for this to happen, because computers can make copies of data and methods freely.
+      </p>
+
+      <div class="callout accent-p" style="max-width:860px;margin-top:var(--gap-sm);">
+        Through inheritance, one class can be built on top of another, gaining all of its features while adding new ones of its own.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 03 · CLASSES ARE BLUEPRINTS
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);bottom:-80px;left:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Concept</span>
+    <h2>Classes are like <span style="color:var(--phosphor);">blueprints</span></h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        You can think of a class as a blueprint for a house — it's the plan for making the house. The same blueprint can be used to build many houses. Features like color and address would be data that distinguishes one <em>instance</em> from another.
+      </p>
+      <p class="p-body">
+        Using the same blueprint saves a lot of money; architects are expensive. But what if you wanted to change the blueprint slightly — add a bigger garage, or change the type of windows?
+      </p>
+
+      <div class="callout accent-a" style="max-width:860px;margin-top:var(--gap-sm);">
+        <strong style="color:var(--amber);">Would you start over from scratch and create a completely new blueprint?</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 04 · EXTENDING THE PLAN — definition
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(0,255,65,0.10) 0%,transparent 70%);top:-130px;right:-60px;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Concept</span>
+    <h2><span style="color:var(--phosphor);">Extending</span> the plan</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        Of course you wouldn't throw out the whole plan for small changes. You would simply modify that part of the plan — design the new garage and <strong>override</strong> the original garage design, but keep all the rest of the features: the kitchen, bathrooms, and bedrooms stay exactly as they were. And if someone else later wanted a house with a larger garage like yours, they could use your modified blueprint.
+      </p>
+
+      <div class="callout accent-p" style="max-width:920px;margin-top:var(--gap-sm);">
+        <strong style="color:var(--phosphor);">This is what inheritance is all about:</strong> extending the concept represented by a class by adding or changing features, but keeping all the rest of the existing features.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 05 · YOU'VE SEEN THIS ALREADY
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Recall</span>
+    <h2>You've <span style="color:var(--phosphor);">already</span> experienced this</h2>
+    <p class="p-body" style="text-align:center;margin-top:var(--gap);">You've already experienced inheritance in Java.</p>
+    <p class="p-body" style="text-align:center;color:var(--text-dim);">Don't remember? Think <em>waaaay</em> back…</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 06 · REMEMBER KARL?
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Recall</span>
+    <h2>Remember <span style="color:var(--phosphor);">Karl</span>?</h2>
+
+    <div class="karl-wrap" style="margin-top:var(--gap);">
+      <img src="assets/image2.png" alt="Karl the pixel-art zombie" style="max-height:340px;object-fit:contain;display:block;">
+      <p class="p-body" style="text-align:center;font-size:22px;color:var(--text-dim);">Our favorite pixel zombie from ZombieLand…</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 07 · KARL IS A ZOMBIE — narrative
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);top:-100px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Review</span>
+    <h2>Karl is a <span style="color:var(--phosphor);">Zombie</span></h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:980px;">
+      <p class="p-body">
+        <code>Zombie</code> is a Java class with just a few capabilities: moving forward and turning right. That was enough for Karl to solve many ZombieLand puzzles. But when Karl evolved into an <code>UltraZombie</code>, he gained new skills — like turning left or facing any direction.
+      </p>
+      <p class="p-body">
+        Those new skills were <em>added to</em> the ones that Zombies already had. Becoming an UltraZombie <strong>extended</strong> the Zombie's capabilities. UltraZombies can still move forward and turn right, and they also know how to turn left and face particular directions.
+      </p>
+      <p class="p-body">
+        Similarly, when you taught Karl to solve the ZombieLand puzzles, you <strong>extended</strong> his capabilities by giving him a new plan — any methods you wrote in <code>MyZombie</code> were new skills added on top of everything he already had.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 08 · KARL'S CLASS DIAGRAM + extends keyword
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);bottom:-60px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Review</span>
+    <h2>The <span style="color:var(--phosphor);">class diagram</span> and <code>extends</code></h2>
+
+    <div class="split" style="gap:var(--gap-lg);align-items:center;margin-top:var(--gap);">
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <p class="p-body" style="max-width:680px;">
+          Greenfoot is designed around this kind of inheritance. The class diagram on the right shows each class as a box, connected by arrows that mean <strong>IS-A</strong> or <strong>extends</strong>. An <code>UltraZombie</code> IS-A <code>Zombie</code>; a <code>MyZombie</code> IS-A <code>UltraZombie</code> — and all of them extend the <code>Actor</code> class.
+        </p>
+        <p class="p-body" style="max-width:680px;">
+          The magic that makes this all work is the very first line of the class declaration:
+        </p>
+        <div class="callout accent-p" style="max-width:660px;">
+          <code style="font-size:22px;color:var(--phosphor);">public class MyZombie <strong>extends</strong> UltraZombie</code>
+          <p style="font-size:20px;color:var(--text-muted);margin-top:0.5em;">The <code>extends</code> keyword means MyZombie has all the power of an UltraZombie — and then some. Every method Karl called was inherited through this chain: UltraZombie → Zombie → Actor.</p>
+        </div>
+      </div>
+
+      <img src="assets/image4.png" alt="Greenfoot class diagram: Actor → Zombie → UltraZombie → MyZombie"
+           class="diagram-img portrait" style="max-height:360px;max-width:240px;">
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 09 · A NEW EXAMPLE — Rectangle / Square
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);top:-110px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Example</span>
+    <h2>A new example: <span style="color:var(--phosphor);">Rectangles &amp; Squares</span></h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        Let's look at a simple geometry example composed of three classes: <code>Main</code>, <code>Rectangle</code>, and <code>Square</code>. The key relationship is that <code>Square</code> <strong>extends</strong> <code>Rectangle</code>.
+      </p>
+      <p class="p-body">
+        <code>Rectangle</code> includes several methods — <code>getWidth()</code>, <code>getHeight()</code>, <code>getArea()</code>, <code>getPerimeter()</code>, and <code>getName()</code>. <code>Square</code> relies on those methods and adds one of its own: <code>getSideLength()</code>. It also explicitly uses the <code>super</code> keyword to call <code>Rectangle</code>'s constructor, passing the same value for both width and height.
+      </p>
+
+      <div class="hint-box" style="max-width:860px;">
+        Open the code in a new browser tab — we'll ask a question about it on the next slide.
+      </div>
+
+      <a class="link-card" style="align-self:flex-start;margin-top:var(--gap-sm);"
+         href="https://run.mycode.run/?code=XQAAAQB%2FBgAAAAAAAAA9iIpHPJkiDSD3eirckGfVDlyCzGKafDiNdzYcptq24WYsABZXK1m1qc4UVyDjDdEKGWHLaCKmwJfhoHyYuO72KsNT9qshyUreD2TO%2FvLtLZTecsJMzRe2Akzc%2FYNAZrHv5EunBd%2BbziRFH6VAimVICK3cS49YWeXBFb1h%2FWFQTIk0QkJeiXEoaTNovElxIJdAiDLNrjDxVTgbgl9hRS6lfK5tVYzkxR5eCYM%2BSZ%2BdnrBWlYBPMB%2FGFJQExc2kYrE26ccSfCR03LtYmZzLHRL5FIKm9sSaz8DWvUU2EBqjDQzNLwGFcAcFrbob2cn70WR13Wwt%2F3zVhrfit71DKRxeDFJb1Xn%2B5ROcjnah4zQcp8TZ5v%2FRacYQE4LA7lsteFzW5E6DbfINbIC%2F6KGLjdMwQvfh%2B4BZerVVVOvg3o9h77YO4V5OriXnqJyePxXEsf3wwFSGxO6VfSZUt8loIMUHYmCfvu3eI%2Bb7eYCUVczQ8fQZYYE2KsciQeFeSErgqU6XBclrRB8orF%2BaXtAyGkUoFVJ%2BtFF3YacIGkZdpUW52G9Gb80Uj3cLsXjMvApgjtKYyuaxpbG3YYoXCgJ54%2ForO%2FTjbVFI7G0H%2BE2hVlSZs8Zp3Z1pX0NSB4kyehQS9quxHYh06%2FnGv9Eck%2FAN8i42m1qN6ChJ%2BXBvdoaJ0yg9T%2F%2FALjeznWZ5%2F1liwAA%3D&noproject=true"
+         target="_blank" rel="noopener">
+        Open Simple Shapes →
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 10 · MCQ 1 — Square methods (Resonance)
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:9:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"You have the Simple Shapes code open in another tab. After Square s = new Square(5); — select ALL of the methods you can call on s.","order":0,"options":[{"id":"q1a","text":"s.getSideLength()","isCorrect":true},{"id":"q1b","text":"s.getWidth()","isCorrect":true},{"id":"q1c","text":"s.getHeight()","isCorrect":true},{"id":"q1d","text":"s.getPerimeter()","isCorrect":true},{"id":"q1e","text":"s.getArea()","isCorrect":true},{"id":"q1f","text":"s.getName()","isCorrect":true}]}]}'>
+
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);top:-100px;right:5%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Code Inspection</span>
+    <h2>Which methods can you <span style="color:var(--phosphor);">call on</span> <code>s</code>?</h2>
+
+    <p class="p-body" style="margin-top:var(--gap);">
+      Refer to the <strong>Simple Shapes</strong> code you opened in the previous slide. After <code>Square s = new Square(5);</code> is executed, which of the following methods can you call on <code>s</code>? Select all that apply.
+    </p>
+
+    <!-- Answer revealed after discussion -->
+    <div class="fragment fade-up" style="margin-top:var(--gap-lg);">
+      <p style="font-size:19px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--gap-sm);">▸ All six work — Square inherits every method from Rectangle:</p>
+      <ul class="mcq-reveal" style="column-count:2;column-gap:var(--gap-lg);">
+        <li><span class="mk correct">✓</span><span><code>s.getSideLength()</code> <span class="why">— defined in Square</span></span></li>
+        <li><span class="mk correct">✓</span><span><code>s.getWidth()</code> <span class="why">— inherited from Rectangle</span></span></li>
+        <li><span class="mk correct">✓</span><span><code>s.getHeight()</code> <span class="why">— inherited from Rectangle</span></span></li>
+        <li><span class="mk correct">✓</span><span><code>s.getPerimeter()</code> <span class="why">— inherited from Rectangle</span></span></li>
+        <li><span class="mk correct">✓</span><span><code>s.getArea()</code> <span class="why">— inherited from Rectangle</span></span></li>
+        <li><span class="mk correct">✓</span><span><code>s.getName()</code> <span class="why">— inherited from Rectangle</span></span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 11 · BACKGROUND — the Object class
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);top:-110px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Background</span>
+    <h2>All classes extend <span style="color:var(--phosphor);">Object</span></h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        All code in Java has to be part of a class, and every class extends exactly <strong>one</strong> other class — no more, no less. If no <code>extends</code> clause is written, Java automatically extends the <code>Object</code> class. <code>Object</code> is the ultimate ancestor of every class in Java — all classes descend from it, building upon each other through the class hierarchy.
+      </p>
+      <p class="p-body">
+        This means every Java object automatically inherits the features provided by <code>Object</code> — for example, the <code>toString()</code> method. That's why you can print any object and get something like <code>MyClass@4F3C56</code> even when you've never written a <code>toString()</code> method yourself. It came from <code>Object</code>.
+      </p>
+
+      <div class="callout accent-p" style="max-width:880px;margin-top:var(--gap-sm);">
+        The chain always ends at <code>Object</code>. When Java searches for a method, it walks up this chain — subclass → superclass → … → Object — until it finds the method or gives up with an error.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 12 · IMPLICATIONS OF INHERITANCE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);bottom:-60px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Rules</span>
+    <h2>Implications of <span style="color:var(--phosphor);">Inheritance</span></h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        When you extend a class, your subclass <strong>gains all of the behavior (methods) and data (instance variables)</strong> of the superclass and all of its ancestors. However, subclasses only have <em>direct access</em> to public or protected members — they cannot reach into the private members of a parent class.
+      </p>
+      <p class="p-body">
+        Subclasses can add new fields and methods, and they can <strong>override</strong> existing methods to change how they work. What they cannot do is remove fields or methods, or change a public method into a private one — that would be like removing a feature entirely.
+      </p>
+      <p class="p-body">
+        When a subclass is instantiated, its constructor can set up its <em>own</em> instance variables, but it cannot directly initialize private members from a parent class — those must be handled through the parent's constructor or setter methods.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 13 · CONSTRUCTORS
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);top:-110px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Constructors</span>
+    <h2>Constructors are a <span style="color:var(--amber);">special case</span></h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        Unlike methods, constructors are <strong>not inherited</strong>. If a subclass needs a constructor, it must define one. The one exception is that if no constructor is provided in the subclass <em>and</em> the parent class has a default (no-argument) constructor, Java will use that parent constructor automatically.
+      </p>
+      <p class="p-body">
+        A subclass constructor can explicitly call the parent's constructor using the <code>super</code> keyword — for example, <code>super(side, side)</code> calls the <code>Rectangle</code> constructor with two arguments. This call <strong>must be the first line</strong> in the constructor body (comments don't count). If you don't call <code>super()</code> yourself, Java calls the parent's no-argument constructor automatically before your constructor runs.
+      </p>
+
+      <div class="callout accent-a" style="max-width:880px;margin-top:var(--gap-sm);">
+        You cannot call both <code>super()</code> and <code>this()</code> in the same constructor — you must choose one. Both would each be the first call, which is impossible.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 14 · OVERRIDING METHODS
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);bottom:-60px;left:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Overriding</span>
+    <h2><span style="color:var(--phosphor);">Overriding</span> Methods</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        Any method not marked <code>final</code> can be overridden by a descendant class. To override, you write a method with the <strong>exact same signature</strong> — the same name and the same parameter types. If you change the parameters, you're <em>overloading</em>, not overriding, and you end up with an extra method rather than replacing the original.
+      </p>
+      <p class="p-body">
+        Always place the <code>@Override</code> annotation before your method. This tells Java to verify that you're actually overriding something — if you mistype the method name or change the parameters by accident, the compiler will catch the mistake for you.
+      </p>
+      <p class="p-body">
+        Overriding replaces the inherited behavior completely. If you only want to <em>add to</em> the parent's behavior rather than replace it — known as <strong>partial overriding</strong> — you can call <code>super.methodName(…)</code> inside your override to run the parent's version first, then add your own logic.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 15 · THE super KEYWORD
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,255,65,0.10) 0%,transparent 70%);top:-120px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">super</span>
+    <h2>The <code>super</code> keyword</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        <code>super</code> is used to access a field or method from the superclass that has been overridden in the subclass — think of how you use <code>this</code> to access fields that share a name with a constructor parameter. The <code>Square</code> class uses <code>super</code> to call <code>Rectangle</code>'s constructor, passing the same value for both width and height.
+      </p>
+      <p class="p-body">
+        You can also use <code>super.methodName(…)</code> to invoke the parent's version of a method you've overridden. This is the mechanism behind partial overriding — run the parent's logic first, then your own.
+      </p>
+
+      <div class="err-box" style="max-width:860px;margin-top:var(--gap-sm);">
+        <strong>Java does not allow nested supers.</strong> Calling <code>super.super.method()</code> is a compile error — you can only reach one level up at a time.
+      </div>
+
+      <div class="callout accent-p" style="max-width:860px;margin-top:var(--gap-sm);">
+        <code>super</code> is your bridge to the parent. Use it when you need the original behavior, not the overridden version.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 16 · ABSTRACT CLASSES
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);bottom:-60px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Abstract</span>
+    <h2><span style="color:var(--phosphor);">Abstract</span> Classes</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        An <strong>abstract class</strong> is used to describe some behaviors of a type, but it cannot be instantiated — you can't call <code>new Shape()</code>. This is often used for a generic type where some behaviors are common to all subclasses but there's no sensible "generic" implementation. The shared behaviors are defined as methods in the abstract class and inherited by every subclass.
+      </p>
+      <p class="p-body">
+        Abstract classes can also contain <strong>abstract methods</strong> — a method signature with no body at all. Subclasses must provide the actual implementation. The rule is: if a method is marked <code>abstract</code>, its enclosing class must also be declared <code>abstract</code>. For example, all shapes have an area, but the formula is different for every shape, so <code>getArea()</code> is abstract in the <code>Shape</code> class and implemented differently in <code>Circle</code>, <code>Rectangle</code>, and so on.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 17 · THE SHAPES FRAMEWORK
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);top:-100px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Example</span>
+    <h2>The <span style="color:var(--phosphor);">Shapes</span> Framework</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        Here is a family of classes built on the abstract <code>Shape</code> class. The base <code>Shape</code> class declares that all shapes have a <strong>name</strong> and an <strong>area</strong>. Every shape that descends from it adds the features unique to that shape — a <code>Rectangle</code> adds width and height; a <code>Circle</code> adds a radius; a <code>Square</code> extends <code>Rectangle</code> further.
+      </p>
+
+      <div class="hint-box" style="max-width:860px;">
+        Open the Shapes code in a new browser tab — we'll refer to it for a question later in the presentation.
+      </div>
+
+      <a class="link-card" style="align-self:flex-start;margin-top:var(--gap-sm);"
+         href="https://run.mycode.run/?code=XQAAAQBFEQAAAAAAAAA9iIpHPJkiDSD3eirckGfVDlyCzGKafDiNdzYcptqz8Olg1PC7bgmWCNCXaGKzGFYbveMGGi20QJl80u3MOgb7JyLZJUWpKfqa1VqzN91kgqzHvHN7kI%2F6%2Bhrd0xhSv4DNYS6Pvd5xR8DLmUkM%2FK2cCmNJ3MJLxmkBe%2BbOSSxsWg0CupcUoArItB%2BBwaLPhzc9SGw77s299ZquA%2F69L1TXF85%2BzrwslrqjfplTDtWAHHQKtkM9M4Y7BSNazi6yraLmkAMvzanl%2Bf4X7amXPTaHviseOeGqFD8C%2F6MXYoJid0VmRRWWsfoe8lLr%2Fjp0w2WyVZNub%2F9P8RsmIvyrHayYbQK1WHYHKxtiRro2tPAtTOjK6gWf37pdBLNFwvaz9k1BbARhzaWEbmPPlisw7itRL8dHEhCz43qsoSKWeCnqIv9fo49xJxOKF1YpwbjUYg1a7j4dEtkX6tvie2fZO1E35%2FlhoP488ji3cej68LBtmVcm5P0asWudcCoZ6LwV2dRghYn4N%2BPPZt4c4tFdvPGt59rZsAu2nUChsVGP3ub6G3YaZRgVtCz1YvqNx21t%2FREtwzVjX9QQ9PQV1hbiVmzUtIcvDZabyaNM9nZBlRDUg5IUpRgL9HaOR75YmTdUo90TXt8T8ikzZvZnMI7xOTOw%2BT%2BGo9jPWHGWg7nxU5BREoDmPqpmXOO4m%2Bs%2FHIe1OXKdnw2zagbnOPBRxva9xLbQrklMjsoF%2BTK1vwSD332WOPr8q3zuVOyyCjc6N9D2KBw3AWg4YYxtdd62ef9MPyNQWTxV92NDUCKMnajTA5HK3bFVH2G%2FA0StipvCuWUIQr%2BswnLvA%2FANSkTQK1ghA8HqJkXz8jlYvwh8kxni2cuh36iWrhTg8Kns69O1rPKs3c0hvC35zfnPVHJYmViDwKHAT%2Foe7598mqRgKiblSPK1VVtghM45En7PnLR7ZW3YI0DdUZU8zpguJE371L%2FLLCnWnbhGsIGz9a5vuckisR1WRrBpBEVLtZn5NjBtN0ji4EWGH4xEvHYbDVGpaZmZxR33WtW5g7i0gmVFUUVnDCxkeJtZkTa19UXYyudpRkmmxhBc%2FR3hdGzdC%2FnDAQtqs7juN23Y46jqwOyzBFYCtOscQ2V9TZf74lX6K5%2BNzgP7PyQ6&noproject=true"
+         target="_blank" rel="noopener">
+        Open Shapes Framework →
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 18 · INHERITANCE AND ASSIGNMENT
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,255,65,0.10) 0%,transparent 70%);top:-110px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Polymorphism</span>
+    <h2>Inheritance and <span style="color:var(--phosphor);">Assignment</span></h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        One feature that inheritance unlocks is assignment to a <strong>superclass type</strong>. You've already seen this in action — <code>List&lt;T&gt; myList = new ArrayList&lt;&gt;();</code> works because <code>ArrayList</code> extends <code>List</code>. In Greenfoot, <code>Actor player = new Ghost();</code> works because <code>Ghost</code> extends <code>Actor</code>.
+      </p>
+      <p class="p-body">
+        With the Shapes framework: <code>Rectangle r = new Square(15);</code> works because a Square IS-A Rectangle. And <code>Shape s = r;</code> works because a Rectangle IS-A Shape.
+      </p>
+      <p class="p-body">
+        However, this kind of assignment <strong>limits what you can do with the object</strong>. The variable <code>s</code> is declared as type <code>Shape</code>, so Java only lets you call methods that <code>Shape</code> defines — even though the actual object at runtime is a <code>Square</code>. You cannot call <code>Rectangle</code> or <code>Square</code> methods on <code>s</code> unless <code>Shape</code> also provides them.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 19 · ASSIGNMENT DIRECTION + CASTING
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(255,77,106,0.06) 0%,transparent 70%);bottom:-60px;left:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Casting</span>
+    <h2>Assignment goes <span style="color:var(--amber);">one direction</span></h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        Assignment only works <strong>from subclass to superclass</strong> — not the other way around. You can store a <code>Square</code> in a <code>Rectangle</code> variable because all squares are rectangles. But you cannot store a <code>Rectangle</code> in a <code>Square</code> variable — not all rectangles are squares — and the compiler will refuse to allow it.
+      </p>
+      <p class="p-body">
+        If you <em>know</em> that a superclass variable actually holds a subclass object, you can force the assignment with a <strong>cast</strong>: <code>(Square) s</code>. This tells Java to treat <code>s</code> as a <code>Square</code> at runtime. If you're wrong — if the object really is just a <code>Rectangle</code> — Java throws a <code>ClassCastException</code> at runtime rather than at compile time.
+      </p>
+
+      <div class="callout accent-a" style="max-width:880px;margin-top:var(--gap-sm);">
+        The compiler checks the <em>declared type</em>. The JVM checks the <em>actual type</em> at runtime. Casts move the check from compile time to runtime — be sure you know what you're casting before you do it.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 20 · MCQ 2 — Shape methods (Resonance)
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:19:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"You have the Shapes Framework code open in another tab. After Shape s = new Rectangle(15); — select ALL of the things you can do with the object s.","order":0,"options":[{"id":"q1a","text":"s.getHeight()","isCorrect":false},{"id":"q1b","text":"s.getWidth()","isCorrect":false},{"id":"q1c","text":"s.toString()","isCorrect":true},{"id":"q1d","text":"s.setName(\"Rect\")","isCorrect":true},{"id":"q1e","text":"s.getName()","isCorrect":true},{"id":"q1f","text":"s.getArea()","isCorrect":true},{"id":"q1g","text":"s.getSideLength()","isCorrect":false}]}]}'>
+
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);top:-100px;right:5%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Code Inspection</span>
+    <h2>What can you do with <code style="color:var(--phosphor);">s</code>?</h2>
+
+    <p class="p-body" style="margin-top:var(--gap);">
+      Refer to the <strong>Shapes Framework</strong> code open in your browser. After <code>Shape s = new Rectangle(15);</code> — which of the following can you do with <code>s</code>? Select all that apply.
+    </p>
+
+    <!-- Answer reveal after discussion -->
+    <div class="fragment fade-up" style="margin-top:var(--gap-lg);">
+      <p style="font-size:19px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--gap-sm);">▸ <code>s</code> is declared as <code>Shape</code> — you only get what <code>Shape</code> (and <code>Object</code>) define:</p>
+      <ul class="mcq-reveal">
+        <li><span class="mk wrong">✗</span><span><code class="opt-wrong">s.getHeight()</code> <span class="why">→ Rectangle method — not visible from Shape</span></span></li>
+        <li><span class="mk wrong">✗</span><span><code class="opt-wrong">s.getWidth()</code> <span class="why">→ Rectangle method — not visible from Shape</span></span></li>
+        <li><span class="mk correct">✓</span><span><code>s.toString()</code> <span class="why">→ inherited from Object</span></span></li>
+        <li><span class="mk correct">✓</span><span><code>s.setName("Rect")</code> <span class="why">→ defined in Shape</span></span></li>
+        <li><span class="mk correct">✓</span><span><code>s.getName()</code> <span class="why">→ defined in Shape</span></span></li>
+        <li><span class="mk correct">✓</span><span><code>s.getArea()</code> <span class="why">→ abstract method in Shape</span></span></li>
+        <li><span class="mk wrong">✗</span><span><code class="opt-wrong">s.getSideLength()</code> <span class="why">→ Square method — not visible from Shape</span></span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 21 · POLYMORPHISM
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);top:-100px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Polymorphism</span>
+    <h2><span style="color:var(--phosphor);">Polymorphism</span></h2>
+
+    <div class="split" style="gap:var(--gap-lg);align-items:center;margin-top:var(--gap);">
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <p class="p-body" style="max-width:700px;">
+          <em>Poly</em> (many) + <em>morph</em> (form) — <strong>polymorphism</strong> is what happens when assignment to a parent class and method overriding work together. The result can be surprising at first: you call the same method on the same variable, yet get different behavior depending on what the variable actually holds.
+        </p>
+        <p class="p-body" style="max-width:700px;">
+          In the Animal project, <code>Animal</code> has an abstract <code>talk()</code> method. <code>Cow</code>, <code>Dog</code>, <code>Pig</code>, and <code>Fox</code> each implement it differently. When you call <code>talk()</code> on an <code>Animal</code> variable, Java always calls the correct subclass's version — even though the declared type is just <code>Animal</code>.
+        </p>
+        <a class="link-card" style="align-self:flex-start;"
+           href="https://run.mycode.run/?code=XQAAAQABCwAAAAAAAAA9iIpHPJkiDSD3eirckGfVDlyCzGKafDiNdzYcptqzJdbOOHrmIG0UkIjmM36PGkSlSfzWBckOzDJhwXd34Scy9Gev2XEygeKuuuvc90jhqSIbozYn7Wd%2BeurVkhVQ86%2BvEdgpwKJsZRt1We8RNVEmoGMOk2v85HGi76egA0ey6w7pxJs9zX6Y9tJKEKJhtzuzg%2F%2B8BbvnzEX76XhZWGIxcBHsTPia9ZSYjiSHlkgJPAHSCoO9z%2Fo%2Ba%2BBFga9IU0ThxIAqdGyPxbQBLoQNFl%2FxqJCek0R0JCPdEnsgGJBg3Ib9lUcl8tfAexZBr6l6KKZZeGOZdJdemXJ5BwWvAakyHwpqVLnhu5EWCStdbrziBVewJSGcv%2B1YRnxOCZUAjDruXyT%2FdgnO08c4xPa0oRrFZSA%2BzxwlnaWbNZzOd3rTrwxSeW5lX9Ay9sepl%2FeCYSKwJ%2FGPAOOO3sr56L%2BGAGj2Ppl6a69yXBDcuuXyiYgeiSG8clJM5Ppsx3PeYgm4e7cI9%2FII0E2LnRGplW%2BOjlNW3BVcmMDocB7WrLHpuUo3rmrgPqX2poRMvJW7%2BGXb6yYjNibjqdooZxTiIfTN%2FNtVFbOpW5FqlfrGJNCDDpIO9XC03Y3AnEM8hGgoYPzQ5otdxCGhdV9jR%2BDlasEsPoxaSbLSau83qTJncvUYxoeXrC9p1r5bvV77SmzzzkPPWPltlS5u8yST3UGcp6sXTVTH%2FkyTiZnjlYfQqjyByrrwk7SomVPZUyvlErm2eSrkyEtyDQxS7h%2FjHP%2FXwbOo&noproject=true"
+           target="_blank" rel="noopener">
+          Open Animal Project →
+        </a>
+      </div>
+
+      <img src="assets/image1.png"
+           alt="Class diagram: Main uses Animal (abstract), which is extended by Cow, Dog, Pig, and Fox"
+           class="diagram-img" style="max-width:480px;max-height:320px;">
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 22 · TRY IT OUT — Pizza live coding
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(255,149,0,0.10) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Practice</span>
+    <h2>Let's work through a <span style="color:var(--gold);">program</span></h2>
+
+    <p style="font-size:48px;margin:var(--gap) auto 0;">🍕</p>
+
+    <p class="p-body" style="text-align:center;margin-top:var(--gap);max-width:640px;">
+      We'll build a Pizza ordering system together — live coding using inheritance. Join the class session for the screen share, or access the assignment on your own using the link below.
+    </p>
+
+    <a class="link-card amber" style="margin-top:var(--gap-lg);"
+       href="https://learn.mycode.run/link/xgmtj"
+       target="_blank" rel="noopener">
+      Pizza Assignment →
+    </a>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 23 · INTERFACES
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);top:-110px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Interfaces</span>
+    <h2><span style="color:var(--phosphor);">Interfaces</span></h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        You've seen interfaces before in Java. They are like abstract classes that are <em>entirely</em> abstract — they specify method signatures but contain no code at all. Where classes use the <code>extends</code> keyword, classes <strong>implement</strong> interfaces.
+      </p>
+      <p class="p-body">
+        A key difference from class inheritance: a class can only <code>extend</code> one other class, but it can <code>implement</code> any number of interfaces. Any class that implements an interface must provide a concrete implementation for every method in that interface — otherwise the class itself must be declared <code>abstract</code>.
+      </p>
+      <p class="p-body">
+        Interfaces are also <strong>types</strong>, which is why you've been writing <code>List&lt;String&gt; myList = new ArrayList&lt;&gt;();</code> all along. <code>List</code> is an interface, and <code>ArrayList</code> is a class that implements it.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 24 · COMPARABLE INTERFACE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,255,65,0.10) 0%,transparent 70%);bottom:-60px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Interfaces</span>
+    <h2>A common interface: <span style="color:var(--phosphor);">Comparable</span></h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);max-width:960px;">
+      <p class="p-body">
+        One interface used throughout the Java library is <code>Comparable&lt;T&gt;</code>. It defines a single method — <code>compareTo(T other)</code> — that determines the <strong>natural ordering</strong> of two objects. A class that implements <code>Comparable</code> promises that its objects can be compared and ranked relative to each other.
+      </p>
+      <p class="p-body">
+        The convention is: return a <em>negative</em> number if <code>this</code> comes before <code>other</code>, <em>zero</em> if they are equal, and a <em>positive</em> number if <code>this</code> comes after. A common shortcut for numbers is to simply subtract: <code>return this.value - other.value;</code>. Once a class implements <code>Comparable</code>, it works automatically with <code>Collections.sort()</code> and <code>Arrays.sort()</code>.
+      </p>
+
+      <a class="link-card" style="align-self:flex-start;margin-top:var(--gap-sm);"
+         href="https://github.com/openjdk-mirror/jdk7u-jdk/blob/master/src/share/classes/java/lang/Comparable.java#L97"
+         target="_blank" rel="noopener">
+        Read the Comparable interface source →
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 25 · CLASS DIAGRAMS — intro + HAS-A
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,255,65,0.09) 0%,transparent 70%);top:-100px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Design</span>
+    <h2>Diagramming class <span style="color:var(--phosphor);">hierarchies</span></h2>
+
+    <div class="split" style="gap:var(--gap-lg);align-items:center;margin-top:var(--gap);">
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <p class="p-body" style="max-width:640px;">
+          Programs often contain many classes and interfaces. To make sense of the structure, developers draw <strong>class diagrams</strong> that show which class relates to which — you've seen simplified versions of these in BlueJ.
+        </p>
+        <p class="p-body" style="max-width:640px;">
+          The diagrams we've seen so far mostly show <strong>HAS-A</strong> relationships — sometimes called <em>composition</em>. For example, a <code>Forest</code> HAS-A <code>Tree</code>, and a <code>FishTank</code> HAS-A <code>Fish</code>. The tree also HAS-A <code>Triangle</code> and <code>Rectangle</code> for drawing itself — but it is not a descendant of either. HAS-A relationships are shown with <em>dashed lines and open arrows</em>.
+        </p>
+      </div>
+
+      <img src="assets/image3.png"
+           alt="Class diagram showing HAS-A relationships: FishTank/Fish/Canvas and Forest/Tree/Rect/Circle/Arc/Triangle"
+           class="diagram-img wide" style="max-width:520px;">
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 26 · CLASS DIAGRAMS — IS-A (inheritance)
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(255,224,51,0.09) 0%,transparent 70%);bottom:-60px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Design</span>
+    <h2>IS-A vs HAS-A <span style="color:var(--phosphor);">relationships</span></h2>
+
+    <div class="split" style="gap:var(--gap-lg);align-items:center;margin-top:var(--gap);">
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <p class="p-body" style="max-width:640px;">
+          <strong>IS-A</strong> relationships — true inheritance — are shown with <em>solid arrows and open arrowheads</em>. In the diagram, you can see the <code>Main</code> class using all of the shapes, and the shapes' own inheritance hierarchy is shown to the right.
+        </p>
+        <p class="p-body" style="max-width:640px;">
+          Notice that <code>Shape</code> is labeled <code>&lt;&lt;abstract&gt;&gt;</code> — you cannot instantiate it directly. <code>Ellipse</code> extends <code>Shape</code>, and <code>Circle</code> extends <code>Ellipse</code>. <code>Rectangle</code> extends <code>Shape</code>, and <code>Square</code> extends <code>Rectangle</code>. Interfaces, when shown, use the <code>&lt;&lt;interface&gt;&gt;</code> label and the same notation.
+        </p>
+        <p class="p-body" style="max-width:640px;">
+          The dashed arrows from <code>Main</code> to the shapes show that <code>Main</code> HAS-A (uses) each of those shapes — it is not a descendant of any of them.
+        </p>
+      </div>
+
+      <img src="assets/image5.png"
+           alt="IS-A class diagram: abstract Shape extended by Ellipse (→ Circle) and Rectangle (→ Square), with Main using all"
+           class="diagram-img" style="max-width:400px;max-height:420px;">
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 27 · END
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:600px;height:600px;background:radial-gradient(circle,rgba(0,255,65,0.11) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AP CSA · Unit 9</span>
+    <h1 class="title-h1" style="font-size:72px;">
+      <span style="color:var(--phosphor);">That's</span> Inheritance
+    </h1>
+
+    <div style="display:flex;flex-direction:column;gap:0.6em;margin-top:var(--gap-lg);text-align:left;max-width:700px;">
+      <p class="p-body"><code>extends</code> — IS-A: the subclass gains everything the superclass has</p>
+      <p class="p-body"><code>super</code> — the bridge back to the parent's implementation</p>
+      <p class="p-body"><code>abstract</code> — define the concept; let subclasses define the details</p>
+      <p class="p-body"><code>implements</code> — a promise to fulfill an interface's contract</p>
+      <p class="p-body" style="color:var(--phosphor);">Polymorphism — same call, many possible behaviors</p>
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'inheritance',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  iframeSyncOverrides: {
+    role: 'instructor',
+  },
+  revealOverrides: {
+    loop: false,
+    fragmentInURL: false,
+  },
+});
+</script>
+
+</body>
+</html>
