@@ -189,6 +189,12 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
 | No `chalkboard.storage` | The vendored chalkboard plugin does not write to `sessionStorage`. The host page is the source of truth (snapshot + delta buffer). Setting `storage` would cause divergence on reload. |
 | Role starts as `standalone` | `reveal-iframe-sync.js` always initialises in `standalone` mode. The host must send `setRole` to promote to `instructor` or `student`. Never rely on the `role` config field. |
 
+## Writing Style
+
+- **No em dashes (—).** Always substitute context-appropriate punctuation: colon for introductory/defining clauses, comma for parenthetical asides or conjunctions, semicolon for contrasting independent clauses, period for abrupt follow-up sentences.
+- **Sentences not fragments.** Avoid telegraphic style; write in full sentences for clarity and professionalism. Students may miss class and need to read the slides independently, so they should be as self-contained and clear as possible. Sentences and short paragraphs  improve readability and break up large blocks of text.
+- **Interactivity**: use Reveal's built-in interactivity features (fragments, nested sections, etc.) to pace the information flow and keep students engaged. Avoid overwhelming slides with too much information at once. Use syncdeck's embedded activities to encourage active learning and exploration.
+
 ## Local Preview
 
 - Use `npm run dev` from the repo root for day-to-day presentation authoring.
