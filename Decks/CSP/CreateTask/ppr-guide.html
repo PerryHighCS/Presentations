@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personalized Project Reference Guide — AP CSP</title>
+
+<!-- SyncDeck bundled runtime CSS (includes Reveal core + shared plugin styles) -->
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<!-- Shared CSP theme -->
+<link rel="stylesheet" href="../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — PPR Guide
+   ============================================================ */
+
+/* Large numbered step badge */
+.step-num {
+  font-family: var(--font-mono);
+  font-size: 72px;
+  font-weight: 700;
+  color: var(--teal);
+  opacity: 0.18;
+  line-height: 1;
+  position: absolute;
+  top: var(--pad);
+  right: var(--pad);
+}
+
+/* Screenshot requirement card */
+.ss-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 1em 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.ss-card-hdr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ss-num {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  border-radius: 999px;
+  padding: 2px 10px;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+.ss-label {
+  font-size: var(--body);
+  font-weight: 700;
+  color: var(--text);
+}
+.ss-desc {
+  font-size: var(--small);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Verdict banner — shown inside quiz reveal slides */
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.7em 1em;
+  border-radius: 4px;
+  font-size: var(--body);
+  font-weight: 700;
+}
+.verdict-pass {
+  background: rgba(105,219,124,0.08);
+  border: 1px solid rgba(105,219,124,0.4);
+  color: var(--green);
+}
+.verdict-fail {
+  background: rgba(255,107,107,0.08);
+  border: 1px solid rgba(255,107,107,0.4);
+  color: var(--red);
+}
+.verdict-icon { font-size: 1.3em; flex-shrink: 0; }
+
+/* Rationale list under verdicts */
+.rationale {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+.rationale li {
+  font-size: var(--small);
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding-left: 1.2em;
+  position: relative;
+}
+.rationale li::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  color: var(--teal);
+  font-weight: 700;
+}
+.rationale li.bad::before { color: var(--red); }
+.rationale li strong { color: var(--text); }
+.rationale li .hl-red { color: var(--red); font-weight: 700; }
+.rationale li .hl-green { color: var(--green); font-weight: 700; }
+
+/* Section transition band */
+.section-band {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(0,201,177,0.15), rgba(255,212,59,0.10));
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 10px 20px;
+  margin-bottom: var(--gap);
+}
+.section-band-num {
+  font-family: var(--font-mono);
+  font-size: var(--h3);
+  font-weight: 700;
+  color: var(--teal);
+}
+.section-band-label {
+  font-size: var(--h3);
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Small side-by-side code comparison */
+.quiz-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  width: 100%;
+}
+
+/* Warning pill */
+.warn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,107,107,0.1);
+  border: 1px solid rgba(255,107,107,0.45);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: var(--small);
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: 0.04em;
+}
+
+/* Requirement checklist inside a card */
+.req-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.req-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+.req-icon { flex-shrink: 0; font-size: 1.1em; }
+.req-icon.pass { color: var(--green); }
+.req-icon.fail { color: var(--red); }
+
+/* Compact code card for quiz slides */
+.cq-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,201,177,0.35);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.cq-hdr {
+  padding: 4px 12px;
+  background: rgba(0,201,177,0.1);
+  border-bottom: 1px solid rgba(0,201,177,0.25);
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+.cq-hdr.bad {
+  background: rgba(255,107,107,0.1);
+  border-bottom-color: rgba(255,107,107,0.25);
+  color: var(--red);
+}
+.cq-body {
+  padding: 0.5em 0.8em;
+}
+
+/* Zero-score callout */
+.zero-box {
+  background: rgba(255,107,107,0.1);
+  border: 2px solid var(--red);
+  border-radius: 6px;
+  padding: 0.9em 1.2em;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.zero-icon { font-size: 2em; flex-shrink: 0; }
+.zero-text {
+  font-size: var(--body);
+  font-weight: 700;
+  color: var(--red);
+  line-height: 1.45;
+}
+.zero-text span {
+  display: block;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+</style>
+
+</head>
+<body>
+
+<!-- ============================================================
+     STORYBOARD STRIP
+     ============================================================ -->
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+<!-- ============================================================
+     SLIDE 01 · Title
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:700px;height:700px;background:radial-gradient(circle,rgba(0,201,177,0.12) 0%,transparent 70%);top:-180px;right:-80px;"></div>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(255,212,59,0.09) 0%,transparent 70%);bottom:-60px;left:6%;"></div>
+
+  <div class="slide-inner slide-center">
+    <p style="font-family:var(--font-mono);font-size:var(--small);letter-spacing:0.2em;color:var(--teal);text-transform:uppercase;margin-bottom:var(--gap);">AP Computer Science Principles</p>
+    <h1 class="title-h1" style="font-size:80px;">Personalized<br>Project Reference</h1>
+    <p style="margin-top:var(--gap);font-size:var(--h3);color:var(--text-muted);">4 screenshots. 6 points. No pressure.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 02 · What Is the PPR?
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(0,201,177,0.09) 0%,transparent 70%);top:-80px;right:5%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Overview</span>
+    <h2>What Is the PPR?</h2>
+
+    <p style="margin-bottom:var(--gap);">The Personalized Project Reference is a document you submit in the AP Digital Portfolio <strong style="color:var(--text);">before the exam</strong>. On exam day, College Board gives it back to you so you can reference your own code while answering written-response questions.</p>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+      <div class="callout fragment fade-up">
+        <p>It contains exactly <strong style="color:var(--teal);">4 code screenshots</strong>, organized into two sections: <strong style="color:var(--text);">Procedure</strong> and <strong style="color:var(--text);">List</strong>.</p>
+      </div>
+      <div class="callout accent-amber fragment fade-up">
+        <p>Each section has two parts: <strong style="color:var(--amber);">(i)</strong> showing the code itself and <strong style="color:var(--amber);">(ii)</strong> showing it being used.</p>
+      </div>
+      <div class="callout accent-red fragment fade-up">
+        <p><strong style="color:var(--red);">Your code screenshots must not contain any comments.</strong> Comments in the PPR result in an automatic zero for that row.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 03 · General Screenshot Requirements
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(255,212,59,0.08) 0%,transparent 70%);bottom:-60px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Overview</span>
+    <h2>Screenshot Requirements</h2>
+    <p style="margin-bottom:var(--gap);">Every screenshot in the PPR must meet these basic standards.</p>
+
+    <ul class="bullets">
+      <li class="fragment fade-up"><strong>Not blurry</strong>: take the screenshot at full resolution, do not resize it below readable size.</li>
+      <li class="fragment fade-up"><strong>At least 10-point font size</strong>: zoom your editor so the text is clearly legible.</li>
+      <li class="fragment fade-up"><strong>No comments</strong>: remove all <code>//</code>, <code>#</code>, <code>/* */</code>, or any other comment syntax before capturing. This includes commented-out code.</li>
+      <li class="fragment fade-up"><strong>Student-developed</strong>: the code must be code you wrote, not library code or starter code you copied without modification.</li>
+    </ul>
+
+    <div class="fragment fade-up" style="margin-top:var(--gap);">
+      <div class="zero-box">
+        <div class="zero-icon">🚫</div>
+        <div class="zero-text">
+          Comments in the PPR = automatic 0 on that row
+          <span>College Board scorers will not give partial credit. They score the row 0 and move on.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 04 · The 4 Screenshots at a Glance
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(0,201,177,0.08) 0%,transparent 70%);top:50%;right:-80px;transform:translateY(-50%);"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Overview</span>
+    <h2>The 4 Screenshots</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+      <div class="ss-card fragment fade-up">
+        <div class="ss-card-hdr">
+          <span class="ss-num">Procedure i</span>
+          <span class="ss-label">Your procedure definition</span>
+        </div>
+        <p class="ss-desc">The full body of a student-developed procedure that has a name, takes parameters that affect behavior, and implements sequencing + selection + iteration.</p>
+      </div>
+
+      <div class="ss-card fragment fade-up">
+        <div class="ss-card-hdr">
+          <span class="ss-num">Procedure ii</span>
+          <span class="ss-label">A call to that procedure</span>
+        </div>
+        <p class="ss-desc">A line (or lines) elsewhere in your program where the procedure from screenshot i is actually called.</p>
+      </div>
+
+      <div class="ss-card fragment fade-up">
+        <div class="ss-card-hdr">
+          <span class="ss-num">List i</span>
+          <span class="ss-label">Storing data in your list</span>
+        </div>
+        <p class="ss-desc">Code that creates your list and/or adds data to it. The list must play a meaningful role in managing complexity.</p>
+      </div>
+
+      <div class="ss-card fragment fade-up">
+        <div class="ss-card-hdr">
+          <span class="ss-num">List ii</span>
+          <span class="ss-label">Using the data in your list</span>
+        </div>
+        <p class="ss-desc">Code that reads or processes elements from the same list, such as iterating over it, computing a result, or accessing multiple elements.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 05 · Section Banner: Procedure
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:600px;height:600px;background:radial-gradient(circle,rgba(0,201,177,0.14) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <div style="font-family:var(--font-mono);font-size:var(--small);letter-spacing:0.22em;color:var(--teal);text-transform:uppercase;margin-bottom:var(--gap);">Section 1 of 2</div>
+    <h1 class="title-h1">Procedure</h1>
+    <p style="margin-top:var(--gap);font-size:var(--h3);color:var(--text-muted);">Screenshots i and ii</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 06 · Procedure i — Requirements
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(0,201,177,0.09) 0%,transparent 70%);top:-60px;right:5%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Procedure · Screenshot i</span>
+    <h2>What Must Your Procedure Include?</h2>
+    <p style="margin-bottom:var(--gap);">Screenshot i shows the <strong style="color:var(--text);">full definition</strong> of your student-developed procedure. College Board checks for three things.</p>
+
+    <div class="req-grid">
+      <div class="req-row fragment fade-up">
+        <span class="req-icon pass">①</span>
+        <span><strong style="color:var(--text);">Name and return type</strong>: the procedure must have a clear name. If it returns a value, that return must be visible in the code.</span>
+      </div>
+      <div class="req-row fragment fade-up">
+        <span class="req-icon pass">②</span>
+        <span><strong style="color:var(--text);">Parameters that affect behavior</strong>: the procedure must accept at least one parameter, and that parameter must actually change what the procedure does, not just be ignored.</span>
+      </div>
+      <div class="req-row fragment fade-up">
+        <span class="req-icon pass">③</span>
+        <span><strong style="color:var(--text);">Algorithm with sequencing, selection, and iteration</strong>: the procedure body must contain all three. Selection means an <code>if</code>/<code>else</code>. Iteration means a loop. Sequencing means steps in order.</span>
+      </div>
+    </div>
+
+    <div class="callout accent-red fragment fade-up" style="margin-top:var(--gap);">
+      <p>All three must be present in the <strong style="color:var(--red);">same procedure</strong>. You cannot split them across separate functions.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 07 · Procedure i — Quiz prompt
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:7:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which example meets all three Procedure i requirements?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Example A — calculate_grade(scores)","isCorrect":true},{"id":"q1b","text":"Example B — greet_user()","isCorrect":false}]}]}'>
+
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(255,212,59,0.07) 0%,transparent 70%);bottom:-60px;left:5%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Procedure · Screenshot i · MCQ</span>
+    <h2>Which One Works?</h2>
+
+    <div class="quiz-split">
+      <div>
+        <div class="cq-card">
+          <div class="cq-hdr">Example A — Python</div>
+          <div class="cq-body">
+<pre><code><span class="kw">def</span> <span class="nm">calculate_grade</span>(scores):
+    total = 0
+    <span class="kw">for</span> score <span class="kw">in</span> scores:
+        total = total + score
+    average = total / len(scores)
+    <span class="kw">if</span> average >= 90:
+        <span class="kw">return</span> <span class="tp">"A"</span>
+    <span class="kw">elif</span> average >= 80:
+        <span class="kw">return</span> <span class="tp">"B"</span>
+    <span class="kw">else</span>:
+        <span class="kw">return</span> <span class="tp">"C or below"</span></code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="cq-card">
+          <div class="cq-hdr">Example B — Python</div>
+          <div class="cq-body">
+<pre><code><span class="kw">def</span> <span class="nm">greet_user</span>():
+    name = input(<span class="tp">"Name: "</span>)
+    <span class="kw">if</span> name == <span class="tp">"Alice"</span>:
+        print(<span class="tp">"Hello, Alice!"</span>)
+    <span class="kw">else</span>:
+        print(<span class="tp">"Hello, stranger!"</span>)
+
+
+</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="mcq-opts" style="margin-top:var(--gap-sm);">
+      <li><span class="opt-key">A</span> Example A — calculate_grade(scores)</li>
+      <li><span class="opt-key">B</span> Example B — greet_user()</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 07b · Procedure i — Quiz Answer
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(105,219,124,0.07) 0%,transparent 70%);top:-60px;right:5%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Procedure · Screenshot i · Quiz Answer</span>
+    <h2>Which One Works?</h2>
+
+    <div class="quiz-split" style="margin-bottom:var(--gap);">
+      <div>
+        <div class="cq-card">
+          <div class="cq-hdr">Example A — Python</div>
+          <div class="cq-body">
+<pre><code><span class="kw">def</span> <span class="nm">calculate_grade</span>(scores):
+    total = 0
+    <span class="kw">for</span> score <span class="kw">in</span> scores:
+        total = total + score
+    average = total / len(scores)
+    <span class="kw">if</span> average >= 90:
+        <span class="kw">return</span> <span class="tp">"A"</span>
+    <span class="kw">elif</span> average >= 80:
+        <span class="kw">return</span> <span class="tp">"B"</span>
+    <span class="kw">else</span>:
+        <span class="kw">return</span> <span class="tp">"C or below"</span></code></pre>
+          </div>
+        </div>
+        <div class="verdict verdict-pass fragment fade-up" style="margin-top:8px;">
+          <span class="verdict-icon">✔</span> Meets all requirements
+        </div>
+        <ul class="rationale fragment fade-up" style="margin-top:6px;">
+          <li>Has a <span class="hl-green">name</span> (<code>calculate_grade</code>) and <span class="hl-green">returns</span> a value.</li>
+          <li>Has a <span class="hl-green">parameter</span> (<code>scores</code>) that drives all the logic.</li>
+          <li><span class="hl-green">Iteration</span>: <code>for score in scores</code>.</li>
+          <li><span class="hl-green">Selection</span>: <code>if / elif / else</code> on the average.</li>
+          <li><span class="hl-green">Sequencing</span>: accumulate total, compute average, then evaluate grade.</li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="cq-card">
+          <div class="cq-hdr bad">Example B — Python</div>
+          <div class="cq-body">
+<pre><code><span class="kw">def</span> <span class="nm">greet_user</span>():
+    name = input(<span class="tp">"Name: "</span>)
+    <span class="kw">if</span> name == <span class="tp">"Alice"</span>:
+        print(<span class="tp">"Hello, Alice!"</span>)
+    <span class="kw">else</span>:
+        print(<span class="tp">"Hello, stranger!"</span>)
+
+
+</code></pre>
+          </div>
+        </div>
+        <div class="verdict verdict-fail fragment fade-up" style="margin-top:8px;">
+          <span class="verdict-icon">✘</span> Does not meet requirements
+        </div>
+        <ul class="rationale fragment fade-up" style="margin-top:6px;">
+          <li class="bad"><span class="hl-red">No parameters</span>: <code>greet_user()</code> takes nothing. No parameter means no effect on functionality.</li>
+          <li class="bad"><span class="hl-red">No iteration</span>: there is no loop anywhere in the body.</li>
+          <li>Has selection (<code>if/else</code>) and sequencing, but that is not enough.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 08 · Procedure i — Comments Quiz
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:9:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which version is safe to include in your PPR?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"Version 1 — no comments","isCorrect":true},{"id":"q1b","text":"Version 2 — has a comment","isCorrect":false}]}]}'>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Procedure · Screenshot i · MCQ</span>
+    <h2>Spot the Dealbreaker</h2>
+
+    <div class="quiz-split">
+      <div>
+        <div class="cq-card">
+          <div class="cq-hdr">Version 1 — Python</div>
+          <div class="cq-body">
+<pre><code><span class="kw">def</span> <span class="nm">find_max</span>(values, threshold):
+    best = <span class="kw">None</span>
+    <span class="kw">for</span> v <span class="kw">in</span> values:
+        <span class="kw">if</span> v > threshold:
+            <span class="kw">if</span> best <span class="kw">is None</span> <span class="kw">or</span> v > best:
+                best = v
+    <span class="kw">return</span> best</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="cq-card">
+          <div class="cq-hdr">Version 2 — Python</div>
+          <div class="cq-body">
+<pre><code><span class="kw">def</span> <span class="nm">find_max</span>(values, threshold):
+    <span class="cm"># track the highest valid value</span>
+    best = <span class="kw">None</span>
+    <span class="kw">for</span> v <span class="kw">in</span> values:
+        <span class="kw">if</span> v > threshold:
+            <span class="kw">if</span> best <span class="kw">is None</span> <span class="kw">or</span> v > best:
+                best = v
+    <span class="kw">return</span> best</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="mcq-opts" style="margin-top:var(--gap-sm);">
+      <li><span class="opt-key">A</span> Version 1 — no comments</li>
+      <li><span class="opt-key">B</span> Version 2 — has a comment</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 08b · Procedure i — Comments Quiz Answer
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Procedure · Screenshot i · Comments Rule Answer</span>
+    <h2>Spot the Dealbreaker</h2>
+
+    <div class="quiz-split" style="margin-bottom:var(--gap);">
+      <div>
+        <div class="cq-card">
+          <div class="cq-hdr">Version 1 — Python</div>
+          <div class="cq-body">
+<pre><code><span class="kw">def</span> <span class="nm">find_max</span>(values, threshold):
+    best = <span class="kw">None</span>
+    <span class="kw">for</span> v <span class="kw">in</span> values:
+        <span class="kw">if</span> v > threshold:
+            <span class="kw">if</span> best <span class="kw">is None</span> <span class="kw">or</span> v > best:
+                best = v
+    <span class="kw">return</span> best</code></pre>
+          </div>
+        </div>
+        <div class="verdict verdict-pass fragment fade-up" style="margin-top:8px;">
+          <span class="verdict-icon">✔</span> Safe to submit
+        </div>
+        <ul class="rationale fragment fade-up" style="margin-top:6px;">
+          <li><span class="hl-green">No comments.</span> The code is clean and ready for the PPR.</li>
+          <li>Has parameters, a loop, nested selection, and returns a value.</li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="cq-card">
+          <div class="cq-hdr bad">Version 2 — Python</div>
+          <div class="cq-body">
+<pre><code><span class="kw">def</span> <span class="nm">find_max</span>(values, threshold):
+    <span class="cm"># track the highest valid value</span>
+    best = <span class="kw">None</span>
+    <span class="kw">for</span> v <span class="kw">in</span> values:
+        <span class="kw">if</span> v > threshold:
+            <span class="kw">if</span> best <span class="kw">is None</span> <span class="kw">or</span> v > best:
+                best = v
+    <span class="kw">return</span> best</code></pre>
+          </div>
+        </div>
+        <div class="verdict verdict-fail fragment fade-up" style="margin-top:8px;">
+          <span class="verdict-icon">✘</span> Automatic 0
+        </div>
+        <ul class="rationale fragment fade-up" style="margin-top:6px;">
+          <li class="bad">Contains a <span class="hl-red">comment</span>: <code># track the highest valid value</code>.</li>
+          <li class="bad">The code is otherwise identical and would earn full marks, but the <span class="hl-red">single comment costs all points</span> for this row.</li>
+          <li class="bad">Remove every comment before taking the screenshot. Not just most of them.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 09 · Procedure ii — Requirements
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(0,201,177,0.09) 0%,transparent 70%);bottom:-60px;right:4%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Procedure · Screenshot ii</span>
+    <h2>Showing the Call</h2>
+    <p style="margin-bottom:var(--gap);">Screenshot ii is simpler: it just needs to show a <strong style="color:var(--text);">call</strong> to the same procedure from screenshot i somewhere else in your program.</p>
+
+    <ul class="bullets">
+      <li class="fragment fade-up">The call must be in your <strong>actual program</strong>, not a test cell or scratch file.</li>
+      <li class="fragment fade-up">It must pass <strong>real arguments</strong>. A call with no arguments where the procedure requires parameters will not earn credit.</li>
+      <li class="fragment fade-up">You can include a few lines of surrounding context so the scorer can see where and why the call happens, but the call itself is what matters.</li>
+      <li class="fragment fade-up">Screenshot ii does <strong>not</strong> need to show the procedure definition again. Just the call site.</li>
+    </ul>
+
+    <div class="callout accent-amber fragment fade-up" style="margin-top:var(--gap);">
+      <p><strong style="color:var(--amber);">Tip:</strong> if the call is inside another function, show enough context so it is clear the call actually runs during program execution.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 10 · Procedure ii — Quiz
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:12:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"The procedure is calculate_grade(scores). Which calls earn credit for Procedure ii?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Call A — calculate_grade([88, 92, 79])","isCorrect":true},{"id":"q1b","text":"Call B — calculate_grade()","isCorrect":false},{"id":"q1c","text":"Call C — calculate_grade(student_scores)","isCorrect":true}]}]}'>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Procedure · Screenshot ii · MCQ</span>
+    <h2>Valid Calls?</h2>
+    <p style="margin-bottom:var(--gap-sm);">The procedure from earlier is <code>calculate_grade(scores)</code>. Which call examples would earn credit for Screenshot ii?</p>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+      <div class="cq-card">
+        <div class="cq-hdr">Call A</div>
+        <div class="cq-body">
+<pre><code>result = calculate_grade([88, 92, 79])</code></pre>
+        </div>
+      </div>
+      <div class="cq-card">
+        <div class="cq-hdr">Call B</div>
+        <div class="cq-body">
+<pre><code>calculate_grade()</code></pre>
+        </div>
+      </div>
+      <div class="cq-card">
+        <div class="cq-hdr">Call C</div>
+        <div class="cq-body">
+<pre><code>student_scores = [70, 85, 91, 88]
+letter = calculate_grade(student_scores)
+print(<span class="tp">"Grade:"</span>, letter)</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <ul class="mcq-opts" style="margin-top:var(--gap-sm);">
+      <li><span class="opt-key">A</span> Call A — <code>calculate_grade([88, 92, 79])</code></li>
+      <li><span class="opt-key">B</span> Call B — <code>calculate_grade()</code></li>
+      <li><span class="opt-key">C</span> Call C — <code>calculate_grade(student_scores)</code></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 10b · Procedure ii — Quiz Answer
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Procedure · Screenshot ii · Quiz Answer</span>
+    <h2>Valid Calls?</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:var(--gap-sm);align-items:start;">
+        <div class="cq-card">
+          <div class="cq-hdr">Call A</div>
+          <div class="cq-body">
+<pre><code>result = calculate_grade([88, 92, 79])</code></pre>
+          </div>
+        </div>
+        <div>
+          <div class="verdict verdict-pass fragment fade-up">
+            <span class="verdict-icon">✔</span> Earns credit
+          </div>
+          <ul class="rationale fragment fade-up" style="margin-top:4px;">
+            <li>Passes a real list as an argument. The return value is captured.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:var(--gap-sm);align-items:start;">
+        <div class="cq-card">
+          <div class="cq-hdr bad">Call B</div>
+          <div class="cq-body">
+<pre><code>calculate_grade()</code></pre>
+          </div>
+        </div>
+        <div>
+          <div class="verdict verdict-fail fragment fade-up">
+            <span class="verdict-icon">✘</span> Does not earn credit
+          </div>
+          <ul class="rationale fragment fade-up" style="margin-top:4px;">
+            <li class="bad"><span class="hl-red">No argument</span> passed. The procedure requires <code>scores</code>. This call would crash and shows the parameter is not being used.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:var(--gap-sm);align-items:start;">
+        <div class="cq-card">
+          <div class="cq-hdr">Call C</div>
+          <div class="cq-body">
+<pre><code>student_scores = [70, 85, 91, 88]
+letter = calculate_grade(student_scores)
+print(<span class="tp">"Grade:"</span>, letter)</code></pre>
+          </div>
+        </div>
+        <div>
+          <div class="verdict verdict-pass fragment fade-up">
+            <span class="verdict-icon">✔</span> Earns credit
+          </div>
+          <ul class="rationale fragment fade-up" style="margin-top:4px;">
+            <li>Passes a real variable. The surrounding context makes it easy for the scorer to see how the call fits into the program.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 11 · Section Banner: List
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:600px;height:600px;background:radial-gradient(circle,rgba(255,212,59,0.12) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <div style="font-family:var(--font-mono);font-size:var(--small);letter-spacing:0.22em;color:var(--amber);text-transform:uppercase;margin-bottom:var(--gap);">Section 2 of 2</div>
+    <h1 class="title-h1">List</h1>
+    <p style="margin-top:var(--gap);font-size:var(--h3);color:var(--text-muted);">Screenshots i and ii</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 12 · List — What "Manages Complexity" Means
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(255,212,59,0.08) 0%,transparent 70%);top:-60px;right:5%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">List · Overview</span>
+    <h2>What Does "Manage Complexity" Mean?</h2>
+    <p style="margin-bottom:var(--gap);">College Board does not just want to see a list. They want to see that using a list makes your program <strong style="color:var(--text);">simpler or more powerful</strong> than it would be without one.</p>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+      <div class="callout accent-green fragment fade-up">
+        <h3>Good complexity management</h3>
+        <p>The list lets you handle a variable number of items, loop over them, or store related data together. Removing the list would require you to write repetitive code or hard-code values.</p>
+      </div>
+      <div class="callout accent-red fragment fade-up">
+        <h3>Not complexity management</h3>
+        <p>A list that holds exactly one value, or a list that is never iterated and whose elements are accessed only by fixed index (<code>list[0]</code>, <code>list[1]</code>), does not meaningfully reduce complexity.</p>
+      </div>
+    </div>
+
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-sm);">
+      <p><strong style="color:var(--teal);">Ask yourself:</strong> if you replaced your list with individual variables, would your program be significantly longer or harder to write? If yes, your list manages complexity.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 13 · List i — Requirements
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(0,201,177,0.09) 0%,transparent 70%);bottom:-60px;left:5%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">List · Screenshot i</span>
+    <h2>Storing Data in the List</h2>
+    <p style="margin-bottom:var(--gap);">Screenshot i shows how data gets <strong style="color:var(--text);">stored</strong> in your list. This could be at initialization, through a loop, or by appending values over time.</p>
+
+    <ul class="bullets">
+      <li class="fragment fade-up">You can show the list being <strong>created with initial values</strong> (<code>scores = [88, 92, 79]</code>).</li>
+      <li class="fragment fade-up">You can show values being <strong>added to the list</strong> (<code>scores.append(value)</code> inside a loop).</li>
+      <li class="fragment fade-up">The list must hold <strong>multiple values</strong> or be designed to hold them. A list that permanently has one element does not manage complexity.</li>
+      <li class="fragment fade-up">The code shown must be <strong>student-developed</strong>: your logic for building the list, not a single import or built-in call that builds it for you.</li>
+    </ul>
+
+    <div class="callout accent-amber fragment fade-up" style="margin-top:var(--gap);">
+      <p><strong style="color:var(--amber);">Tip:</strong> showing the list being populated inside a loop is a strong choice because it also demonstrates that the list scales with the data.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 14 · List i — Quiz
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:17:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which examples earn credit for List i?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Example A — loop with append","isCorrect":true},{"id":"q1b","text":"Example B — single-element list","isCorrect":false},{"id":"q1c","text":"Example C — multiple-value literal","isCorrect":true}]}]}'>
+
+  <div class="slide-inner">
+    <span class="slide-tag">List · Screenshot i · MCQ</span>
+    <h2>Valid List Storage?</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+      <div class="cq-card">
+        <div class="cq-hdr">Example A</div>
+        <div class="cq-body">
+<pre><code>quiz_scores = []
+<span class="kw">for</span> i <span class="kw">in</span> range(num_quizzes):
+    score = int(input(<span class="tp">"Enter score: "</span>))
+    quiz_scores.append(score)</code></pre>
+        </div>
+      </div>
+      <div class="cq-card">
+        <div class="cq-hdr">Example B</div>
+        <div class="cq-body">
+<pre><code>my_list = [42]</code></pre>
+        </div>
+      </div>
+      <div class="cq-card">
+        <div class="cq-hdr">Example C</div>
+        <div class="cq-body">
+<pre><code>student_names = [<span class="tp">"Alice"</span>, <span class="tp">"Bob"</span>, <span class="tp">"Carol"</span>, <span class="tp">"David"</span>]</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <ul class="mcq-opts" style="margin-top:var(--gap-sm);">
+      <li><span class="opt-key">A</span> Example A — loop with <code>append()</code></li>
+      <li><span class="opt-key">B</span> Example B — <code>my_list = [42]</code></li>
+      <li><span class="opt-key">C</span> Example C — <code>student_names = ["Alice", "Bob", ...]</code></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 14b · List i — Quiz Answer
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">List · Screenshot i · Quiz Answer</span>
+    <h2>Valid List Storage?</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:var(--gap-sm);align-items:start;">
+        <div class="cq-card">
+          <div class="cq-hdr">Example A</div>
+          <div class="cq-body">
+<pre><code>quiz_scores = []
+<span class="kw">for</span> i <span class="kw">in</span> range(num_quizzes):
+    score = int(input(<span class="tp">"Enter score: "</span>))
+    quiz_scores.append(score)</code></pre>
+          </div>
+        </div>
+        <div>
+          <div class="verdict verdict-pass fragment fade-up">
+            <span class="verdict-icon">✔</span> Earns credit
+          </div>
+          <ul class="rationale fragment fade-up" style="margin-top:4px;">
+            <li>Builds a list <span class="hl-green">dynamically</span> from user input. The number of elements scales with <code>num_quizzes</code>. Clearly manages complexity.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:var(--gap-sm);align-items:start;">
+        <div class="cq-card">
+          <div class="cq-hdr bad">Example B</div>
+          <div class="cq-body">
+<pre><code>my_list = [42]</code></pre>
+          </div>
+        </div>
+        <div>
+          <div class="verdict verdict-fail fragment fade-up">
+            <span class="verdict-icon">✘</span> Does not earn credit
+          </div>
+          <ul class="rationale fragment fade-up" style="margin-top:4px;">
+            <li class="bad"><span class="hl-red">One element.</span> A single-element list does not manage complexity. A plain variable would work just as well.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:var(--gap-sm);align-items:start;">
+        <div class="cq-card">
+          <div class="cq-hdr">Example C</div>
+          <div class="cq-body">
+<pre><code>student_names = [<span class="tp">"Alice"</span>, <span class="tp">"Bob"</span>, <span class="tp">"Carol"</span>, <span class="tp">"David"</span>]</code></pre>
+          </div>
+        </div>
+        <div>
+          <div class="verdict verdict-pass fragment fade-up">
+            <span class="verdict-icon">✔</span> Earns credit
+          </div>
+          <ul class="rationale fragment fade-up" style="margin-top:4px;">
+            <li>Multiple values stored. Using four separate variables instead would be far more repetitive. This demonstrates meaningful complexity management.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 15 · List ii — Requirements
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(255,212,59,0.08) 0%,transparent 70%);top:-60px;right:5%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">List · Screenshot ii</span>
+    <h2>Using the Data in the List</h2>
+    <p style="margin-bottom:var(--gap);">Screenshot ii shows the <strong style="color:var(--text);">same list</strong> from screenshot i being actively used. The code must do something meaningful with the list's contents.</p>
+
+    <ul class="bullets">
+      <li class="fragment fade-up"><strong>Iterating over the list</strong> to compute something (sum, average, filter, search) is the most common and clearest approach.</li>
+      <li class="fragment fade-up"><strong>Accessing multiple elements</strong> by index to create new data also works.</li>
+      <li class="fragment fade-up">Simply printing the list (<code>print(my_list)</code>) or passing the whole list to a function without processing it does not demonstrate meaningful use.</li>
+      <li class="fragment fade-up">The list name in screenshot ii must <strong>match</strong> the list name in screenshot i. If they differ, the scorer may not connect the two.</li>
+    </ul>
+
+    <div class="callout accent-red fragment fade-up" style="margin-top:var(--gap);">
+      <p><strong style="color:var(--red);">Same list rule:</strong> screenshots i and ii must show the same list. You cannot use two different lists, one per screenshot.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 16 · List ii — Quiz
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:20:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"The list is student_names. Which examples earn credit for List ii?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Usage A — for loop printing each name","isCorrect":true},{"id":"q1b","text":"Usage B — print(student_names)","isCorrect":false},{"id":"q1c","text":"Usage C — iterate and transform to roster","isCorrect":true}]}]}'>
+
+  <div class="slide-inner">
+    <span class="slide-tag">List · Screenshot ii · MCQ</span>
+    <h2>Valid List Use?</h2>
+    <p style="margin-bottom:var(--gap-sm);">The list from earlier is <code>student_names</code>. Which examples earn credit for Screenshot ii?</p>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+      <div class="cq-card">
+        <div class="cq-hdr">Usage A</div>
+        <div class="cq-body">
+<pre><code><span class="kw">for</span> name <span class="kw">in</span> student_names:
+    print(<span class="tp">"Welcome,"</span>, name)</code></pre>
+        </div>
+      </div>
+      <div class="cq-card">
+        <div class="cq-hdr">Usage B</div>
+        <div class="cq-body">
+<pre><code>print(student_names)</code></pre>
+        </div>
+      </div>
+      <div class="cq-card">
+        <div class="cq-hdr">Usage C</div>
+        <div class="cq-body">
+<pre><code>roster = []
+<span class="kw">for</span> name <span class="kw">in</span> student_names:
+    roster.append(name.upper())
+display_roster(roster)</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <ul class="mcq-opts" style="margin-top:var(--gap-sm);">
+      <li><span class="opt-key">A</span> Usage A — <code>for name in student_names: print(...)</code></li>
+      <li><span class="opt-key">B</span> Usage B — <code>print(student_names)</code></li>
+      <li><span class="opt-key">C</span> Usage C — iterate and transform to uppercase roster</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 16b · List ii — Quiz Answer
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">List · Screenshot ii · Quiz Answer</span>
+    <h2>Valid List Use?</h2>
+
+    <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:var(--gap-sm);align-items:start;">
+        <div class="cq-card">
+          <div class="cq-hdr">Usage A</div>
+          <div class="cq-body">
+<pre><code><span class="kw">for</span> name <span class="kw">in</span> student_names:
+    print(<span class="tp">"Welcome,"</span>, name)</code></pre>
+          </div>
+        </div>
+        <div>
+          <div class="verdict verdict-pass fragment fade-up">
+            <span class="verdict-icon">✔</span> Earns credit
+          </div>
+          <ul class="rationale fragment fade-up" style="margin-top:4px;">
+            <li><span class="hl-green">Iterates</span> over every element. Each item is accessed and used. Fulfills the program's purpose of greeting each student.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:var(--gap-sm);align-items:start;">
+        <div class="cq-card">
+          <div class="cq-hdr bad">Usage B</div>
+          <div class="cq-body">
+<pre><code>print(student_names)</code></pre>
+          </div>
+        </div>
+        <div>
+          <div class="verdict verdict-fail fragment fade-up">
+            <span class="verdict-icon">✘</span> Does not earn credit
+          </div>
+          <ul class="rationale fragment fade-up" style="margin-top:4px;">
+            <li class="bad">Just <span class="hl-red">prints the whole list</span> as a single object. No individual elements are processed. This does not demonstrate meaningful use of the list's data.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:var(--gap-sm);align-items:start;">
+        <div class="cq-card">
+          <div class="cq-hdr">Usage C</div>
+          <div class="cq-body">
+<pre><code>roster = []
+<span class="kw">for</span> name <span class="kw">in</span> student_names:
+    roster.append(name.upper())
+display_roster(roster)</code></pre>
+          </div>
+        </div>
+        <div>
+          <div class="verdict verdict-pass fragment fade-up">
+            <span class="verdict-icon">✔</span> Earns credit
+          </div>
+          <ul class="rationale fragment fade-up" style="margin-top:4px;">
+            <li>Iterates and <span class="hl-green">creates new data</span> from the list. Each element is accessed and transformed. This clearly fulfills the program's purpose.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 17 · PPR Checklist before you submit
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(0,201,177,0.10) 0%,transparent 70%);top:-60px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Before You Submit</span>
+    <h2>PPR Submission Checklist</h2>
+    <p style="margin-bottom:var(--gap);">Run through this before marking your PPR as final in the AP Digital Portfolio.</p>
+
+    <ul class="rubric-list">
+      <li class="fragment fade-up"><span class="ri ri-yes">✔</span> Screenshot is clear and at least 10-point font size.</li>
+      <li class="fragment fade-up"><span class="ri ri-yes">✔</span> <strong>No comments</strong> in any of the four screenshots.</li>
+      <li class="fragment fade-up"><span class="ri ri-yes">✔</span> Procedure i shows a named procedure with parameters, a loop, and a conditional.</li>
+      <li class="fragment fade-up"><span class="ri ri-yes">✔</span> Procedure ii shows a real call to that same procedure with actual arguments.</li>
+      <li class="fragment fade-up"><span class="ri ri-yes">✔</span> List i shows the list being populated with multiple values (or designed to hold them).</li>
+      <li class="fragment fade-up"><span class="ri ri-yes">✔</span> List ii shows the <em>same</em> list's elements being individually accessed or processed.</li>
+      <li class="fragment fade-up"><span class="ri ri-yes">✔</span> All code shown is student-developed, not copied library or starter code.</li>
+      <li class="fragment fade-up"><span class="ri ri-yes">✔</span> PPR is marked <strong>final</strong> in the AP Digital Portfolio by the deadline.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 18 · Final Thought
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:700px;height:700px;background:radial-gradient(circle,rgba(0,201,177,0.11) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Remember</span>
+    <blockquote class="big-quote" style="text-align:center;border-left:none;padding-left:0;border-top:4px solid var(--teal);padding-top:var(--gap);">
+      Four screenshots.<br>Zero comments.<br>One deadline.
+    </blockquote>
+    <p style="margin-top:var(--gap-lg);font-size:var(--body);color:var(--text-muted);">The PPR is your reference sheet for the exam. Make it count.</p>
+  </div>
+</section>
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<!-- SyncDeck bundled runtime JS -->
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+    deckId: 'ppr-guide',
+});
+</script>
+
+</body>
+</html>
