@@ -54,33 +54,63 @@ complete CSS token blocks and font pairings — see
 
 ---
 
-## 5. Standalone Hosting Opt-In
+## 5. Standard `initSyncDeckReveal` Block
 
-Decks in this repo should opt into the standalone top-right CTA by passing
-`standaloneHosting.activeBitsOrigin` to `initSyncDeckReveal(...)`:
+Every deck in this repo must include both `standaloneHosting` and `revealOverrides`
+in its `initSyncDeckReveal(...)` call. Omitting either causes problems: missing
+`standaloneHosting.activeBitsOrigin` suppresses the SyncDeck CTA; missing
+`revealOverrides` leaves Reveal.js at its defaults, which do not match this repo's
+canvas size, transition style, or navigation expectations.
 
-```html
-<script>
+Use this block verbatim and substitute the correct `deckId`:
+
+```js
 initSyncDeckReveal({
-  deckId: 'my-deck-name',
+  deckId: 'my-deck-name',          // kebab-case from the filename
   standaloneHosting: {
     activeBitsOrigin: 'https://bits.mycode.run',
-    // Optional:
+    // Optional overrides (rarely needed):
     // launchPath: '/util/syncdeck/launch-presentation',
     // presentationUrl: 'https://slides.example/my-deck.html',
     // ctaLabel: 'Activate SyncDeck',
     // ctaTimeoutMs: 9000,
   },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
 });
-</script>
 ```
 
 Repo-specific notes:
 
-- the CTA is opt-in; it does not appear unless `standaloneHosting.activeBitsOrigin` is set
-- the runtime opens ActiveBits at `/util/syncdeck/launch-presentation`
-- omit `presentationUrl` unless the deck has a better canonical URL than the current published page URL
-- the runtime bundle copies `assets/syncdeck.png` into `dist/assets/`, so decks should keep loading the bundled runtime rather than linking the button asset directly
+- `standaloneHosting.activeBitsOrigin` must be `'https://bits.mycode.run'` — this
+  is the ActiveBits instance that hosts SyncDeck for this repo.
+- The CTA only appears when `activeBitsOrigin` is set; omitting it silently
+  suppresses the button.
+- The `revealOverrides` block sets the 1600×900 canvas, fade transitions, and
+  edge controls that match this repo's slide designs. Do not omit it or Reveal
+  will apply its own defaults (wrong canvas size, wrong transition, centered
+  layout).
+- Omit `presentationUrl` unless the deck has a better canonical URL than the
+  current published page URL.
+- Do not add `chalkboardOverrides.storage` — the host page owns drawing state.
 
 ---
 
@@ -92,4 +122,5 @@ Repo-specific notes:
 | Shared theme handling | Optional in general | Reuse folder-level `theme.css` before adding deck-specific `<style>` |
 | `deckId` naming | Unique per deck | Derive from the presentation filename in kebab-case |
 | Style preset reference | `references/STYLE_PRESETS.md` (short) | Also `.agent/skills/STYLE_PRESETS_EXTENDED.md` |
-| Standalone hosting CTA | Optional runtime feature | Opt in with `standaloneHosting.activeBitsOrigin` |
+| Standalone hosting CTA | Optional runtime feature | Always include `standaloneHosting.activeBitsOrigin: 'https://bits.mycode.run'` |
+| Reveal.js config | Optional `revealOverrides` | Always include the standard `revealOverrides` block (1600×900, fade, edge controls) |
