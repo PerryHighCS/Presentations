@@ -1,8 +1,8 @@
 FROM mcr.microsoft.com/playwright:v1.59.1-noble
 
-# Layer 1: Python runtime/tooling.
+# Layer 1: Python runtime/tooling and pdfimage dependencies.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3 python3-pip python3-venv python3-dev \
+    && apt-get install -y --no-install-recommends python3 python3-pip python3-venv python3-dev poppler-utils \
     && rm -rf /var/lib/apt/lists/* 
 
 # Layer 2: Other devcontainer setup.

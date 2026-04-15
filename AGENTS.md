@@ -197,3 +197,12 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
   `vendor/SyncDeck-Reveal -> /runtime/syncdeck-reveal`.
 - Refresh the browser after edits; no separate staging step is needed for
   normal deck work.
+
+## PDF Image Extraction Helper
+
+- Use `scripts/extract-pdf-images.sh` to extract embedded images from each PDF
+  into a separate sibling folder named `<pdf-name>_images`.
+- Default target folder is the current working directory.
+- Optional custom folder usage:
+  `scripts/extract-pdf-images.sh Decks/AR1/LockTronics`
+- Dependency: `pdfimages` from `poppler-utils`.
