@@ -211,6 +211,13 @@
   padding: 0.5em 0.8em;
 }
 
+/* Conditional / "it depends" verdict */
+.verdict-maybe {
+  background: rgba(255,212,59,0.08);
+  border: 1px solid rgba(255,212,59,0.4);
+  color: var(--amber);
+}
+
 /* Zero-score callout */
 .zero-box {
   background: rgba(255,107,107,0.1);
@@ -916,6 +923,12 @@ print(<span class="tp">"Grade:"</span>, letter)</code></pre>
 <pre><code>student_names = [<span class="tp">"Alice"</span>, <span class="tp">"Bob"</span>, <span class="tp">"Carol"</span>, <span class="tp">"David"</span>]</code></pre>
           </div>
         </div>
+        <div class="cq-card">
+          <div class="cq-hdr">Example D</div>
+          <div class="cq-body">
+<pre><code>levelScores = []</code></pre>
+          </div>
+        </div>
       </div>
 
       <div class="callout" style="margin-top:var(--gap-sm);">
@@ -928,7 +941,7 @@ print(<span class="tp">"Grade:"</span>, letter)</code></pre>
     data-activity-id="resonance"
     data-activity-trigger="slide-enter"
     data-activity-instance-key="resonance:17:0"
-    data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which examples earn credit for List i?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Example A — quiz_scores","isCorrect":true},{"id":"q1b","text":"Example B — my_list","isCorrect":false},{"id":"q1c","text":"Example C — student_names","isCorrect":true}]}]}'>
+    data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which examples earn credit for List i?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Example A — quiz_scores","isCorrect":true},{"id":"q1b","text":"Example B — my_list","isCorrect":false},{"id":"q1c","text":"Example C — student_names","isCorrect":true},{"id":"q1d","text":"Example D — levelScores","isCorrect":false}]}]}'>
     <div class="slide-inner slide-center">
       <span class="slide-tag">List · Screenshot i · MCQ</span>
       <h2>Valid List Storage?</h2>
@@ -937,6 +950,7 @@ print(<span class="tp">"Grade:"</span>, letter)</code></pre>
         <li><span class="opt-key">A</span> Example A — <code>quiz_scores</code></li>
         <li><span class="opt-key">B</span> Example B — <code>my_list</code></li>
         <li><span class="opt-key">C</span> Example C — <code>student_names</code></li>
+        <li><span class="opt-key">D</span> Example D — <code>levelScores</code></li>
       </ul>
     </div>
   </section>
@@ -1001,6 +1015,24 @@ print(<span class="tp">"Grade:"</span>, letter)</code></pre>
           </div>
           <ul class="rationale fragment fade-up" style="margin-top:4px;">
             <li>Multiple values stored. Using four separate variables instead would be far more repetitive. This demonstrates meaningful complexity management.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:var(--gap-sm);align-items:start;">
+        <div class="cq-card">
+          <div class="cq-hdr bad">Example D</div>
+          <div class="cq-body">
+<pre><code>levelScores = []</code></pre>
+          </div>
+        </div>
+        <div>
+          <div class="verdict verdict-fail fragment fade-up">
+            <span class="verdict-icon">✘</span> Does not earn credit
+          </div>
+          <ul class="rationale fragment fade-up" style="margin-top:4px;">
+            <li class="bad"><span class="hl-red">No data is stored.</span> Declaring an empty list shows the list exists, but Screenshot i must show data being placed into the list. An empty declaration alone does not satisfy the requirement.</li>
+            <li class="bad">The fix is to also show the code that populates it, such as the loop that appends values, even if that means capturing a slightly larger screenshot.</li>
           </ul>
         </div>
       </div>
@@ -1077,7 +1109,7 @@ display_roster(roster)</code></pre>
     data-activity-id="resonance"
     data-activity-trigger="slide-enter"
     data-activity-instance-key="resonance:20:0"
-    data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"The list is student_names. Which examples earn credit for List ii?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Usage A","isCorrect":true},{"id":"q1b","text":"Usage B","isCorrect":false},{"id":"q1c","text":"Usage C","isCorrect":true}]}]}'>
+    data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"student_names was shown in List i. Which usages earn credit for List ii?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Usage A","isCorrect":true},{"id":"q1b","text":"Usage B","isCorrect":false},{"id":"q1c","text":"Usage C","isCorrect":true}]}]}'>
     <div class="slide-inner slide-center">
       <span class="slide-tag">List · Screenshot ii · MCQ</span>
       <h2>Valid List Use?</h2>
@@ -1146,8 +1178,16 @@ display_roster(roster)</code></pre>
           </div>
         </div>
         <div>
-          <div class="verdict verdict-pass fragment fade-up">
-            <span class="verdict-icon">✔</span> Earns credit
+          <div class="verdict verdict-maybe fragment fade-up">
+            <span class="verdict-icon">⚠</span> Depends on your List i
+          </div>
+          <ul class="rationale fragment fade-up" style="margin-top:4px;">
+            <li><span class="hl-green">Earns credit if <code>student_names</code> was your List i list.</span> Each element of <code>student_names</code> is accessed and transformed. That is meaningful use of the List i data.</li>
+            <li class="bad"><span class="hl-red">Does not earn credit if <code>roster</code> was your List i list.</span> Here the code is <em>populating</em> <code>roster</code>, not reading its stored data. That makes it a second List i screenshot, not a List ii.</li>
+            <li>The list whose elements are being individually <strong style="color:var(--text);">read or processed</strong> must be the same list shown in Screenshot i.</li>
+          </ul>
+        </div>
+      </div>
           </div>
           <ul class="rationale fragment fade-up" style="margin-top:4px;">
             <li>Iterates and <span class="hl-green">creates new data</span> from the list. Each element is accessed and transformed. This clearly fulfills the program's purpose.</li>
