@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algorithm Efficiency — AP CSP Unit 8 Lesson 2</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Algorithm Efficiency
+   ============================================================ */
+
+/* Activity instruction block */
+.activity-card {
+  background: rgba(0,201,177,0.06);
+  border: 1px solid var(--teal-border);
+  border-left: 4px solid var(--teal);
+  border-radius: 4px;
+  padding: 18px 24px;
+}
+.activity-card h3 {
+  font-size: var(--h3);
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+.activity-card p, .activity-card li {
+  font-size: var(--body);
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* Small activity-label above a heading */
+.act-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  display: block;
+  margin-bottom: 14px;
+}
+
+/* Raffle ticket card (CSS-drawn) */
+.ticket-card {
+  background: #f5c842;
+  border: 3px solid #8b2500;
+  border-radius: 10px;
+  padding: 14px 28px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #8b2500;
+  text-align: center;
+  position: relative;
+  display: inline-block;
+}
+.ticket-card::before,
+.ticket-card::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  background: var(--bg);
+  border-radius: 50%;
+}
+.ticket-card::before { left: -10px; }
+.ticket-card::after  { right: -10px; }
+
+/* Search results table */
+.search-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--font-mono);
+}
+.search-table th {
+  background: rgba(0,201,177,0.18);
+  border: 1px solid var(--teal-border);
+  padding: 10px 20px;
+  font-size: 18px;
+  color: var(--teal);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+.search-table td {
+  border: 1px solid var(--teal-border);
+  padding: 9px 20px;
+  font-size: 20px;
+  color: var(--text-muted);
+  text-align: center;
+  background: var(--bg-card);
+}
+.search-table tr:nth-child(even) td {
+  background: rgba(0,201,177,0.04);
+}
+
+/* Binary search card row */
+.bs-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  padding: 14px 0;
+  flex-shrink: 0;
+}
+.bs-card {
+  width: 132px;
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 2px solid var(--teal-border);
+  border-radius: 8px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bs-card.bs-highlighted {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: rgba(255,212,59,0.08);
+  box-shadow: 0 0 18px rgba(255,212,59,0.25);
+  transform: scale(1.08);
+}
+.bs-card.bs-eliminated {
+  opacity: 0.18;
+  transform: scale(0.88);
+}
+.bs-card.bs-found {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(105,219,124,0.12);
+  box-shadow: 0 0 22px rgba(105,219,124,0.32);
+  transform: scale(1.1);
+}
+
+/* Step-by-step log for binary search animation */
+.bs-step-log {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+.bs-step-item {
+  padding: 9px 18px;
+  border-radius: 4px;
+  font-size: 21px;
+  line-height: 1.45;
+  border-left: 3px solid var(--teal-border);
+  background: var(--bg-card);
+  color: var(--text-muted);
+}
+
+/* Binary bit display */
+.bit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 21px;
+}
+.bit-box {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,201,177,0.1);
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  font-weight: 700;
+  color: var(--teal);
+}
+
+/* Numbered algorithm steps */
+.alg-steps {
+  counter-reset: step;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.alg-steps li {
+  counter-increment: step;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  font-size: 22px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.alg-steps li::before {
+  content: counter(step);
+  min-width: 34px;
+  height: 34px;
+  background: rgba(0,201,177,0.12);
+  border: 1px solid var(--teal-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--teal);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+/* Definition cards for wrap-up */
+.def-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 18px 26px;
+}
+.def-term {
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+.def-text {
+  font-size: 20px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal"><div class="slides">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 01 · Title
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:700px;height:700px;top:-80px;right:-120px;background:radial-gradient(circle,rgba(0,201,177,0.10),transparent 70%);"></div>
+    <span class="slide-tag">Unit 8 · Lesson 2</span>
+    <h1 class="title-h1" style="font-size:88px;line-height:1.0;">Algorithm<br>Efficiency</h1>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:720px;">How do we measure and compare the speed of different algorithms?</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 02 · Opening FRQ — Lost pencil
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:2:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Have you ever lost a pencil in a backpack? What are the steps you take to find the pencil?","order":0}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">FRQ</span>
+    <h2>Finding Something</h2>
+    <div class="frq-box" style="margin-top:var(--gap);">
+      <p>Have you ever lost a pencil in a backpack? What are the steps you take to find the pencil?</p>
+    </div>
+    <p style="font-size:var(--small);color:var(--text-dim);margin-top:var(--gap);">Think about the sequence of decisions and comparisons you make. This is an algorithm at work.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 03 · Activity Setup — Whiteboards + Volunteers
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="act-label">Activity Setup</span>
+    <div class="split" style="gap:60px;align-items:center;">
+      <div>
+        <h2 style="font-size:48px;">Everyone grab a whiteboard and a dry erase marker.</h2>
+        <p style="margin-top:var(--gap);">You will use these to record your observations, hypotheses, and data during today's activities.</p>
+      </div>
+      <div class="callout accent-amber" style="text-align:center;padding:36px 28px;">
+        <p style="font-size:22px;color:var(--text-muted);margin-bottom:10px;">First up:</p>
+        <h2 style="font-size:56px;color:var(--amber);">I need<br>3 volunteers.</h2>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 04 · Raffle Activity Setup
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="act-label">Activity</span>
+    <div class="split" style="align-items:center;gap:52px;">
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <div>
+          <p style="font-size:16px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:6px;">Problem</p>
+          <h2 style="font-size:40px;">Figure out if anyone has the winning raffle ticket.</h2>
+        </div>
+        <div>
+          <p style="font-size:16px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:6px;">Instance</p>
+          <p>A list of tickets plus the winning number. Each volunteer scans a QR code to get their ticket number.</p>
+        </div>
+        <div class="callout" style="padding:14px 20px;">
+          <p>Let's check if anyone has the winning number!</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:24px;">
+        <img src="AlgorithmEfficiency-assets/ticket-app.png"
+             style="height:360px;width:auto;border-radius:12px;border:2px solid var(--teal-border);"
+             alt="Phone showing ticket app">
+        <div class="ticket-card">
+          <div style="font-size:16px;letter-spacing:0.1em;">TICKET</div>
+          <div style="font-size:40px;letter-spacing:0.08em;">161</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 05 · Discussion — How Does This Scale?
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Discussion</span>
+    <h2 style="margin-bottom:var(--gap);">How Does This Scale?</h2>
+    <div style="display:flex;flex-direction:column;gap:18px;">
+      <div class="callout" style="padding:18px 24px;">
+        <p>How many steps did it take to find out if anyone had the winning ticket? How many times did I have to ask someone their number?</p>
+      </div>
+      <div class="callout" style="padding:18px 24px;">
+        <p>What is the <span style="color:var(--amber);">greatest possible</span> number of steps this could ever take?</p>
+      </div>
+      <div class="callout" style="padding:18px 24px;">
+        <p>What if we had <strong style="color:var(--teal);">six volunteers</strong>? The <strong style="color:var(--teal);">whole class</strong>? The <strong style="color:var(--teal);">whole school</strong>? What is the pattern here?</p>
+      </div>
+      <div class="callout accent-amber" style="padding:16px 24px;">
+        <p style="font-size:21px;">Write your answer on your whiteboard: what is the relationship between the number of tickets and the maximum number of steps?</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 06 · Linear Search — Inputs vs. Steps
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;height:100%;">
+    <span class="slide-tag">Linear Search — Results</span>
+    <div class="split" style="align-items:start;gap:60px;flex:1;min-height:0;margin-top:10px;">
+
+      <!-- Table -->
+      <div>
+        <h2 style="font-size:38px;margin-bottom:var(--gap);">Inputs vs. Steps</h2>
+        <table class="search-table">
+          <thead>
+            <tr><th>Instance</th><th>Inputs</th><th>Steps</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td><td>3</td>
+              <td><span class="fragment" data-fragment-index="1">3</span></td>
+            </tr>
+            <tr>
+              <td>2</td><td>6</td>
+              <td><span class="fragment" data-fragment-index="2">6</span></td>
+            </tr>
+            <tr>
+              <td>3</td><td>10</td>
+              <td><span class="fragment" data-fragment-index="3">10</span></td>
+            </tr>
+            <tr>
+              <td>4</td><td>100</td>
+              <td><span class="fragment" data-fragment-index="4">100</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pattern callouts -->
+      <div style="display:flex;flex-direction:column;gap:var(--gap);justify-content:flex-start;padding-top:56px;">
+        <div class="callout fragment fade-up" data-fragment-index="5" style="padding:20px 24px;">
+          <h3>The Pattern</h3>
+          <p>With <span style="color:var(--amber);">linear search</span>, the number of steps grows at exactly the same rate as the number of inputs. You check every item one by one until you find the target or exhaust the list.</p>
+        </div>
+        <div class="callout accent-amber fragment fade-up" data-fragment-index="6" style="padding:16px 24px;">
+          <h3>Worst Case</h3>
+          <p>If there are <em>n</em> items, linear search may need up to <strong style="color:var(--amber);font-family:var(--font-mono);">n</strong> steps. This is called <strong>linear</strong> growth.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 07 · Binary Search Challenge — Sorted List
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;">
+    <span class="act-label">Partner Challenge</span>
+    <h2 style="font-size:42px;margin-bottom:20px;">Create a faster search algorithm.</h2>
+    <div class="split" style="align-items:start;gap:52px;">
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="activity-card">
+          <h3>Do This</h3>
+          <p>Use the ticket generator to generate seven tickets. Write the numbers on your whiteboard in <span style="color:var(--teal);">numerical order</span>. Copy one number to the top of your whiteboard. That is the number you are searching for.</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;padding:12px 0;">
+          <span style="font-family:var(--font-mono);font-size:22px;padding:8px 14px;background:var(--bg-card);border:1px solid var(--teal-border);border-radius:4px;">117</span>
+          <span style="font-family:var(--font-mono);font-size:22px;padding:8px 14px;background:var(--bg-card);border:1px solid var(--teal-border);border-radius:4px;">232</span>
+          <span style="font-family:var(--font-mono);font-size:22px;padding:8px 14px;background:var(--bg-card);border:1px solid var(--teal-border);border-radius:4px;">245</span>
+          <span style="font-family:var(--font-mono);font-size:22px;padding:8px 14px;background:var(--bg-card);border:1px solid var(--teal-border);border-radius:4px;">410</span>
+          <span style="font-family:var(--font-mono);font-size:22px;padding:8px 14px;background:var(--bg-card);border:1px solid var(--teal-border);border-radius:4px;">705</span>
+          <span style="font-family:var(--font-mono);font-size:22px;padding:8px 14px;background:var(--bg-card);border:1px solid var(--teal-border);border-radius:4px;">716</span>
+          <span style="font-family:var(--font-mono);font-size:22px;padding:8px 14px;background:var(--bg-card);border:1px solid var(--teal-border);border-radius:4px;">833</span>
+          <span style="font-family:var(--font-mono);font-size:23px;padding:8px 16px;background:rgba(255,212,59,0.1);border:2px solid var(--amber);border-radius:4px;color:var(--amber);">705 &#x1F50D;</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="activity-card">
+          <h3>Challenge Rules</h3>
+          <ul class="bullets" style="gap:8px;">
+            <li>Numbers are hidden. You can only reveal and compare one at a time.</li>
+            <li>You can start at any position, not just the first number.</li>
+            <li>You can jump over numbers and do not need to search in order.</li>
+            <li>You can decide which number to check next based on your current comparison result.</li>
+            <li><strong>Goal:</strong> find the number in the fewest steps possible.</li>
+          </ul>
+        </div>
+        <div class="callout accent-amber" style="padding:12px 18px;">
+          <p style="font-size:21px;">What is the <span style="color:var(--amber);">worst case</span>? What is the greatest number of comparison steps your algorithm could ever need for any number in this list?</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 08 · Share & Compare — FRQ
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:8:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Describe your algorithm for searching a sorted list. How does your algorithm decide which number to compare next?","order":0}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">FRQ</span>
+    <h2 style="margin-bottom:var(--gap);">Share &amp; Compare</h2>
+    <div class="callout" style="padding:18px 24px;margin-bottom:var(--gap);">
+      <p>Partner up with another group. Share your algorithms and practice running both fully. Determine which one is "faster" or takes fewer comparison steps in the worst case.</p>
+    </div>
+    <div class="frq-box">
+      <p>Describe your algorithm for searching a sorted list. How does your algorithm decide which number to compare next?</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 09 · Binary Search Algorithm Revealed
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;">
+    <span class="act-label">Algorithm Revealed</span>
+    <h2 style="font-size:44px;margin-bottom:var(--gap);">Binary Search</h2>
+    <div class="split" style="align-items:start;gap:52px;">
+      <div>
+        <p style="margin-bottom:20px;">Now try this algorithm and see how it compares to your own.</p>
+        <ol class="alg-steps">
+          <li>Find the <span style="color:var(--teal);">middle number</span> in the list. Compare it to the given number. If the given number is less than the middle, remove all cards to the right (including the middle). If it is greater, remove all cards to the left (including the middle).</li>
+          <li>Find the middle of this <span style="color:var(--teal);">shorter list</span>. Follow the same comparison and removal rule from step 1.</li>
+          <li>Find the middle of the <span style="color:var(--teal);">new shorter list</span>. Follow the same comparison and removal rule.</li>
+          <li>You have <span style="color:var(--green);">found your number</span> when only one card remains and it matches, or all cards have been eliminated (not found).</li>
+        </ol>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <div class="callout accent-amber" style="padding:22px 26px;">
+          <h3>Key Insight</h3>
+          <p>Each comparison eliminates <strong style="color:var(--amber);">half</strong> of the remaining options. This is why it is called <em>binary</em> search: it divides by two at every step.</p>
+        </div>
+        <div class="callout" style="padding:16px 22px;">
+          <p style="font-size:21px;"><strong style="color:var(--teal);">Important:</strong> Binary search only works on a <span style="color:var(--teal);">sorted</span> list. If the numbers are not in order, you cannot rely on the comparison to eliminate a half.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 10 · Class Demo — Line Up in Order
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="act-label">Class Activity</span>
+    <div class="split" style="align-items:center;gap:52px;">
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <h2 style="font-size:42px;">Let's try the algorithm with another raffle!</h2>
+        <div class="activity-card">
+          <h3>Do This</h3>
+          <p>Everyone scan the QR code to get your number. Line up across the front of the room in <span style="color:var(--teal);">numerical order</span>.</p>
+        </div>
+        <div style="display:flex;gap:14px;">
+          <div style="flex:1;text-align:center;font-family:var(--font-mono);font-size:18px;color:var(--text-muted);padding:12px;background:rgba(0,201,177,0.05);border:1px dashed var(--teal-border);border-radius:4px;">
+            &#8592; Smaller #s
+          </div>
+          <div style="flex:1;text-align:center;font-family:var(--font-mono);font-size:18px;color:var(--text-muted);padding:12px;background:rgba(0,201,177,0.05);border:1px dashed var(--teal-border);border-radius:4px;">
+            Larger #s &#8594;
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
+        <img src="AlgorithmEfficiency-assets/ticket-app.png"
+             style="height:360px;width:auto;border-radius:12px;border:2px solid var(--teal-border);"
+             alt="Phone showing ticket app">
+        <p style="font-size:18px;color:var(--text-muted);">Scan to get your number</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 11 · Binary Search Animation — Finding 705
+     ══════════════════════════════════════════════════════════════════ -->
+<section id="bs-anim-slide">
+  <div class="slide-inner" style="justify-content:flex-start;padding:32px 60px 24px;height:100%;">
+
+    <p style="font-size:20px;color:var(--text-muted);margin-bottom:10px;flex-shrink:0;">
+      <strong style="color:var(--text);">Binary Search</strong> — Finding
+      <strong style="color:var(--amber);font-family:var(--font-mono);">705</strong>
+      in a sorted list of 7
+    </p>
+
+    <!-- Card visualization -->
+    <div class="bs-row" id="bsCards">
+      <div class="bs-card" id="bsc0">117</div>
+      <div class="bs-card" id="bsc1">232</div>
+      <div class="bs-card" id="bsc2">245</div>
+      <div class="bs-card" id="bsc3">410</div>
+      <div class="bs-card" id="bsc4">705</div>
+      <div class="bs-card" id="bsc5">716</div>
+      <div class="bs-card" id="bsc6">833</div>
+    </div>
+
+    <!-- Step log — accumulates as fragments are revealed -->
+    <div class="bs-step-log">
+      <div class="bs-step-item" style="border-left-color:var(--text-dim);color:var(--text-dim);">
+        7 cards. Target: <strong style="color:var(--amber);font-family:var(--font-mono);">705</strong>. Which one do we check first?
+      </div>
+      <div class="fragment fade-up bs-step-item" data-fragment-index="1" style="border-left-color:var(--amber);">
+        <strong style="color:var(--amber);">Step 1</strong> — Middle element: <strong style="font-family:var(--font-mono);">410</strong>. Compare: 705 &gt; 410.
+      </div>
+      <div class="fragment fade-up bs-step-item" data-fragment-index="2">
+        705 &gt; 410, so <span style="color:var(--red);">eliminate the left half</span> (117, 232, 245, 410). 3 cards remain.
+      </div>
+      <div class="fragment fade-up bs-step-item" data-fragment-index="3" style="border-left-color:var(--amber);">
+        <strong style="color:var(--amber);">Step 2</strong> — Middle of remaining: <strong style="font-family:var(--font-mono);">716</strong>. Compare: 705 &lt; 716.
+      </div>
+      <div class="fragment fade-up bs-step-item" data-fragment-index="4">
+        705 &lt; 716, so <span style="color:var(--red);">eliminate the right half</span> (716, 833). 1 card remains.
+      </div>
+      <div class="fragment fade-up bs-step-item" data-fragment-index="5" style="border-left-color:var(--green);">
+        <strong style="color:var(--green);">Step 3</strong> — Only card remaining: <strong style="font-family:var(--font-mono);">705</strong>. Compare: 705 = 705.
+      </div>
+      <div class="fragment fade-up callout accent-green" data-fragment-index="6" style="padding:10px 20px;margin:0;">
+        <p style="font-size:21px;"><strong style="color:var(--green);">Found 705 in just 3 steps!</strong> Linear search could have taken up to 7 steps.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 12 · Binary Search Table + Binary Pattern
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:32px 52px 20px;height:100%;">
+    <span class="slide-tag" style="margin-bottom:10px;">Binary Search — Patterns</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;flex:1;min-height:0;">
+
+      <!-- Left: table + bit pattern -->
+      <div style="display:flex;flex-direction:column;gap:16px;overflow:hidden;">
+        <p style="font-size:18px;color:var(--text-muted);">Track the maximum steps for different list sizes.</p>
+        <table class="search-table">
+          <thead>
+            <tr><th>Instance</th><th>Inputs</th><th>Steps</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td><td>1</td>
+              <td><span class="fragment" data-fragment-index="1">1</span></td>
+            </tr>
+            <tr>
+              <td>2</td><td>3</td>
+              <td><span class="fragment" data-fragment-index="2">2</span></td>
+            </tr>
+            <tr>
+              <td>3</td><td>5</td>
+              <td><span class="fragment" data-fragment-index="3">3</span></td>
+            </tr>
+            <tr>
+              <td>4</td><td>7</td>
+              <td>3</td>
+            </tr>
+            <tr>
+              <td>5</td><td>9</td>
+              <td><span class="fragment" data-fragment-index="4">4</span></td>
+            </tr>
+            <tr>
+              <td>6</td><td>15</td>
+              <td>4</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="fragment fade-up callout" data-fragment-index="5" style="padding:12px 18px;">
+          <h3 style="font-size:20px;margin-bottom:8px;">There's another way of thinking about this.</h3>
+          <p style="font-size:18px;">How many <span style="color:var(--amber);">bits</span> does it take to represent each input size in binary?</p>
+        </div>
+
+        <div class="fragment fade-up" data-fragment-index="6" style="display:flex;flex-direction:column;gap:10px;">
+          <div class="bit-row">
+            <span style="color:var(--text-muted);font-size:17px;min-width:88px;">1 input:</span>
+            <div class="bit-box">1</div>
+            <span style="color:var(--text-dim);font-size:16px;">= 1 bit = <strong style="color:var(--teal);">1</strong> step</span>
+          </div>
+          <div class="bit-row">
+            <span style="color:var(--text-muted);font-size:17px;min-width:88px;">7 inputs:</span>
+            <div class="bit-box">1</div><div class="bit-box">1</div><div class="bit-box">1</div>
+            <span style="color:var(--text-dim);font-size:16px;">= 3 bits = <strong style="color:var(--teal);">3</strong> steps</span>
+          </div>
+          <div class="bit-row">
+            <span style="color:var(--text-muted);font-size:17px;min-width:88px;">15 inputs:</span>
+            <div class="bit-box">1</div><div class="bit-box">1</div><div class="bit-box">1</div><div class="bit-box">1</div>
+            <span style="color:var(--text-dim);font-size:16px;">= 4 bits = <strong style="color:var(--teal);">4</strong> steps</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: scatter plot SVG -->
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
+        <p style="font-size:18px;color:var(--text-muted);">Maximum steps — Binary Search</p>
+        <!-- x = 50 + n*19 (n = input size); y = 250 - steps*50 -->
+        <svg viewBox="0 0 380 300" width="380" height="300" style="overflow:visible;">
+          <defs>
+            <pattern id="grid12" width="19" height="50" patternUnits="userSpaceOnUse" x="50" y="0">
+              <path d="M 19 0 L 0 0 0 50" fill="none" stroke="rgba(0,201,177,0.07)" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect x="50" y="0" width="310" height="250" fill="url(#grid12)"/>
+
+          <!-- Axes -->
+          <line x1="50" y1="250" x2="370" y2="250" stroke="rgba(226,245,242,0.3)" stroke-width="1.5"/>
+          <line x1="50" y1="0" x2="50" y2="255" stroke="rgba(226,245,242,0.3)" stroke-width="1.5"/>
+
+          <!-- X axis labels -->
+          <text x="50" y="268" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="middle" font-family="JetBrains Mono">1</text>
+          <text x="145" y="268" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="middle" font-family="JetBrains Mono">5</text>
+          <text x="240" y="268" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="middle" font-family="JetBrains Mono">10</text>
+          <text x="335" y="268" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="middle" font-family="JetBrains Mono">15</text>
+          <text x="190" y="286" fill="rgba(226,245,242,0.4)" font-size="13" text-anchor="middle" font-family="Space Grotesk">inputs</text>
+
+          <!-- Y axis labels (steps 1-4) -->
+          <text x="42" y="204" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="end" font-family="JetBrains Mono">1</text>
+          <text x="42" y="154" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="end" font-family="JetBrains Mono">2</text>
+          <text x="42" y="104" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="end" font-family="JetBrains Mono">3</text>
+          <text x="42" y="54" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="end" font-family="JetBrains Mono">4</text>
+          <text x="14" y="130" fill="rgba(226,245,242,0.4)" font-size="13" text-anchor="middle" font-family="Space Grotesk" transform="rotate(-90,14,130)">steps</text>
+
+          <!-- Always-visible given points: (7,3) and (15,4) -->
+          <circle cx="183" cy="100" r="7" fill="#00c9b1"/>
+          <circle cx="335" cy="50" r="7" fill="#00c9b1"/>
+
+          <!-- Fragment-revealed points: (1,1), (3,2), (5,3), (9,4) -->
+          <circle cx="69" cy="200" r="7" fill="#00c9b1" class="fragment" data-fragment-index="1"/>
+          <circle cx="107" cy="150" r="7" fill="#00c9b1" class="fragment" data-fragment-index="2"/>
+          <circle cx="145" cy="100" r="7" fill="#00c9b1" class="fragment" data-fragment-index="3"/>
+          <circle cx="221" cy="50" r="7" fill="#00c9b1" class="fragment" data-fragment-index="4"/>
+
+          <!-- Logarithmic curve hint -->
+          <polyline points="69,200 107,150 145,100 183,100 221,50 335,50"
+                    fill="none" stroke="rgba(0,201,177,0.45)" stroke-width="2"
+                    stroke-dasharray="6,4"
+                    class="fragment" data-fragment-index="5"/>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 13 · Graph Comparison — Linear vs. Binary
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;">
+    <span class="slide-tag">Comparison</span>
+    <h2 style="font-size:44px;margin-bottom:20px;">Linear vs. Binary Search</h2>
+    <div class="split" style="align-items:center;gap:52px;">
+
+      <!-- Comparison graph SVG
+           viewBox 0 0 460 340; axes at x=60, y=340
+           X: n=1..15; x = 60 + (n-1)*25.71 (so n=15 → x=420)
+           Y: steps=1..15; y = 340 - (s-1)*24.29 (so s=15 → y=0)
+           Linear: (60,340) → (420,0)
+           Binary: polyline through (n, floor(log2(n))+1) points -->
+      <svg viewBox="0 0 460 360" width="460" height="360" style="overflow:visible;flex-shrink:0;">
+        <defs>
+          <pattern id="grid13" width="25.71" height="24.29" patternUnits="userSpaceOnUse" x="60" y="0">
+            <path d="M 25.71 0 L 0 0 0 24.29" fill="none" stroke="rgba(0,201,177,0.06)" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+        <rect x="60" y="0" width="360" height="340" fill="url(#grid13)"/>
+
+        <!-- Axes -->
+        <line x1="60" y1="340" x2="428" y2="340" stroke="rgba(226,245,242,0.35)" stroke-width="1.5"/>
+        <line x1="60" y1="0" x2="60" y2="344" stroke="rgba(226,245,242,0.35)" stroke-width="1.5"/>
+
+        <!-- Axis labels -->
+        <text x="245" y="358" fill="rgba(226,245,242,0.5)" font-size="14" text-anchor="middle" font-family="Space Grotesk">inputs</text>
+        <text x="14" y="175" fill="rgba(226,245,242,0.5)" font-size="14" text-anchor="middle" font-family="Space Grotesk" transform="rotate(-90,14,175)">steps</text>
+
+        <!-- X axis ticks (n=1,5,10,15) -->
+        <text x="60"  y="352" fill="rgba(226,245,242,0.4)" font-size="10" text-anchor="middle" font-family="JetBrains Mono">1</text>
+        <text x="163" y="352" fill="rgba(226,245,242,0.4)" font-size="10" text-anchor="middle" font-family="JetBrains Mono">5</text>
+        <text x="291" y="352" fill="rgba(226,245,242,0.4)" font-size="10" text-anchor="middle" font-family="JetBrains Mono">10</text>
+        <text x="420" y="352" fill="rgba(226,245,242,0.4)" font-size="10" text-anchor="middle" font-family="JetBrains Mono">15</text>
+
+        <!-- Y axis ticks (steps=1,5,10,15) -->
+        <text x="52" y="343" fill="rgba(226,245,242,0.4)" font-size="10" text-anchor="end" font-family="JetBrains Mono">1</text>
+        <text x="52" y="246" fill="rgba(226,245,242,0.4)" font-size="10" text-anchor="end" font-family="JetBrains Mono">5</text>
+        <text x="52" y="122" fill="rgba(226,245,242,0.4)" font-size="10" text-anchor="end" font-family="JetBrains Mono">10</text>
+        <text x="52" y="25" fill="rgba(226,245,242,0.4)" font-size="10" text-anchor="end" font-family="JetBrains Mono">15</text>
+
+        <!-- Linear search: y = x, straight diagonal -->
+        <line x1="60" y1="340" x2="420" y2="0" stroke="#ffd43b" stroke-width="2.5" opacity="0.85"/>
+        <text x="422" y="8" fill="#ffd43b" font-size="14" font-family="Space Grotesk" font-weight="700">Linear</text>
+
+        <!-- Binary search: polyline through (n, floor(log2(n))+1) for n=1..15
+             n=1:steps=1 → (60,340)
+             n=2:steps=2 → (86,316)   n=3:steps=2 → (111,316)
+             n=4:steps=3 → (137,291)  n=7:steps=3 → (214,291)
+             n=8:steps=4 → (240,267)  n=15:steps=4 → (420,267) -->
+        <polyline points="60,340 86,316 111,316 137,291 214,291 240,267 420,267"
+                  fill="none" stroke="#00c9b1" stroke-width="2.5" opacity="0.9"/>
+        <text x="422" y="272" fill="#00c9b1" font-size="14" font-family="Space Grotesk" font-weight="700">Binary</text>
+      </svg>
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <div class="callout" style="padding:18px 22px;">
+          <h3 style="color:var(--amber);">Linear Search</h3>
+          <p>As inputs grow, steps grow at the same rate. A list of 1,000 items could need 1,000 comparisons.</p>
+        </div>
+        <div class="callout" style="padding:18px 22px;">
+          <h3 style="color:var(--teal);">Binary Search</h3>
+          <p>Steps grow much more slowly. A sorted list of 1,000 items needs at most <strong style="color:var(--teal);">10 steps</strong>. A list of 1,000,000 needs only <strong style="color:var(--teal);">20 steps</strong>.</p>
+        </div>
+        <div class="callout accent-amber" style="padding:14px 20px;">
+          <p style="font-size:21px;"><strong style="color:var(--amber);">Trade-off:</strong> Binary search is much faster, but the list must be <span style="color:var(--teal);">sorted first</span>. Sorting has its own cost.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 14 · Wrap-Up FRQ — Choosing the Right Algorithm
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:14:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"If I chose a number, which algorithm would I use to see if it was in a list one number long with the fewest steps? What if I wanted to look in a list of five numbers? What about one hundred numbers? Explain your thinking.","order":0}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">FRQ</span>
+    <h2 style="margin-bottom:var(--gap);">Choosing the Right Algorithm</h2>
+    <div class="frq-box">
+      <p>If I chose a number, which algorithm would I use to see if it was in a list <strong style="color:var(--teal);">one number long</strong> with the fewest steps? What if I wanted to look in a <strong style="color:var(--teal);">list of five numbers</strong>? What about <strong style="color:var(--teal);">one hundred numbers</strong>? Explain your thinking.</p>
+    </div>
+    <p style="font-size:var(--small);color:var(--text-dim);margin-top:var(--gap);">Consider the trade-offs between linear and binary search, and think about when each one is the better choice.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 15 · MCQ — Binary Search Step 3
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:15:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What is the third step using Binary Search to look for the number 32 in this list of 15 numbers?\n1, 2, 3, 4, 10, 11, 16, 25, 32, 33, 45, 47, 51, 69, 75","order":0,"options":[{"id":"a","text":"Compare the number 25 to the number I am looking for.","isCorrect":false},{"id":"b","text":"Compare the number 4 to the number I am looking for.","isCorrect":false},{"id":"c","text":"Compare the number 33 to the number I am looking for.","isCorrect":true},{"id":"d","text":"Compare the number 47 to the number I am looking for.","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">MCQ</span>
+    <h2 style="margin-bottom:var(--gap);">Binary Search — Check for Understanding</h2>
+    <div class="callout" style="padding:18px 24px;margin-bottom:var(--gap);">
+      <p>What is the <strong>third step</strong> using Binary Search to look for the number <strong style="color:var(--amber);font-family:var(--font-mono);">32</strong> in this list of 15 numbers?</p>
+      <p style="margin-top:10px;font-family:var(--font-mono);font-size:20px;color:var(--teal);">1, 2, 3, 4, 10, 11, 16, 25, 32, 33, 45, 47, 51, 69, 75</p>
+    </div>
+    <ul class="mcq-opts">
+      <li><span class="opt-key">A</span> Compare the number 25 to the number I am looking for.</li>
+      <li><span class="opt-key">B</span> Compare the number 4 to the number I am looking for.</li>
+      <li><span class="opt-key">C</span> Compare the number 33 to the number I am looking for.</li>
+      <li><span class="opt-key">D</span> Compare the number 47 to the number I am looking for.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 16 · Wrap-Up — Key Vocabulary
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;">
+    <span class="slide-tag">Wrap Up — Key Vocabulary</span>
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:10px;">
+      <div class="def-card">
+        <div class="def-term">Efficiency</div>
+        <div class="def-text">A measure of how many steps are needed to complete an algorithm. A more efficient algorithm solves the same problem in fewer steps.</div>
+      </div>
+      <div class="def-card">
+        <div class="def-term">Linear Search</div>
+        <div class="def-text">A search algorithm that checks each element of a list in order until the desired value is found or all elements have been checked. Works on any list. Maximum steps equals the size of the list.</div>
+      </div>
+      <div class="def-card">
+        <div class="def-term">Binary Search</div>
+        <div class="def-text">A search algorithm that starts at the middle of a <span style="color:var(--teal);">sorted</span> set of numbers and removes half of the remaining data at each step. This process repeats until the desired value is found or all elements have been eliminated. Maximum steps equals the number of bits needed to represent the list size in binary.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'algorithm-efficiency',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    /* Binary search card animation — slide 11 (#bs-anim-slide)
+       Cards: index 0=117, 1=232, 2=245, 3=410, 4=705, 5=716, 6=833
+       bsStates[i] = state after fragment i is shown */
+    var bsStates = [
+      { hi: [],  el: [],              found: false }, // 0 = base
+      { hi: [3], el: [],              found: false }, // 1 = highlight 410
+      { hi: [],  el: [0,1,2,3],      found: false }, // 2 = eliminate left
+      { hi: [5], el: [0,1,2,3],      found: false }, // 3 = highlight 716
+      { hi: [],  el: [0,1,2,3,5,6],  found: false }, // 4 = eliminate right
+      { hi: [4], el: [0,1,2,3,5,6],  found: false }, // 5 = highlight 705
+      { hi: [4], el: [0,1,2,3,5,6],  found: true  }, // 6 = found!
+    ];
+
+    var bsFragIdx = 0;
+
+    function applyBSState(idx) {
+      var state = bsStates[Math.min(Math.max(idx, 0), bsStates.length - 1)];
+      for (var i = 0; i < 7; i++) {
+        var card = document.getElementById('bsc' + i);
+        if (!card) continue;
+        card.classList.toggle('bs-highlighted', state.hi.indexOf(i) >= 0);
+        card.classList.toggle('bs-eliminated',  state.el.indexOf(i) >= 0);
+        card.classList.toggle('bs-found', state.found && i === 4);
+      }
+    }
+
+    Reveal.on('fragmentshown', function(e) {
+      var section = e.fragment.closest ? e.fragment.closest('section') : null;
+      if (section && section.id === 'bs-anim-slide') {
+        bsFragIdx++;
+        applyBSState(bsFragIdx);
+      }
+    });
+
+    Reveal.on('fragmenthidden', function(e) {
+      var section = e.fragment.closest ? e.fragment.closest('section') : null;
+      if (section && section.id === 'bs-anim-slide') {
+        bsFragIdx--;
+        applyBSState(bsFragIdx);
+      }
+    });
+
+    Reveal.on('slidechanged', function() {
+      bsFragIdx = 0;
+      applyBSState(0);
+    });
+  }
+});
+</script>
+</body>
+</html>
