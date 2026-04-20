@@ -167,6 +167,38 @@ Storyboard expectations:
 - active-slide highlighting
 - 16:9 thumbnails that do not cover the deck when opened
 
+Storyboard DOM safety:
+
+- The storyboard renders thumbnail copies of slide content. Those copies can
+  duplicate slide IDs, controls, and other interactive DOM.
+- Do not wire deck-specific interactivity with global lookups such as
+  `document.getElementById('my-button')` or
+  `document.querySelector('#my-slide .thing')` when storyboard is enabled; those
+  selectors may match a storyboard thumbnail instead of the live Reveal slide.
+- In `afterInit`, first find the real top-level slide by excluding anything
+  inside `#storyboard`, then scope all child lookups to that slide:
+
+```js
+var liveSlide = Array.prototype.find.call(
+  document.querySelectorAll('#my-interactive-slide'),
+  function(slide) { return !slide.closest('#storyboard'); }
+);
+if (!liveSlide) return;
+
+var button = liveSlide.querySelector('#my-button');
+var output = liveSlide.querySelector('#my-output');
+```
+
+- For fragment listeners, ignore events from storyboard clones:
+
+```js
+Reveal.on('fragmentshown', function(event) {
+  var section = event.fragment.closest ? event.fragment.closest('section') : null;
+  if (!section || section.closest('#storyboard')) return;
+  // Handle the live slide fragment.
+});
+```
+
 ## Iframe Sync Contract
 
 When a parent host should control the deck, initialize with `initSyncDeckReveal(...)` and pass any sync-specific settings through `iframeSyncOverrides`:
