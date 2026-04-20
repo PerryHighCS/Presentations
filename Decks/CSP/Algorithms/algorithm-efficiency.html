@@ -99,6 +99,27 @@
 .search-table tr:nth-child(even) td {
   background: rgba(0,201,177,0.04);
 }
+.shrink-trail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--text-muted);
+}
+.trail-chip {
+  min-width: 36px;
+  padding: 4px 8px;
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  background: rgba(0,201,177,0.06);
+  color: var(--text);
+  text-align: center;
+}
+.trail-arrow {
+  color: var(--text-dim);
+}
 
 /* Binary search card row */
 .bs-row {
@@ -568,9 +589,9 @@
           <span style="font-size:20px;color:var(--text-muted);">Comparisons:</span>
           <span id="tc-steps" style="font-family:var(--font-mono);font-size:40px;font-weight:700;color:var(--teal);">0</span>
         </div>
-        <button id="tc-reset-btn" style="margin-left:auto;padding:10px 22px;font-family:var(--font-mono);font-size:17px;background:transparent;border:1px solid var(--teal-border);color:var(--text-muted);border-radius:6px;cursor:pointer;">
-          New Game
-        </button>
+	        <button id="tc-reset-btn" style="margin-left:auto;padding:10px 22px;font-family:var(--font-mono);font-size:17px;background:transparent;border:1px solid var(--teal-border);color:var(--text-muted);border-radius:6px;cursor:pointer;">
+	          Fresh Search
+	        </button>
       </div>
 
       <!-- Rules -->
@@ -714,19 +735,19 @@
         7 cards. Target: <strong style="color:var(--amber);font-family:var(--font-mono);">705</strong>. Which one do we check first?
       </div>
       <div class="fragment fade-up bs-step-item" data-fragment-index="1" style="border-left-color:var(--amber);">
-        <strong style="color:var(--amber);">Step 1</strong> — Middle element: <strong style="font-family:var(--font-mono);">410</strong>. Compare: 705 &gt; 410.
+        <strong style="color:var(--amber);">Step 1</strong> — Middle element: <strong style="font-family:var(--font-mono);">410</strong>. Compare: 705 &amp; 410.
       </div>
       <div class="fragment fade-up bs-step-item" data-fragment-index="2">
         705 &gt; 410, so <span style="color:var(--red);">eliminate the left half</span> (117, 232, 245, 410). 3 cards remain.
       </div>
       <div class="fragment fade-up bs-step-item" data-fragment-index="3" style="border-left-color:var(--amber);">
-        <strong style="color:var(--amber);">Step 2</strong> — Middle of remaining: <strong style="font-family:var(--font-mono);">716</strong>. Compare: 705 &lt; 716.
+        <strong style="color:var(--amber);">Step 2</strong> — Middle of remaining: <strong style="font-family:var(--font-mono);">716</strong>. Compare: 705 &amp; 716.
       </div>
       <div class="fragment fade-up bs-step-item" data-fragment-index="4">
         705 &lt; 716, so <span style="color:var(--red);">eliminate the right half</span> (716, 833). 1 card remains.
       </div>
       <div class="fragment fade-up bs-step-item" data-fragment-index="5" style="border-left-color:var(--green);">
-        <strong style="color:var(--green);">Step 3</strong> — Only card remaining: <strong style="font-family:var(--font-mono);">705</strong>. Compare: 705 = 705.
+        <strong style="color:var(--green);">Step 3</strong> — Only card remaining: <strong style="font-family:var(--font-mono);">705</strong>. Compare: 705 &amp; 705.
       </div>
       <div class="fragment fade-up callout accent-green" data-fragment-index="6" style="padding:10px 20px;margin:0;">
         <p style="font-size:21px;"><strong style="color:var(--green);">Found 705 in just 3 steps!</strong> Linear search could have taken up to 7 steps.</p>
@@ -737,7 +758,73 @@
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════════
-     SLIDE 15 · Binary Search Table + Binary Pattern
+     SLIDE 15 · Predicting Binary Search Steps
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;height:100%;">
+    <span class="slide-tag">Prediction</span>
+    <h2 style="font-size:42px;margin-bottom:18px;">How many steps could this take?</h2>
+    <div style="display:grid;grid-template-columns:1.15fr 0.85fr;gap:44px;align-items:start;flex:1;min-height:0;">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="activity-card" style="padding:16px 22px;">
+          <h3>Do This</h3>
+          <p>Copy this chart on your whiteboard. For each list size, fill in the <span style="color:var(--teal);">shrinking path</span>: how many numbers could still be left after each binary search step?</p>
+          <p style="font-size:18px;color:var(--text-dim);margin-top:6px;">Example: with 7 inputs, the worst case can shrink from <strong style="color:var(--text);">7 → 3 → 1</strong>. Count each number in the path to get the maximum steps.</p>
+        </div>
+        <table class="search-table">
+          <thead>
+            <tr><th>Inputs</th><th>Worst-Case Shrinking List</th><th>Max Steps</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><span class="fragment shrink-trail" data-fragment-index="1"><span class="trail-chip">1</span></span></td>
+              <td><span class="fragment" data-fragment-index="1">1</span></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><span class="fragment shrink-trail" data-fragment-index="2"><span class="trail-chip">3</span><span class="trail-arrow">→</span><span class="trail-chip">1</span></span></td>
+              <td><span class="fragment" data-fragment-index="2">2</span></td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td><span class="fragment shrink-trail" data-fragment-index="3"><span class="trail-chip">5</span><span class="trail-arrow">→</span><span class="trail-chip">2</span><span class="trail-arrow">→</span><span class="trail-chip">1</span></span></td>
+              <td><span class="fragment" data-fragment-index="3">3</span></td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td><span class="shrink-trail"><span class="trail-chip">7</span><span class="trail-arrow">→</span><span class="trail-chip">3</span><span class="trail-arrow">→</span><span class="trail-chip">1</span></span></td>
+              <td>3</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td><span class="fragment shrink-trail" data-fragment-index="5"><span class="trail-chip">9</span><span class="trail-arrow">→</span><span class="trail-chip">4</span><span class="trail-arrow">→</span><span class="trail-chip">2</span><span class="trail-arrow">→</span><span class="trail-chip">1</span></span></td>
+              <td><span class="fragment" data-fragment-index="5">4</span></td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td><span class="fragment shrink-trail" data-fragment-index="6"><span class="trail-chip">15</span><span class="trail-arrow">→</span><span class="trail-chip">7</span><span class="trail-arrow">→</span><span class="trail-chip">3</span><span class="trail-arrow">→</span><span class="trail-chip">1</span></span></td>
+              <td><span class="fragment" data-fragment-index="6">4</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--gap);padding-top:60px;">
+        <div class="callout" style="padding:20px 24px;">
+          <h3>Worst Case</h3>
+          <p>Assume the target is in the side that keeps the most numbers after each split.</p>
+        </div>
+        <div class="callout accent-amber fragment fade-up" data-fragment-index="7" style="padding:20px 24px;">
+          <h3>Pattern</h3>
+          <p>Binary search does not add one step for every new input. A step can remove about half of the remaining list.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 16 · Binary Search Table + Binary Pattern
      ══════════════════════════════════════════════════════════════════ -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;padding:32px 52px 20px;height:100%;">
@@ -774,7 +861,7 @@
             </tr>
             <tr>
               <td>6</td><td>15</td>
-              <td>4</td>
+              <td><span class="fragment" data-fragment-index="5">4</span></td>
             </tr>
           </tbody>
         </table>
@@ -863,7 +950,7 @@
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════════
-     SLIDE 16 · Graph Comparison — Linear vs. Binary
+     SLIDE 17 · Graph Comparison — Linear vs. Binary
      ══════════════════════════════════════════════════════════════════ -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;">
@@ -935,12 +1022,12 @@
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════════
-     SLIDE 17 · Wrap-Up FRQ — Choosing the Right Algorithm
+     SLIDE 18 · Wrap-Up FRQ — Choosing the Right Algorithm
      ══════════════════════════════════════════════════════════════════ -->
 <section
   data-activity-id="resonance"
   data-activity-trigger="slide-enter"
-  data-activity-instance-key="resonance:17:0"
+  data-activity-instance-key="resonance:18:0"
   data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"If I chose a number, which algorithm would I use to see if it was in a list one number long with the fewest steps? What if I wanted to look in a list of five numbers? What about one hundred numbers? Explain your thinking.","order":0}]}'>
   <div class="slide-inner">
     <span class="slide-tag">FRQ</span>
@@ -953,12 +1040,12 @@
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════════
-     SLIDE 18 · MCQ — Binary Search Step 3
+     SLIDE 19 · MCQ — Binary Search Step 3
      ══════════════════════════════════════════════════════════════════ -->
 <section
   data-activity-id="resonance"
   data-activity-trigger="slide-enter"
-  data-activity-instance-key="resonance:18:0"
+  data-activity-instance-key="resonance:19:0"
   data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What is the third step using Binary Search to look for the number 32 in this list of 15 numbers?\n1, 2, 3, 4, 10, 11, 16, 25, 32, 33, 45, 47, 51, 69, 75","order":0,"options":[{"id":"a","text":"Compare the number 25 to the number I am looking for.","isCorrect":false},{"id":"b","text":"Compare the number 4 to the number I am looking for.","isCorrect":false},{"id":"c","text":"Compare the number 33 to the number I am looking for.","isCorrect":true},{"id":"d","text":"Compare the number 47 to the number I am looking for.","isCorrect":false}]}]}'>
   <div class="slide-inner">
     <span class="slide-tag">MCQ</span>
@@ -977,7 +1064,7 @@
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════════
-     SLIDE 19 · Wrap-Up — Key Vocabulary
+     SLIDE 20 · Wrap-Up — Key Vocabulary
      ══════════════════════════════════════════════════════════════════ -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;">
@@ -1105,15 +1192,26 @@ initSyncDeckReveal({
 
       if (!genBtn) return;
 
-      function tcReset() {
-        tcNums = []; tcTarget = null; tcStepCount = 0;
-        genTickets.innerHTML = '';
-        genCountEl.textContent = '0 / 7';
-        genBtn.disabled = false;
-        genBtn.style.opacity = '1';
-        genPhase.style.display = 'flex';
-        srchPhase.style.display = 'none';
-      }
+	      function tcReset() {
+	        tcNums = []; tcTarget = null; tcStepCount = 0;
+	        genTickets.innerHTML = '';
+	        cardsEl.innerHTML = '';
+	        targetEl.textContent = '';
+	        genCountEl.textContent = '0 / 7';
+	        genBtn.disabled = false;
+	        genBtn.style.opacity = '1';
+	        genPhase.style.display = 'flex';
+	        srchPhase.style.display = 'none';
+	      }
+
+	      function tcGenerateNumbers(count) {
+	        var nums = [];
+	        while (nums.length < count) {
+	          var n = Math.floor(Math.random() * 900) + 100;
+	          if (nums.indexOf(n) === -1) nums.push(n);
+	        }
+	        return nums;
+	      }
 
       function tcGenerate() {
         if (tcNums.length >= 7) return;
@@ -1132,11 +1230,16 @@ initSyncDeckReveal({
           genBtn.disabled = true;
           genBtn.style.opacity = '0.4';
           setTimeout(tcStartSearch, 500);
-        }
-      }
+	        }
+	      }
 
-      function tcStartSearch() {
-        tcNums.sort(function(a, b) { return a - b; });
+	      function tcNewGame() {
+	        tcNums = tcGenerateNumbers(7);
+	        tcStartSearch();
+	      }
+	
+	      function tcStartSearch() {
+	        tcNums.sort(function(a, b) { return a - b; });
         tcTarget = tcNums[Math.floor(Math.random() * tcNums.length)];
         tcStepCount = 0;
         targetEl.textContent = tcTarget;
@@ -1167,10 +1270,10 @@ initSyncDeckReveal({
         genPhase.style.display = 'none';
         srchPhase.style.display = 'flex';
       }
-
-      genBtn.addEventListener('click', tcGenerate);
-      resetBtn.addEventListener('click', tcReset);
-      Reveal.on('slidechanged', tcReset);
+	
+	      genBtn.addEventListener('click', tcGenerate);
+	      resetBtn.addEventListener('click', tcNewGame);
+	      Reveal.on('slidechanged', tcReset);
     })();
   }
 });
