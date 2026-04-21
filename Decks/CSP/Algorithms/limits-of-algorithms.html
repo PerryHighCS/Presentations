@@ -216,6 +216,13 @@
   from { opacity: 0; transform: translateX(12px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+@keyframes pathDuplicate {
+  0%, 100% { background: var(--bg-card);        border-color: var(--teal-border); }
+  30%       { background: rgba(255,107,107,0.18); border-color: rgba(255,107,107,0.7); }
+}
+.path-item.duplicate-flash {
+  animation: pathDuplicate 0.7s ease both;
+}
 .path-num {
   font-size: 13px;
   color: var(--text-dim);
@@ -305,6 +312,26 @@
 @keyframes launchPulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(0,201,177,0.42); }
   50%       { box-shadow: 0 0 22px 4px rgba(0,201,177,0.36); }
+}
+
+/* ── Slide 06 background house animation ────────────────────────── */
+#mf-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.mf-house {
+  position: absolute;
+  line-height: 0;
+  animation: mfHouseFloat var(--mf-dur, 3s) ease both;
+}
+@keyframes mfHouseFloat {
+  0%   { opacity: 0; transform: scale(0.5); }
+  15%  { opacity: 1; transform: scale(1); }
+  80%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.8); }
 }
 
 /* Heuristic demo diagram */
@@ -492,7 +519,7 @@
         </svg>
         <div class="path-diagram-label" style="font-family:var(--font-mono);font-size:15px;color:var(--text-muted);">1 → 2 → 3 → 4 → 1</div>
         <div class="callout fragment fade-up" data-fragment-index="1" style="padding:10px 16px;width:100%;text-align:center;">
-          <span style="font-size:19px;color:var(--amber);font-family:var(--font-mono);">Total: <strong>?</strong></span>
+          <span style="font-size:19px;color:var(--amber);font-family:var(--font-mono);">Best: <strong>?</strong></span>
         </div>
       </div>
 
@@ -514,7 +541,7 @@
         </svg>
         <div class="path-diagram-label" style="font-family:var(--font-mono);font-size:15px;color:var(--text-muted);">1 → 2 → 4 → 3 → 1</div>
         <div class="callout fragment fade-up" data-fragment-index="1" style="padding:10px 16px;width:100%;text-align:center;">
-          <span style="font-size:19px;color:var(--amber);font-family:var(--font-mono);">Total: <strong>?</strong></span>
+          <span style="font-size:19px;color:var(--amber);font-family:var(--font-mono);">Best: <strong>?</strong></span>
         </div>
       </div>
 
@@ -536,13 +563,13 @@
         </svg>
         <div class="path-diagram-label" style="font-family:var(--font-mono);font-size:15px;color:var(--text-muted);">1 → 3 → 2 → 4 → 1</div>
         <div class="callout fragment fade-up" data-fragment-index="1" style="padding:10px 16px;width:100%;text-align:center;">
-          <span style="font-size:19px;color:var(--amber);font-family:var(--font-mono);">Total: <strong>?</strong></span>
+          <span style="font-size:19px;color:var(--amber);font-family:var(--font-mono);">Best: <strong>?</strong></span>
         </div>
       </div>
 
     </div>
-    <div class="callout fragment fade-up" data-fragment-index="2" style="padding:16px 22px;max-width:900px;">
-      <p style="font-size:22px;"><strong style="color:var(--teal);">Think:</strong> What information would you need to figure out which of these paths is the shortest?</p>
+    <div class="callout fragment fade-up" data-fragment-index="2" style="padding:16px 22px;">
+      <p style="font-size:22px;"><strong style="color:var(--teal);">Think:</strong> What information would you need to figure out which of these paths is the best?</p>
     </div>
   </div>
 </section>
@@ -591,8 +618,8 @@
           <line x1="160" y1="60"  x2="40"  y2="150" stroke="rgba(0,201,177,0.55)" stroke-width="2"/>
           <text x="53"  y="100" fill="#ffd43b" font-size="12" font-family="JetBrains Mono" text-anchor="middle">1</text>
           <text x="127" y="106" fill="#ffd43b" font-size="12" font-family="JetBrains Mono" text-anchor="middle">2</text>
-          <text x="168" y="108" fill="#ffd43b" font-size="12" font-family="JetBrains Mono" text-anchor="middle">2</text>
-          <text x="92"  y="118" fill="#ffd43b" font-size="12" font-family="JetBrains Mono" text-anchor="middle">1</text>
+          <text x="168" y="108" fill="#ffd43b" font-size="12" font-family="JetBrains Mono" text-anchor="middle">1</text>
+          <text x="92"  y="118" fill="#ffd43b" font-size="12" font-family="JetBrains Mono" text-anchor="middle">2</text>
           <circle cx="40"  cy="150" r="18" fill="#0f2320" stroke="#00c9b1" stroke-width="2.5"/>
           <circle cx="80"  cy="60"  r="18" fill="#1f1200" stroke="#ff9f43" stroke-width="2"/>
           <circle cx="160" cy="60"  r="18" fill="#1f1200" stroke="#ff9f43" stroke-width="2"/>
@@ -631,8 +658,8 @@
       </div>
 
     </div>
-    <div class="callout fragment fade-up" style="padding:16px 22px;margin-top:var(--gap);max-width:1100px;">
-      <p style="font-size:21px;">The algorithm must check <strong style="color:var(--amber);">every possible path</strong> and compare distances to guarantee finding the shortest one.</p>
+    <div class="callout fragment fade-up" style="padding:16px 22px;margin-top:var(--gap);">
+      <p style="font-size:var(--h3);">The algorithm must check <strong style="color:var(--amber);">every possible path</strong> and compare distances to guarantee finding the shortest one.</p>
     </div>
   </div>
 </section>
@@ -640,7 +667,8 @@
 <!-- ══════════════════════════════════════════════════════════════════
      SLIDE 06 · What About More Houses?
      ══════════════════════════════════════════════════════════════════ -->
-<section>
+<section id="more-friends-slide">
+  <div id="mf-bg" aria-hidden="true"></div>
   <div class="slide-inner">
     <div class="glow" style="width:600px;height:600px;top:-60px;right:-100px;background:radial-gradient(circle,rgba(255,107,107,0.07),transparent 70%);"></div>
     <div style="max-width:1100px;">
@@ -649,7 +677,7 @@
       <p style="margin-top:var(--gap-sm);font-size:var(--body);">But what happens as the number of houses grows? How many paths would you need to check if you had 10 friends? 20? 100?</p>
       <div class="callout accent-red fragment fade-up" style="margin-top:var(--gap);padding:20px 26px;">
         <h3>Think About It</h3>
-        <p>Each time you add one more house, how does the number of possible paths change? Does it grow <strong style="color:var(--amber);">slowly</strong> or <strong style="color:var(--red);">very quickly</strong>?</p>
+        <p>Each time you add one more house, how does the number of possible paths change? As you add more, does the number grow <strong style="color:var(--amber);">slowly</strong> or <strong style="color:var(--red);">quickly</strong>?</p>
       </div>
     </div>
   </div>
@@ -662,23 +690,20 @@
   <div class="slide-inner" style="justify-content:flex-start;padding:32px 52px 20px;height:100%;">
     <span class="slide-tag">The Traveling Salesman Problem</span>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:52px;flex:1;min-height:0;align-items:start;">
-
-      <div style="display:flex;flex-direction:column;gap:var(--gap);">
-        <h2 style="font-size:44px;margin-bottom:0;">A famous optimization problem.</h2>
-        <p>A traveling salesman must visit a set of cities exactly once and return home. The goal is to find the <strong style="color:var(--teal);">shortest possible route</strong>. Unlike our activity, the salesman can <strong style="color:var(--amber);">start from any city</strong>.</p>
-        <div class="callout fragment fade-up" style="padding:16px 22px;">
-          <h3>From (n−1)! to n!</h3>
-          <p>In our activity you always started at <strong style="color:var(--teal);">your house</strong>, so the first stop was already decided. That left only the 3 friends to arrange: <strong style="color:var(--teal);">3! = 6</strong> paths.</p>
-          <p style="margin-top:10px;">The salesman has no fixed home, so the <strong style="color:var(--amber);">starting city is also a choice</strong>. That adds one more factor and turns (n−1)! into <strong style="color:var(--amber);">n!</strong>.</p>
+      <div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap);">
+          <h2 style="font-size:44px;margin-bottom:0;">A famous optimization problem.</h2>
+          <p>A traveling salesman must visit a set of cities exactly once and return home. The goal is to find the <strong style="color:var(--teal);">shortest possible route</strong>. Unlike our activity, the salesman can <strong style="color:var(--amber);">start from any city</strong>.</p>
         </div>
-        <div class="callout accent-red fragment fade-up" style="padding:16px 22px;">
-          <h3>Why Is This Hard?</h3>
-          <p>With just 10 cities there are over <strong style="color:var(--red);">3.6 million</strong> paths to check. With 20 cities it is over <strong style="color:var(--red);">2.4 quintillion</strong>. No computer could finish in a lifetime.</p>
+        
+        <div class="callout accent-red fragment fade-up" data-fragment-index="2" style="padding:16px 22px;margin-top:var(--gap);">
+          <h3>The numbers grow quickly!</h3>
+          <p>With just 10 cities there are over <strong style="color:var(--red);">3.6 million</strong> paths to check.</p>
+          <p style="margin-top:var(--gap-sm);">With 20 cities it is over <strong style="color:var(--red);">2.4 quintillion</strong>. Checking 1 billion possible paths a second would take over 76 years.</p>
         </div>
       </div>
 
-      <div>
-        <p style="font-size:18px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;">Paths to check — any starting city (n!)</p>
+      <div class="fragment fade-up" data-fragment-index="1">
         <table class="fact-table">
           <thead>
             <tr><th>Cities (n)</th><th>Paths to Check</th></tr>
@@ -696,9 +721,6 @@
             <tr><td>10</td><td class="td-unreasonable">3,628,800</td></tr>
           </tbody>
         </table>
-        <div class="callout accent-amber fragment fade-up" style="margin-top:16px;padding:12px 16px;">
-          <p style="font-size:18px;">Compare: our 4-house activity had a fixed start, so it was <strong style="color:var(--teal);">(4−1)! = 6</strong> paths. A 4-city TSP with any starting city gives <strong style="color:var(--amber);">4! = 24</strong>.</p>
-        </div>
       </div>
 
     </div>
@@ -714,7 +736,7 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:52px;flex:1;min-height:0;align-items:start;">
 
       <div style="display:flex;flex-direction:column;gap:var(--gap);">
-        <h2 style="font-size:44px;">Where does n! come from?</h2>
+        <h2 style="font-size:44px;">Where does the number of paths come from?</h2>
         <p>At each step, count how many <strong style="color:var(--teal);">unvisited cities</strong> you can choose from. Multiply all those counts together.</p>
 
         <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
@@ -734,27 +756,23 @@
             <p style="font-family:var(--font-mono);font-size:21px;color:var(--amber);">n × (n−1) × (n−2) × … × 1 = <strong>n!</strong></p>
           </div>
         </div>
-
-        <div class="callout accent-red fragment fade-up" data-fragment-index="6" style="padding:14px 18px;margin-top:4px;">
-          <p style="font-size:19px;"><strong style="color:var(--teal);">Our activity:</strong> home was fixed, so the first choice was already made. We only multiplied 3 × 2 × 1 = <strong style="color:var(--teal);">3! = 6</strong>. The TSP adds one more factor for the starting city.</p>
-        </div>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:16px;padding-top:6px;">
         <p style="font-size:17px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Example: 4 cities, any start</p>
-        <div class="callout accent-amber fragment fade-up" data-fragment-index="2" style="padding:14px 20px;">
+        <div class="callout accent-amber fragment fade-up" data-fragment-index="6" style="padding:14px 20px;">
           <p style="font-size:18px;color:var(--text-muted);margin-bottom:6px;">4 cities → pick start, then 3 unvisited, then 2, then 1:</p>
           <p style="font-family:var(--font-mono);font-size:22px;color:var(--amber);">4 × 3 × 2 × 1 = <strong>24</strong></p>
         </div>
-        <div class="callout accent-red fragment fade-up" data-fragment-index="4" style="padding:14px 20px;">
+        <div class="callout accent-red fragment fade-up" data-fragment-index="7" style="padding:14px 20px;">
           <p style="font-size:18px;color:var(--text-muted);margin-bottom:6px;">7 cities → pick start, then 6, 5, 4, 3, 2, 1:</p>
           <p style="font-family:var(--font-mono);font-size:22px;color:var(--red);">7 × 6 × 5 × 4 × 3 × 2 × 1 = <strong>5,040</strong></p>
         </div>
-        <div class="callout fragment fade-up" data-fragment-index="5" style="padding:14px 20px;">
+        <div class="callout fragment fade-up" data-fragment-index="8" style="padding:14px 20px;">
           <p style="font-size:18px;color:var(--text-muted);margin-bottom:6px;">10 cities:</p>
           <p style="font-family:var(--font-mono);font-size:22px;color:var(--red);">10 × 9 × 8 × … × 1 = <strong class="td-unreasonable">3,628,800</strong></p>
         </div>
-        <div class="callout fragment fade-up" data-fragment-index="6" style="padding:12px 18px;">
+        <div class="callout fragment fade-up" data-fragment-index="9" style="padding:12px 18px;">
           <p style="font-size:18px;">That is a lot of possible paths for only 10 cities, and the numbers only get more extreme from there.</p>
         </div>
       </div>
@@ -771,6 +789,7 @@
     <span class="slide-tag">Types of Problems</span>
     <h2 style="margin-bottom:var(--gap);">Not all problems are the same kind.</h2>
     <p style="margin-bottom:var(--gap);">A <strong style="color:var(--teal);">problem</strong> is any task that may or may not be solved with an algorithm. Sorting a list is a problem. Sorting the specific list (2, 3, 1, 7) is an <em>instance</em> of that problem.</p>
+    <h3 style="margin-top:var(--gap);font-size:var(--h3);margin-bottom:var(--gap-sm);">Important types of problems in computer science:</h3>
     <div class="split" style="gap:40px;align-items:start;">
       <div class="callout accent-amber fragment fade-up" style="padding:24px 28px;">
         <h3>Decision Problems</h3>
@@ -780,9 +799,10 @@
       <div class="callout accent-teal fragment fade-up" style="padding:24px 28px;">
         <h3>Optimization Problems</h3>
         <p>The answer is the <strong style="color:var(--teal);">best possible value</strong> or solution.</p>
-        <p style="margin-top:12px;font-style:italic;color:var(--text-dim);">"What is the <em>shortest</em> path that visits all cities?"</p>
+        <p style="margin-top:12px;font-style:italic;color:var(--text-dim);">"What is the <em>most valuable</em> set of items that fits in a suitcase?"</p>
       </div>
     </div>
+    <h3 style="margin-top:var(--gap);font-size:var(--h3);margin-bottom:var(--gap-sm);">What type is the traveling salesman problem?</h3>
   </div>
 </section>
 
@@ -1202,6 +1222,7 @@ initSyncDeckReveal({
       /* State */
       var currentPath  = [];    /* empty until home is clicked to start */
       var foundPaths   = [];    /* array of canonical strings already added */
+      var locked       = false; /* true during the post-completion feedback delay */
 
       function updateHouseStates() {
         var started    = currentPath.length > 0;
@@ -1238,11 +1259,21 @@ initSyncDeckReveal({
 
       function addCompletedPath(path) {
         var key = canonicalize(path);
-        if (foundPaths.indexOf(key) !== -1) return; /* duplicate */
+        if (foundPaths.indexOf(key) !== -1) {
+          /* Flash the existing matching entry */
+          var existing = pathsList.querySelector('[data-key="' + key + '"]');
+          if (existing) {
+            existing.classList.remove('duplicate-flash');
+            void existing.offsetWidth; /* reflow to restart animation */
+            existing.classList.add('duplicate-flash');
+          }
+          return 'duplicate';
+        }
         foundPaths.push(key);
 
         var li = document.createElement('li');
         li.className = 'path-item';
+        li.setAttribute('data-key', key);
         var num = document.createElement('span');
         num.className = 'path-num';
         num.textContent = foundPaths.length + '.';
@@ -1253,9 +1284,11 @@ initSyncDeckReveal({
         pathsList.appendChild(li);
 
         countEl.textContent = foundPaths.length;
+        return 'new';
       }
 
       function resetPath() {
+        locked = false;
         currentPath = [];
         renderPath();
         pathHint.textContent = 'Click your house to start a path.';
@@ -1264,8 +1297,8 @@ initSyncDeckReveal({
 
       houseBtns.forEach(function(btn) {
         btn.addEventListener('click', function() {
+          if (locked || btn.disabled) return;
           var h = parseInt(btn.getAttribute('data-house'), 10);
-          if (btn.disabled) return;
 
           if (h === 1 && currentPath.length === 0) {
             /* Start the path from home */
@@ -1276,8 +1309,11 @@ initSyncDeckReveal({
           } else if (h === 1 && currentPath.length > 1) {
             /* Complete the path back home */
             currentPath.push(1);
-            addCompletedPath(currentPath.slice());
-            pathHint.textContent = 'Path recorded! Try another order.';
+            var result = addCompletedPath(currentPath.slice());
+            pathHint.textContent = result === 'duplicate'
+              ? 'Already found that one! Try a different order.'
+              : 'Path recorded! Try another order.';
+            locked = true;
             setTimeout(resetPath, 1200);
           } else if (h !== 1) {
             currentPath.push(h);
@@ -1290,7 +1326,7 @@ initSyncDeckReveal({
         });
       });
 
-      clearBtn.addEventListener('click', resetPath);
+      clearBtn.addEventListener('click', function() { locked = false; resetPath(); });
 
       /* Reset when navigating away */
       Reveal.on('slidechanged', function() {
@@ -1306,6 +1342,96 @@ initSyncDeckReveal({
       /* Initialize */
       updateHouseStates();
       renderPath();
+    })();
+
+    /* ── Slide 06 background house animation ─────────────────────────── */
+    (function() {
+      var liveSlide = null;
+      var candidates = document.querySelectorAll('#more-friends-slide');
+      for (var i = 0; i < candidates.length; i++) {
+        if (!candidates[i].closest('#storyboard')) { liveSlide = candidates[i]; break; }
+      }
+      if (!liveSlide) return;
+      var bg = liveSlide.querySelector('#mf-bg');
+      if (!bg) return;
+
+      /* Find this slide's horizontal index among top-level slides */
+      var allTopSlides = Array.prototype.slice.call(
+        document.querySelectorAll('.reveal .slides > section')
+      ).filter(function(s) { return !s.closest('#storyboard'); });
+      var slideH = allTopSlides.indexOf(liveSlide);
+
+      var COLORS = [
+        [0, 201, 177],
+        [255, 212, 59],
+        [255, 107, 107],
+        [255, 159, 67],
+        [129, 212, 180],
+      ];
+
+      function rgba(c, a) {
+        return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
+      }
+
+      function makeHouseSVG(fill) {
+        return '<svg viewBox="0 0 40 36" xmlns="http://www.w3.org/2000/svg">' +
+          '<polygon points="20,2 38,18 2,18" fill="' + fill + '"/>' +
+          '<rect x="7" y="16" width="26" height="18" fill="' + fill + '"/>' +
+          '<rect x="15" y="24" width="10" height="10" fill="rgba(0,0,0,0.18)"/>' +
+          '</svg>';
+      }
+
+      function spawnHouse() {
+        var size = 28 + Math.random() * 54;
+        var x    = 20 + Math.random() * 1540;
+        var y    = 20 + Math.random() * 840;
+        var dur  = 2200 + Math.random() * 2800;
+        var c    = COLORS[Math.floor(Math.random() * COLORS.length)];
+        var a    = 0.10 + Math.random() * 0.18;
+
+        var el = document.createElement('div');
+        el.className = 'mf-house';
+        el.style.left   = x + 'px';
+        el.style.top    = y + 'px';
+        el.style.width  = size + 'px';
+        el.style.setProperty('--mf-dur', dur + 'ms');
+        el.innerHTML = makeHouseSVG(rgba(c, a));
+        var svg = el.querySelector('svg');
+        svg.style.width  = size + 'px';
+        svg.style.height = 'auto';
+        bg.appendChild(el);
+        el.addEventListener('animationend', function() {
+          if (el.parentNode) el.parentNode.removeChild(el);
+        });
+      }
+
+      var timer = null;
+      var active = false;
+
+      function start() {
+        if (active) return;
+        active = true;
+        for (var i = 0; i < 5; i++) setTimeout(spawnHouse, i * 160);
+        timer = setInterval(spawnHouse, 360);
+      }
+
+      function stop() {
+        active = false;
+        if (timer) { clearInterval(timer); timer = null; }
+        while (bg.firstChild) bg.removeChild(bg.firstChild);
+      }
+
+      Reveal.on('slidechanged', function(ev) {
+        if (slideH !== -1 && ev.indexh === slideH) {
+          start();
+        } else {
+          stop();
+        }
+      });
+
+      /* Start immediately if already on this slide */
+      var cur = Reveal.getIndices();
+      if (slideH !== -1 && cur.h === slideH) start();
     })();
 
   }
