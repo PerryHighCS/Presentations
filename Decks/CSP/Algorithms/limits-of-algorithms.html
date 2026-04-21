@@ -665,19 +665,23 @@
 
       <div style="display:flex;flex-direction:column;gap:var(--gap);">
         <h2 style="font-size:44px;margin-bottom:0;">A famous optimization problem.</h2>
-        <p>A traveling salesman must visit a set of cities exactly once and return home. The goal is to find the <strong style="color:var(--teal);">shortest possible route</strong>.</p>
-        <p>For every new city added, the number of possible routes grows <strong style="color:var(--red);">factorially</strong>. The only known exact algorithms check all possible options.</p>
-        <div class="callout accent-red fragment fade-up" style="padding:18px 22px;">
+        <p>A traveling salesman must visit a set of cities exactly once and return home. The goal is to find the <strong style="color:var(--teal);">shortest possible route</strong>. Unlike our activity, the salesman can <strong style="color:var(--amber);">start from any city</strong>.</p>
+        <div class="callout fragment fade-up" style="padding:16px 22px;">
+          <h3>From (n−1)! to n!</h3>
+          <p>In our activity you always started at <strong style="color:var(--teal);">your house</strong>, so the first stop was already decided. That left only the 3 friends to arrange: <strong style="color:var(--teal);">3! = 6</strong> paths.</p>
+          <p style="margin-top:10px;">The salesman has no fixed home, so the <strong style="color:var(--amber);">starting city is also a choice</strong>. That adds one more factor and turns (n−1)! into <strong style="color:var(--amber);">n!</strong>.</p>
+        </div>
+        <div class="callout accent-red fragment fade-up" style="padding:16px 22px;">
           <h3>Why Is This Hard?</h3>
           <p>With just 10 cities there are over <strong style="color:var(--red);">3.6 million</strong> paths to check. With 20 cities it is over <strong style="color:var(--red);">2.4 quintillion</strong>. No computer could finish in a lifetime.</p>
         </div>
       </div>
 
       <div>
-        <p style="font-size:18px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;">Paths to check (n! where n = houses to visit)</p>
+        <p style="font-size:18px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;">Paths to check — any starting city (n!)</p>
         <table class="fact-table">
           <thead>
-            <tr><th>Houses (n)</th><th>Paths to Check</th></tr>
+            <tr><th>Cities (n)</th><th>Paths to Check</th></tr>
           </thead>
           <tbody>
             <tr><td>1</td><td>1</td></tr>
@@ -692,6 +696,9 @@
             <tr><td>10</td><td class="td-unreasonable">3,628,800</td></tr>
           </tbody>
         </table>
+        <div class="callout accent-amber fragment fade-up" style="margin-top:16px;padding:12px 16px;">
+          <p style="font-size:18px;">Compare: our 4-house activity had a fixed start, so it was <strong style="color:var(--teal);">(4−1)! = 6</strong> paths. A 4-city TSP with any starting city gives <strong style="color:var(--amber);">4! = 24</strong>.</p>
+        </div>
       </div>
 
     </div>
@@ -705,40 +712,53 @@
   <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;height:100%;">
     <span class="slide-tag">Factorial — n!</span>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:52px;flex:1;min-height:0;align-items:start;">
+
       <div style="display:flex;flex-direction:column;gap:var(--gap);">
-        <h2 style="font-size:44px;">How does n! work?</h2>
-        <p>Multiply all whole numbers from n down to 1. Each additional stop multiplies the total number of routes by the new number of stops.</p>
-        <div class="callout accent-amber fragment fade-up" style="padding:18px 22px;">
-          <h3>Example: 4 houses</h3>
+        <h2 style="font-size:44px;">Where does n! come from?</h2>
+        <p>At each step, count how many <strong style="color:var(--teal);">unvisited cities</strong> you can choose from. Multiply all those counts together.</p>
+
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+          <div class="callout fragment fade-up" data-fragment-index="1" style="padding:12px 18px;">
+            <p style="font-family:var(--font-mono);font-size:20px;">Pick a <strong style="color:var(--amber);">starting city</strong>: <strong style="color:var(--amber);">n</strong> options</p>
+          </div>
+          <div class="callout fragment fade-up" data-fragment-index="2" style="padding:12px 18px;">
+            <p style="font-family:var(--font-mono);font-size:20px;">Next city (haven't visited it yet): <strong style="color:var(--amber);">n−1</strong> options</p>
+          </div>
+          <div class="callout fragment fade-up" data-fragment-index="3" style="padding:12px 18px;">
+            <p style="font-family:var(--font-mono);font-size:20px;">Next city: <strong style="color:var(--amber);">n−2</strong> options</p>
+          </div>
+          <div class="callout fragment fade-up" data-fragment-index="4" style="padding:12px 18px;">
+            <p style="font-family:var(--font-mono);font-size:20px;">…continuing until only <strong style="color:var(--amber);">1</strong> city remains</p>
+          </div>
+          <div class="callout accent-amber fragment fade-up" data-fragment-index="5" style="padding:14px 18px;">
+            <p style="font-family:var(--font-mono);font-size:21px;color:var(--amber);">n × (n−1) × (n−2) × … × 1 = <strong>n!</strong></p>
+          </div>
+        </div>
+
+        <div class="callout accent-red fragment fade-up" data-fragment-index="6" style="padding:14px 18px;margin-top:4px;">
+          <p style="font-size:19px;"><strong style="color:var(--teal);">Our activity:</strong> home was fixed, so the first choice was already made. We only multiplied 3 × 2 × 1 = <strong style="color:var(--teal);">3! = 6</strong>. The TSP adds one more factor for the starting city.</p>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;padding-top:6px;">
+        <p style="font-size:17px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Example: 4 cities, any start</p>
+        <div class="callout accent-amber fragment fade-up" data-fragment-index="2" style="padding:14px 20px;">
+          <p style="font-size:18px;color:var(--text-muted);margin-bottom:6px;">4 cities → pick start, then 3 unvisited, then 2, then 1:</p>
           <p style="font-family:var(--font-mono);font-size:22px;color:var(--amber);">4 × 3 × 2 × 1 = <strong>24</strong></p>
         </div>
-        <div class="callout accent-red fragment fade-up" style="padding:18px 22px;">
-          <h3>Example: 7 houses</h3>
+        <div class="callout accent-red fragment fade-up" data-fragment-index="4" style="padding:14px 20px;">
+          <p style="font-size:18px;color:var(--text-muted);margin-bottom:6px;">7 cities → pick start, then 6, 5, 4, 3, 2, 1:</p>
           <p style="font-family:var(--font-mono);font-size:22px;color:var(--red);">7 × 6 × 5 × 4 × 3 × 2 × 1 = <strong>5,040</strong></p>
         </div>
-        <div class="callout fragment fade-up" style="padding:14px 18px;">
-          <p style="font-size:19px;">That is a lot of possible paths to check for only 7 houses, and the numbers only get more extreme from there.</p>
+        <div class="callout fragment fade-up" data-fragment-index="5" style="padding:14px 20px;">
+          <p style="font-size:18px;color:var(--text-muted);margin-bottom:6px;">10 cities:</p>
+          <p style="font-family:var(--font-mono);font-size:22px;color:var(--red);">10 × 9 × 8 × … × 1 = <strong class="td-unreasonable">3,628,800</strong></p>
+        </div>
+        <div class="callout fragment fade-up" data-fragment-index="6" style="padding:12px 18px;">
+          <p style="font-size:18px;">That is a lot of possible paths for only 10 cities, and the numbers only get more extreme from there.</p>
         </div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:16px;padding-top:10px;">
-        <table class="fact-table">
-          <thead>
-            <tr><th>n</th><th>n!</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>1</td><td>1</td></tr>
-            <tr><td>2</td><td>2</td></tr>
-            <tr><td>3</td><td>6</td></tr>
-            <tr><td>4</td><td>24</td></tr>
-            <tr><td>5</td><td>120</td></tr>
-            <tr><td>6</td><td>720</td></tr>
-            <tr><td>7</td><td>5,040</td></tr>
-            <tr><td>8</td><td>40,320</td></tr>
-            <tr><td>9</td><td>362,880</td></tr>
-            <tr><td>10</td><td class="td-unreasonable">3,628,800</td></tr>
-          </tbody>
-        </table>
-      </div>
+
     </div>
   </div>
 </section>
@@ -949,20 +969,29 @@
           <div style="position:relative;width:420px;height:320px;border:1px solid var(--teal-border);border-radius:8px;background:var(--bg-card);">
             <!-- SVG for nearest-neighbor demo with 6 nodes -->
             <svg viewBox="0 0 420 320" width="420" height="320" style="position:absolute;inset:0;">
-              <!-- edges (path found by nearest neighbor) -->
-              <line x1="60"  y1="240" x2="130" y2="80"  stroke="rgba(0,201,177,0.4)" stroke-width="1.5" stroke-dasharray="5,3"/>
-              <line x1="130" y1="80"  x2="210" y2="60"  stroke="rgba(0,201,177,0.4)" stroke-width="1.5" stroke-dasharray="5,3"/>
-              <line x1="210" y1="60"  x2="310" y2="100" stroke="rgba(0,201,177,0.4)" stroke-width="1.5" stroke-dasharray="5,3"/>
-              <line x1="310" y1="100" x2="360" y2="220" stroke="rgba(0,201,177,0.4)" stroke-width="1.5" stroke-dasharray="5,3"/>
-              <line x1="360" y1="220" x2="200" y2="200" stroke="rgba(0,201,177,0.4)" stroke-width="1.5" stroke-dasharray="5,3"/>
-              <line x1="200" y1="200" x2="60"  y2="240" stroke="rgba(0,201,177,0.4)" stroke-width="1.5" stroke-dasharray="5,3"/>
-              <!-- highlighted nearest-neighbor path arrows -->
-              <line x1="60"  y1="240" x2="130" y2="80"  stroke="var(--teal)" stroke-width="2.5" class="fragment" data-fragment-index="1"/>
-              <line x1="130" y1="80"  x2="210" y2="60"  stroke="var(--teal)" stroke-width="2.5" class="fragment" data-fragment-index="2"/>
-              <line x1="210" y1="60"  x2="310" y2="100" stroke="var(--amber)" stroke-width="2.5" class="fragment" data-fragment-index="3"/>
-              <line x1="310" y1="100" x2="360" y2="220" stroke="var(--amber)" stroke-width="2.5" class="fragment" data-fragment-index="4"/>
-              <line x1="360" y1="220" x2="200" y2="200" stroke="var(--amber)" stroke-width="2.5" class="fragment" data-fragment-index="5"/>
-              <line x1="200" y1="200" x2="60"  y2="240" stroke="var(--amber)" stroke-width="2.5" class="fragment" data-fragment-index="6"/>
+              <!-- fully connected graph — all 15 edges -->
+              <line x1="60"  y1="240" x2="130" y2="80"  stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="60"  y1="240" x2="210" y2="60"  stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="60"  y1="240" x2="310" y2="100" stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="60"  y1="240" x2="360" y2="220" stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="60"  y1="240" x2="200" y2="200" stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="130" y1="80"  x2="210" y2="60"  stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="130" y1="80"  x2="310" y2="100" stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="130" y1="80"  x2="360" y2="220" stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="130" y1="80"  x2="200" y2="200" stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="210" y1="60"  x2="310" y2="100" stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="210" y1="60"  x2="360" y2="220" stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="210" y1="60"  x2="200" y2="200" stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="310" y1="100" x2="360" y2="220" stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="310" y1="100" x2="200" y2="200" stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="360" y1="220" x2="200" y2="200" stroke="rgba(226,245,242,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+              <!-- nearest-neighbor path: H→E→A→B→C→D→H -->
+              <line x1="60"  y1="240" x2="200" y2="200" stroke="var(--teal)"  stroke-width="2.5" class="fragment" data-fragment-index="1"/>
+              <line x1="200" y1="200" x2="130" y2="80"  stroke="var(--teal)"  stroke-width="2.5" class="fragment" data-fragment-index="2"/>
+              <line x1="130" y1="80"  x2="210" y2="60"  stroke="var(--amber)" stroke-width="2.5" class="fragment" data-fragment-index="3"/>
+              <line x1="210" y1="60"  x2="310" y2="100" stroke="var(--amber)" stroke-width="2.5" class="fragment" data-fragment-index="4"/>
+              <line x1="310" y1="100" x2="360" y2="220" stroke="var(--amber)" stroke-width="2.5" class="fragment" data-fragment-index="5"/>
+              <line x1="360" y1="220" x2="60"  y2="240" stroke="var(--amber)" stroke-width="2.5" class="fragment" data-fragment-index="6"/>
               <!-- nodes -->
               <circle cx="60"  cy="240" r="18" fill="#0f2320" stroke="#00c9b1" stroke-width="2.5"/>
               <circle cx="130" cy="80"  r="18" fill="#1a1000" stroke="#ff9f43" stroke-width="2"/>
@@ -1097,20 +1126,28 @@
      SLIDE 20 · Wrap Up — Key Vocabulary
      ══════════════════════════════════════════════════════════════════ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;">
+  <div class="slide-inner" style="justify-content:flex-start;padding:32px 60px 20px;height:100%;">
     <span class="slide-tag">Wrap Up — Key Vocabulary</span>
-    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:10px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:10px;">
       <div class="def-card">
-        <div class="def-term">Heuristic</div>
-        <div class="def-text">A strategy that provides a "good enough" solution to a problem when an exact solution is impractical or impossible. Heuristics trade the guarantee of optimality for speed, finding solutions that are close to the best in far less time.</div>
+        <div class="def-term">Decision Problem</div>
+        <div class="def-text">A problem whose answer is simply <strong style="color:var(--amber);">yes or no</strong>. For example: "<span style="color:var(--text);">Is there a route visiting all cities in under 100 km?</span>"</div>
+      </div>
+      <div class="def-card">
+        <div class="def-term">Optimization Problem</div>
+        <div class="def-text">A problem whose answer is the <strong style="color:var(--teal);">best possible value</strong> among all candidates. For example: "<span style="color:var(--text);">What is the <strong style="color:var(--teal);">shortest</strong> route visiting all cities?</span>"</div>
       </div>
       <div class="def-card">
         <div class="def-term">Undecidable Problem</div>
-        <div class="def-text">A problem for which no algorithm can be constructed that is always capable of providing a correct yes-or-no answer for every possible input. These are not just <em>hard</em> problems: they are provably beyond the reach of any algorithm that ever could exist.</div>
+        <div class="def-text">A problem for which <strong style="color:var(--red);">no algorithm can be constructed</strong> that always gives a correct yes-or-no answer for every possible input. These are not just <em>hard</em> problems: they are <strong style="color:var(--red);">provably beyond the reach</strong> of any algorithm that could ever exist.</div>
       </div>
       <div class="def-card">
         <div class="def-term">The Traveling Salesman Problem</div>
-        <div class="def-text">An optimization problem asking for the shortest route visiting a set of nodes exactly once and returning to the start. Solving it exactly requires checking all possible paths, which grows factorially with the number of nodes. Heuristics such as nearest-neighbor are used to find practical "good enough" solutions.</div>
+        <div class="def-text">An <strong style="color:var(--amber);">optimization problem</strong> asking for the <strong style="color:var(--teal);">shortest route</strong> visiting a set of nodes exactly once and returning to the start. Solving it exactly requires checking all possible paths, which <strong style="color:var(--red);">grows factorially</strong> with the number of nodes.</div>
+      </div>
+      <div class="def-card" style="grid-column:1/-1;">
+        <div class="def-term">Heuristic</div>
+        <div class="def-text">A strategy that provides a <strong style="color:var(--amber);">"good enough"</strong> solution to a problem when an exact solution is <strong style="color:var(--red);">impractical or impossible</strong>. Heuristics trade the guarantee of optimality for <strong style="color:var(--teal);">speed</strong>, finding solutions that are close to the best in far less time. The <strong style="color:var(--teal);">nearest-neighbor</strong> rule is a classic example.</div>
       </div>
     </div>
   </div>
