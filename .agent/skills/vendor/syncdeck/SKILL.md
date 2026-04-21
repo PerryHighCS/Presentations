@@ -269,6 +269,12 @@ If the deck should trigger activity launches or act as a host shell for interact
 - let the host own session lifecycle and orchestration
 - keep embedded activity behavior isolated from shared slide plumbing
 
+For activity links that should launch an activity outside the deck rather than embedding it:
+
+- use the pattern `<activeBitsOrigin>/launch/<activity-id>`
+- add `?start=1` for instructor-authored links that should immediately create a new session and redirect to the activity manager
+- treat this as an activity-launch pattern, not as `standaloneHosting` for the presentation itself
+
 ## Delivery Standard
 
 A finished deck should be:

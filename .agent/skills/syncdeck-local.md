@@ -104,6 +104,10 @@ Repo-specific notes:
   is the ActiveBits instance that hosts SyncDeck for this repo.
 - The CTA only appears when `activeBitsOrigin` is set; omitting it silently
   suppresses the button.
+- In this repo, instructor-facing activity launcher URLs use
+  `https://bits.mycode.run/launch/<activity-id>`.
+- Add `?start=1` for instructor-authored links that should immediately create a
+  new session and redirect to the activity manager.
 - The `revealOverrides` block sets the 1600×900 canvas, fade transitions, and
   edge controls that match this repo's slide designs. Do not omit it or Reveal
   will apply its own defaults (wrong canvas size, wrong transition, centered
