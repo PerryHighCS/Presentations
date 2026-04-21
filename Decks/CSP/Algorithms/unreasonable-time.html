@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unreasonable Time — AP CSP Unit 8 Lesson 3</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Unreasonable Time
+   ============================================================ */
+
+.act-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  display: block;
+  margin-bottom: 14px;
+}
+
+/* Activity card */
+.activity-card {
+  background: rgba(0,201,177,0.06);
+  border: 1px solid var(--teal-border);
+  border-left: 4px solid var(--teal);
+  border-radius: 4px;
+  padding: 18px 24px;
+}
+.activity-card h3 {
+  font-size: var(--h3);
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+.activity-card p, .activity-card li {
+  font-size: var(--body);
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* Raffle launch button */
+.activity-launch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  padding: 14px 28px;
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: #03110f;
+  background: var(--teal);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  animation: launchPulse 1.8s ease-in-out infinite;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.activity-launch:link,
+.activity-launch:visited,
+.activity-launch:hover,
+.activity-launch:focus {
+  color: #03110f !important;
+  background: var(--teal);
+  text-decoration: none !important;
+}
+.activity-launch:hover,
+.activity-launch:focus {
+  box-shadow: 0 0 24px rgba(0,201,177,0.55);
+  transform: translateY(-2px);
+}
+@keyframes launchPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,201,177,0.42); }
+  50%       { box-shadow: 0 0 22px 4px rgba(0,201,177,0.36); }
+}
+
+/* Data tables */
+.data-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--font-mono);
+}
+.data-table th {
+  background: rgba(0,201,177,0.18);
+  border: 1px solid var(--teal-border);
+  padding: 10px 20px;
+  font-size: 18px;
+  color: var(--teal);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+.data-table td {
+  border: 1px solid var(--teal-border);
+  padding: 9px 20px;
+  font-size: 20px;
+  color: var(--text-muted);
+  text-align: center;
+  background: var(--bg-card);
+}
+.data-table tr:nth-child(even) td {
+  background: rgba(0,201,177,0.04);
+}
+.data-table td.highlight {
+  color: var(--amber);
+  font-weight: 700;
+}
+
+/* Bit boxes (flippy-do) */
+.bit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 21px;
+}
+.bit-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.bit-place {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.bit-box {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,201,177,0.10);
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  font-weight: 700;
+  color: var(--teal);
+}
+.bit-box.bit-one {
+  background: rgba(255,212,59,0.14);
+  border-color: rgba(255,212,59,0.45);
+  color: var(--amber);
+}
+
+/* Definition cards */
+.def-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 18px 26px;
+}
+.def-term {
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+.def-text {
+  font-size: 20px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Comparison table (slide 17) */
+.cmp-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 18px;
+}
+.cmp-table th {
+  padding: 9px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+  border: 1px solid rgba(0,201,177,0.2);
+}
+.cmp-table th.th-log  { background: rgba(0,201,177,0.18); color: var(--teal); }
+.cmp-table th.th-lin  { background: rgba(0,201,177,0.10); color: rgba(0,201,177,0.7); }
+.cmp-table th.th-poly { background: rgba(255,212,59,0.10); color: var(--amber); }
+.cmp-table th.th-exp  { background: rgba(255,107,107,0.10); color: var(--red); }
+.cmp-table th.th-n    { background: rgba(226,245,242,0.05); color: var(--text-muted); }
+.cmp-table td {
+  padding: 8px 14px;
+  text-align: center;
+  border: 1px solid rgba(0,201,177,0.15);
+  background: var(--bg-card);
+}
+.cmp-table tr:nth-child(even) td { background: rgba(0,201,177,0.03); }
+.cmp-table td.td-n    { color: var(--text); font-weight: 700; }
+.cmp-table td.td-log  { color: var(--teal); }
+.cmp-table td.td-lin  { color: rgba(0,201,177,0.7); }
+.cmp-table td.td-poly { color: var(--amber); }
+.cmp-table td.td-exp  { color: var(--red); }
+.cmp-table td.td-note { font-size: 13px; font-style: italic; }
+
+/* Counter app */
+.fn-app {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+.fn-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.fn-n-label {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  color: var(--text);
+  min-width: 64px;
+}
+.fn-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 260px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(0,201,177,0.2);
+  outline: none;
+  cursor: pointer;
+}
+.fn-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--teal);
+  cursor: pointer;
+}
+.fn-btn {
+  padding: 8px 20px;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-muted);
+  transition: background 120ms, color 120ms;
+}
+.fn-btn.fn-go {
+  background: var(--teal);
+  color: #03110f;
+  border-color: var(--teal);
+}
+.fn-btn:hover { background: rgba(0,201,177,0.12); color: var(--text); }
+.fn-btn.fn-go:hover { background: rgba(0,201,177,0.8); }
+
+.fn-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.fn-row {
+  display: grid;
+  grid-template-columns: 220px 1fr 260px;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+}
+.fn-label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.fn-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.fn-formula {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--text-dim);
+}
+.fn-bar-wrap {
+  height: 18px;
+  background: rgba(226,245,242,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.fn-bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  transition: width 0.05s linear;
+}
+.fn-row.fn-log  .fn-bar-fill { background: var(--teal); }
+.fn-row.fn-lin  .fn-bar-fill { background: rgba(0,201,177,0.6); }
+.fn-row.fn-poly .fn-bar-fill { background: var(--amber); }
+.fn-row.fn-exp  .fn-bar-fill { background: var(--red); }
+.fn-count {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--text-muted);
+  text-align: right;
+}
+.fn-done {
+  color: var(--green);
+  font-weight: 700;
+}
+
+/* Pair/group diagram */
+.diagram-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.diagram-label {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Subset display for group raffle */
+.subset-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.subset-chip {
+  padding: 3px 10px;
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  background: rgba(0,201,177,0.06);
+  color: var(--text);
+  font-size: 15px;
+}
+.subset-chip.new {
+  border-color: rgba(255,212,59,0.45);
+  background: rgba(255,212,59,0.08);
+  color: var(--amber);
+}
+.subset-count {
+  font-weight: 700;
+  color: var(--teal);
+  font-size: 18px;
+  min-width: 28px;
+}
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal"><div class="slides">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 01 · Title
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:700px;height:700px;top:-80px;right:-140px;background:radial-gradient(circle,rgba(255,107,107,0.08),transparent 70%);"></div>
+    <div class="glow" style="width:500px;height:500px;bottom:-60px;left:-80px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    <span class="slide-tag">Unit 8 · Lesson 3</span>
+    <h1 class="title-h1" style="font-size:88px;line-height:1.0;">Unreasonable Time</h1>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);">When does an algorithm take so long it's practically impossible to run?</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 02 · Opening FRQ — Prior knowledge activation
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:2:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"In our last lesson we compared two search algorithms. What makes binary search more efficient than linear search?","order":0}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">FRQ</span>
+    <h2>Last Lesson Recap</h2>
+    <div class="frq-box" style="margin-top:var(--gap);">
+      <p>In our last lesson we compared two search algorithms. What makes <strong style="color:var(--teal);">binary search</strong> more efficient than <strong style="color:var(--amber);">linear search</strong>?</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 03 · Context — Two New Problems
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="act-label">Today's Activity</span>
+    <div style="max-width:1120px;">
+      <div>
+        <h2 style="font-size:48px;">Two problems that seem familiar but are a bit harder to solve.</h2>
+        <p style="margin-top:var(--gap);">We already found algorithms for checking whether a specific ticket number was in a list.</p>
+        <p style="margin-top:var(--gap-sm);">Today we change the question: we want to find combinations of tickets rather than a single one.</p>
+        <p style="margin-top:var(--gap-sm);">As we work, pay attention to how many "checks" each new algorithm requires.</p>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap);padding:16px 22px;">
+          <p>The big question: do those check counts grow at a <span style="color:var(--teal);">reasonable</span> or <span style="color:var(--red);">unreasonable</span> rate?</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 04 · Activity — Regular Raffle Setup (instructor launches)
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="act-label">Activity — Regular Raffle</span>
+    <div class="split" style="align-items:center;gap:52px;">
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <div>
+          <p style="font-size:16px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:8px;">The Problem</p>
+          <h2 style="font-size:40px;">The Regular Raffle</h2>
+        </div>
+        <div class="callout" style="padding:20px 24px;">
+          <p>The winner is the <strong style="color:var(--teal);">one ticket</strong> whose number exactly matches the winning number.</p>
+        </div>
+        <div class="activity-card">
+          <h3>Do This</h3>
+          <p>Scan the QR code on your phone to receive your ticket number. Once everyone has a number, see whether anyone has the one winning ticket.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <div class="callout" style="padding:22px 26px;">
+          <h3>Instructor:</h3>
+          <a class="activity-launch" href="https://bits.mycode.run/launch/raffle?start=1" target="_blank" rel="noopener">
+            Create Raffle Session
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 05 · Activity — Pair Raffle Setup
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="act-label">Activity — Pair Raffle</span>
+    <div class="split" style="align-items:center;gap:52px;">
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <div>
+          <p style="font-size:16px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:8px;">The Problem</p>
+          <h2 style="font-size:40px;">The Pair Raffle</h2>
+        </div>
+        <div class="callout accent-amber" style="padding:20px 24px;">
+          <p>The winners are any <strong style="color:var(--amber);">two tickets</strong> whose numbers add up to the winning sum.</p>
+        </div>
+        <div class="activity-card">
+          <h3>Do This</h3>
+          <p>Using the same ticket numbers from the regular raffle, work together to figure out whether any <strong style="color:var(--amber);">pair</strong> of tickets adds up to the winning sum.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 06 · Activity — Group Raffle Setup
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="act-label">Activity — Group Raffle</span>
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <div>
+          <p style="font-size:16px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:8px;">The Problem</p>
+          <h2 style="font-size:40px;">Find any group of tickets that adds to the winning number.</h2>
+        </div>
+
+    <div class="split split-60" style="align-items:center;gap:52px;">
+      <div style="gap:52px;flex:1;display:flex;flex-direction:column;">
+        <div class="callout accent-red" style="padding:20px 24px;">
+          <h3>Group Raffle</h3>
+          <p>The winners are any <strong style="color:var(--red);">group of tickets</strong> (from one up to all of them) whose numbers add up to the winning sum.</p>
+        </div>
+        <div class="activity-card">
+          <h3>Do This</h3>
+          <p>Using the same ticket numbers from the pair raffle, now try to find a <strong style="color:var(--teal);">group</strong> of any size (one ticket, two, three, or all of them) whose numbers sum to the winning number. Work together to search for a winning group.</p>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 07 · Activity — Count the Checks
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="act-label">Partner Activity</span>
+    <h2 style="font-size:44px;margin-bottom:var(--gap);">Let's count the checks.</h2>
+    <div class="split" style="align-items:start;gap:52px;">
+      <div>
+        <div class="activity-card" style="margin-bottom:var(--gap);">
+          <h3>Do This</h3>
+          <p>With your partner, fill in both tables on your activity guide. For each number of tickets, count how many checks your algorithm would need to make in the worst case.</p>
+          <p style="margin-top:10px;">For the <span style="color:var(--amber);">pair raffle</span>, count each distinct two-ticket pair. For the <span style="color:var(--red);">group raffle</span>, count the groups of any size (from one to all).</p>
+        </div>
+        <div class="callout accent-amber" style="padding:16px 22px;">
+          <p style="font-size:21px;"><strong>Hint for pairs:</strong> if you have tickets A, B, C, the pairs are AB, AC, and BC. Try drawing lines between the tickets to count them.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <table class="data-table">
+          <thead>
+            <tr><th colspan="2" style="color:var(--amber);">Pair Raffle</th></tr>
+            <tr><th>Tickets</th><th>Checks</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>2</td><td>?</td></tr>
+            <tr><td>3</td><td>?</td></tr>
+            <tr><td>4</td><td>?</td></tr>
+            <tr><td>5</td><td>?</td></tr>
+            <tr><td>8</td><td>?</td></tr>
+          </tbody>
+        </table>
+        <table class="data-table">
+          <thead>
+            <tr><th colspan="2" style="color:var(--red);">Group Raffle</th></tr>
+            <tr><th>Tickets</th><th>Checks</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>2</td><td>?</td></tr>
+            <tr><td>3</td><td>?</td></tr>
+            <tr><td>4</td><td>?</td></tr>
+            <tr><td>5</td><td>?</td></tr>
+            <tr><td>8</td><td>?</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 08 · Pair Raffle — Table Results
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:32px 52px 20px;height:100%;">
+    <span class="slide-tag" style="margin-bottom:10px;">Pair Raffle — Results</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:44px;flex:1;min-height:0;">
+
+      <!-- Left: table -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h2 style="font-size:38px;">Tickets vs. Checks</h2>
+        <table class="data-table">
+          <thead>
+            <tr><th>Tickets (n)</th><th>Pair Checks</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>2</td><td><span class="fragment" data-fragment-index="1">1</span></td></tr>
+            <tr><td>3</td><td><span class="fragment" data-fragment-index="2">3</span></td></tr>
+            <tr><td>4</td><td><span class="fragment" data-fragment-index="3">6</span></td></tr>
+            <tr><td>5</td><td><span class="fragment" data-fragment-index="4">10</span></td></tr>
+            <tr><td>8</td><td><span class="fragment" data-fragment-index="5">28</span></td></tr>
+          </tbody>
+        </table>
+        <div class="callout fragment fade-up" data-fragment-index="6" style="padding:18px 22px;">
+          <h3>The Pattern</h3>
+          <p>The number of checks grows faster than the number of tickets. Adding one more ticket always adds more new pairs than the last ticket did.</p>
+        </div>
+        <div class="callout accent-amber fragment fade-up" data-fragment-index="7" style="padding:16px 22px;">
+          <h3>Formula</h3>
+          <p>The exact relationship is <strong style="color:var(--amber);font-family:var(--font-mono);">(n² − n) / 2</strong>. Because of the <strong style="color:var(--amber);">n²</strong> term, this curve bends upward. Algorithms with an n² term are called <strong style="color:var(--amber);">polynomial</strong>.</p>
+        </div>
+      </div>
+
+      <!-- Right: scatter plot SVG -->
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
+        <p style="font-size:18px;color:var(--text-muted);">Pair Raffle — Checks vs. Tickets</p>
+        <!-- x: n=1..8; x_px = 50 + (n-1)*38.5 → n=8 at 320 -->
+        <!-- y: checks=0..28; y_px = 250 - (c/28)*240 -->
+        <svg viewBox="0 0 380 300" width="380" height="300" style="overflow:visible;">
+          <defs>
+            <pattern id="grid-pair" width="38.5" height="34.3" patternUnits="userSpaceOnUse" x="50" y="0">
+              <path d="M 38.5 0 L 0 0 0 34.3" fill="none" stroke="rgba(0,201,177,0.07)" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect x="50" y="0" width="310" height="250" fill="url(#grid-pair)"/>
+          <line x1="50" y1="250" x2="370" y2="250" stroke="rgba(226,245,242,0.3)" stroke-width="1.5"/>
+          <line x1="50" y1="0" x2="50" y2="255" stroke="rgba(226,245,242,0.3)" stroke-width="1.5"/>
+          <!-- X labels -->
+          <text x="50"  y="268" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="middle" font-family="JetBrains Mono">1</text>
+          <text x="165" y="268" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="middle" font-family="JetBrains Mono">4</text>
+          <text x="319" y="268" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="middle" font-family="JetBrains Mono">8</text>
+          <text x="190" y="286" fill="rgba(226,245,242,0.4)" font-size="13" text-anchor="middle" font-family="Space Grotesk">tickets</text>
+          <!-- Y labels -->
+          <text x="42" y="254" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="end" font-family="JetBrains Mono">0</text>
+          <text x="42" y="173" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="end" font-family="JetBrains Mono">10</text>
+          <text x="42" y="90" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="end" font-family="JetBrains Mono">20</text>
+          <text x="42" y="10" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="end" font-family="JetBrains Mono">28</text>
+          <text x="14" y="130" fill="rgba(226,245,242,0.4)" font-size="13" text-anchor="middle" font-family="Space Grotesk" transform="rotate(-90,14,130)">checks</text>
+          <!-- Data points: n=2→1, 3→3, 4→6, 5→10, 8→28 -->
+          <!-- x = 50 + (n-1)*38.5; y = 250 - (c/28)*240 -->
+          <circle cx="89"  cy="241" r="7" fill="#ffd43b" class="fragment" data-fragment-index="1"/>
+          <circle cx="127" cy="224" r="7" fill="#ffd43b" class="fragment" data-fragment-index="2"/>
+          <circle cx="165" cy="199" r="7" fill="#ffd43b" class="fragment" data-fragment-index="3"/>
+          <circle cx="204" cy="164" r="7" fill="#ffd43b" class="fragment" data-fragment-index="4"/>
+          <circle cx="319" cy="10"  r="7" fill="#ffd43b" class="fragment" data-fragment-index="5"/>
+          <!-- Quadratic growth trend line -->
+          <path d="M 89 241
+                   C 102 236 114 229 127 224
+                   C 140 218 152 207 165 199
+                   C 178 191 191 178 204 164
+                   C 242 129 280 69 319 10"
+                fill="none" stroke="rgba(255,212,59,0.5)" stroke-width="2" stroke-dasharray="6,4"
+                class="fragment" data-fragment-index="6"/>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 09 · Group Raffle — Table Results
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:32px 52px 20px;height:100%;">
+    <span class="slide-tag" style="margin-bottom:10px;">Group Raffle — Results</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:44px;flex:1;min-height:0;">
+
+      <!-- Left: table -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h2 style="font-size:38px;">Tickets vs. Checks</h2>
+        <table class="data-table">
+          <thead>
+            <tr><th>Tickets (n)</th><th>Group Checks</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>2</td><td><span class="fragment" data-fragment-index="1">3</span></td></tr>
+            <tr><td>3</td><td><span class="fragment" data-fragment-index="2">7</span></td></tr>
+            <tr><td>4</td><td><span class="fragment" data-fragment-index="3">15</span></td></tr>
+            <tr><td>5</td><td><span class="fragment" data-fragment-index="4">31</span></td></tr>
+            <tr><td>8</td><td><span class="fragment" data-fragment-index="5">255</span></td></tr>
+          </tbody>
+        </table>
+        <div class="callout fragment fade-up" data-fragment-index="6" style="padding:18px 22px;">
+          <h3>The Pattern</h3>
+          <p>Each additional ticket more than doubles the number of checks. The values (3, 7, 15, 31, 63, 127, 255) are each one less than a power of 2.</p>
+        </div>
+        <div class="callout accent-red fragment fade-up" data-fragment-index="7" style="padding:16px 22px;">
+          <h3>Formula</h3>
+          <p>The exact relationship is <strong style="color:var(--red);font-family:var(--font-mono);">2<sup>n</sup> − 1</strong>. Because of the <strong style="color:var(--red);">2<sup>n</sup></strong> term, this curve bends upward extremely fast. Algorithms with a 2<sup>n</sup> term are called <strong style="color:var(--red);">exponential</strong>.</p>
+        </div>
+      </div>
+
+      <!-- Right: scatter plot SVG -->
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
+        <p style="font-size:18px;color:var(--text-muted);">Group Raffle — Checks vs. Tickets</p>
+        <!-- x: n=1..8; x_px = 50 + (n-1)*38.5 → n=8 at 319 -->
+        <!-- y: max=255; y_px = 250 - (c/255)*245 -->
+        <svg viewBox="0 0 380 300" width="380" height="300" style="overflow:visible;">
+          <defs>
+            <pattern id="grid-grp" width="38.5" height="30.6" patternUnits="userSpaceOnUse" x="50" y="0">
+              <path d="M 38.5 0 L 0 0 0 30.6" fill="none" stroke="rgba(0,201,177,0.07)" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect x="50" y="0" width="310" height="250" fill="url(#grid-grp)"/>
+          <line x1="50" y1="250" x2="370" y2="250" stroke="rgba(226,245,242,0.3)" stroke-width="1.5"/>
+          <line x1="50" y1="0" x2="50" y2="255" stroke="rgba(226,245,242,0.3)" stroke-width="1.5"/>
+          <text x="50"  y="268" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="middle" font-family="JetBrains Mono">1</text>
+          <text x="165" y="268" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="middle" font-family="JetBrains Mono">4</text>
+          <text x="319" y="268" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="middle" font-family="JetBrains Mono">8</text>
+          <text x="190" y="286" fill="rgba(226,245,242,0.4)" font-size="13" text-anchor="middle" font-family="Space Grotesk">tickets</text>
+          <text x="42" y="254" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="end" font-family="JetBrains Mono">0</text>
+          <text x="42" y="130" fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="end" font-family="JetBrains Mono">127</text>
+          <text x="42" y="7"   fill="rgba(226,245,242,0.4)" font-size="11" text-anchor="end" font-family="JetBrains Mono">255</text>
+          <text x="14" y="130" fill="rgba(226,245,242,0.4)" font-size="13" text-anchor="middle" font-family="Space Grotesk" transform="rotate(-90,14,130)">checks</text>
+          <!-- Data: n=2→3, n=3→7, n=4→15, n=5→31, n=8→255 -->
+          <!-- x = 50+(n-1)*38.5; y = 250-(c/255)*245 -->
+          <circle cx="89"  cy="247" r="7" fill="#ff6b6b" class="fragment" data-fragment-index="1"/>
+          <circle cx="127" cy="243" r="7" fill="#ff6b6b" class="fragment" data-fragment-index="2"/>
+          <circle cx="165" cy="236" r="7" fill="#ff6b6b" class="fragment" data-fragment-index="3"/>
+          <circle cx="204" cy="220" r="7" fill="#ff6b6b" class="fragment" data-fragment-index="4"/>
+          <circle cx="319" cy="5"   r="7" fill="#ff6b6b" class="fragment" data-fragment-index="5"/>
+          <!-- Exponential growth trend line -->
+          <path d="M 89 247
+                   C 102 246 114 244 127 243
+                   C 140 241 152 239 165 236
+                   C 178 232 191 227 204 220
+                   C 242 197 280 118 319 5"
+                fill="none" stroke="rgba(255,107,107,0.5)" stroke-width="2" stroke-dasharray="6,4"
+                class="fragment" data-fragment-index="6"/>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 10 · Flippy-Do — Group Raffle and All-Ones Bits
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:32px 52px 20px;height:100%;">
+    <span class="slide-tag" style="margin-bottom:10px;">Group Raffle — Another Way to Think About It</span>
+    <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:44px;flex:1;min-height:0;align-items:start;">
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <h2 style="font-size:40px;margin-bottom:4px;">Each ticket is a flap on a flippy-do.</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);">When every flap is showing <strong style="color:var(--amber);">1</strong>, the total value is the number of checks you need. Think of each ticket as a binary place value.</p>
+
+        <table class="data-table" style="margin-top:6px;">
+          <thead>
+            <tr><th>Tickets (n)</th><th>Group Checks</th><th>As binary</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><span class="fragment" data-fragment-index="1">1</span></td>
+              <td><span class="fragment" data-fragment-index="1" style="font-family:var(--font-mono);color:var(--amber);">1</span></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><span class="fragment" data-fragment-index="2">3</span></td>
+              <td><span class="fragment" data-fragment-index="2" style="font-family:var(--font-mono);color:var(--amber);">11</span></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><span class="fragment" data-fragment-index="3">7</span></td>
+              <td><span class="fragment" data-fragment-index="3" style="font-family:var(--font-mono);color:var(--amber);">111</span></td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><span class="fragment" data-fragment-index="4">15</span></td>
+              <td><span class="fragment" data-fragment-index="4" style="font-family:var(--font-mono);color:var(--amber);">1111</span></td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td><span class="fragment" data-fragment-index="5">31</span></td>
+              <td><span class="fragment" data-fragment-index="5" style="font-family:var(--font-mono);color:var(--amber);">11111</span></td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td><span class="fragment" data-fragment-index="6">255</span></td>
+              <td><span class="fragment" data-fragment-index="6" style="font-family:var(--font-mono);color:var(--amber);">11111111</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout accent-amber fragment fade-up" data-fragment-index="7" style="padding:16px 22px;">
+          <h3>Key Insight</h3>
+          <p>The number of group-raffle checks is always the <strong style="color:var(--amber);">largest number you can make with that many bits</strong> when every bit is 1. That is exactly 2<sup>n</sup> − 1.</p>
+        </div>
+      </div>
+
+      <!-- Right: flippy-do bit rows -->
+      <div style="display:flex;flex-direction:column;gap:20px;padding-top:10px;">
+        <p style="font-size:18px;color:var(--text-muted);">Every flap is a <strong style="color:var(--amber);">1</strong>: flip them all to find the total checks.</p>
+
+        <div class="fragment fade-up" data-fragment-index="1" style="display:flex;flex-direction:column;gap:10px;">
+          <div class="bit-row">
+            <span style="color:var(--text-muted);font-size:17px;min-width:80px;">1 ticket:</span>
+            <div class="bit-stack">
+              <span class="bit-place">1</span>
+              <div class="bit-box bit-one">1</div>
+            </div>
+            <span style="color:var(--text-dim);font-size:16px;">= 1 = <strong style="color:var(--amber);">1</strong> check</span>
+          </div>
+        </div>
+
+        <div class="fragment fade-up" data-fragment-index="2" style="display:flex;flex-direction:column;gap:10px;">
+          <div class="bit-row">
+            <span style="color:var(--text-muted);font-size:17px;min-width:80px;">2 tickets:</span>
+            <div class="bit-stack"><span class="bit-place">2</span><div class="bit-box bit-one">1</div></div>
+            <div class="bit-stack"><span class="bit-place">1</span><div class="bit-box bit-one">1</div></div>
+            <span style="color:var(--text-dim);font-size:16px;">= 2+1 = <strong style="color:var(--amber);">3</strong> checks</span>
+          </div>
+        </div>
+
+        <div class="fragment fade-up" data-fragment-index="4" style="display:flex;flex-direction:column;gap:10px;">
+          <div class="bit-row">
+            <span style="color:var(--text-muted);font-size:17px;min-width:80px;">4 tickets:</span>
+            <div class="bit-stack"><span class="bit-place">8</span><div class="bit-box bit-one">1</div></div>
+            <div class="bit-stack"><span class="bit-place">4</span><div class="bit-box bit-one">1</div></div>
+            <div class="bit-stack"><span class="bit-place">2</span><div class="bit-box bit-one">1</div></div>
+            <div class="bit-stack"><span class="bit-place">1</span><div class="bit-box bit-one">1</div></div>
+            <span style="color:var(--text-dim);font-size:16px;">= 8+4+2+1 = <strong style="color:var(--amber);">15</strong> checks</span>
+          </div>
+        </div>
+
+        <div class="fragment fade-up" data-fragment-index="6" style="display:flex;flex-direction:column;gap:10px;">
+          <div class="bit-row" style="flex-wrap:wrap;">
+            <span style="color:var(--text-muted);font-size:17px;min-width:80px;">8 tickets:</span>
+            <div class="bit-stack"><span class="bit-place">128</span><div class="bit-box bit-one">1</div></div>
+            <div class="bit-stack"><span class="bit-place">64</span><div class="bit-box bit-one">1</div></div>
+            <div class="bit-stack"><span class="bit-place">32</span><div class="bit-box bit-one">1</div></div>
+            <div class="bit-stack"><span class="bit-place">16</span><div class="bit-box bit-one">1</div></div>
+            <div class="bit-stack"><span class="bit-place">8</span><div class="bit-box bit-one">1</div></div>
+            <div class="bit-stack"><span class="bit-place">4</span><div class="bit-box bit-one">1</div></div>
+            <div class="bit-stack"><span class="bit-place">2</span><div class="bit-box bit-one">1</div></div>
+            <div class="bit-stack"><span class="bit-place">1</span><div class="bit-box bit-one">1</div></div>
+          </div>
+          <span style="color:var(--text-dim);font-size:16px;padding-left:80px;">= 128+64+32+16+8+4+2+1 = <strong style="color:var(--amber);">255</strong> checks</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 11 · Discussion FRQ — Polynomial vs. Exponential
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:11:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Both polynomial (pair raffle) and exponential (group raffle) curves bend upward as n grows. Why do you think only exponential is considered to run in an unreasonable amount of time?","order":0}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">FRQ — Discussion</span>
+    <h2 style="margin-bottom:var(--gap);">Both curves go up. Why is only one unreasonable?</h2>
+    <div class="frq-box" style="margin-bottom:var(--gap);">
+      <p>Both <strong style="color:var(--amber);">polynomial</strong> (pair raffle) and <strong style="color:var(--red);">exponential</strong> (group raffle) curves bend upward as n grows. Why do you think only exponential is considered to run in an <strong style="color:var(--red);">unreasonable</strong> amount of time?</p>
+    </div>
+    <div class="split" style="gap:40px;align-items:start;">
+      <div class="callout fragment fade-up" style="padding:18px 22px;">
+        <h3 style="color:var(--amber);">Pair Raffle — Polynomial</h3>
+        <p>Checks grow as roughly <strong style="color:var(--amber);">n²</strong>. <strong style="color:var(--amber);">Doubling</strong> the tickets <strong style="color:var(--amber);">quadruples</strong> the work. That is a lot, but a faster computer or some optimization might still make it feasible.</p>
+      </div>
+      <div class="callout fragment fade-up" style="padding:18px 22px;">
+        <h3 style="color:var(--red);">Group Raffle — Exponential</h3>
+        <p>Checks grow as <strong style="color:var(--red);">2<sup>n</sup></strong>. Adding just <strong style="color:var(--red);">one more</strong> ticket <strong style="color:var(--red);">doubles</strong> all the work. Even the fastest computers cannot keep up once n gets large.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 12 · Counter App — Reasonable or Unreasonable?
+     ══════════════════════════════════════════════════════════════════ -->
+<section id="fn-counter-slide">
+  <div class="slide-inner" style="justify-content:flex-start;padding:32px 52px 20px;height:100%;">
+    <span class="act-label">Activity — Reasonable or Unreasonable?</span>
+    <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:40px;flex:1;min-height:0;align-items:start;">
+
+      <div style="display:flex;flex-direction:column;gap:16px;padding-top:4px;">
+        <h2 style="font-size:38px;">Watch the algorithms count up.</h2>
+        <div class="activity-card">
+          <h3>Do This</h3>
+          <p>Set n with the slider and press <strong style="color:var(--teal);">Start</strong>. The app simulates each algorithm working through its checks at the same pace. Discuss with a partner: which algorithms still seem reasonable as n grows?</p>
+        </div>
+        <div class="callout" style="padding:14px 18px;">
+          <p style="font-size:19px;">Try n = 10, then n = 20, then n = 25. What changes?</p>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="fn-app" id="fn-app">
+          <div class="fn-controls">
+            <span class="fn-n-label">n = <span id="fn-n-val">10</span></span>
+            <input type="range" class="fn-slider" id="fn-slider" min="1" max="30" value="10">
+            <button class="fn-btn fn-go" id="fn-start-btn">&#9654; Start</button>
+            <button class="fn-btn" id="fn-reset-btn">&#8635; Reset</button>
+          </div>
+          <div class="fn-rows">
+            <div class="fn-row fn-log">
+              <div class="fn-label">
+                <span class="fn-name" style="color:var(--teal);">Sorted Raffle</span>
+                <span class="fn-formula">log₂(n) steps</span>
+              </div>
+              <div class="fn-bar-wrap"><div class="fn-bar-fill" id="fn-bar-log"></div></div>
+              <div class="fn-count" id="fn-count-log">—</div>
+            </div>
+            <div class="fn-row fn-lin">
+              <div class="fn-label">
+                <span class="fn-name" style="color:rgba(0,201,177,0.75);">Normal Raffle</span>
+                <span class="fn-formula">n steps</span>
+              </div>
+              <div class="fn-bar-wrap"><div class="fn-bar-fill" id="fn-bar-lin"></div></div>
+              <div class="fn-count" id="fn-count-lin">—</div>
+            </div>
+            <div class="fn-row fn-poly">
+              <div class="fn-label">
+                <span class="fn-name" style="color:var(--amber);">Pair Raffle</span>
+                <span class="fn-formula">n² steps</span>
+              </div>
+              <div class="fn-bar-wrap"><div class="fn-bar-fill" id="fn-bar-poly"></div></div>
+              <div class="fn-count" id="fn-count-poly">—</div>
+            </div>
+            <div class="fn-row fn-exp">
+              <div class="fn-label">
+                <span class="fn-name" style="color:var(--red);">Group Raffle</span>
+                <span class="fn-formula">2<sup>n</sup> steps</span>
+              </div>
+              <div class="fn-bar-wrap"><div class="fn-bar-fill" id="fn-bar-exp"></div></div>
+              <div class="fn-count" id="fn-count-exp">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 13 · Summary — Reasonable vs. Unreasonable
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;">
+    <span class="slide-tag">Summary</span>
+    <h2 style="font-size:44px;margin-bottom:var(--gap);">Reasonable or Unreasonable?</h2>
+    <div class="split" style="align-items:start;gap:52px;">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="callout accent-amber" style="padding:22px 26px;">
+          <h3>Polynomial — Reasonable</h3>
+          <p>Algorithms whose check count grows as a polynomial power of n (constant, linear, n², n³, etc.) run in <strong style="color:var(--amber);">reasonable time</strong>. They can be slow for large n, but a faster computer or better implementation can still make progress.</p>
+        </div>
+        <div class="callout fragment fade-up" style="padding:16px 22px;">
+          <p style="font-size:20px;"><strong style="color:var(--teal);">Sorted Raffle</strong> (logarithmic): reasonable.<br>
+          <strong style="color:rgba(0,201,177,0.7);">Normal Raffle</strong> (linear): reasonable.<br>
+          <strong style="color:var(--amber);">Pair Raffle</strong> (polynomial n²): reasonable.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="callout accent-red" style="padding:22px 26px;">
+          <h3>Exponential — Unreasonable</h3>
+          <p>Algorithms whose check count grows as an exponential (2<sup>n</sup>, 3<sup>n</sup>, etc.) or factorial run in <strong style="color:var(--red);">unreasonable time</strong>. Even with the fastest computers imaginable, adding one more item to the input can make the algorithm take exponentially longer to complete.</p>
+        </div>
+        <div class="callout fragment fade-up" style="padding:16px 22px;">
+          <p style="font-size:20px;"><strong style="color:var(--red);">Group Raffle</strong> (exponential 2<sup>n</sup>): unreasonable.</p>
+        </div>
+      </div>
+    </div>
+        <div class="callout accent-amber fragment fade-up" style="padding:14px 20px; margin-top:var(--gap);">
+          <p style="font-size:19px;"><strong style="color:var(--amber);">Note:</strong> the line between reasonable and unreasonable is drawn at polynomial versus exponential — not at any specific number of steps.</p>
+        </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 14 · Comparison Table
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:32px 52px 20px;height:100%;">
+    <span class="slide-tag" style="margin-bottom:12px;">Comparison — All Four Algorithms</span>
+    <h2 style="font-size:38px;margin-bottom:18px;">How fast do the checks grow?</h2>
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th class="th-n">Tickets (n)</th>
+          <th class="th-log">Sorted Raffle<br><span style="font-weight:400;font-size:13px;">log<sub>2</sub>(n) — reasonable</span></th>
+          <th class="th-lin">Normal Raffle<br><span style="font-weight:400;font-size:13px;">n — reasonable</span></th>
+          <th class="th-poly">Pair Raffle<br><span style="font-weight:400;font-size:13px;">n<sup>2</sup> — reasonable</span></th>
+          <th class="th-exp">Group Raffle<br><span style="font-weight:400;font-size:13px;">2<sup>n</sup> — unreasonable</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="fragment" data-fragment-index="1">
+          <td class="td-n">10</td>
+          <td class="td-log">4</td>
+          <td class="td-lin">10</td>
+          <td class="td-poly">100</td>
+          <td class="td-exp">1,024</td>
+        </tr>
+        <tr class="fragment" data-fragment-index="2">
+          <td class="td-n">20</td>
+          <td class="td-log">5</td>
+          <td class="td-lin">20</td>
+          <td class="td-poly">400</td>
+          <td class="td-exp">1,048,576</td>
+        </tr>
+        <tr class="fragment" data-fragment-index="3">
+          <td class="td-n">100</td>
+          <td class="td-log">7</td>
+          <td class="td-lin">100</td>
+          <td class="td-poly">10,000</td>
+          <td class="td-exp td-note">1.27 × 10<sup>30</sup></td>
+        </tr>
+        <tr class="fragment" data-fragment-index="4">
+          <td class="td-n">1,000</td>
+          <td class="td-log">10</td>
+          <td class="td-lin">1,000</td>
+          <td class="td-poly">1,000,000</td>
+          <td class="td-exp td-note">1.07 × 10<sup>301</sup></td>
+        </tr>
+        <tr class="fragment" data-fragment-index="5">
+          <td class="td-n">10,000</td>
+          <td class="td-log">14</td>
+          <td class="td-lin">10,000</td>
+          <td class="td-poly">100,000,000</td>
+          <td class="td-exp td-note">2.00 × 10<sup>3010</sup></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout accent-red fragment fade-up" data-fragment-index="6" style="padding:14px 22px;margin-top:14px;">
+      <p style="font-size:19px;">By n = 1,000 the group raffle requires roughly 10<sup>301</sup> checks. The observable universe contains an estimated <strong style="color:var(--red);">10<sup>80</sup> atoms</strong>: the algorithm needs far more checks than that, and no amount of faster hardware changes this.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 15 · MCQ — Check for Understanding
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:15:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"An algorithm processes a list of n items. As n doubles, the number of steps the algorithm takes roughly quadruples. What best describes this algorithm?","order":0,"options":[{"id":"a","text":"Logarithmic — it runs in reasonable time","isCorrect":false},{"id":"b","text":"Linear — it runs in reasonable time","isCorrect":false},{"id":"c","text":"Polynomial — it runs in reasonable time","isCorrect":true},{"id":"d","text":"Exponential — it runs in unreasonable time","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">MCQ</span>
+    <h2 style="margin-bottom:var(--gap);">Check for Understanding</h2>
+    <div class="callout" style="padding:18px 24px;margin-bottom:var(--gap);">
+      <p>An algorithm processes a list of <strong style="color:var(--teal);font-family:var(--font-mono);">n</strong> items. As n doubles, the number of steps the algorithm takes <strong style="color:var(--amber);">roughly quadruples</strong>. What best describes this algorithm?</p>
+    </div>
+    <ul class="mcq-opts">
+      <li><span class="opt-key">A</span> Logarithmic: it runs in reasonable time.</li>
+      <li><span class="opt-key">B</span> Linear: it runs in reasonable time.</li>
+      <li><span class="opt-key">C</span> Polynomial: it runs in reasonable time.</li>
+      <li><span class="opt-key">D</span> Exponential: it runs in unreasonable time.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 16 · Wrap-Up — Key Vocabulary
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;">
+    <span class="slide-tag">Wrap Up — Key Vocabulary</span>
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:10px;">
+      <div class="def-card">
+        <div class="def-term">Polynomial Efficiency</div>
+        <div class="def-text">An algorithm runs with polynomial efficiency when the number of steps grows as a polynomial power of the input size: constant, linear, quadratic (n²), cubic (n³), and so on. These algorithms are said to run in <strong style="color:var(--teal);">reasonable time</strong>. The pair raffle (checking every pair of tickets) is an example.</div>
+      </div>
+      <div class="def-card">
+        <div class="def-term">Exponential Efficiency</div>
+        <div class="def-text">An algorithm runs with exponential efficiency when the number of steps grows as an exponential function of the input size: 2<sup>n</sup>, 3<sup>n</sup>, and so on. These algorithms are said to run in <strong style="color:var(--red);">unreasonable time</strong> because the number of steps becomes astronomically large even for small increases in n. The group raffle (checking every subset of tickets) is an example.</div>
+      </div>
+      <div class="def-card">
+        <div class="def-term">Reasonable vs. Unreasonable Time</div>
+        <div class="def-text">An algorithm is considered to run in <strong style="color:var(--teal);">reasonable time</strong> if its efficiency is polynomial or better. An algorithm that requires exponential or factorial time is considered to run in <strong style="color:var(--red);">unreasonable time</strong>: no practical computer could complete it for large inputs, regardless of how fast the hardware becomes.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'unreasonable-time',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+    /* ── Pair diagram counter label (slide 07) ─────────────────────── */
+    var drawSlide = Array.prototype.find.call(
+      document.querySelectorAll('#draw-it-slide'),
+      function(s) { return !s.closest('#storyboard'); }
+    );
+    var pairText = drawSlide ? drawSlide.querySelector('#pair-count-text') : null;
+    var pairLabels = ['2 tickets → 1 pair', '3 tickets → 3 pairs', '4 tickets → 6 pairs'];
+
+    function updatePairLabel(idx) {
+      if (!pairText) return;
+      pairText.textContent = pairLabels[Math.min(idx, pairLabels.length - 1)];
+    }
+
+    Reveal.on('fragmentshown', function(e) {
+      var sec = e.fragment.closest ? e.fragment.closest('section') : null;
+      if (sec && sec.id === 'draw-it-slide') {
+        var fi = parseInt(e.fragment.getAttribute('data-fragment-index') || '0', 10);
+        if (fi <= 2) updatePairLabel(fi);
+      }
+    });
+    Reveal.on('fragmenthidden', function(e) {
+      var sec = e.fragment.closest ? e.fragment.closest('section') : null;
+      if (sec && sec.id === 'draw-it-slide') {
+        var fi = parseInt(e.fragment.getAttribute('data-fragment-index') || '0', 10);
+        if (fi <= 2) updatePairLabel(Math.max(0, fi - 1));
+      }
+    });
+    Reveal.on('slidechanged', function() { updatePairLabel(0); });
+
+    /* ── f(n) Counter App (slide 12) ────────────────────────────────── */
+    (function() {
+      var fnSlide = Array.prototype.find.call(
+        document.querySelectorAll('#fn-counter-slide'),
+        function(s) { return !s.closest('#storyboard'); }
+      );
+      if (!fnSlide) return;
+
+      var slider    = fnSlide.querySelector('#fn-slider');
+      var nVal      = fnSlide.querySelector('#fn-n-val');
+      var startBtn  = fnSlide.querySelector('#fn-start-btn');
+      var resetBtn  = fnSlide.querySelector('#fn-reset-btn');
+
+      var barLog    = fnSlide.querySelector('#fn-bar-log');
+      var barLin    = fnSlide.querySelector('#fn-bar-lin');
+      var barPoly   = fnSlide.querySelector('#fn-bar-poly');
+      var barExp    = fnSlide.querySelector('#fn-bar-exp');
+
+      var cntLog    = fnSlide.querySelector('#fn-count-log');
+      var cntLin    = fnSlide.querySelector('#fn-count-lin');
+      var cntPoly   = fnSlide.querySelector('#fn-count-poly');
+      var cntExp    = fnSlide.querySelector('#fn-count-exp');
+
+      var SIM_CHECKS_PER_MS = 250;
+
+      var n = 10;
+      var running = false;
+      var rafId = null;
+      var lastTs = null;
+
+      /* Fractional accumulators so we don't lose ops between frames */
+      var counts      = { log: 0, lin: 0, poly: 0, exp: 0 };
+      var targets     = { log: 0, lin: 0, poly: 0, exp: 0 };
+      var done        = { log: false, lin: false, poly: false, exp: false };
+      function fTargets(n) {
+        return {
+          log:  Math.ceil(Math.log2(n + 1)),
+          lin:  n,
+          poly: n * n,
+          exp:  Math.pow(2, n) - 1
+        };
+      }
+
+      function fmtNum(x) {
+        if (x >= 1e15) return x.toExponential(2);
+        return x.toLocaleString();
+      }
+
+      function fmtRemaining(type) {
+        return fmtNum(Math.max(0, Math.ceil(targets[type] - counts[type]))) + ' left';
+      }
+
+      function updateRow(type, bar, cnt) {
+        var tgt = targets[type];
+        var cur = counts[type];
+        var pct = tgt > 0 ? Math.min(100, (cur / tgt) * 100) : 100;
+        bar.style.width = pct + '%';
+
+        if (done[type]) {
+          cnt.innerHTML = '<span class="fn-done">' + fmtNum(tgt) + ' steps complete</span>';
+        } else if (!running) {
+          cnt.textContent = '—';
+        } else {
+          /* Show count, or for huge targets show % + remaining checks. */
+          if (tgt > 1e9) {
+            cnt.textContent = pct.toFixed(4) + '% — ' + fmtRemaining(type);
+          } else {
+            cnt.textContent = fmtNum(Math.floor(cur)) + ' / ' + fmtNum(tgt);
+          }
+        }
+      }
+
+      function tick(ts) {
+        if (!running) return;
+        if (lastTs === null) lastTs = ts;
+        var deltaMs = Math.min(ts - lastTs, 100); /* cap at 100ms to avoid huge jumps */
+        lastTs = ts;
+        var opsThisFrame = SIM_CHECKS_PER_MS * deltaMs;
+
+        ['log', 'lin', 'poly', 'exp'].forEach(function(t) {
+          if (!done[t]) {
+            counts[t] = Math.min(counts[t] + opsThisFrame, targets[t]);
+            if (counts[t] >= targets[t]) {
+              done[t] = true;
+            }
+          }
+        });
+        var allDone = done.log && done.lin && done.poly && done.exp;
+
+        updateRow('log',  barLog,  cntLog);
+        updateRow('lin',  barLin,  cntLin);
+        updateRow('poly', barPoly, cntPoly);
+        updateRow('exp',  barExp,  cntExp);
+
+        if (!allDone) {
+          rafId = requestAnimationFrame(tick);
+        } else {
+          running = false;
+          startBtn.textContent = '\u25B6 Start';
+        }
+      }
+
+      function reset() {
+        if (rafId) cancelAnimationFrame(rafId);
+        running = false;
+        rafId = null;
+        lastTs = null;
+        targets     = fTargets(n);
+        counts      = { log: 0, lin: 0, poly: 0, exp: 0 };
+        done        = { log: false, lin: false, poly: false, exp: false };
+
+        barLog.style.width  = '0%';
+        barLin.style.width  = '0%';
+        barPoly.style.width = '0%';
+        barExp.style.width  = '0%';
+
+        cntLog.textContent  = '—';
+        cntLin.textContent  = '—';
+        cntPoly.textContent = '—';
+        cntExp.textContent  = '—';
+
+        startBtn.textContent = '\u25B6 Start';
+      }
+
+      function start() {
+        if (running) return;
+        /* If already done, reset first */
+        var allDone = done.log && done.lin && done.poly && done.exp;
+        if (allDone) reset();
+
+        running = true;
+        lastTs = null;
+        startBtn.textContent = '\u25A0 Running\u2026';
+        rafId = requestAnimationFrame(tick);
+      }
+
+      slider.addEventListener('input', function() {
+        n = parseInt(slider.value, 10);
+        nVal.textContent = n;
+        reset();
+      });
+      startBtn.addEventListener('click', start);
+      resetBtn.addEventListener('click', reset);
+
+      /* Auto-reset when leaving slide */
+      Reveal.on('slidechanged', function(e) {
+        reset();
+      });
+
+      /* Initialize */
+      reset();
+    })();
+
+  }
+});
+</script>
+</body>
+</html>
