@@ -199,6 +199,70 @@ Reveal.on('fragmentshown', function(event) {
 });
 ```
 
+### Interactive components across multiple slides (timers, counters, inputs)
+
+The single-slide pattern above (`find` the live section, then `querySelector` within it)
+extends naturally to decks with several interactive slides. **Never use
+`document.getElementById(id)` directly** — if the storyboard is open, the ID
+may resolve to the thumbnail clone rather than the live slide, so the component
+will appear to do nothing (or update the wrong element).
+
+The correct pattern: for each element you need, call `querySelectorAll` and
+filter out anything inside `#storyboard`.
+
+```js
+// Helper: return the live (non-storyboard) element matching a selector.
+function liveEl(selector) {
+  return Array.prototype.find.call(
+    document.querySelectorAll(selector),
+    function(el) { return !el.closest('#storyboard'); }
+  );
+}
+
+// Example: wire up three independent count-up timers on slides 4, 5, 6.
+['t1', 't2', 't3'].forEach(function(id) {
+  var display  = liveEl('#' + id + '-display');
+  var startBtn = liveEl('#' + id + '-start');
+  var stopBtn  = liveEl('#' + id + '-stop');
+  var resetBtn = liveEl('#' + id + '-reset');
+  if (!display || !startBtn) return;  // slide not in DOM yet
+
+  var seconds = 0, running = false, interval = null;
+
+  function tick() {
+    seconds++;
+    var m = Math.floor(seconds / 60), s = seconds % 60;
+    display.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }
+  function sync() { startBtn.disabled = running; stopBtn.disabled = !running; }
+
+  startBtn.addEventListener('click', function() {
+    if (running) return;
+    running = true; interval = setInterval(tick, 1000); sync();
+  });
+  stopBtn.addEventListener('click', function() {
+    if (!running) return;
+    running = false; clearInterval(interval); interval = null; sync();
+  });
+  resetBtn.addEventListener('click', function() {
+    running = false; clearInterval(interval); interval = null;
+    seconds = 0; display.textContent = '00:00'; sync();
+  });
+});
+```
+
+Key points:
+- The `liveEl` helper is a one-liner reusable across any deck with multiple
+  interactive components.
+- Each component closes over its own state variables (`seconds`, `running`,
+  `interval`) so timers on different slides are fully independent.
+- `querySelectorAll` returns elements in DOM order; the live slide element
+  always appears before its storyboard clone, so `find` with the storyboard
+  guard reliably returns the right one.
+- Never attach interactivity using inline `onclick="..."` attributes — those
+  handlers cannot distinguish live slides from storyboard clones, and they
+  run in the global scope, making state management harder.
+
 ## Iframe Sync Contract
 
 When a parent host should control the deck, initialize with `initSyncDeckReveal(...)` and pass any sync-specific settings through `iframeSyncOverrides`:
@@ -283,3 +347,49 @@ A finished deck should be:
 - accessible in its controls and structural markup
 - self-consistent in typography and motion
 - free of obvious overflow, clipping, and broken navigation states
+
+## Conversion Scripts
+
+The `scripts/` directory contains reusable Python utilities for PPTX-to-HTML
+conversion workflows.
+
+### `scripts/pptx-extract.py`
+
+Extracts text, speaker notes, image references, and media files from a `.pptx`
+file. Run this at the start of any PPTX conversion to understand slide content
+before writing HTML.
+
+```
+# Survey slide content (no files written)
+python3 .agent/skills/vendor/syncdeck/scripts/pptx-extract.py "Decks/Course/Unit/My Deck.pptx"
+
+# Also extract all media files to MyDeck-assets/
+python3 .agent/skills/vendor/syncdeck/scripts/pptx-extract.py "My Deck.pptx" --extract-media
+
+# Write media to a custom directory
+python3 .agent/skills/vendor/syncdeck/scripts/pptx-extract.py "My Deck.pptx" --extract-media --out-dir Decks/Course/Unit/MyDeck-assets
+```
+
+Output: per-slide text (truncated to 500 chars), image filenames, and notes.
+Slides that are Nearpod embeds or other image-only slides will show
+`(none — possibly Nearpod embed or image-only slide)` for text.
+
+### `scripts/validate-deck.py`
+
+Validates a finished SyncDeck HTML presentation. Accepts a file path or a
+dev-server URL. Run after writing or significantly editing a deck.
+
+```
+# Validate from file
+python3 .agent/skills/vendor/syncdeck/scripts/validate-deck.py Decks/Course/Unit/my-deck.html
+
+# Validate via dev server (run `npm run dev` first)
+python3 .agent/skills/vendor/syncdeck/scripts/validate-deck.py http://127.0.0.1:4173/Course/Unit/my-deck.html
+```
+
+Checks: balanced `<section>` tags, valid JSON in all `data-activity-options`
+attributes, required structural elements (`#storyboard`, `initSyncDeckReveal`,
+`standaloneHosting`, `revealOverrides`), and presence of
+`data-activity-instance-key` attributes.
+
+Exit code 0 on success, 1 on errors.
