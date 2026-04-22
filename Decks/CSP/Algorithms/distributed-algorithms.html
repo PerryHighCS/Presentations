@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distributed Algorithms — AP CSP Unit 8 Lesson 5</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+
+<style>
+/* ── Timer component ─────────────────────────────────────────────── */
+
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 148px;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1;
+  letter-spacing: -4px;
+  text-align: center;
+  padding: 12px 0 4px;
+  text-shadow: 0 0 40px rgba(0,201,177,0.35);
+}
+
+.timer-controls {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.timer-btn {
+  padding: 13px 30px;
+  font-family: var(--font-mono);
+  font-size: 21px;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 2px solid;
+  cursor: pointer;
+  transition: background 100ms, box-shadow 100ms, transform 80ms;
+  letter-spacing: 0.04em;
+  background: transparent;
+}
+.timer-btn:not(:disabled):active { transform: translateY(1px); }
+.timer-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+
+.timer-btn-start {
+  color: var(--green);
+  border-color: var(--green);
+}
+.timer-btn-start:not(:disabled):hover {
+  background: rgba(105,219,124,0.14);
+  box-shadow: 0 0 14px rgba(105,219,124,0.2);
+}
+
+.timer-btn-stop {
+  color: var(--amber);
+  border-color: var(--amber);
+}
+.timer-btn-stop:not(:disabled):hover {
+  background: rgba(255,212,59,0.14);
+  box-shadow: 0 0 14px rgba(255,212,59,0.2);
+}
+
+.timer-btn-reset {
+  color: var(--text-muted);
+  border-color: var(--teal-border);
+}
+.timer-btn-reset:not(:disabled):hover {
+  background: rgba(226,245,242,0.06);
+  color: var(--text);
+}
+
+.timer-hint {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  color: var(--text-dim);
+  text-align: center;
+  letter-spacing: 0.06em;
+  margin-top: 14px;
+}
+
+/* ── Challenge instruction card ──────────────────────────────────── */
+
+.challenge-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-left: 4px solid var(--teal);
+  border-radius: 6px;
+  padding: 26px 30px;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.challenge-card h3 {
+  font-size: 34px;
+  color: var(--teal);
+  margin: 0;
+}
+.challenge-card p {
+  font-size: 22px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── Prompt / discussion box ─────────────────────────────────────── */
+
+.prompt-box {
+  background: rgba(255,212,59,0.05);
+  border: 1px solid rgba(255,212,59,0.28);
+  border-left: 4px solid var(--amber);
+  border-radius: 4px;
+  padding: 18px 24px;
+}
+.prompt-box p {
+  font-size: var(--body);
+  line-height: 1.65;
+  color: var(--text-muted);
+  margin: 0;
+}
+.prompt-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--amber);
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* ── Speedup bar diagram ─────────────────────────────────────────── */
+
+.speedup-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.speedup-bar-label {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--text-dim);
+  min-width: 115px;
+  text-align: right;
+}
+.speedup-bar {
+  height: 44px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.speedup-bar-seq {
+  background: rgba(105,219,124,0.14);
+  border: 1px solid rgba(105,219,124,0.45);
+  color: var(--green);
+  width: 450px;
+}
+.speedup-bar-par {
+  background: rgba(0,201,177,0.12);
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+  width: 300px;
+}
+.speedup-formula {
+  margin-top: 18px;
+  padding: 14px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  color: var(--text);
+  display: inline-block;
+}
+
+/* ── Vocabulary grid ─────────────────────────────────────────────── */
+
+.vocab-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  width: 100%;
+}
+.vocab-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 20px 24px;
+}
+.vocab-term {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+.vocab-def {
+  font-size: 20px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ── Amdahl's Law graph card ─────────────────────────────────────── */
+
+.graph-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 8px;
+  display: inline-block;
+  line-height: 0;
+}
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal"><div class="slides">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 01 · Title
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:700px;height:700px;top:-80px;right:-120px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 70%);"></div>
+    <div class="glow" style="width:500px;height:500px;bottom:-80px;left:-80px;background:radial-gradient(circle,rgba(255,212,59,0.07),transparent 70%);"></div>
+    <span class="slide-tag">Unit 8 · Lesson 5</span>
+    <h1 class="title-h1">Distributed Algorithms</h1>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:760px;">Parallel computing, speedup, and the limits of adding more processors.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 02 · Opening Resonance Question
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:2:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What is a task that you can complete faster if you get other people to help? What is the most number of people you would want to help you, and why?","order":0}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Warm-Up</span>
+    <h2>Faster With Help</h2>
+    <div class="frq-box" style="margin-top:var(--gap);">
+      <p>What is a task that you can complete <strong style="color:var(--teal);">faster if you get other people to help?</strong></p>
+      <p style="margin-top:14px;">What is the <strong style="color:var(--amber);">most number of people</strong> you would want helping you, and why?</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 03 · Activity Setup — Groups and Blocks
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:42px 72px;">
+    <span class="slide-tag">Activity — Parallel Algorithms and Speedup</span>
+    <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:52px;flex:1;align-items:center;margin-top:var(--gap);">
+      <div>
+        <h2 style="font-size:46px;margin-bottom:var(--gap);">Get into groups and grab your blocks.</h2>
+        <ul class="bullets">
+          <li>Form groups of <strong style="color:var(--teal);">3 or 4 students</strong> and move to the tables.</li>
+          <li>Each group should have a <strong style="color:var(--amber);">tub of blocks.</strong> The blocks come in <strong style="color:var(--teal);">9 different shapes.</strong></li>
+          <li>Your goal in every challenge is to sort the blocks into <strong style="color:var(--teal);">9 neat piles by shape.</strong></li>
+          <li>You will run <strong style="color:var(--amber);">three timed challenges:</strong> one person sorts, then two, then your whole group.</li>
+        </ul>
+      </div>
+      <div style="display:flex;justify-content:center;align-items:center;">
+        <img
+          src="DistributedAlgorithms-assets/image8.png"
+          alt="Colorful 3D building blocks of different shapes: rectangles, arches, cylinders, and triangles"
+          style="max-width:100%;max-height:460px;object-fit:contain;filter:drop-shadow(0 10px 28px rgba(0,0,0,0.55));">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 04 · Challenge One — One Person Sort (Count-Up Timer)
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:42px 72px;">
+    <span class="slide-tag">Activity — Challenge One</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;flex:1;margin-top:var(--gap);">
+
+      <div class="challenge-card">
+        <h3>One Person Sort</h3>
+        <p>Shake up the tub to mix the blocks.</p>
+        <p>When the timer starts, <strong style="color:var(--teal);">one person</strong> sorts all the blocks into piles by shape as fast as possible.</p>
+        <p>Time stops when the blocks are sorted into <strong style="color:var(--teal);">9 neat piles.</strong></p>
+        <p>Run this once for <strong style="color:var(--amber);">each person in your group.</strong> Keep track of each time and record the best.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="timer-display" id="t1-display">00:00</div>
+        <div class="timer-controls">
+          <button class="timer-btn timer-btn-start" id="t1-start">Start</button>
+          <button class="timer-btn timer-btn-stop"  id="t1-stop"  disabled>Stop</button>
+          <button class="timer-btn timer-btn-reset" id="t1-reset">Reset</button>
+        </div>
+        <p class="timer-hint">Record the best time in your group.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 05 · Challenge Two — Two Person Sort (Count-Up Timer)
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:42px 72px;">
+    <span class="slide-tag">Activity — Challenge Two</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;flex:1;margin-top:var(--gap);">
+
+      <div class="challenge-card">
+        <h3>Two Person Sort</h3>
+        <p>Shake up the tub to mix the blocks.</p>
+        <p>When the timer starts, <strong style="color:var(--teal);">two people</strong> work together to sort the blocks into piles by shape.</p>
+        <p>Time stops when the blocks are sorted into <strong style="color:var(--teal);">9 neat piles.</strong></p>
+        <p>Run this once for <strong style="color:var(--amber);">each possible pair</strong> in your group. Record the best pair time.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="timer-display" id="t2-display">00:00</div>
+        <div class="timer-controls">
+          <button class="timer-btn timer-btn-start" id="t2-start">Start</button>
+          <button class="timer-btn timer-btn-stop"  id="t2-stop"  disabled>Stop</button>
+          <button class="timer-btn timer-btn-reset" id="t2-reset">Reset</button>
+        </div>
+        <p class="timer-hint">Record the best time in your group.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 06 · Challenge Three — Full Group Sort (Count-Up Timer)
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:42px 72px;">
+    <span class="slide-tag">Activity — Challenge Three</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;flex:1;margin-top:var(--gap);">
+
+      <div class="challenge-card">
+        <h3>Full Group Sort</h3>
+        <p>Shake up the tub to mix the blocks.</p>
+        <p>When the timer starts, your <strong style="color:var(--teal);">entire group</strong> works together to sort the blocks into piles by shape.</p>
+        <p>Time stops when the blocks are sorted into <strong style="color:var(--teal);">9 neat piles.</strong></p>
+        <p>Run this <strong style="color:var(--amber);">once.</strong> Everyone participates at the same time.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="timer-display" id="t3-display">00:00</div>
+        <div class="timer-controls">
+          <button class="timer-btn timer-btn-start" id="t3-start">Start</button>
+          <button class="timer-btn timer-btn-stop"  id="t3-stop"  disabled>Stop</button>
+          <button class="timer-btn timer-btn-reset" id="t3-reset">Reset</button>
+        </div>
+        <p class="timer-hint">Record your group's time.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 07 · Sequential vs. Parallel — Concept Diagram
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:42px 72px;">
+    <span class="slide-tag">Concept</span>
+    <h2 style="margin-bottom:var(--gap);">Sequential vs. Parallel</h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;">
+
+      <!-- Sequential panel -->
+      <div style="background:var(--bg-card);border:1px solid rgba(105,219,124,0.3);border-radius:8px;padding:28px 30px;display:flex;flex-direction:column;align-items:center;">
+        <h3 style="font-size:34px;color:var(--green);margin-bottom:12px;align-self:flex-start;">Sequential</h3>
+        <p style="font-size:22px;color:var(--text-muted);line-height:1.55;margin-bottom:26px;align-self:flex-start;">Steps are performed <strong style="color:var(--text);">in order, one at a time.</strong> The next step cannot begin until the current one is done.</p>
+        <img src="DistributedAlgorithms-assets/sequential.png" alt="Sequential flow diagram: three tasks connected by downward arrows" style="display:block;max-height:380px;max-width:100%;object-fit:contain;filter:drop-shadow(0 2px 10px rgba(0,0,0,0.5));">
+      </div>
+
+      <!-- Parallel panel -->
+      <div style="background:var(--bg-card);border:1px solid rgba(0,201,177,0.32);border-radius:8px;padding:28px 30px;display:flex;flex-direction:column;align-items:center;">
+        <h3 style="font-size:34px;color:var(--teal);margin-bottom:12px;align-self:flex-start;">Parallel</h3>
+        <p style="font-size:22px;color:var(--text-muted);line-height:1.55;margin-bottom:26px;align-self:flex-start;">Some steps are performed <strong style="color:var(--text);">at the same time,</strong> with multiple workers acting simultaneously.</p>
+        <img src="DistributedAlgorithms-assets/parallel.png" alt="Parallel flow diagram: tasks split across multiple workers and reconverge" style="display:block;max-height:380px;max-width:100%;object-fit:contain;filter:drop-shadow(0 2px 10px rgba(0,0,0,0.5));">
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 08 · Discussion — What Was Parallel?
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Discussion</span>
+    <h2>Reflect on Your Algorithm</h2>
+    <div style="display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap);">
+      <div class="prompt-box">
+        <span class="prompt-label">Question 1</span>
+        <p>What portions of your algorithms for Challenges 2 and 3 were <strong style="color:var(--teal);">parallel?</strong> Describe specifically what two or more people were doing at the same time.</p>
+      </div>
+      <div class="prompt-box">
+        <span class="prompt-label">Question 2</span>
+        <p>What made things <strong style="color:var(--amber);">complicated or slowed you down</strong> during the parallel portions? Were there moments when only one person could act at a time?</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 09 · Speedup — Concept and Formula
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:42px 72px;">
+    <span class="slide-tag">Concept</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:52px;flex:1;align-items:center;margin-top:0;">
+
+      <div>
+        <h2 style="font-size:52px;margin-bottom:14px;">Speedup</h2>
+        <p style="font-size:23px;color:var(--text-muted);line-height:1.55;margin-bottom:var(--gap);">Speedup measures how much faster a parallel solution runs compared to a sequential one, using the same amount of work.</p>
+        <div class="code-card" style="display:inline-block;">
+          <div class="code-hdr"><span class="clang">Formula</span></div>
+          <div class="code-body" style="padding:18px 24px;">
+            <div style="display:flex;align-items:center;gap:18px;font-family:var(--font-mono);font-size:27px;color:var(--text);line-height:1.2;">
+              <span>Speedup =</span>
+              <div style="display:flex;flex-direction:column;align-items:center;min-width:270px;">
+                <span style="color:var(--green);padding:0 12px 8px;">sequential time</span>
+                <span style="width:100%;border-top:2px solid rgba(226,245,242,0.75);"></span>
+                <span style="color:var(--teal);padding:8px 12px 0;">parallel time</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p style="font-family:var(--font-mono);font-size:15px;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">Example</p>
+        <div style="background:var(--bg-card);border:1px solid var(--teal-border);border-radius:8px;padding:28px 26px 24px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:end;">
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-height:320px;">
+              <img
+                src="DistributedAlgorithms-assets/sequential-sm.png"
+                alt="Sequential flow diagram with one path of work done step by step"
+                style="max-width:100%;max-height:250px;object-fit:contain;filter:drop-shadow(0 1px 6px rgba(0,0,0,0.45));">
+              <p style="font-family:var(--font-mono);font-size:18px;color:var(--text-dim);letter-spacing:0.08em;text-transform:uppercase;margin:18px 0 8px;">Sequential</p>
+              <p style="font-family:var(--font-mono);font-size:34px;color:var(--green);margin:0;">60 seconds</p>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-height:320px;">
+              <img
+                src="DistributedAlgorithms-assets/parallel-sm.png"
+                alt="Parallel flow diagram with multiple branches of work happening at the same time"
+                style="max-width:100%;max-height:250px;object-fit:contain;filter:drop-shadow(0 1px 6px rgba(0,0,0,0.45));">
+              <p style="font-family:var(--font-mono);font-size:18px;color:var(--text-dim);letter-spacing:0.08em;text-transform:uppercase;margin:18px 0 8px;">Parallel</p>
+              <p style="font-family:var(--font-mono);font-size:34px;color:var(--teal);margin:0;">40 seconds</p>
+            </div>
+          </div>
+          <div class="speedup-formula" style="display:block;width:fit-content;margin:26px auto 0;">
+            60 &divide; 40 = <span style="color:var(--amber);font-size:30px;font-weight:700;">1.5</span>
+          </div>
+          <p style="font-size:20px;color:var(--text-muted);margin-top:12px;text-align:center;">The speedup of this parallel solution is <strong style="color:var(--amber);">1.5.</strong></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 10 · Speedup — Apply to Your Data
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:42px 72px;">
+    <span class="slide-tag">Activity — Calculate Your Speedup</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:52px;flex:1;align-items:center;margin-top:var(--gap-sm);">
+
+      <div>
+        <h2 style="font-size:44px;margin-bottom:var(--gap);">Your Group's Speedup</h2>
+        <div style="background:var(--bg-card);border:1px solid var(--teal-border);border-radius:8px;padding:28px 26px 24px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:end;">
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-height:300px;">
+              <img
+                src="DistributedAlgorithms-assets/sequential-sm.png"
+                alt="Sequential flow diagram with one path of work done step by step"
+                style="max-width:100%;max-height:230px;object-fit:contain;filter:drop-shadow(0 1px 6px rgba(0,0,0,0.45));">
+              <p style="font-family:var(--font-mono);font-size:18px;color:var(--text-dim);letter-spacing:0.08em;text-transform:uppercase;margin:18px 0 8px;">Sequential</p>
+              <p style="font-family:var(--font-mono);font-size:30px;color:var(--green);margin:0;">Your solo time</p>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-height:300px;">
+              <img
+                src="DistributedAlgorithms-assets/parallel-sm.png"
+                alt="Parallel flow diagram with multiple branches of work happening at the same time"
+                style="max-width:100%;max-height:230px;object-fit:contain;filter:drop-shadow(0 1px 6px rgba(0,0,0,0.45));">
+              <p style="font-family:var(--font-mono);font-size:18px;color:var(--text-dim);letter-spacing:0.08em;text-transform:uppercase;margin:18px 0 8px;">Parallel</p>
+              <p style="font-family:var(--font-mono);font-size:30px;color:var(--teal);margin:0;">Your team time</p>
+            </div>
+          </div>
+          <div class="speedup-formula" style="display:block;width:fit-content;margin:24px auto 0;">
+            solo time &divide; team time = speedup
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <div class="prompt-box fragment fade-up">
+          <span class="prompt-label">Prompt</span>
+          <p>What was your group's speedup in <strong style="color:var(--teal);">Challenge 2</strong> (two-person sort)? Divide your best solo time by your best pair time.</p>
+        </div>
+        <div class="prompt-box fragment fade-up">
+          <span class="prompt-label">Prompt</span>
+          <p>What was your group's speedup in <strong style="color:var(--amber);">Challenge 3</strong> (full group)? Is there anything surprising about the result?</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 11 · Amdahl's Law — It's Not Just You!
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:42px 72px;">
+    <span class="slide-tag">Concept — It's Not Just You!</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:44px;flex:1;align-items:center;margin-top:var(--gap);">
+
+      <div>
+        <h2 style="font-size:44px;margin-bottom:var(--gap);">Speedup always hits a ceiling.</h2>
+        <ul class="bullets">
+          <li class="fragment fade-up">Speedup is <strong style="color:var(--red);">never equal to the number of processors</strong> added.</li>
+          <li class="fragment fade-up">Some portions of any algorithm <strong style="color:var(--amber);">cannot be parallelized</strong> and must still run one step at a time.</li>
+          <li class="fragment fade-up">Each additional processor helps <strong style="color:var(--teal);">a little less</strong> than the one before it.</li>
+          <li class="fragment fade-up">Eventually speedup <strong style="color:var(--text);">reaches a hard limit,</strong> no matter how many processors you add. This relationship is described by <strong style="color:var(--teal);">Amdahl's Law.</strong></li>
+        </ul>
+      </div>
+
+      <div style="display:flex;justify-content:center;align-items:center;">
+        <div class="graph-card">
+          <img
+            class="img-zoomable"
+            src="DistributedAlgorithms-assets/image7.png"
+            alt="Amdahl's Law graph: speedup vs number of processors for 50%, 75%, 90%, and 95% parallel portions. Each curve flattens and approaches a fixed ceiling."
+            style="max-width:510px;width:100%;height:auto;display:block;">
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 12 · Video Prompt — Distributed Computing
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Video — Distributed Computing</span>
+    <h2>As You Watch</h2>
+    <p style="font-size:22px;color:var(--text-muted);margin-top:var(--gap-sm);margin-bottom:var(--gap);line-height:1.55;">Write down answers to these questions while watching the video on the next slide.</p>
+    <div style="display:flex;flex-direction:column;gap:var(--gap);">
+      <div class="prompt-box">
+        <span class="prompt-label">Question 1</span>
+        <p>Why is the type of computing shown in this video considered <strong style="color:var(--teal);">"distributed"</strong> computing?</p>
+      </div>
+      <div class="prompt-box">
+        <span class="prompt-label">Question 2</span>
+        <p>Why is distributed computing a good fit for <strong style="color:var(--amber);">this particular problem?</strong> What would make solving it sequentially impractical?</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 13 · Video Sync — Distributed Computing
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="video-sync"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="video-sync:13:0"
+  data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=RGGzMQ2oFrA"}'>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Distributed Computing — Video</span>
+    <h2>Watch Together</h2>
+    <p style="margin-top:var(--gap-sm);color:var(--text-muted);font-size:var(--body);">The video will play when SyncDeck activates. Keep your notes ready.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 14 · Vocabulary Wrap-Up
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:42px 72px;">
+    <span class="slide-tag">Wrap-Up — Vocabulary</span>
+    <h2 style="margin-bottom:var(--gap);">Key Terms</h2>
+    <div class="vocab-grid">
+
+      <div class="vocab-card">
+        <div class="vocab-term" style="color:var(--text);">Sequential Computing</div>
+        <div class="vocab-def">Programs run in order, <strong style="color:var(--text);">one command at a time.</strong> Each step must finish before the next begins.</div>
+      </div>
+
+      <div class="vocab-card" style="border-color:rgba(0,201,177,0.3);">
+        <div class="vocab-term">Parallel Computing</div>
+        <div class="vocab-def">A program is broken into smaller pieces, and some of those pieces run <strong style="color:var(--teal);">simultaneously</strong> on <strong style="color:var(--teal);">multiple processors.</strong></div>
+      </div>
+
+      <div class="vocab-card" style="border-color:rgba(255,212,59,0.28);">
+        <div class="vocab-term" style="color:var(--amber);">Distributed Computing</div>
+        <div class="vocab-def">A program is run by <strong style="color:var(--amber);">multiple separate devices</strong> working together <strong style="color:var(--amber);">over a network</strong> to solve a problem too large for one machine.</div>
+      </div>
+
+      <div class="vocab-card" style="border-color:rgba(105,219,124,0.28);">
+        <div class="vocab-term" style="color:var(--green);">Speedup</div>
+        <div class="vocab-def">The time to complete a task <strong style="color:var(--green);">sequentially</strong> divided by the time to complete the same task <strong style="color:var(--teal);">in parallel.</strong> Speedup is <strong style="color:var(--amber);">always less than</strong> the number of processors added.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 15 · Resonance — Parallel or Distributed?
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:15:0"
+  data-activity-options='{"questions":[{"id":"q3","type":"free-response","text":"Is the block-sorting activity from today a parallel algorithm, a distributed algorithm, or both? Use the definitions we discussed and evidence from the activity to explain your answer.","order":0}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Discussion Question</span>
+    <h2>Parallel, Distributed, or Both?</h2>
+    <div class="frq-box" style="margin-top:var(--gap);">
+      <p>Is the block-sorting activity from today a <strong style="color:var(--teal);">parallel algorithm,</strong> a <strong style="color:var(--amber);">distributed algorithm,</strong> or both? Use the definitions we discussed and evidence from the activity to explain your answer.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 16 · Exit Resonance — Three Questions
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:16:0"
+  data-activity-options='{"questions":[{"id":"q4","type":"free-response","text":"Could the block-sorting activity be turned into a distributed algorithm? Describe what would need to change. If you think it could not work as a distributed algorithm, explain why not.","order":0},{"id":"q2","type":"multiple-choice","text":"Which of the following best explains why the speedup from parallel computing is never equal to the number of processors added?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"Parallel programs require more memory, which slows down each individual processor.","isCorrect":false},{"id":"q2b","text":"Some portions of any program cannot be parallelized and must still run sequentially.","isCorrect":true},{"id":"q2c","text":"Processors must take turns accessing data, which takes longer than a single sequential processor.","isCorrect":false},{"id":"q2d","text":"Parallel programs are harder to write, so programmers leave some tasks sequential on purpose.","isCorrect":false}]},{"id":"q5","type":"free-response","text":"Based on today&#39;s activities, what are the pros and cons of parallel and distributed computing?","order":2}]}'>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px;">
+    <span class="slide-tag">Exit Questions</span>
+    <h2 style="font-size:44px;margin-bottom:18px;">Check Your Understanding</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;flex:1;min-height:0;">
+
+      <!-- Left column: Q1 + Q3 -->
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="frq-box">
+          <span class="prompt-label">Free Response</span>
+          <p style="font-size:21px;">Could the block-sorting activity be turned into a <strong style="color:var(--amber);">distributed algorithm?</strong> Describe what would need to change. If you think it could not work as distributed, explain why not.</p>
+        </div>
+        <div class="frq-box">
+          <span class="prompt-label">Free Response</span>
+          <p style="font-size:21px;">Based on today's activities, what are the <strong style="color:var(--teal);">pros and cons</strong> of parallel and distributed computing?</p>
+        </div>
+      </div>
+
+      <!-- Right column: MCQ -->
+      <div class="frq-box" style="display:flex;flex-direction:column;gap:14px;">
+        <span class="prompt-label">AP-Style Multiple Choice</span>
+        <p style="font-size:20px;color:var(--text-muted);line-height:1.5;">Which of the following best explains why the speedup from <strong style="color:var(--teal);">parallel computing</strong> is never equal to the number of processors added?</p>
+        <ul class="mcq-opts" style="margin-top:4px;">
+          <li><span class="opt-key">A</span> Parallel programs require more memory, which slows down each processor.</li>
+          <li><span class="opt-key">B</span> Some portions of any program cannot be parallelized and must run sequentially.</li>
+          <li><span class="opt-key">C</span> Processors must take turns accessing data, which is slower than sequential.</li>
+          <li><span class="opt-key">D</span> Parallel programs are harder to write, so programmers leave some parts sequential.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'distributed-algorithms',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+    /* ── Count-Up Timer Component ──────────────────────────────────────
+       Three independent timers for Challenge slides 4, 5, 6.
+       Each timer maintains its own state (seconds, running, interval).
+       Timers continue running if you navigate away and come back.
+       ───────────────────────────────────────────────────────────────── */
+    var timerIds = ['t1', 't2', 't3'];
+    var timerState = {};
+
+    function getLiveElementById(elementId) {
+      return Array.prototype.find.call(
+        document.querySelectorAll('#' + elementId),
+        function(element) {
+          return !element.closest('#storyboard');
+        }
+      ) || null;
+    }
+
+    timerIds.forEach(function(id) {
+      var displayEl = getLiveElementById(id + '-display');
+      var startBtn  = getLiveElementById(id + '-start');
+      var stopBtn   = getLiveElementById(id + '-stop');
+      var resetBtn  = getLiveElementById(id + '-reset');
+
+      if (!displayEl || !startBtn || !stopBtn || !resetBtn) return;
+
+      var state = { centiseconds: 0, running: false, interval: null };
+      timerState[id] = state;
+
+      function renderTime() {
+        var totalSeconds = Math.floor(state.centiseconds / 100);
+        var m = Math.floor(totalSeconds / 60);
+        var s = totalSeconds % 60;
+        var cs = state.centiseconds % 100;
+        displayEl.textContent =
+          String(m).padStart(2, '0') + ':' +
+          String(s).padStart(2, '0') + '.' +
+          String(cs).padStart(2, '0');
+      }
+
+      function tick() {
+        state.centiseconds++;
+        renderTime();
+      }
+
+      function syncButtons() {
+        startBtn.disabled = state.running;
+        stopBtn.disabled  = !state.running;
+      }
+
+      startBtn.addEventListener('click', function() {
+        if (state.running) return;
+        state.running = true;
+        state.interval = setInterval(tick, 10);
+        syncButtons();
+      });
+
+      stopBtn.addEventListener('click', function() {
+        if (!state.running) return;
+        state.running = false;
+        clearInterval(state.interval);
+        state.interval = null;
+        syncButtons();
+      });
+
+      resetBtn.addEventListener('click', function() {
+        state.running = false;
+        clearInterval(state.interval);
+        state.interval = null;
+        state.centiseconds = 0;
+        renderTime();
+        syncButtons();
+      });
+
+      renderTime();
+    });
+
+  }
+});
+</script>
+</body>
+</html>
