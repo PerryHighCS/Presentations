@@ -128,6 +128,10 @@ export async function loadManifestRules(rootDir, options = {}) {
         directive = 'include-dev';
       } else if (line.startsWith('exclude-dev ')) {
         directive = 'exclude-dev';
+      } else if (line.startsWith('include-publish ')) {
+        directive = 'include-publish';
+      } else if (line.startsWith('exclude-publish ')) {
+        directive = 'exclude-publish';
       } else if (line.startsWith('include ')) {
         directive = 'include';
       } else if (line.startsWith('exclude ')) {
@@ -149,7 +153,11 @@ export async function loadManifestRules(rootDir, options = {}) {
       }
       const joined = manifestBase !== '.' ? path.posix.join(manifestBase, normalized) : normalized;
       const isDevOnly = directive.endsWith('-dev');
+      const isPublishOnly = directive.endsWith('-publish');
       if (isDevOnly && mode !== 'dev') {
+        continue;
+      }
+      if (isPublishOnly && mode !== 'publish') {
         continue;
       }
       const targetKey = directive.startsWith('include') ? 'includes' : 'excludes';
