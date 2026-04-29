@@ -7,7 +7,7 @@ RUN apt-get update \
 
 # Layer 2: Other devcontainer setup.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends sudo \
+    && apt-get install -y --no-install-recommends sudo gh \
     && (id -u vscode >/dev/null 2>&1 || useradd -m -s /bin/bash vscode) \
     && usermod -aG sudo vscode \
     && echo "vscode ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/vscode \
