@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { buildIndexPages, defaultTitleForFile } from './site-indexes.mjs';
+import { createExclusionChecker, loadManifestRules } from './site-utils.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
@@ -36,7 +37,10 @@ async function collectHtmlFiles(baseDir, relativeDir = '') {
 }
 
 async function main() {
-  const htmlFiles = await collectHtmlFiles(siteDir);
+  const manifestRules = await loadManifestRules(rootDir, { mode: 'index' });
+  const isExcludedFromIndex = createExclusionChecker(rootDir, manifestRules);
+  const htmlFiles = (await collectHtmlFiles(siteDir))
+    .filter((relPath) => !isExcludedFromIndex(relPath, false));
   const pages = await buildIndexPages(htmlFiles, async (publicPath) => {
     return defaultTitleForFile(path.join(siteDir, publicPath));
   });
