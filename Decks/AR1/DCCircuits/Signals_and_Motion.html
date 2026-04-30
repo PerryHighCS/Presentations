@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signals and Motion</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC — Signals and Motion
+   ============================================================ */
+
+/* ── Formula display ─────────────────────────────────────── */
+.formula-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  color: var(--text);
+  line-height: 1.9;
+}
+.formula-row .sym   { color: var(--accent); }
+.formula-row .val   { color: var(--result); }
+.formula-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 22px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+}
+.pulse-timing-panel {
+  position: relative;
+  width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(42,143,255,0.2), 0 6px 24px rgba(0,0,0,0.35);
+}
+.pulse-timing-panel img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.pulse-label {
+  position: absolute;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.95);
+}
+.pulse-label.t1 { left: 6.2%; top: 48%;}
+.pulse-label.t2 { left: 17.7%; top: 28%;}
+.pulse-label.period {
+  top: 4%;
+  left: 15.8%;
+  color: var(--accent);
+}
+.pulse-bracket {
+  position: absolute;
+  height: 18px;
+  border-top: 3px solid var(--accent);
+  border-left: 3px solid var(--accent);
+  border-right: 3px solid var(--accent);
+}
+.pulse-bracket.t1 { left: 4.3%; width: 3.7%; top: 59%;}
+.pulse-bracket.t2 { left: 8.1%; width: 19.2%; top: 40%;}
+.pulse-bracket.period {
+  top: 15%;
+  left: 4.3%;
+  width: 23%;
+  border-color: var(--accent);
+}
+
+/* ── PWM diagrams ─────────────────────────────────────────
+   The row diagrams are generated from servo-position-pwm.png by
+   scripts/crop-servo-pwm.py so the uneven source spacing does not
+   need fragile CSS crop offsets.
+   ──────────────────────────────────────────────────────── */
+.pwm-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+}
+.pwm-row {
+  display: grid;
+  grid-template-columns: 190px 1fr 90px;
+  gap: 18px;
+  align-items: center;
+}
+.pwm-label {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.pwm-label strong { color: var(--accent); font-size: 20px; display: block; margin-bottom: 2px; }
+.pwm-angle {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--result);
+  text-align: right;
+}
+.pwm-crop {
+  width: 100%;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px rgba(42,143,255,0.2);
+  overflow: hidden;
+}
+.pwm-crop img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+/* ── State comparison cards ──────────────────────────────── */
+.state-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  flex: 1;
+  align-items: center;
+}
+.state-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.state-card.active { border-color: var(--result); background: rgba(77,255,176,0.04); }
+.state-label {
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+.state-card.active .state-label { color: var(--result); }
+.state-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.state-key {
+  font-size: var(--small);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.state-val {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-mono);
+}
+.state-card.active .state-val { color: var(--result); }
+
+/* ── MCQ options ─────────────────────────────────────────── */
+.mcq-opts {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: var(--gap);
+}
+.mcq-opts li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: var(--body);
+  color: var(--text-muted);
+}
+.opt-key {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: 2px solid var(--accent-border);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* ── Design question slide ───────────────────────────────── */
+.design-frame {
+  background: var(--accent-dim);
+  border: 2px dashed var(--accent-border);
+  border-radius: 10px;
+  padding: 28px 32px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.design-frame p {
+  font-size: 22px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.7;
+}
+.design-challenge-grid .img-center {
+  height: auto;
+  align-items: flex-start;
+}
+.design-challenge-grid .design-frame {
+  flex: 0 0 auto;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 24px 28px;
+}
+.design-directions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.design-directions p {
+  text-align: left;
+  line-height: 1.45;
+}
+
+/* ── Timing formula table ────────────────────────────────── */
+.timing-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--gap-sm);
+}
+.timing-table th {
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--accent-border);
+  text-align: left;
+}
+.timing-table td {
+  padding: 10px 16px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(42,143,255,0.07);
+  vertical-align: middle;
+}
+.timing-table td:first-child {
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.timing-table td strong { color: var(--text); }
+
+/* ── Project requirements list ───────────────────────────── */
+.req-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: var(--gap);
+}
+.req-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.req-num {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.req-list li strong { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ============================================================
+     SLIDE 01 · TITLE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:700px;height:700px;background:radial-gradient(circle,rgba(42,143,255,0.13) 0%,transparent 70%);top:-240px;left:-200px;"></div>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(0,200,255,0.07) 0%,transparent 70%);bottom:-100px;right:10%;"></div>
+
+  <div class="slide-inner slide-center">
+    <div class="trace-deco">
+      <svg viewBox="0 0 420 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M420 200 L300 200 L300 380" stroke="rgba(42,143,255,0.18)" stroke-width="1.5"/>
+        <rect x="270" y="380" width="60" height="16" rx="2" fill="none" stroke="rgba(42,143,255,0.45)" stroke-width="2.5"/>
+        <rect x="270" y="406" width="60" height="16" rx="2" fill="none" stroke="rgba(42,143,255,0.45)" stroke-width="2.5"/>
+        <path d="M300 422 L300 560 L420 560" stroke="rgba(42,143,255,0.18)" stroke-width="1.5"/>
+        <line x1="360" y1="200" x2="420" y2="200" stroke="rgba(42,143,255,0.1)" stroke-width="1"/>
+        <circle cx="300" cy="200" r="5" fill="rgba(42,143,255,0.4)"/>
+        <circle cx="300" cy="560" r="4" fill="rgba(42,143,255,0.3)"/>
+      </svg>
+    </div>
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; DC Circuits &nbsp;·&nbsp; Final Project Kickoff</span>
+    <h1 class="title-h1">Signals &amp;<br><span class="accent">Motion</span></h1>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 02 · MOTOR DESIGN RECALL — Resonance FRQ
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:2:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What features make a motor “good” for a task?","order":0,"responseTimeLimitMs":60000}]}'>
+
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.07) 0%,transparent 70%);top:-60px;right:-80px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">FRQ &nbsp;·&nbsp; Motor Design Recall</span>
+    <h2>What features make a motor <span class="accent">"good"</span> for a task?</h2>
+    <div class="callout" style="margin-top: var(--gap-lg); max-width: 760px;">
+      What would make you choose one motor over another?
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 03 · DESIGN REQUIREMENTS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Design Requirements</span>
+    <div class="split split-50 split-top" style="margin-top: var(--gap);">
+      <div>
+        <h2>Motors are classified by:</h2>
+        <ul class="bullets" style="margin-top: var(--gap);">
+          <li class="fragment fade-up"><strong>Speed:</strong> how fast the shaft rotates</li>
+          <li class="fragment fade-up"><strong>Torque:</strong> how much force it can apply</li>
+          <li class="fragment fade-up"><strong>Control:</strong> how easy it is to start, stop, and direct</li>
+          <li class="fragment fade-up"><strong>Precision:</strong> how accurately it reaches a target</li>
+        </ul>
+      </div>
+      <div>
+        <div class="callout fragment fade-up" style="margin-top: 8px;">
+          <strong>Which motor is best if you need:</strong>
+          <ul class="bullets" style="margin-top: var(--gap-sm);">
+            <li>Precise position</li>
+            <li>Repeatable movement</li>
+            <li>Simple control, no complex programming</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 04 · A CHOICE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:800px;height:800px;background:radial-gradient(circle,rgba(42,143,255,0.10) 0%,transparent 70%);top:-300px;left:-300px;"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">The Answer</span>
+    <h1 class="title-h1 fragment fade-up"><span class="accent">Servo</span> Motor</h1>
+    <p class="subtitle fragment fade-up" style="margin-top: var(--gap);">// Precise position &nbsp;·&nbsp; Simple signal control &nbsp;·&nbsp; Built-in feedback</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 05 · WHAT IS A SERVO?
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Servo Motor</span>
+    <h2>What is a Servo?</h2>
+    <p class="slide-intro" style="margin-top: var(--gap-sm);">A servo motor combines a simple DC motor with a position sensor and a control circuit that work together to reach and hold a specific angle.</p>
+    <ul class="bullets" style="margin-top: var(--gap);">
+      <li class="fragment fade-up">It <strong>moves to a position</strong> when it receives a command signal.</li>
+      <li class="fragment fade-up">It <strong>holds that position</strong> with force, even if something pushes against it.</li>
+      <li class="fragment fade-up">It does <strong>not spin continuously</strong> like a DC motor. It rotates to an angle and stops.</li>
+      <li class="fragment fade-up">It often has a <strong>built-in gear train</strong> for increased torque.</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 06 · WHAT CONTROLS IT?
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Control Signals</span>
+    <h2>What controls the servo?</h2>
+    <div class="formula-block fragment fade-up" style="margin-top: var(--gap-lg);">
+      <p style="font-size: var(--body); color: var(--text-muted); line-height: 1.7;">
+        A <strong style="color:var(--text);">DC motor</strong> is simply turned on and off. When power is applied it spins; when power is removed it stops.
+      </p>
+    </div>
+    <div class="formula-block fragment fade-up" style="margin-top: var(--gap);">
+      <p style="font-size: var(--body); color: var(--text-muted); line-height: 1.7;">
+        A <strong style="color:var(--accent);">servo motor</strong> is always powered. Power keeps it energized and able to hold position at all times.
+      </p>
+    </div>
+    <div class="callout-result fragment fade-up" style="margin-top: var(--gap);">
+      <strong>A special repeating signal</strong> tells the servo exactly which position to move to. The signal, not the power, controls the angle.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 07 · SIGNAL CONCEPT — PWM diagram (broken into rows)
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Pulse Width → Position</span>
+    <h2>Pulse Width Controls Position</h2>
+    <p class="slide-intro" style="margin-top: var(--gap-sm);">The signal repeats about every <strong>20 ms</strong>. The <span style="color:var(--accent);">length of the HIGH pulse</span> in each cycle tells the servo where to go.</p>
+    <div class="pwm-grid" style="margin-top: var(--gap);">
+      <div class="pwm-row fragment fade-up">
+	        <div class="pwm-label"><strong>~1 ms pulse</strong>Short HIGH time</div>
+	        <div class="pwm-crop row1">
+	          <img src="Signals_and_Motion_Assets/servo-position-pwm-0deg.png" alt="Short pulse, servo at 0 degrees">
+	        </div>
+        <div class="pwm-angle">0°</div>
+      </div>
+      <div class="pwm-row fragment fade-up">
+	        <div class="pwm-label"><strong>~1.5 ms pulse</strong>Medium HIGH time</div>
+	        <div class="pwm-crop row2">
+	          <img src="Signals_and_Motion_Assets/servo-position-pwm-90deg.png" alt="Medium pulse, servo at 90 degrees">
+	        </div>
+        <div class="pwm-angle">90°</div>
+      </div>
+      <div class="pwm-row fragment fade-up">
+	        <div class="pwm-label"><strong>~2 ms pulse</strong>Long HIGH time</div>
+	        <div class="pwm-crop row3">
+	          <img src="Signals_and_Motion_Assets/servo-position-pwm-180deg.png" alt="Long pulse, servo at 180 degrees">
+	        </div>
+        <div class="pwm-angle">180°</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 08 · LIVE DEMO
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:600px;height:600px;background:radial-gradient(circle,rgba(77,255,176,0.10) 0%,transparent 70%);top:-100px;right:-100px;"></div>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(42,143,255,0.08) 0%,transparent 70%);bottom:-80px;left:-80px;"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Live Demo</span>
+    <h1 class="title-h1" style="font-size: 72px;">Let&rsquo;s see how<br><span class="accent">pulse width</span><br>controls position.</h1>
+    <p class="subtitle" style="margin-top: var(--gap);">// Watch what happens when the button is pressed and released.</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 09 · WHAT DID YOU NOTICE? — Resonance FRQ
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:9:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What did you see happen when I pressed and released the button?","order":0,"responseTimeLimitMs":45000}]}'>
+
+  <div class="glow" style="width:500px;height:500px;background:radial-gradient(circle,rgba(42,143,255,0.07) 0%,transparent 70%);bottom:-60px;right:-80px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">FRQ &nbsp;·&nbsp; Observation</span>
+    <h2>What did you notice?</h2>
+    <div class="callout" style="margin-top: var(--gap-lg); max-width: 820px;">
+      <strong>Describe what you observed</strong> when the button was pressed and when it was released. Be as specific as you can about what the servo did.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 10 · FOCUS — button states compared
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Observation Focus</span>
+    <h2>What the signal looked like:</h2>
+    <div class="state-grid" style="margin-top: var(--gap);">
+      <div class="state-card fragment fade-up">
+	        <div class="state-label">Button Released</div>
+	        <div class="pwm-crop row1" style="margin-bottom: 10px;">
+	          <img src="Signals_and_Motion_Assets/servo-position-pwm-0deg.png" alt="Short pulse, servo at 0 degrees">
+	        </div>
+        <div class="state-row">
+          <div class="state-key">Pulse Width</div>
+          <div class="state-val">~1 ms</div>
+        </div>
+        <div class="state-row">
+          <div class="state-key">Servo Position</div>
+          <div class="state-val">~0°</div>
+        </div>
+      </div>
+      <div class="state-card active fragment fade-up">
+	        <div class="state-label">Button Pressed</div>
+	        <div class="pwm-crop row3" style="margin-bottom: 10px;">
+	          <img src="Signals_and_Motion_Assets/servo-position-pwm-180deg.png" alt="Long pulse, servo at 180 degrees">
+	        </div>
+        <div class="state-row">
+          <div class="state-key">Pulse Width</div>
+          <div class="state-val">~2 ms</div>
+        </div>
+        <div class="state-row">
+          <div class="state-key">Servo Position</div>
+          <div class="state-val">~180°</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout fragment fade-up" style="margin-top: var(--gap);">
+      Changing the pulse width by just <strong>1 ms</strong> swings the servo arm from one extreme to the other.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 11 · DESIGN CONNECTION — Resonance MCQ
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:11:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What property of the servo are we controlling with pulse width?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"Speed","isCorrect":false},{"id":"q1b","text":"Position","isCorrect":true},{"id":"q1c","text":"Power","isCorrect":false}]}]}'>
+
+  <div class="slide-inner">
+    <span class="slide-tag">MCQ &nbsp;·&nbsp; Design Connection</span>
+    <h2>What are we controlling?</h2>
+    <ul class="mcq-opts">
+      <li><span class="opt-key">A</span> Speed</li>
+      <li><span class="opt-key">B</span> Position</li>
+      <li><span class="opt-key">C</span> Power</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 12 · NEW PROBLEM
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Project Goal</span>
+    <h2>New problem to solve.</h2>
+    <p class="slide-intro" style="margin-top: var(--gap-sm);">Now that we know what a servo needs, let&rsquo;s define what our project must do.</p>
+    <ul class="req-list" style="margin-top: var(--gap);">
+      <li class="fragment fade-up"><span class="req-num">01</span><span>Create <strong>two distinct positions</strong> for the servo arm.</span></li>
+      <li class="fragment fade-up"><span class="req-num">02</span><span>Control those positions with <strong>a circuit we design</strong>, not pre-written code.</span></li>
+      <li class="fragment fade-up"><span class="req-num">03</span><span>Switch between positions using only analog components, <strong>not a microcontroller</strong>.</span></li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 13 · WHAT TOOL DO WE HAVE?
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Making the Signal</span>
+    <h2>What tool do we already have?</h2>
+    <p class="slide-intro" style="margin-top: var(--gap-sm);">To drive a servo, we need a circuit that creates a repeating signal: it pulses HIGH and LOW over and over, and the length of each HIGH pulse controls position.</p>
+    <div class="callout fragment fade-up" style="margin-top: var(--gap);">
+      <strong>Have we seen anything like that?</strong> Think back to the start of this unit. We built a circuit that turned something on and off repeatedly at a controlled rate.
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 14 · THE TOOL — 555 Timer + flasher image
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Tool</span>
+    <div class="split split-50 split-top" style="margin-top: var(--gap);">
+      <div>
+        <h2><span class="accent">555 Timer</span></h2>
+        <p style="font-size: var(--body); color: var(--text-muted); line-height: 1.7; margin-top: var(--gap);">
+          We used the 555 timer to make lights flash at the start of this unit. That circuit simply turned a load on and off, over and over, at a rate set by resistors and a capacitor.
+        </p>
+        <p style="font-size: var(--body); color: var(--text-muted); line-height: 1.7; margin-top: var(--gap);">
+          If we <span style="color:var(--accent);">speed up the timing</span> and <span style="color:var(--accent);">control the pulse length carefully</span>, that same circuit can generate the signal a servo needs.
+        </p>
+        <div class="callout-result fragment fade-up" style="margin-top: var(--gap);">
+          <strong>Different timing values will allow us to use the same chip to control the servo position.</strong> The servo signal is just a very fast, precisely timed version of the flasher.
+        </div>
+      </div>
+      <div class="img-center">
+        <img class="photo-img img-zoomable" src="Signals_and_Motion_Assets/555Flasher.png" alt="555 timer flasher circuit on breadboard" style="max-height: 460px; border-radius: 10px;">
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 15 · THE TOOL — 555 + diode circuit
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Controlling the Timing</span>
+    <div class="split split-40 split-top" style="margin-top: var(--gap);">
+      <div>
+        <h2>What controls the timing?</h2>
+        <p style="font-size: var(--body); color: var(--text-muted); line-height: 1.7; margin-top: var(--gap);">
+          Look at this version of the 555 circuit. I've added a diode D1 which separates the charge path from the discharge path. Adding the diode allows <span style="color:var(--accent);">R1 to control the HIGH time</span> and <span style="color:var(--accent);">R2 to control1 the LOW time</span> independently.
+        </p>
+        <div class="callout fragment fade-up" style="margin-top: var(--gap);">
+          <strong>This separation is important.</strong> For a servo, we need precise control over the HIGH pulse without affecting how often the signal repeats.
+        </div>
+      </div>
+      <div class="img-center">
+        <img class="c-img img-zoomable" src="Signals_and_Motion_Assets/Schematic_555-diode.png" alt="555 timer circuit with diode separating R1 and R2 paths" style="max-height: 500px;">
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 16 · TIMING RELATIONSHIP
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">555 Timer Timing</span>
+    <h2>The control signal has two parts.</h2>
+    <p class="slide-intro" style="margin-top: var(--gap-sm);">Every cycle of the 555 timer output consists of a HIGH phase and a LOW phase. Together they define how fast and how long the signal pulses.</p>
+    <div class="pulse-timing-panel fragment fade-up" style="margin-top: var(--gap);">
+      <img src="Signals_and_Motion_Assets/pulse.png" alt="Pulse train showing high time t1, low time t2, and one full period">
+      <div class="pulse-label t1">t<sub>1</sub></div>
+      <div class="pulse-label t2">t<sub>2</sub></div>
+      <div class="pulse-label period">period</div>
+      <div class="pulse-bracket t1" aria-hidden="true"></div>
+      <div class="pulse-bracket t2" aria-hidden="true"></div>
+      <div class="pulse-bracket period" aria-hidden="true"></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: var(--gap); margin-top: var(--gap);">
+      <div class="formula-block fragment fade-up">
+        <div class="formula-row"><span class="sym">t<sub>1</sub></span><span>=</span><span>HIGH time: the pulse the servo reads</span></div>
+        <div class="formula-row"><span class="sym">t<sub>2</sub></span><span>=</span><span>LOW time: the gap between pulses</span></div>
+      </div>
+      <div class="formula-block fragment fade-up">
+        <div class="formula-row">
+          <span>Period</span>
+          <span>=</span>
+          <span class="sym">t<sub>1</sub></span>
+          <span>+</span>
+          <span class="sym">t<sub>2</sub></span>
+        </div>
+        <p style="font-size: var(--small); color: var(--text-dim); margin-top: 8px;">How often the signal repeats. For a servo this should be about <span class="val" style="font-family:var(--font-mono);">20 ms</span>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 17 · WHAT MATTERS FOR A SERVO
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Timing Formulas</span>
+    <h2>Calculating the timing.</h2>
+    <table class="timing-table" style="margin-top: var(--gap);">
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Formula</th>
+          <th>Controls</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="fragment fade-up">
+          <td>t<sub>1</sub></td>
+          <td>0.693 &times; R<sub>1</sub> &times; C</td>
+          <td><strong>Servo position:</strong> the HIGH pulse width</td>
+        </tr>
+        <tr class="fragment fade-up">
+          <td>t<sub>2</sub></td>
+          <td>0.693 &times; R<sub>2</sub> &times; C</td>
+          <td>LOW time separating each pulse</td>
+        </tr>
+        <tr class="fragment fade-up">
+          <td>Period</td>
+          <td>t<sub>1</sub> + t<sub>2</sub></td>
+          <td>How often the signal repeats (~20 ms total)</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="display: flex; gap: var(--gap); margin-top: var(--gap);">
+      <div class="callout fragment fade-up" style="flex: 1;">
+        <strong>If R<sub>1</sub> increases,</strong> the capacitor charges more slowly. What happens to the pulse width?
+      </div>
+      <div class="callout fragment fade-up" style="flex: 1;">
+        <strong>If R<sub>2</sub> decreases,</strong> the capacitor discharges faster. What happens to the signal period?
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 18 · TWO POSITIONS, TWO R1s
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Design Problem</span>
+    <h2>Two positions need two pulse widths.</h2>
+    <p class="slide-intro" style="margin-top: var(--gap-sm);">Changing the pulse width means changing the charging resistor R<sub>1</sub>. A <span style="color:var(--accent);">larger R<sub>1</sub></span> slows the capacitor charge, making a <span style="color:var(--accent);">longer pulse</span>. A <span style="color:var(--result);">smaller R<sub>1</sub></span> allows faster charging, making a <span style="color:var(--result);">shorter pulse</span>.</p>
+    <div class="callout-warn fragment fade-up" style="margin-top: var(--gap-lg);">
+      <strong>Design question:</strong> How can we change the value of R<sub>1</sub> <em>while the circuit is running</em>, without stopping the signal?
+    </div>
+    <div class="callout fragment fade-up" style="margin-top: var(--gap);">
+      Think about components we have used. Is there something that can take a resistor in or out of a circuit using only a simple manual action?
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 19 · DESIGN YOUR CIRCUIT
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Design Challenge</span>
+    <h2>Design your circuit.</h2>
+    <p class="slide-intro" style="margin-top: var(--gap-sm);">Here is a basic 555 timing circuit. Use it as your starting point.</p>
+    <div class="split split-50 split-top design-challenge-grid" style="margin-top: var(--gap);">
+      <div class="img-center">
+        <img class="c-img img-zoomable" src="Signals_and_Motion_Assets/Schematic_555-diode.png" alt="555 timer circuit with diode separating R1 and R2 paths" style="max-height: 430px; border-radius: 8px;">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: var(--gap-sm);">
+        <div class="design-frame fragment fade-up">
+          <div class="design-directions">
+            <p>
+              Draw a version of the circuit that allows you to quickly <strong>switch between two different values of R<sub>1</sub></strong>.
+            </p>
+            <p>
+              Your circuit should produce <strong>two different pulse widths</strong> and move the servo to two distinct positions.
+            </p>
+            <p>
+              Label R<sub>1A</sub> and R<sub>1B</sub> for each position.
+            </p>
+            <p>
+              Show how the switch connects them. Identify which resistor creates the longer pulse and which creates the shorter pulse.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 20 · YOUR PROJECT
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:700px;height:700px;background:radial-gradient(circle,rgba(77,255,176,0.09) 0%,transparent 70%);bottom:-200px;right:-200px;"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Final Project</span>
+    <h2>Your Project.</h2>
+    <p class="slide-intro" style="margin-top: var(--gap-sm);">Build a VEX machine that does something useful using the circuit you just designed.</p>
+    <ul class="req-list" style="margin-top: var(--gap);">
+      <li class="fragment fade-up"><span class="req-num">01</span><span>Use <strong>one servo</strong> as the actuator that does the work.</span></li>
+      <li class="fragment fade-up"><span class="req-num">02</span><span>Build <strong>one control circuit</strong> using a 555 timer that creates two distinct pulse widths.</span></li>
+      <li class="fragment fade-up"><span class="req-num">03</span><span>Use <strong>resistance to control timing</strong>: no microcontrollers, no code.</span></li>
+      <li class="fragment fade-up"><span class="req-num">04</span><span>The machine should <strong>do something useful</strong>: a gate, a sorter, a clamp, a signal arm, or your own idea.</span></li>
+    </ul>
+  </div>
+</section>
+
+
+</div><!-- .slides -->
+</div><!-- .reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'signals-and-motion',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
