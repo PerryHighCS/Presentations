@@ -85,7 +85,7 @@ export function includeAllows(relPosix, isDir, rule) {
 }
 
 export async function loadManifestRules(rootDir, options = {}) {
-  const mode = options.mode === 'dev' ? 'dev' : 'publish';
+  const mode = ['dev', 'index', 'publish'].includes(options.mode) ? options.mode : 'publish';
   const manifestPaths = [];
 
   async function walk(dir) {
@@ -128,6 +128,14 @@ export async function loadManifestRules(rootDir, options = {}) {
         directive = 'include-dev';
       } else if (line.startsWith('exclude-dev ')) {
         directive = 'exclude-dev';
+      } else if (line.startsWith('include-publish ')) {
+        directive = 'include-publish';
+      } else if (line.startsWith('exclude-publish ')) {
+        directive = 'exclude-publish';
+      } else if (line.startsWith('include-index ')) {
+        directive = 'include-index';
+      } else if (line.startsWith('exclude-index ')) {
+        directive = 'exclude-index';
       } else if (line.startsWith('include ')) {
         directive = 'include';
       } else if (line.startsWith('exclude ')) {
@@ -149,7 +157,15 @@ export async function loadManifestRules(rootDir, options = {}) {
       }
       const joined = manifestBase !== '.' ? path.posix.join(manifestBase, normalized) : normalized;
       const isDevOnly = directive.endsWith('-dev');
+      const isIndexOnly = directive.endsWith('-index');
+      const isPublishOnly = directive.endsWith('-publish');
       if (isDevOnly && mode !== 'dev') {
+        continue;
+      }
+      if (isIndexOnly && mode !== 'index') {
+        continue;
+      }
+      if (isPublishOnly && mode !== 'publish') {
         continue;
       }
       const targetKey = directive.startsWith('include') ? 'includes' : 'excludes';
