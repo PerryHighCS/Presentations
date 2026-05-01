@@ -98,7 +98,7 @@ def main() -> int:
     parser.add_argument(
         "source",
         nargs="?",
-        default="Decks/AR1/DCCircuits/Signals_and_Motion_Assets/servo-position-pwm.png",
+        default="Decks/AR1/Final Project/Signals_and_Motion_Assets/servo-position-pwm.png",
         help="Source PNG containing the three servo PWM rows.",
     )
     parser.add_argument(
