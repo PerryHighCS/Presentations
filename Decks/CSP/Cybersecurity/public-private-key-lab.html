@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Public / Private Key Lab - AP CSP Cybersecurity</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+
+<style>
+.lab-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 28px;
+  width: 100%;
+  align-items: stretch;
+}
+
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 28px;
+  margin-bottom: 20px;
+}
+
+.lab-header h2 {
+  font-size: 46px;
+  margin-bottom: 8px;
+}
+
+.lab-header p {
+  font-size: 21px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  max-width: 830px;
+}
+
+.key-bank,
+.lab-workspace,
+.message-panel,
+.summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+}
+
+.key-bank {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.key-bank-title {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--text-dim);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.key-card {
+  border: 2px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  background: rgba(0,201,177,0.06);
+  color: var(--text);
+  cursor: grab;
+  user-select: none;
+  transition: border-color 120ms, background 120ms, transform 90ms, box-shadow 120ms;
+}
+
+.key-card:active {
+  cursor: grabbing;
+}
+
+.key-card:hover,
+.key-card.selected {
+  border-color: rgba(0,201,177,0.7);
+  background: rgba(0,201,177,0.12);
+  box-shadow: 0 0 18px rgba(0,201,177,0.15);
+}
+
+.key-card.selected {
+  transform: translateY(-2px);
+}
+
+.key-card.partner {
+  border-color: rgba(255,212,59,0.35);
+  background: rgba(255,212,59,0.06);
+}
+
+.key-card.partner:hover,
+.key-card.partner.selected {
+  border-color: rgba(255,212,59,0.78);
+  background: rgba(255,212,59,0.11);
+  box-shadow: 0 0 18px rgba(255,212,59,0.13);
+}
+
+.key-card.private {
+  background-image: repeating-linear-gradient(135deg, rgba(255,255,255,0.035) 0, rgba(255,255,255,0.035) 6px, transparent 6px, transparent 12px);
+}
+
+.key-name {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.key-token {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  color: var(--text-muted);
+}
+
+.lab-workspace {
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  min-height: 520px;
+}
+
+.lab-workspace.signature-mode {
+  grid-template-columns: 1fr 1fr;
+}
+
+.message-panel {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 210px;
+  transition: border-color 140ms, background 140ms, box-shadow 140ms;
+}
+
+.message-panel.wide {
+  grid-column: 1 / -1;
+  min-height: 160px;
+}
+
+.message-panel.failed {
+  border-color: rgba(255,107,107,0.62);
+  background: rgba(255,107,107,0.08);
+  box-shadow: 0 0 20px rgba(255,107,107,0.12);
+}
+
+.message-panel.failed .partner-label {
+  color: var(--red);
+}
+
+.message-panel.failed .lab-textarea {
+  border-color: rgba(255,107,107,0.6);
+  background: rgba(255,107,107,0.08);
+}
+
+.panel-label {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--teal);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.panel-label.partner-label {
+  color: var(--amber);
+}
+
+.lab-textarea {
+  width: 100%;
+  min-height: 105px;
+  resize: none;
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  background: rgba(4,12,11,0.55);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 22px;
+  line-height: 1.35;
+  padding: 14px;
+}
+
+.lab-textarea:focus {
+  outline: 2px solid rgba(0,201,177,0.55);
+  outline-offset: 2px;
+}
+
+.drop-zone {
+  border: 2px dashed rgba(226,245,242,0.24);
+  border-radius: 6px;
+  min-height: 122px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  transition: border-color 120ms, background 120ms;
+}
+
+.drop-zone.ready,
+.drop-zone:hover {
+  border-color: rgba(0,201,177,0.7);
+  background: rgba(0,201,177,0.08);
+}
+
+.drop-zone.locked {
+  opacity: 0.45;
+}
+
+.drop-title {
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.drop-hint {
+  font-size: 18px;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+
+.state-card {
+  border: 1px solid rgba(226,245,242,0.15);
+  border-radius: 6px;
+  background: rgba(4,12,11,0.52);
+  padding: 14px;
+  min-height: 74px;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  color: var(--text-muted);
+  word-break: break-word;
+}
+
+.state-card.success {
+  border-color: rgba(105,219,124,0.5);
+  color: var(--green);
+}
+
+.state-card.warning {
+  border-color: rgba(255,212,59,0.45);
+  color: var(--amber);
+}
+
+.feedback {
+  min-height: 42px;
+  border: 1px solid rgba(226,245,242,0.12);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 18px;
+  color: var(--text-muted);
+  background: rgba(4,12,11,0.36);
+}
+
+.feedback.good {
+  color: var(--green);
+  border-color: rgba(105,219,124,0.45);
+  background: rgba(105,219,124,0.06);
+}
+
+.feedback.bad {
+  color: var(--red);
+  border-color: rgba(255,107,107,0.45);
+  background: rgba(255,107,107,0.06);
+}
+
+.progress-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 550px;
+}
+
+.progress-chip {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-dim);
+  border: 1px solid rgba(226,245,242,0.16);
+  border-radius: 999px;
+  padding: 7px 11px;
+  background: rgba(4,12,11,0.38);
+}
+
+.progress-chip.done {
+  color: var(--green);
+  border-color: rgba(105,219,124,0.48);
+  background: rgba(105,219,124,0.07);
+}
+
+.flow-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.flow-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 22px;
+  min-height: 190px;
+}
+
+.flow-card h3 {
+  font-size: 29px;
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+
+.flow-card p {
+  font-size: 21px;
+  line-height: 1.5;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  width: 100%;
+}
+
+.summary-card {
+  padding: 22px 26px;
+}
+
+.summary-card h3 {
+  font-size: 30px;
+  color: var(--teal);
+  margin-bottom: 12px;
+}
+
+.summary-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary-list li {
+  font-size: 23px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.summary-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(226,245,242,0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  color: var(--text-dim);
+  flex: 0 0 auto;
+}
+
+.summary-list li.done .summary-mark {
+  color: var(--green);
+  border-color: rgba(105,219,124,0.55);
+  background: rgba(105,219,124,0.08);
+}
+
+.summary-list li.done {
+  color: var(--text);
+}
+
+.note-strip {
+  font-size: 18px;
+  color: var(--text-dim);
+  border-left: 3px solid var(--amber);
+  padding-left: 14px;
+  line-height: 1.45;
+}
+
+.locked-note {
+  color: var(--text-dim);
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.hidden-panel {
+  display: none;
+}
+
+.hidden-panel.visible {
+  display: flex;
+}
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal"><div class="slides">
+
+<!-- SLIDE 01 - Title -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:720px;height:720px;top:-90px;right:-130px;background:radial-gradient(circle,rgba(0,201,177,0.12),transparent 70%);"></div>
+    <span class="slide-tag">AP CSP Cybersecurity</span>
+    <h1 class="title-h1" style="font-size:88px;line-height:1.0;">Public / Private<br>Key Lab</h1>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:780px;">Explore how one key can lock a message, while a different matching key unlocks it.</p>
+  </div>
+</section>
+
+<!-- SLIDE 02 - Concept Setup -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept Setup</span>
+    <h2>Two Keys, Two Jobs</h2>
+    <div class="flow-row">
+      <div class="flow-card">
+        <h3>Public Key</h3>
+        <p>A public key is meant to be shared. Other people can use it to encrypt a message for the key owner or verify that the owner signed something.</p>
+      </div>
+      <div class="flow-card">
+        <h3>Private Key</h3>
+        <p>A private key stays secret. The owner uses it to decrypt messages sent to them or create a digital signature.</p>
+      </div>
+    </div>
+    <div class="callout accent-amber" style="margin-top:32px;padding:18px 24px;">
+      <h3>Lab Model</h3>
+      <p>This solo lab gives you a simulated partner so you can practice both sending and receiving without a classmate. The key tokens, ciphertext, and signatures are simplified for learning, but the process is the same.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 03 - Part 1A Interactive -->
+<section data-crypto-lab="encrypt">
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 28px;">
+    <div class="lab-header">
+      <div>
+        <span class="slide-tag" style="margin-bottom:10px;">Lab Part 1A</span>
+        <h2>Send: Encrypt a Message For Your Partner</h2>
+        <p>You need to send a message securely to your partner.</p>
+      </div>
+      <div class="progress-chips">
+        <span class="progress-chip" data-progress="encrypted">Encrypted for partner</span>
+      </div>
+    </div>
+
+    <div class="lab-grid">
+      <div class="key-bank" aria-label="Available key cards">
+        <div class="key-bank-title">Key Cards</div>
+        <div class="key-card student" draggable="true" tabindex="0" role="button" data-key-card="yourPublic">
+          <div class="key-name">Your Public Key</div>
+          <div class="key-token" data-token="yourPublic"></div>
+        </div>
+        <div class="key-card student private" draggable="true" tabindex="0" role="button" data-key-card="yourPrivate">
+          <div class="key-name">Your Private Key</div>
+          <div class="key-token" data-token="yourPrivate"></div>
+        </div>
+        <div class="key-card partner" draggable="true" tabindex="0" role="button" data-key-card="partnerPublic">
+          <div class="key-name">Partner Public Key</div>
+          <div class="key-token" data-token="partnerPublic"></div>
+        </div>
+        <p class="locked-note">Your partner's private key is not a tool you get to use. It is your partner's secret.</p>
+      </div>
+
+      <div class="lab-workspace">
+        <div class="message-panel">
+          <div class="panel-label">Plaintext</div>
+          <textarea class="lab-textarea" data-input="plaintext" aria-label="Plaintext message">Can you send me the homework link?</textarea>
+          <div class="drop-zone" tabindex="0" role="button" data-drop-zone="encrypt">
+            <div class="drop-title">Encryption Key</div>
+            <div class="drop-hint">Drag a key card here to use it to encrypt the message. You can also click a key, then click here. Use the key that belongs to the person who should be able to read it.</div>
+          </div>
+        </div>
+
+        <div class="message-panel">
+          <div class="panel-label partner-label">Sent State</div>
+          <div class="state-card" data-output="ciphertext">Ciphertext will appear here after encryption.</div>
+          <div class="feedback" data-feedback="encrypt">Waiting for your first key drop.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 04 - Part 1B Interactive -->
+<section data-crypto-lab="decrypt">
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 28px;">
+    <div class="lab-header">
+      <div>
+        <span class="slide-tag" style="margin-bottom:10px;">Lab Part 1B</span>
+        <h2>Receive: Decrypt Your Partner's Message</h2>
+        <p>Your partner sent you a secure response. They used your public key to send you a private message. Choose the key that pairs with the public key your partner used.</p>
+      </div>
+      <div class="progress-chips">
+        <span class="progress-chip" data-progress="decrypted">Decrypted received message</span>
+      </div>
+    </div>
+
+    <div class="lab-grid">
+      <div class="key-bank" aria-label="Available key cards">
+        <div class="key-bank-title">Key Cards</div>
+        <div class="key-card student" draggable="true" tabindex="0" role="button" data-key-card="yourPublic">
+          <div class="key-name">Your Public Key</div>
+          <div class="key-token" data-token="yourPublic"></div>
+        </div>
+        <div class="key-card student private" draggable="true" tabindex="0" role="button" data-key-card="yourPrivate">
+          <div class="key-name">Your Private Key</div>
+          <div class="key-token" data-token="yourPrivate"></div>
+        </div>
+        <div class="key-card partner" draggable="true" tabindex="0" role="button" data-key-card="partnerPublic">
+          <div class="key-name">Partner Public Key</div>
+          <div class="key-token" data-token="partnerPublic"></div>
+        </div>
+        <p class="locked-note">Your partner encrypted this for you using your public key. Your job is to open it.</p>
+      </div>
+
+      <div class="lab-workspace">
+        <div class="message-panel">
+          <div class="panel-label partner-label">Incoming Ciphertext</div>
+          <div class="state-card warning" data-output="replyCiphertext"></div>
+          <div class="drop-zone" tabindex="0" role="button" data-drop-zone="decrypt">
+            <div class="drop-title">Decrypt Received Message</div>
+            <div class="drop-hint">The message was locked with your public key. Which matching key opens it?</div>
+          </div>
+        </div>
+
+        <div class="message-panel">
+          <div class="panel-label">Decrypted Plaintext</div>
+          <div class="state-card" data-output="replyPlaintext">Plaintext will appear here after decryption.</div>
+          <div class="feedback" data-feedback="decrypt">Waiting for the key that only you should control.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 05 - Part 1C Interactive -->
+<section data-crypto-lab="encrypt2">
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 28px;">
+    <div class="lab-header">
+      <div>
+        <span class="slide-tag" style="margin-bottom:10px;">Lab Part 1C</span>
+        <h2>Practice: Encrypt One More Message</h2>
+        <p>Same key pair, new message. Pick the key that lets your partner read it later.</p>
+      </div>
+      <div class="progress-chips">
+        <span class="progress-chip" data-progress="encrypted2">Encrypted second message</span>
+      </div>
+    </div>
+
+    <div class="lab-grid">
+      <div class="key-bank" aria-label="Available key cards">
+        <div class="key-bank-title">Key Cards</div>
+        <div class="key-card student" draggable="true" tabindex="0" role="button" data-key-card="yourPublic">
+          <div class="key-name">Your Public Key</div>
+          <div class="key-token" data-token="yourPublic"></div>
+        </div>
+        <div class="key-card student private" draggable="true" tabindex="0" role="button" data-key-card="yourPrivate">
+          <div class="key-name">Your Private Key</div>
+          <div class="key-token" data-token="yourPrivate"></div>
+        </div>
+        <div class="key-card partner" draggable="true" tabindex="0" role="button" data-key-card="partnerPublic">
+          <div class="key-name">Partner Public Key</div>
+          <div class="key-token" data-token="partnerPublic"></div>
+        </div>
+        <p class="locked-note">The receiver's public key locks the message for that receiver.</p>
+      </div>
+
+      <div class="lab-workspace">
+        <div class="message-panel">
+          <div class="panel-label">Plaintext</div>
+          <textarea class="lab-textarea" data-input="plaintext2" aria-label="Second plaintext message">Please keep my project idea private until tomorrow.</textarea>
+          <div class="drop-zone" tabindex="0" role="button" data-drop-zone="encrypt2">
+            <div class="drop-title">Encryption Key</div>
+            <div class="drop-hint">Use the public key for the person who should be able to decrypt this.</div>
+          </div>
+        </div>
+
+        <div class="message-panel">
+          <div class="panel-label partner-label">Sent State</div>
+          <div class="state-card" data-output="ciphertext2">Ciphertext will appear here after encryption.</div>
+          <div class="feedback" data-feedback="encrypt2">Waiting for the receiver's public key.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 06 - Part 1D Interactive -->
+<section data-crypto-lab="decrypt2">
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 28px;">
+    <div class="lab-header">
+      <div>
+        <span class="slide-tag" style="margin-bottom:10px;">Lab Part 1D</span>
+        <h2>Practice: Decrypt One More Reply</h2>
+        <p>Your partner sent a second secure response. This time, decide faster: which key opens messages sent to you?</p>
+      </div>
+      <div class="progress-chips">
+        <span class="progress-chip" data-progress="decrypted2">Decrypted second reply</span>
+      </div>
+    </div>
+
+    <div class="lab-grid">
+      <div class="key-bank" aria-label="Available key cards">
+        <div class="key-bank-title">Key Cards</div>
+        <div class="key-card student" draggable="true" tabindex="0" role="button" data-key-card="yourPublic">
+          <div class="key-name">Your Public Key</div>
+          <div class="key-token" data-token="yourPublic"></div>
+        </div>
+        <div class="key-card student private" draggable="true" tabindex="0" role="button" data-key-card="yourPrivate">
+          <div class="key-name">Your Private Key</div>
+          <div class="key-token" data-token="yourPrivate"></div>
+        </div>
+        <div class="key-card partner" draggable="true" tabindex="0" role="button" data-key-card="partnerPublic">
+          <div class="key-name">Partner Public Key</div>
+          <div class="key-token" data-token="partnerPublic"></div>
+        </div>
+        <p class="locked-note">Your public key can be shared. Your private key is kept just for you.</p>
+      </div>
+
+      <div class="lab-workspace">
+        <div class="message-panel">
+          <div class="panel-label partner-label">Incoming Ciphertext</div>
+          <div class="state-card warning" data-output="replyCiphertext2"></div>
+          <div class="drop-zone" tabindex="0" role="button" data-drop-zone="decrypt2">
+            <div class="drop-title">Decrypt Received Message</div>
+            <div class="drop-hint">This was locked with your public key. Use the matching private key.</div>
+          </div>
+        </div>
+
+        <div class="message-panel">
+          <div class="panel-label">Decrypted Plaintext</div>
+          <div class="state-card" data-output="replyPlaintext2">Plaintext will appear here after decryption.</div>
+          <div class="feedback" data-feedback="decrypt2">Waiting for the key that should never be shared.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 07 - Part 1 Debrief -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Part 1 Debrief</span>
+    <h2>Why Sharing a Public Key Is Safe</h2>
+    <div class="two-col split-top">
+      <div class="callout accent-green" style="padding:22px 26px;">
+        <h3>Public keys lock messages</h3>
+        <p>When someone uses your public key, they can create a message intended for you. Sharing that public key does not give them the matching private key.</p>
+      </div>
+      <div class="callout accent-amber" style="padding:22px 26px;">
+        <h3>Private keys unlock messages</h3>
+        <p>The private key is the secret part. If it stays protected, only the owner can decrypt messages that were encrypted with the matching public key.</p>
+      </div>
+    </div>
+    <p style="font-size:24px;color:var(--text-muted);margin-top:34px;max-width:1120px;">Confidentiality means protecting who can read the message. In asymmetric encryption, you usually encrypt with the receiver's public key so only the receiver's private key can decrypt it.</p>
+  </div>
+</section>
+
+<!-- SLIDE 08 - Part 2 Interactive -->
+<section data-crypto-lab="signature">
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 28px;">
+    <div class="lab-header">
+      <div>
+        <span class="slide-tag" style="margin-bottom:10px;">Lab Part 2</span>
+        <h2>Sign a Message, Then Verify It</h2>
+        <p>First, create a valid signature and verify the original message.</p>
+      </div>
+      <div class="progress-chips">
+        <span class="progress-chip" data-progress="signed">Signed message</span>
+        <span class="progress-chip" data-progress="verified">Verified valid signature</span>
+      </div>
+    </div>
+
+    <div class="lab-grid">
+      <div class="key-bank" aria-label="Available key cards">
+        <div class="key-bank-title">Key Cards</div>
+        <div class="key-card student" draggable="true" tabindex="0" role="button" data-key-card="yourPublic">
+          <div class="key-name">Your Public Key</div>
+          <div class="key-token" data-token="yourPublic"></div>
+        </div>
+        <div class="key-card student private" draggable="true" tabindex="0" role="button" data-key-card="yourPrivate">
+          <div class="key-name">Your Private Key</div>
+          <div class="key-token" data-token="yourPrivate"></div>
+        </div>
+        <div class="key-card partner" draggable="true" tabindex="0" role="button" data-key-card="partnerPublic">
+          <div class="key-name">Partner Public Key</div>
+          <div class="key-token" data-token="partnerPublic"></div>
+        </div>
+        <p class="locked-note">Your partner's private key stays off the table. You can verify their public messages, but you cannot sign as them.</p>
+      </div>
+
+      <div class="lab-workspace signature-mode">
+        <div class="message-panel">
+          <div class="panel-label">Message To Sign</div>
+          <textarea class="lab-textarea" data-input="signMessage" aria-label="Message to sign">I approve sharing my project with the class.</textarea>
+          <div class="drop-zone" tabindex="0" role="button" data-drop-zone="sign">
+            <div class="drop-title">Sign Message</div>
+            <div class="drop-hint">Use the key that only you have to prove the message came from you.</div>
+          </div>
+        </div>
+
+        <div class="message-panel">
+          <div class="panel-label">Signed State</div>
+          <div class="state-card" data-output="signature">Signature token will appear here.</div>
+          <div class="drop-zone" tabindex="0" role="button" data-drop-zone="verify">
+            <div class="drop-title">Verify Signature</div>
+            <div class="drop-hint">Use the public key that matches the signer.</div>
+          </div>
+          <div class="feedback" data-feedback="signature">Waiting for a signature.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 09 - Part 2B Interactive -->
+<section data-crypto-lab="tamper">
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 28px;">
+    <div class="lab-header">
+      <div>
+        <span class="slide-tag" style="margin-bottom:10px;">Lab Part 2B</span>
+        <h2>Verify a Message That Changed</h2>
+        <p>The signature was created for the original message. Now test what happens when the message text is altered after signing.</p>
+      </div>
+      <div class="progress-chips">
+        <span class="progress-chip" data-progress="tampered">Tamper failed verification</span>
+      </div>
+    </div>
+
+    <div class="lab-grid">
+      <div class="key-bank" aria-label="Available key cards">
+        <div class="key-bank-title">Key Cards</div>
+        <div class="key-card student" draggable="true" tabindex="0" role="button" data-key-card="yourPublic">
+          <div class="key-name">Your Public Key</div>
+          <div class="key-token" data-token="yourPublic"></div>
+        </div>
+        <div class="key-card student private" draggable="true" tabindex="0" role="button" data-key-card="yourPrivate">
+          <div class="key-name">Your Private Key</div>
+          <div class="key-token" data-token="yourPrivate"></div>
+        </div>
+        <div class="key-card partner" draggable="true" tabindex="0" role="button" data-key-card="partnerPublic">
+          <div class="key-name">Partner Public Key</div>
+          <div class="key-token" data-token="partnerPublic"></div>
+        </div>
+        <p class="locked-note">A public key can verify a signature, but it should reject a changed message.</p>
+      </div>
+
+      <div class="lab-workspace">
+        <div class="message-panel">
+          <div class="panel-label">Tampered Signed Message</div>
+          <div class="state-card success" data-output="tamperSignature">Sign and verify the original message first.</div>
+          <div class="drop-zone" tabindex="0" role="button" data-drop-zone="verifyTampered">
+            <div class="drop-title">Verify Tampered Message</div>
+            <div class="drop-hint">Use the signer public key again. The key is right; the message is the part being tested.</div>
+          </div>
+        </div>
+
+        <div class="message-panel" data-panel="tamperedCopy">
+          <div class="panel-label partner-label">Tampered Copy</div>
+          <textarea class="lab-textarea" data-input="tamperedMessage" aria-label="Tampered message">I approve sharing my password with the class.</textarea>
+          <div class="feedback" data-feedback="tamper">This copy changed after signing.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 10 - Capstone Interactive -->
+<section data-crypto-lab="partnerSecure">
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 28px;">
+    <div class="lab-header">
+      <div>
+        <span class="slide-tag" style="margin-bottom:10px;">Capstone</span>
+        <h2>Verify and Decrypt a Partner Message</h2>
+        <p>Your partner signed a message, then encrypted it for you. First check who sent it, then open it.</p>
+      </div>
+      <div class="progress-chips">
+        <span class="progress-chip" data-progress="partnerVerified">Verified partner signature</span>
+        <span class="progress-chip" data-progress="partnerDecrypted">Decrypted partner message</span>
+      </div>
+    </div>
+
+    <div class="lab-grid">
+      <div class="key-bank" aria-label="Available key cards">
+        <div class="key-bank-title">Key Cards</div>
+        <div class="key-card student" draggable="true" tabindex="0" role="button" data-key-card="yourPublic">
+          <div class="key-name">Your Public Key</div>
+          <div class="key-token" data-token="yourPublic"></div>
+        </div>
+        <div class="key-card student private" draggable="true" tabindex="0" role="button" data-key-card="yourPrivate">
+          <div class="key-name">Your Private Key</div>
+          <div class="key-token" data-token="yourPrivate"></div>
+        </div>
+        <div class="key-card partner" draggable="true" tabindex="0" role="button" data-key-card="partnerPublic">
+          <div class="key-name">Partner Public Key</div>
+          <div class="key-token" data-token="partnerPublic"></div>
+        </div>
+        <p class="locked-note">Verify that your partner is the person who sent this message. Then decrypt the message that was sent to you.</p>
+      </div>
+
+      <div class="lab-workspace">
+        <div class="message-panel">
+          <div class="panel-label partner-label">Signed + Encrypted Package</div>
+          <div class="state-card warning" data-output="partnerSecurePackage"></div>
+          <div class="drop-zone" tabindex="0" role="button" data-drop-zone="verifyPartner">
+            <div class="drop-title">Verify Partner Signature</div>
+            <div class="drop-hint">Which public key proves this package was signed by your partner?</div>
+          </div>
+          <div class="feedback" data-feedback="partnerVerify">Waiting to verify the sender.</div>
+        </div>
+
+        <div class="message-panel">
+          <div class="panel-label">Decryption</div>
+          <div class="drop-zone" tabindex="0" role="button" data-drop-zone="decryptPartner">
+            <div class="drop-title">Decrypt Partner Message</div>
+            <div class="drop-hint">After verification, use the key that opens messages encrypted for you.</div>
+          </div>
+          <div class="state-card" data-output="partnerSecurePlaintext">Plaintext will appear here after verification and decryption.</div>
+          <div class="feedback" data-feedback="partnerDecrypt">Verify the signature first, then decrypt.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 11 - Wrap Up -->
+<section data-crypto-lab="summary">
+  <div class="slide-inner">
+    <span class="slide-tag">Wrap Up</span>
+    <h2>Public / Private Key Takeaways</h2>
+    <div class="summary-grid">
+      <div class="summary-card">
+        <h3>Your Lab Progress</h3>
+        <ul class="summary-list">
+          <li data-summary="encrypted"><span class="summary-mark">-</span>Encrypted a message for a partner</li>
+          <li data-summary="decrypted"><span class="summary-mark">-</span>Decrypted a received message</li>
+          <li data-summary="encrypted2"><span class="summary-mark">-</span>Encrypted a second message for the partner</li>
+          <li data-summary="decrypted2"><span class="summary-mark">-</span>Decrypted a second received message</li>
+          <li data-summary="signed"><span class="summary-mark">-</span>Signed a message with your private key</li>
+          <li data-summary="verified"><span class="summary-mark">-</span>Verified a valid signature with your public key</li>
+          <li data-summary="tampered"><span class="summary-mark">-</span>Observed tampered-message verification fail</li>
+          <li data-summary="partnerVerified"><span class="summary-mark">-</span>Verified a signed partner message</li>
+          <li data-summary="partnerDecrypted"><span class="summary-mark">-</span>Decrypted a message sent to you</li>
+        </ul>
+      </div>
+      <div class="summary-card">
+        <h3>Remember</h3>
+        <ul class="bullets">
+          <li><strong>Encrypt with the receiver's public key</strong> to protect confidentiality.</li>
+          <li><strong>Decrypt with the receiver's private key</strong> because only the receiver should have it.</li>
+          <li><strong>Sign with your private key</strong> to attach proof that the message came from you.</li>
+          <li><strong>Verify with the matching public key</strong> to check authenticity and detect changes.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note-strip" style="margin-top:28px;">Real cryptography uses carefully designed algorithms, trusted libraries, and secure key management. This activity is a simplified model to make the roles of the keys visible.</p>
+  </div>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+function initPublicPrivateKeyLab(Reveal) {
+  var state = {
+    keys: buildKeys(),
+    plaintext: '',
+    ciphertext: '',
+    replyPlaintext: 'Yes. I sent it through the secure class portal.',
+    replyCiphertext: '',
+    plaintext2: '',
+    ciphertext2: '',
+    replyPlaintext2: 'Got it. I will keep your project idea private until tomorrow.',
+    replyCiphertext2: '',
+    signedMessage: '',
+    signature: '',
+    partnerSecurePlaintext: 'Meet me in the lab channel after class.',
+    partnerSecureCiphertext: '',
+    partnerSecureSignature: '',
+    selectedKey: null,
+    completed: {
+      encrypted: false,
+      decrypted: false,
+      encrypted2: false,
+      decrypted2: false,
+      signed: false,
+      verified: false,
+      tampered: false,
+      partnerVerified: false,
+      partnerDecrypted: false,
+    },
+  };
+
+  state.replyCiphertext = encryptText(state.replyPlaintext, state.keys.yourPublic);
+  state.replyCiphertext2 = encryptText(state.replyPlaintext2, state.keys.yourPublic);
+  state.partnerSecureCiphertext = encryptText(state.partnerSecurePlaintext, state.keys.yourPublic);
+  state.partnerSecureSignature = signatureFor(state.partnerSecurePlaintext, state.keys.partnerPrivate);
+
+  function buildKeys() {
+    var studentSeed = String(Math.floor(1000 + Math.random() * 9000));
+    var partnerSeed = String(Math.floor(1000 + Math.random() * 9000));
+    return {
+      yourPublic: 'PUB-ALX-' + studentSeed,
+      yourPrivate: 'PRIV-ALX-' + studentSeed,
+      partnerPublic: 'PUB-JRD-' + partnerSeed,
+      partnerPrivate: 'PRIV-JRD-' + partnerSeed,
+    };
+  }
+
+  function liveNodes(selector) {
+    return Array.prototype.filter.call(
+      document.querySelectorAll(selector),
+      function(el) { return !el.closest('#storyboard'); }
+    );
+  }
+
+  function liveSlide(kind) {
+    return liveNodes('[data-crypto-lab="' + kind + '"]')[0] || null;
+  }
+
+  function shortHash(text) {
+    var hash = 2166136261;
+    for (var i = 0; i < text.length; i += 1) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(16).toUpperCase().padStart(8, '0').slice(0, 8);
+  }
+
+  function encryptText(text, keyToken) {
+    var shifted = text.split('').map(function(ch, index) {
+      var code = ch.charCodeAt(0);
+      if (code < 32 || code > 126) return 'X';
+      return String.fromCharCode(33 + ((code - 32 + index + 11) % 94));
+    }).join('');
+    return 'CIPH<' + keyToken + '> ' + shifted;
+  }
+
+  function signatureFor(message, privateKey) {
+    var owner = privateKey.indexOf('PRIV-JRD-') === 0 ? 'JRD' : 'ALX';
+    return 'SIG-' + owner + '-' + shortHash(message + '|' + privateKey);
+  }
+
+  function setFeedback(slide, name, text, type) {
+    var el = slide.querySelector('[data-feedback="' + name + '"]');
+    if (!el) return;
+    el.textContent = text;
+    el.classList.remove('good', 'bad');
+    if (type) el.classList.add(type);
+  }
+
+  function output(slide, name, text, variant) {
+    var el = slide.querySelector('[data-output="' + name + '"]');
+    if (!el) return;
+    el.textContent = text;
+    el.classList.remove('success', 'warning');
+    if (variant) el.classList.add(variant);
+  }
+
+  function showPanel(slide, name) {
+    var panel = slide.querySelector('[data-panel="' + name + '"]');
+    if (panel) panel.classList.add('visible');
+  }
+
+  function updateTokens() {
+    liveNodes('[data-token]').forEach(function(el) {
+      el.textContent = state.keys[el.getAttribute('data-token')] || '';
+    });
+  }
+
+  function updateMessageOutputs() {
+    liveNodes('[data-output="replyCiphertext"]').forEach(function(el) {
+      el.textContent = state.replyCiphertext;
+      el.classList.add('warning');
+    });
+    liveNodes('[data-output="replyCiphertext2"]').forEach(function(el) {
+      el.textContent = state.replyCiphertext2;
+      el.classList.add('warning');
+    });
+    if (state.ciphertext) {
+      liveNodes('[data-output="ciphertext"]').forEach(function(el) {
+        el.textContent = state.ciphertext;
+        el.classList.add('success');
+      });
+    }
+    if (state.ciphertext2) {
+      liveNodes('[data-output="ciphertext2"]').forEach(function(el) {
+        el.textContent = state.ciphertext2;
+        el.classList.add('success');
+      });
+    }
+    if (state.completed.decrypted) {
+      liveNodes('[data-output="replyPlaintext"]').forEach(function(el) {
+        el.textContent = state.replyPlaintext;
+        el.classList.add('success');
+      });
+    }
+    if (state.completed.decrypted2) {
+      liveNodes('[data-output="replyPlaintext2"]').forEach(function(el) {
+        el.textContent = state.replyPlaintext2;
+        el.classList.add('success');
+      });
+    }
+    liveNodes('[data-output="tamperSignature"]').forEach(function(el) {
+      if (state.signature && state.signedMessage) {
+        var tamperedInput = liveNodes('[data-input="tamperedMessage"]')[0];
+        var tamperedMessage = tamperedInput && tamperedInput.value.trim()
+          ? tamperedInput.value.trim()
+          : 'I approve sharing my password with the class.';
+        el.textContent = state.signature + ' for "' + tamperedMessage + '"';
+        el.classList.add('success');
+      }
+    });
+    liveNodes('[data-output="partnerSecurePackage"]').forEach(function(el) {
+      el.textContent = state.partnerSecureSignature + ' + ' + state.partnerSecureCiphertext;
+      el.classList.add('warning');
+    });
+    if (state.completed.partnerDecrypted) {
+      liveNodes('[data-output="partnerSecurePlaintext"]').forEach(function(el) {
+        el.textContent = state.partnerSecurePlaintext;
+        el.classList.add('success');
+      });
+    }
+  }
+
+  function updateProgress() {
+    liveNodes('[data-progress]').forEach(function(chip) {
+      var key = chip.getAttribute('data-progress');
+      chip.classList.toggle('done', Boolean(state.completed[key]));
+    });
+
+    liveNodes('[data-summary]').forEach(function(item) {
+      var key = item.getAttribute('data-summary');
+      var done = Boolean(state.completed[key]);
+      item.classList.toggle('done', done);
+      var mark = item.querySelector('.summary-mark');
+      if (mark) mark.textContent = done ? 'OK' : '-';
+    });
+  }
+
+  function clearSelection() {
+    state.selectedKey = null;
+    liveNodes('[data-key-card]').forEach(function(card) {
+      card.classList.remove('selected');
+    });
+    liveNodes('[data-drop-zone]').forEach(function(zone) {
+      zone.classList.remove('ready');
+    });
+  }
+
+  function selectKey(card) {
+    clearSelection();
+    state.selectedKey = card.getAttribute('data-key-card');
+    card.classList.add('selected');
+    var slide = card.closest('section');
+    if (slide) {
+      Array.prototype.forEach.call(slide.querySelectorAll('[data-drop-zone]'), function(zone) {
+        zone.classList.add('ready');
+      });
+    }
+  }
+
+  function wrong(slide, feedbackName, text) {
+    setFeedback(slide, feedbackName, text, 'bad');
+    clearSelection();
+  }
+
+  function handleEncryptSlide(slide, action, keyId) {
+    if (action === 'encrypt') {
+      if (keyId !== 'partnerPublic') {
+        wrong(slide, 'encrypt', "A public key is needed to encrypt the message. You are locking this message so your partner can open it, but they won't have your private key.");
+        return;
+      }
+      var input = slide.querySelector('[data-input="plaintext"]');
+      state.plaintext = input && input.value.trim() ? input.value.trim() : 'Hello, partner.';
+      state.ciphertext = encryptText(state.plaintext, state.keys.partnerPublic);
+      state.completed.encrypted = true;
+      output(slide, 'ciphertext', state.ciphertext, 'success');
+      setFeedback(slide, 'encrypt', 'Encrypted. The public key locked the message for your partner.', 'good');
+      updateProgress();
+      clearSelection();
+    }
+  }
+
+  function handleSecondEncryptSlide(slide, action, keyId) {
+    if (action !== 'encrypt2') return;
+    if (keyId !== 'partnerPublic') {
+      wrong(slide, 'encrypt2', 'Use the partner public key again. You are locking this message for your partner, not for yourself.');
+      return;
+    }
+    var input = slide.querySelector('[data-input="plaintext2"]');
+    state.plaintext2 = input && input.value.trim() ? input.value.trim() : 'Please keep this private.';
+    state.ciphertext2 = encryptText(state.plaintext2, state.keys.partnerPublic);
+    state.completed.encrypted2 = true;
+    output(slide, 'ciphertext2', state.ciphertext2, 'success');
+    setFeedback(slide, 'encrypt2', 'Encrypted. Same rule: receiver public key for sending confidentially.', 'good');
+    updateProgress();
+    clearSelection();
+  }
+
+  function handleDecryptSlide(slide, action, keyId) {
+    if (action !== 'decrypt') return;
+    if (keyId !== 'yourPrivate') {
+      wrong(slide, 'decrypt', 'Your partner used your public key to encrypt the message. A private key that is paired with the public key is needed to decrypt it.');
+      return;
+    }
+    state.completed.decrypted = true;
+    output(slide, 'replyPlaintext', state.replyPlaintext, 'success');
+    setFeedback(slide, 'decrypt', 'Decrypted. Your public key let the partner send to you, but your private key did the opening.', 'good');
+    updateProgress();
+    clearSelection();
+  }
+
+  function handleSecondDecryptSlide(slide, action, keyId) {
+    if (action !== 'decrypt2') return;
+    if (keyId !== 'yourPrivate') {
+      wrong(slide, 'decrypt2', 'Use your private key again. Messages encrypted with your public key open with your matching private key.');
+      return;
+    }
+    state.completed.decrypted2 = true;
+    output(slide, 'replyPlaintext2', state.replyPlaintext2, 'success');
+    setFeedback(slide, 'decrypt2', 'Decrypted. The pattern held: your public key received, your private key opened.', 'good');
+    updateProgress();
+    clearSelection();
+  }
+
+  function handleSignatureSlide(slide, action, keyId) {
+    if (action === 'sign') {
+      if (keyId !== 'yourPrivate') {
+        wrong(slide, 'signature', 'A signature is something only a private key owner can create, using the key only they have.');
+        return;
+      }
+      var input = slide.querySelector('[data-input="signMessage"]');
+      state.signedMessage = input && input.value.trim() ? input.value.trim() : 'I approve this message.';
+      state.signature = signatureFor(state.signedMessage, state.keys.yourPrivate);
+      state.completed.signed = true;
+      output(slide, 'signature', state.signature + ' for "' + state.signedMessage + '"', 'success');
+      setFeedback(slide, 'signature', 'Signed. Now verify using the matching public key.', 'good');
+      updateProgress();
+      clearSelection();
+      return;
+    }
+
+    if (action === 'verify') {
+      if (!state.completed.signed) {
+        wrong(slide, 'signature', 'Create the signature first. Verification needs a signed message to check.');
+        return;
+      }
+      if (keyId !== 'yourPublic') {
+        wrong(slide, 'signature', 'Use a public key. Signatures should be verified by anyone, using a key that is publicly available.');
+        return;
+      }
+      var current = slide.querySelector('[data-input="signMessage"]').value.trim();
+      var expected = signatureFor(current, state.keys.yourPrivate);
+      if (expected === state.signature) {
+        state.completed.verified = true;
+        setFeedback(slide, 'signature', 'Verified. The signature matches your public key and this exact message.', 'good');
+      } else {
+        setFeedback(slide, 'signature', 'Verification failed because the signed message changed.', 'bad');
+      }
+      updateProgress();
+      clearSelection();
+      return;
+    }
+  }
+
+  function handleTamperSlide(slide, action, keyId) {
+    if (action === 'verifyTampered') {
+      if (!state.completed.verified) {
+        wrong(slide, 'tamper', 'Verify the original signed message first, then test the tampered copy.');
+        return;
+      }
+      if (keyId !== 'yourPublic') {
+        wrong(slide, 'tamper', 'Use the signer public key again. The key is right, but the message may not be.');
+        return;
+      }
+      var tampered = slide.querySelector('[data-input="tamperedMessage"]').value.trim();
+      var tamperedSignature = signatureFor(tampered, state.keys.yourPrivate);
+      var tamperedPanel = slide.querySelector('[data-panel="tamperedCopy"]');
+      if (tamperedSignature !== state.signature) {
+        state.completed.tampered = true;
+        if (tamperedPanel) tamperedPanel.classList.add('failed');
+        setFeedback(slide, 'tamper', 'Verification failed, which is the correct result. The message changed after it was signed.', 'good');
+      } else {
+        if (tamperedPanel) tamperedPanel.classList.remove('failed');
+        setFeedback(slide, 'tamper', 'This still matches because the text is identical to the signed message. Change a word and try again.', 'bad');
+      }
+      updateProgress();
+      clearSelection();
+    }
+  }
+
+  function handlePartnerSecureSlide(slide, action, keyId) {
+    if (action === 'verifyPartner') {
+      if (keyId !== 'partnerPublic') {
+        wrong(slide, 'partnerVerify', 'Use a public key that would match the private key only your partner has.');
+        return;
+      }
+      var expected = signatureFor(state.partnerSecurePlaintext, state.keys.partnerPrivate);
+      if (expected === state.partnerSecureSignature) {
+        state.completed.partnerVerified = true;
+        setFeedback(slide, 'partnerVerify', 'Verified. The signature matches your partner and this exact message.', 'good');
+      } else {
+        setFeedback(slide, 'partnerVerify', 'Verification failed. The package does not match the partner signature.', 'bad');
+      }
+      updateProgress();
+      clearSelection();
+      return;
+    }
+
+    if (action === 'decryptPartner') {
+      if (!state.completed.partnerVerified) {
+        wrong(slide, 'partnerDecrypt', 'Verify the partner signature first so you know who sent the message.');
+        return;
+      }
+      if (keyId !== 'yourPrivate') {
+        wrong(slide, 'partnerDecrypt', 'Your partner encrypted this message just for you. Use a key that only you have to decrypt it.');
+        return;
+      }
+      state.completed.partnerDecrypted = true;
+      output(slide, 'partnerSecurePlaintext', state.partnerSecurePlaintext, 'success');
+      setFeedback(slide, 'partnerDecrypt', 'Decrypted. You checked the sender and opened the message intended for you.', 'good');
+      updateProgress();
+      clearSelection();
+    }
+  }
+
+  function handleDrop(zone, keyId) {
+    var slide = zone.closest('section');
+    if (!slide || slide.closest('#storyboard')) return;
+    var action = zone.getAttribute('data-drop-zone');
+    if (slide.getAttribute('data-crypto-lab') === 'encrypt') {
+      handleEncryptSlide(slide, action, keyId);
+    } else if (slide.getAttribute('data-crypto-lab') === 'decrypt') {
+      handleDecryptSlide(slide, action, keyId);
+    } else if (slide.getAttribute('data-crypto-lab') === 'encrypt2') {
+      handleSecondEncryptSlide(slide, action, keyId);
+    } else if (slide.getAttribute('data-crypto-lab') === 'decrypt2') {
+      handleSecondDecryptSlide(slide, action, keyId);
+    } else if (slide.getAttribute('data-crypto-lab') === 'signature') {
+      handleSignatureSlide(slide, action, keyId);
+    } else if (slide.getAttribute('data-crypto-lab') === 'tamper') {
+      handleTamperSlide(slide, action, keyId);
+    } else if (slide.getAttribute('data-crypto-lab') === 'partnerSecure') {
+      handlePartnerSecureSlide(slide, action, keyId);
+    }
+  }
+
+  function wireSlide(slide) {
+    Array.prototype.forEach.call(slide.querySelectorAll('[data-key-card]'), function(card) {
+      card.addEventListener('dragstart', function(event) {
+        event.dataTransfer.setData('text/plain', card.getAttribute('data-key-card'));
+        selectKey(card);
+      });
+      card.addEventListener('click', function() {
+        selectKey(card);
+      });
+      card.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          selectKey(card);
+        }
+      });
+    });
+
+    Array.prototype.forEach.call(slide.querySelectorAll('[data-drop-zone]'), function(zone) {
+      zone.addEventListener('dragover', function(event) {
+        event.preventDefault();
+        zone.classList.add('ready');
+      });
+      zone.addEventListener('dragleave', function() {
+        if (!state.selectedKey) zone.classList.remove('ready');
+      });
+      zone.addEventListener('drop', function(event) {
+        event.preventDefault();
+        var keyId = event.dataTransfer.getData('text/plain') || state.selectedKey;
+        handleDrop(zone, keyId);
+      });
+      zone.addEventListener('click', function() {
+        if (state.selectedKey) handleDrop(zone, state.selectedKey);
+      });
+      zone.addEventListener('keydown', function(event) {
+        if ((event.key === 'Enter' || event.key === ' ') && state.selectedKey) {
+          event.preventDefault();
+          handleDrop(zone, state.selectedKey);
+        }
+      });
+    });
+
+    Array.prototype.forEach.call(slide.querySelectorAll('[data-input="tamperedMessage"]'), function(input) {
+      input.addEventListener('input', function() {
+        var panel = input.closest('[data-panel="tamperedCopy"]');
+        if (panel) panel.classList.remove('failed');
+        updateMessageOutputs();
+      });
+    });
+  }
+
+  updateTokens();
+  updateMessageOutputs();
+  [liveSlide('encrypt'), liveSlide('decrypt'), liveSlide('encrypt2'), liveSlide('decrypt2'), liveSlide('signature'), liveSlide('tamper'), liveSlide('partnerSecure')].forEach(function(slide) {
+    if (slide) wireSlide(slide);
+  });
+  updateProgress();
+
+  if (Reveal && Reveal.on) {
+    Reveal.on('slidechanged', function() {
+      updateMessageOutputs();
+      updateProgress();
+    });
+  }
+}
+
+initSyncDeckReveal({
+  deckId: 'public-private-key-lab',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    initPublicPrivateKeyLab(Reveal);
+  },
+});
+</script>
+</body>
+</html>
