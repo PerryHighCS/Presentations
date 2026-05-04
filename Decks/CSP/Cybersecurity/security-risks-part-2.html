@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Risks Part 2 — AP CSP Unit 10 Lesson 7</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+
+<style>
+/* ── Definition cards ────────────────────────────────────────────── */
+
+.def-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 18px 26px;
+}
+.def-term {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+.def-text {
+  font-size: 19px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ── Exploration step cards ──────────────────────────────────────── */
+
+.step-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  padding: 14px 20px;
+}
+.step-card h3 { color: var(--teal); font-size: var(--h3); margin-bottom: 8px; }
+.step-card p, .step-card li { font-size: 20px; }
+
+/* ── Game / CTA slide ────────────────────────────────────────────── */
+
+.game-link {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--teal);
+  background: var(--bg-card);
+  border: 2px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 18px 40px;
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  transition: border-color 150ms, background 150ms, box-shadow 150ms;
+}
+.game-link:hover {
+  border-color: rgba(0,201,177,0.6);
+  background: rgba(0,201,177,0.08);
+  box-shadow: 0 0 24px rgba(0,201,177,0.2);
+  color: var(--teal);
+}
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal"><div class="slides">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 01 · Title
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:700px;height:700px;top:-80px;right:-120px;background:radial-gradient(circle,rgba(0,201,177,0.10),transparent 70%);"></div>
+    <span class="slide-tag">Unit 10 · Lesson 7</span>
+    <h1 class="title-h1" style="font-size:88px;line-height:1.0;">Security Risks<br>Part 2</h1>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:720px;">Data breaches, digital footprints, and understanding your online exposure.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 02 · Activity Intro — Video Review
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Activity</span>
+    <h2>Reviewing the Security Risks</h2>
+    <div style="display:flex;flex-direction:column;gap:var(--gap);">
+      <p>Last class, we investigated a few security risks: <span style="color:var(--teal);">phishing</span>, <span style="color:var(--teal);">keylogging</span>, and <span style="color:var(--teal);">malware</span>. Before we move on, let us watch a short video to review and connect those ideas.</p>
+      <div class="callout accent-amber" style="padding:18px 24px;">
+        <p>As you watch, think about which security risk feels most relevant to your own life, and why. We will come back to that question.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 03 · Video Sync — Security Risks Review
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="video-sync"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="video-sync:3:0"
+  data-activity-options='{"sourceUrl":"https://youtu.be/AuYNXgO_f3Y"}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Video</span>
+    <h2 style="margin-bottom:var(--gap);">Security Risks Review</h2>
+    <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+    <p style="margin-top:var(--gap-sm);font-size:19px;color:var(--text-muted);">Watch for: the different types of attacks, how they target users, and what the warning signs look like.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 04 · Activity — Data Breach Visualization
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;height:100%;">
+    <span class="slide-tag">Activity</span>
+    <h2 style="font-size:44px;margin-bottom:var(--gap);">Data Breach Exploration</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-lg);align-items:start;">
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <div class="callout accent-amber" style="padding:16px 22px;">
+          <h3>Explore the Visualization</h3>
+          <p>Visit <a href="https://informationisbeautiful.net/visualizations/worlds-biggest-data-breaches-hacks/" target="_blank" style="color:var(--amber);font-family:var(--font-mono);font-size:17px;word-break:break-all;">informationisbeautiful</a> to see a visualization of the world's biggest data breaches and scroll from the bottom (year 2004) upward through time.</p>
+        </div>
+        <p style="font-size:var(--small);color:var(--text-dim);">Fill in your activity guide as you explore. Notice the scale and color coding of each breach.</p>
+      </div>
+      <div class="callout" style="padding:18px 22px;">
+        <h3>Discussion Questions</h3>
+        <ul class="bullets" style="margin-top:8px;">
+          <li>What do you notice about the <span style="color:var(--amber);">size and frequency</span> of data breaches over time?</li>
+          <li>What <span style="color:var(--amber);">types of companies</span> appear most often?</li>
+          <li>Why do you think these companies are <span style="color:var(--amber);">frequent targets</span>?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 05 · Activity — Personal Research
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;height:100%;">
+    <span class="slide-tag">Activity</span>
+    <h2 style="font-size:44px;margin-bottom:var(--gap);">Data Breach Exploration</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-lg);align-items:start;">
+      <div class="callout accent-amber" style="padding:16px 22px;">
+        <h3>Personal Research</h3>
+        <p>Use the <span style="color:var(--amber);">search bar</span> on the visualization (top right) to find a website you visit frequently. See if it has ever been part of a breach.</p>
+      </div>
+      <div class="callout" style="padding:16px 22px;">
+        <h3>Record Your Findings</h3>
+        <ul class="bullets" style="margin-top:8px;">
+          <li>Was the site <span style="color:var(--amber);">hacked</span>?</li>
+          <li>What type of <span style="color:var(--amber);">data was stolen</span>?</li>
+          <li>Click the article link, or search Google, to find out how the breach happened.</li>
+          <li>Fill in the <span style="color:var(--amber);">activity guide</span> with what you found.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 06 · Activity — Your Digital Self: Think Like a Researcher
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Activity</span>
+    <h2>Your Digital Self</h2>
+    <div style="display:flex;flex-direction:column;gap:var(--gap);">
+      <p>Every time you post, comment, sign up for something, or appear on a website, you leave behind information. That collection of information is called your <span style="color:var(--teal);">digital footprint</span>.</p>
+      <div class="callout accent-amber" style="padding:18px 24px;">
+        <h3>Think Like a Researcher</h3>
+        <p>Imagine someone is researching you online. What information would they find? What could they learn by <span style="color:var(--amber);">connecting that information together</span>?</p>
+      </div>
+      <p>In the next few slides, you are going to actually do this search on yourself and record what you find.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 07 · Activity — Conduct Your Search
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;height:100%;">
+    <span class="slide-tag">Activity</span>
+    <h2 style="font-size:44px;margin-bottom:var(--gap);">Your Digital Self: Conduct Your Search</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-lg);align-items:start;">
+      <div class="callout accent-amber" style="padding:16px 22px;">
+        <h3>Conduct Your Search</h3>
+        <ul class="bullets" style="margin-top:8px;">
+          <li>Start by searching your <span style="color:var(--amber);">full name</span> on a search engine.</li>
+          <li>Add more details to narrow the search, like your city or school.</li>
+          <li>Check social media, school websites, or public directories.</li>
+        </ul>
+      </div>
+      <div class="callout" style="padding:16px 22px;">
+        <h3>Record Your Findings</h3>
+        <ul class="bullets" style="margin-top:8px;">
+          <li>Write down any <span style="color:var(--teal);">information you find</span> about yourself.</li>
+          <li>Include where you found it: the website or source.</li>
+          <li>If you know something is online but cannot see it right now, still record it.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout accent-amber fragment fade-up" style="padding:16px 22px;margin-top:var(--gap);">
+      <p>Based on what you found, what <span style="color:var(--amber);">bigger picture</span> could someone piece together about you?</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 08 · Activity — Evaluate Your Risk
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;height:100%;">
+    <span class="slide-tag">Activity</span>
+    <h2 style="font-size:44px;margin-bottom:var(--gap);">Your Digital Self: Evaluate Your Risk</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-lg);align-items:start;">
+      <div class="callout" style="padding:18px 22px;">
+        <h3>Evaluate Your Risk</h3>
+        <ul class="bullets" style="margin-top:8px;">
+          <li>Which piece of information seems like the <span style="color:var(--amber);">biggest threat</span> to your privacy or security?</li>
+          <li>Why is it <span style="color:var(--amber);">risky</span>?</li>
+        </ul>
+      </div>
+      <div class="callout accent-amber" style="padding:18px 22px;">
+        <h3>See How Easy It Is</h3>
+        <p>Visit <a href="https://aboutmyinfo.org/identity" target="_blank" style="color:var(--amber);font-family:var(--font-mono);">aboutmyinfo.org/identity</a> and enter just your <span style="color:var(--amber);">gender</span>, <span style="color:var(--amber);">birth date</span>, and <span style="color:var(--amber);">ZIP code</span>. See how easily small pieces of data can uniquely identify you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 09 · Resonance FRQ — Digital Footprint Reflection (2-min)
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:9:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"After completing this activity, how has your understanding of your digital footprint changed? What steps, if any, would you take to better protect your personal information online?","order":0,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">FRQ</span>
+    <h2 style="margin-bottom:var(--gap);">Reflecting on Your Digital Footprint</h2>
+    <div class="frq-box">
+      <p>After completing this activity, how has your understanding of your <span style="color:var(--amber);">digital footprint</span> changed? What steps, if any, would you take to better <span style="color:var(--amber);">protect your personal information</span> online?</p>
+    </div>
+    <p style="font-size:var(--small);color:var(--text-dim);margin-top:var(--gap);">Think about what you found in your search, what surprised you, and what felt uncomfortable to see.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 10 · Wrap Up — Gimkit
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:600px;height:600px;top:-60px;left:-80px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 70%);"></div>
+    <span class="slide-tag">Wrap Up</span>
+    <h1 class="title-h1" style="font-size:80px;line-height:1.05;margin-bottom:var(--gap-lg);">Let's Play!</h1>
+    <a class="game-link" href="https://gimkit.com/login" target="_blank">gimkit.com/login</a>
+  </div>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'security-risks-part-2',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>

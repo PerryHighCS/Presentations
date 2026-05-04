@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Risks Part 1 — AP CSP Unit 10 Lesson 6</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+
+<style>
+/* ── Countdown timer ─────────────────────────────────────────────── */
+
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 96px;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1;
+  letter-spacing: -2px;
+  text-align: center;
+  padding: 8px 0;
+  text-shadow: 0 0 32px rgba(0,201,177,0.35);
+  transition: color 0.4s, text-shadow 0.4s;
+}
+.timer-display.warning {
+  color: var(--amber);
+  text-shadow: 0 0 32px rgba(255,212,59,0.4);
+}
+.timer-display.expired {
+  color: var(--red);
+  text-shadow: 0 0 32px rgba(255,107,107,0.4);
+}
+
+.timer-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.timer-btn {
+  padding: 10px 24px;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 2px solid;
+  cursor: pointer;
+  transition: background 100ms, box-shadow 100ms, transform 80ms;
+  letter-spacing: 0.04em;
+  background: transparent;
+}
+.timer-btn:not(:disabled):active { transform: translateY(1px); }
+.timer-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+
+.timer-btn-start { color: var(--green); border-color: var(--green); }
+.timer-btn-start:not(:disabled):hover {
+  background: rgba(105,219,124,0.14);
+  box-shadow: 0 0 14px rgba(105,219,124,0.2);
+}
+
+.timer-btn-stop { color: var(--amber); border-color: var(--amber); }
+.timer-btn-stop:not(:disabled):hover {
+  background: rgba(255,212,59,0.14);
+  box-shadow: 0 0 14px rgba(255,212,59,0.2);
+}
+
+.timer-btn-reset { color: var(--text-muted); border-color: var(--teal-border); }
+.timer-btn-reset:not(:disabled):hover {
+  background: rgba(226,245,242,0.06);
+  color: var(--text);
+}
+
+/* ── Group assignment cards ──────────────────────────────────────── */
+
+.group-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: border-color 120ms, background 120ms;
+}
+a.group-card:hover {
+  border-color: rgba(0,201,177,0.6);
+  background: rgba(0,201,177,0.06);
+}
+.group-num {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--teal);
+  min-width: 36px;
+  text-align: center;
+}
+.group-name {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+}
+.group-level {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+
+/* ── Definition cards (vocabulary wrap-up) ───────────────────────── */
+
+.def-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 18px 26px;
+}
+.def-term {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+.def-text {
+  font-size: 19px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal"><div class="slides">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 01 · Title
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:700px;height:700px;top:-80px;right:-120px;background:radial-gradient(circle,rgba(0,201,177,0.10),transparent 70%);"></div>
+    <span class="slide-tag">Unit 10 · Lesson 6</span>
+    <h1 class="title-h1" style="font-size:88px;line-height:1.0;">Security Risks<br>Part 1</h1>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:720px;">Phishing, keylogging, malware, and the tactics attackers use to target people.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 02 · Resonance FRQ — Suspicious Messages (3-min timer)
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:2:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Have you ever received an email or a text message that looked suspicious? Have you ever been unsure if you should open the message or click on a link? What are the things that made you suspicious?","order":0,"responseTimeLimitMs":180000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">FRQ</span>
+    <h2 style="margin-bottom:var(--gap);">Suspicious Messages</h2>
+    <div class="frq-box">
+      <p>Have you ever received an email or a text message that looked <span style="color:var(--amber);">suspicious</span>? Have you ever been unsure if you should open the message or click on a link? What are the things that made you <span style="color:var(--amber);">suspicious</span>?</p>
+    </div>
+    <p style="font-size:var(--small);color:var(--text-dim);margin-top:var(--gap);">Think about specific details: the sender's name, the subject line, links, attachments, or the tone of the message.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 03 · Activity — Code Studio Research (20-min countdown)
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;height:100%;">
+    <span class="slide-tag">Activity</span>
+    <h2 style="font-size:44px;margin-bottom:var(--gap);">Explore Your Security Topic</h2>
+    <div style="display:grid;grid-template-columns:1fr 400px;gap:44px;align-items:start;">
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <div class="callout accent-amber" style="padding:16px 22px;">
+          <h3>Do This</h3>
+          <p>Navigate to your assigned level on Code Studio. Look at the examples and read the articles, then create a <span style="color:var(--amber);">PSA (Public Service Announcement)</span> slide. Each person in the group makes their own slide.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <a class="group-card" href="https://learn.mycode.run/link/xnmnk" target="_blank" style="text-decoration:none;">
+            <div class="group-num">1</div>
+            <div>
+              <div class="group-name">Keylogging</div>
+              <div class="group-level">learn.mycode.run/link/xnmnk</div>
+            </div>
+          </a>
+          <a class="group-card" href="https://learn.mycode.run/link/xnmng" target="_blank" style="text-decoration:none;">
+            <div class="group-num">2</div>
+            <div>
+              <div class="group-name">Phishing</div>
+              <div class="group-level">learn.mycode.run/link/xnmng</div>
+            </div>
+          </a>
+          <a class="group-card" href="https://learn.mycode.run/link/xnmnh" target="_blank" style="text-decoration:none;">
+            <div class="group-num">3</div>
+            <div>
+              <div class="group-name">Malware</div>
+              <div class="group-level">learn.mycode.run/link/xnmnh</div>
+            </div>
+          </a>
+        </div>
+        <div class="callout" style="padding:14px 20px;">
+          <h3>Your PSA slide must cover:</h3>
+          <ul class="bullets" style="margin-top:8px;">
+            <li>What is the <span style="color:var(--amber);">security risk</span>?</li>
+            <li>How are <span style="color:var(--amber);">people targeted</span>?</li>
+            <li>What are the <span style="color:var(--amber);">warning signs</span>?</li>
+          </ul>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding-top:16px;">
+        <div class="timer-label">Time Remaining</div>
+        <div class="timer-display" id="t3-display">20:00</div>
+        <div class="timer-controls">
+          <button class="timer-btn timer-btn-start" id="t3-start">Start</button>
+          <button class="timer-btn timer-btn-stop"  id="t3-stop"  disabled>Stop</button>
+          <button class="timer-btn timer-btn-reset" id="t3-reset">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 04 · Activity — Jigsaw Share (10-min countdown)
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;height:100%;">
+    <span class="slide-tag">Activity</span>
+    <h2 style="font-size:44px;margin-bottom:var(--gap);">Share What You Learned</h2>
+    <div style="display:grid;grid-template-columns:1fr 400px;gap:44px;align-items:start;">
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <div class="callout accent-amber" style="padding:16px 22px;">
+          <h3>Do This</h3>
+          <p>Form new groups so that each group has one person from each topic area. Share your PSA slides with one another and give an explanation of your security risk.</p>
+        </div>
+        <div class="callout" style="padding:16px 22px;">
+          <h3>Make Sure to Cover:</h3>
+          <ul class="bullets" style="margin-top:8px;">
+            <li>What is the <span style="color:var(--amber);">security risk</span>?</li>
+            <li>How are <span style="color:var(--amber);">people targeted</span>?</li>
+            <li>What are the <span style="color:var(--amber);">warning signs</span>?</li>
+          </ul>
+        </div>
+        <p style="font-size:var(--small);color:var(--text-dim);">Fill in the rest of the table on your first slide as each person shares. Make sure you have notes on all three security risks before time is up.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding-top:16px;">
+        <div class="timer-label">Time Remaining</div>
+        <div class="timer-display" id="t4-display">10:00</div>
+        <div class="timer-controls">
+          <button class="timer-btn timer-btn-start" id="t4-start">Start</button>
+          <button class="timer-btn timer-btn-stop"  id="t4-stop"  disabled>Stop</button>
+          <button class="timer-btn timer-btn-reset" id="t4-reset">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 05 · Wrap Up — Key Vocabulary
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding:36px 72px 24px;height:100%;">
+    <span class="slide-tag">Wrap Up</span>
+    <h2 style="font-size:44px;margin-bottom:var(--gap);">Key Vocabulary</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+      <div class="def-card">
+        <div class="def-term">Phishing</div>
+        <div class="def-text">A technique that attempts to trick a user into providing personal information. That information can then be used to access sensitive online resources, such as bank accounts and email.</div>
+      </div>
+      <div class="def-card fragment fade-up">
+        <div class="def-term">Keylogging</div>
+        <div class="def-text">The use of a program to record every keystroke made by a computer user in order to gain fraudulent access to passwords and other confidential information.</div>
+      </div>
+      <div class="def-card fragment fade-up">
+        <div class="def-term">Malware</div>
+        <div class="def-text">Software intended to damage a computing system or to take partial control over its operation without the user's knowledge or consent.</div>
+      </div>
+      <div class="def-card fragment fade-up">
+        <div class="def-term">Rogue Access Point</div>
+        <div class="def-text">A wireless access point that gives unauthorized access to secure networks. It may appear to be a legitimate Wi-Fi network, tricking users into connecting and exposing their data.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'security-risks-part-1',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+
+/* ── Countdown timers for activity slides ───────────────────────── */
+(function () {
+  var timesUpAudio = new Audio('times-up.mp3');
+
+  function liveEl(selector) {
+    return Array.prototype.find.call(
+      document.querySelectorAll(selector),
+      function (el) { return !el.closest('#storyboard'); }
+    );
+  }
+
+  function makeCountdown(id, totalSecs) {
+    var displayEl = liveEl('#' + id + '-display');
+    var startBtn  = liveEl('#' + id + '-start');
+    var stopBtn   = liveEl('#' + id + '-stop');
+    var resetBtn  = liveEl('#' + id + '-reset');
+    if (!displayEl || !startBtn) return;
+
+    var secsLeft = totalSecs;
+    var running  = false;
+    var interval = null;
+
+    function renderTime() {
+      var m = Math.floor(secsLeft / 60);
+      var s = secsLeft % 60;
+      displayEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+      displayEl.classList.toggle('warning', secsLeft > 0 && secsLeft <= 60);
+      displayEl.classList.toggle('expired', secsLeft === 0);
+    }
+
+    function tick() {
+      if (secsLeft <= 0) {
+        running = false;
+        clearInterval(interval);
+        interval = null;
+        syncButtons();
+        return;
+      }
+      secsLeft--;
+      renderTime();
+      if (secsLeft === 0) {
+        timesUpAudio.currentTime = 0;
+        timesUpAudio.play();
+      }
+    }
+
+    function syncButtons() {
+      startBtn.disabled = running || secsLeft === 0;
+      stopBtn.disabled  = !running;
+    }
+
+    startBtn.addEventListener('click', function () {
+      if (running || secsLeft === 0) return;
+      running  = true;
+      interval = setInterval(tick, 1000);
+      syncButtons();
+    });
+
+    stopBtn.addEventListener('click', function () {
+      if (!running) return;
+      running = false;
+      clearInterval(interval);
+      interval = null;
+      syncButtons();
+    });
+
+    resetBtn.addEventListener('click', function () {
+      running = false;
+      clearInterval(interval);
+      interval = null;
+      secsLeft = totalSecs;
+      renderTime();
+      syncButtons();
+    });
+
+    renderTime();
+    syncButtons();
+  }
+
+  makeCountdown('t3', 20 * 60);  /* slide 3: 20-minute activity */
+  makeCountdown('t4', 10 * 60);  /* slide 4: 10-minute jigsaw share */
+}());
+</script>
+</body>
+</html>
