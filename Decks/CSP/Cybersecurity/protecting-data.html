@@ -351,11 +351,52 @@
   font-size: 25px;
   font-weight: 700;
   color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.drop-title::before {
+  content: '🔑';
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--amber-border);
+  border-radius: 6px;
+  background: rgba(255,212,59,0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  line-height: 1;
+  box-shadow: 0 0 14px rgba(255,212,59,0.10);
+  flex: 0 0 auto;
 }
 .drop-hint {
   font-size: 18px;
   color: var(--text-dim);
   line-height: 1.35;
+}
+.drop-key-result {
+  width: 100%;
+  border: 1px solid rgba(226,245,242,0.14);
+  border-radius: 6px;
+  background: rgba(4,12,11,0.46);
+  padding: 10px 12px;
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--text-muted);
+  word-break: break-word;
+}
+.drop-key-result.visible { display: block; }
+.drop-key-result.valid {
+  color: var(--green);
+  border-color: rgba(105,219,124,0.55);
+  background: rgba(105,219,124,0.08);
+}
+.drop-key-result.invalid {
+  color: var(--red);
+  border-color: rgba(255,107,107,0.55);
+  background: rgba(255,107,107,0.08);
 }
 .state-card {
   border: 1px solid rgba(226,245,242,0.15);
@@ -691,11 +732,11 @@
             <div class="drop-title">Encryption Key</div>
             <div class="drop-hint">Drag a key card here to use it to encrypt the message. You can also click a key, then click here. Use the key that belongs to the person who should be able to read it.</div>
           </div>
+          <div class="feedback" data-feedback="encrypt"></div>
         </div>
         <div class="message-panel">
           <div class="panel-label partner-label">Sent State</div>
           <div class="state-card" data-output="ciphertext">Ciphertext will appear here after encryption.</div>
-          <div class="feedback" data-feedback="encrypt">Waiting for your first key drop.</div>
         </div>
       </div>
     </div>
@@ -740,11 +781,11 @@
             <div class="drop-title">Decrypt Received Message</div>
             <div class="drop-hint">The message was locked with your public key. Which matching key opens it?</div>
           </div>
+          <div class="feedback" data-feedback="decrypt"></div>
         </div>
         <div class="message-panel">
           <div class="panel-label">Decrypted Plaintext</div>
           <div class="state-card" data-output="replyPlaintext">Plaintext will appear here after decryption.</div>
-          <div class="feedback" data-feedback="decrypt">Waiting for the key that only you should control.</div>
         </div>
       </div>
     </div>
@@ -789,11 +830,11 @@
             <div class="drop-title">Encryption Key</div>
             <div class="drop-hint">Use the public key for the person who should be able to decrypt this.</div>
           </div>
+          <div class="feedback" data-feedback="encrypt2"></div>
         </div>
         <div class="message-panel">
           <div class="panel-label partner-label">Sent State</div>
           <div class="state-card" data-output="ciphertext2">Ciphertext will appear here after encryption.</div>
-          <div class="feedback" data-feedback="encrypt2">Waiting for the receiver's public key.</div>
         </div>
       </div>
     </div>
@@ -838,11 +879,11 @@
             <div class="drop-title">Decrypt Received Message</div>
             <div class="drop-hint">This was locked with your public key. Use the matching private key.</div>
           </div>
+          <div class="feedback" data-feedback="decrypt2"></div>
         </div>
         <div class="message-panel">
           <div class="panel-label">Decrypted Plaintext</div>
           <div class="state-card" data-output="replyPlaintext2">Plaintext will appear here after decryption.</div>
-          <div class="feedback" data-feedback="decrypt2">Waiting for the key that should never be shared.</div>
         </div>
       </div>
     </div>
@@ -910,6 +951,7 @@
             <div class="drop-title">Sign Message</div>
             <div class="drop-hint">Use the key that only you have to prove the message came from you.</div>
           </div>
+          <div class="feedback" data-feedback="signatureSign"></div>
         </div>
         <div class="message-panel">
           <div class="panel-label">Signed State</div>
@@ -918,7 +960,7 @@
             <div class="drop-title">Verify Signature</div>
             <div class="drop-hint">Use the public key that matches the signer.</div>
           </div>
-          <div class="feedback" data-feedback="signature">Waiting for a signature.</div>
+          <div class="feedback" data-feedback="signatureVerify"></div>
         </div>
       </div>
     </div>
@@ -963,11 +1005,11 @@
             <div class="drop-title">Verify Tampered Message</div>
             <div class="drop-hint">Use the signer public key again. The key is right; the message is the part being tested.</div>
           </div>
+          <div class="feedback" data-feedback="tamper"></div>
         </div>
         <div class="message-panel" data-panel="tamperedCopy">
           <div class="panel-label partner-label">Tampered Copy</div>
           <textarea class="lab-textarea" data-input="tamperedMessage" aria-label="Tampered message">I approve sharing my password with the class.</textarea>
-          <div class="feedback" data-feedback="tamper">This copy changed after signing.</div>
         </div>
       </div>
     </div>
@@ -1013,7 +1055,7 @@
             <div class="drop-title">Verify Partner Signature</div>
             <div class="drop-hint">Which public key proves this package was signed by your partner?</div>
           </div>
-          <div class="feedback" data-feedback="partnerVerify">Waiting to verify the sender.</div>
+          <div class="feedback" data-feedback="partnerVerify"></div>
         </div>
         <div class="message-panel">
           <div class="panel-label">Decryption</div>
@@ -1021,8 +1063,8 @@
             <div class="drop-title">Decrypt Partner Message</div>
             <div class="drop-hint">After verification, use the key that opens messages encrypted for you.</div>
           </div>
-          <div class="state-card" data-output="partnerSecurePlaintext">Plaintext will appear here after verification and decryption.</div>
           <div class="feedback" data-feedback="partnerDecrypt">Verify the signature first, then decrypt.</div>
+          <div class="state-card" data-output="partnerSecurePlaintext">Plaintext message will appear here after verification and decryption.</div>
         </div>
       </div>
     </div>
@@ -1202,6 +1244,10 @@
       </div>
     </div>
     <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap-lg);max-width:1100px;">Two factor authentication requires evidence from two different categories. Even if an attacker steals your password, they still need physical access to your phone to get in.</p>
+    <div class="callout accent-amber fragment fade-up" style="padding:18px 26px;margin-top:var(--gap);">
+      <h3>Discussion:</h3>
+      <p>How do you <span style="color:var(--amber);">prove</span> that you possess your phone?</p>
+    </div>
   </div>
 </section>
 
@@ -1699,6 +1745,33 @@ function initPublicPrivateKeyLab(Reveal) {
     clearSelection();
   }
 
+  function expectedKeyForAction(action) {
+    return {
+      encrypt: 'partnerPublic',
+      decrypt: 'yourPrivate',
+      encrypt2: 'partnerPublic',
+      decrypt2: 'yourPrivate',
+      sign: 'yourPrivate',
+      verify: 'yourPublic',
+      verifyTampered: 'yourPublic',
+      verifyPartner: 'partnerPublic',
+      decryptPartner: 'yourPrivate',
+    }[action] || null;
+  }
+
+  function showDropKey(zone, keyId, isValid) {
+    if (!zone || !keyId) return;
+    var result = zone.querySelector('.drop-key-result');
+    if (!result) {
+      result = document.createElement('div');
+      result.className = 'drop-key-result';
+      zone.appendChild(result);
+    }
+    result.textContent = state.keys[keyId] || keyId;
+    result.classList.remove('valid', 'invalid');
+    result.classList.add('visible', isValid ? 'valid' : 'invalid');
+  }
+
   function handleEncryptSlide(slide, action, keyId) {
     if (action === 'encrypt') {
       if (keyId !== 'partnerPublic') {
@@ -1748,7 +1821,7 @@ function initPublicPrivateKeyLab(Reveal) {
   function handleSecondDecryptSlide(slide, action, keyId) {
     if (action !== 'decrypt2') return;
     if (keyId !== 'yourPrivate') {
-      wrong(slide, 'decrypt2', 'Use your private key again. Messages encrypted with your public key open with your matching private key.');
+      wrong(slide, 'decrypt2', 'Messages encrypted with a public key open with the matching private key.');
       return;
     }
     state.completed.decrypted2 = true;
@@ -1761,7 +1834,7 @@ function initPublicPrivateKeyLab(Reveal) {
   function handleSignatureSlide(slide, action, keyId) {
     if (action === 'sign') {
       if (keyId !== 'yourPrivate') {
-        wrong(slide, 'signature', 'A signature is something only a private key owner can create, using the key only they have.');
+        wrong(slide, 'signatureSign', 'A signature is something only a private key owner can create, using the key only they have.');
         return;
       }
       var input = slide.querySelector('[data-input="signMessage"]');
@@ -1769,27 +1842,28 @@ function initPublicPrivateKeyLab(Reveal) {
       state.signature = signatureFor(state.signedMessage, state.keys.yourPrivate);
       state.completed.signed = true;
       output(slide, 'signature', state.signature + ' for "' + state.signedMessage + '"', 'success');
-      setFeedback(slide, 'signature', 'Signed. Now verify using the matching public key.', 'good');
+      setFeedback(slide, 'signatureSign', 'Signed. Now verify using the matching public key.', 'good');
+      setFeedback(slide, 'signatureVerify', 'Message signed. Verify it with the matching key.', null);
       updateProgress();
       clearSelection();
       return;
     }
     if (action === 'verify') {
       if (!state.completed.signed) {
-        wrong(slide, 'signature', 'Create the signature first. Verification needs a signed message to check.');
+        wrong(slide, 'signatureVerify', 'Create the signature first. Verification needs a signed message to check.');
         return;
       }
       if (keyId !== 'yourPublic') {
-        wrong(slide, 'signature', 'Use a public key. Signatures should be verified by anyone, using a key that is publicly available.');
+        wrong(slide, 'signatureVerify', 'Use a public key. Signatures should be verified by anyone, using a key that is publicly available.');
         return;
       }
       var current = slide.querySelector('[data-input="signMessage"]').value.trim();
       var expected = signatureFor(current, state.keys.yourPrivate);
       if (expected === state.signature) {
         state.completed.verified = true;
-        setFeedback(slide, 'signature', 'Verified. The signature matches your public key and this exact message.', 'good');
+        setFeedback(slide, 'signatureVerify', 'Verified. The signature matches your public key and this exact message.', 'good');
       } else {
-        setFeedback(slide, 'signature', 'Verification failed because the signed message changed.', 'bad');
+        setFeedback(slide, 'signatureVerify', 'Verification failed because the signed message changed.', 'bad');
       }
       updateProgress();
       clearSelection();
@@ -1861,6 +1935,7 @@ function initPublicPrivateKeyLab(Reveal) {
     var slide = zone.closest('section');
     if (!slide || slide.closest('#storyboard')) return;
     var action = zone.getAttribute('data-drop-zone');
+    showDropKey(zone, keyId, keyId === expectedKeyForAction(action));
     if (slide.getAttribute('data-crypto-lab') === 'encrypt') {
       handleEncryptSlide(slide, action, keyId);
     } else if (slide.getAttribute('data-crypto-lab') === 'decrypt') {
