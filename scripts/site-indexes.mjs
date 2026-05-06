@@ -124,6 +124,7 @@ function makePage(titleText, heading, description, listing, generatedAt, generat
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(titleText)}</title>
   <style>${PAGE_STYLE}</style>
+  <meta name="google-site-verification" content="wPBickmUgdPfm0kzBicpbNLxA5gYutw1V11iCsFvt5g" />
 </head>
 <body>
   <main class="wrap">
