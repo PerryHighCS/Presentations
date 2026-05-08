@@ -146,6 +146,8 @@ The runtime should derive useful defaults when possible:
 
 ### Local Student State
 
+Student-private restore state is a future capability, not a phase-one requirement. It is included here to show the intended API direction and to keep private state separate from shared channel state from the beginning.
+
 ```js
 keyLab.local.set({
   selectedStep: 'decrypt-response',
@@ -197,7 +199,14 @@ The host decides whether events go to:
 ### Shared Timers
 
 ```js
-const timer = SyncDeckSession.timers.get('discussion-timer');
+const discussionTools = SyncDeckSession.activities.register({
+  localActivityId: 'discussion-tools',
+  instanceKey: 'discussion-tools:4:0',
+  title: 'Discussion Tools',
+  capabilities: ['sharedState', 'timers']
+});
+
+const timer = discussionTools.timers.get('discussion-timer');
 
 timer.start({
   durationMs: 180000,
@@ -223,7 +232,7 @@ Timer state should sync canonical timestamps rather than remaining seconds:
 }
 ```
 
-Each iframe computes display time locally from the canonical state. This keeps students aligned without sending updates every second.
+Each iframe computes display time locally from the canonical state. Clients should use `serverNow` to establish a server-clock offset instead of relying on raw local `Date.now()` alone. This keeps students aligned without sending updates every second.
 
 Student-originated timer control should be rejected unless a future capability explicitly allows student-owned channels.
 
@@ -322,6 +331,8 @@ Sent when authorized deck code requests an update to shared state for its isolat
 ### `presentationLocalActivity:sharedState`
 
 Sent by the host to iframes when shared state changes or when a participant joins late.
+
+The Reveal runtime should intercept and dispatch this command to `SyncDeckSession` subscribers before the generic iframe-sync command handler treats it as an unknown deck command.
 
 ```json
 {
@@ -480,7 +491,7 @@ Each phase is shared state, and deck UI can respond to phase changes.
 
 ## Implementation Roadmap
 
-### Phase 1: Instructor-Owned Broadcast Channels And Timers
+### Phase 1: Instructor-Owned Shared State And Timers
 
 - Add shared SyncDeck types for presentation-local activity channel messages.
 - Add a `presentationLocalActivities` normalizer to SyncDeck session data.
