@@ -137,6 +137,32 @@ Note:
 - the current conversion-lab deck uses `{"seed":"syncdeck-ui-check"}` as a lightweight conversion-check payload
 - for a real authored deck, prefer the activity's actual `algorithm` option unless you intentionally need host-only test metadata
 
+## Binary Breach
+
+### Deck launch payload
+
+Binary Breach reads the same option keys used by its permanent-link builder. Omit fields to use the activity defaults.
+
+```html
+<section
+  data-activity-id="binary-breach"
+  data-activity-trigger="slide-enter"
+  data-activity-options='{"maxBits":"6","missionLength":"5","challengeTypes":"binary-to-decimal,decimal-to-binary,compare-binary","hintsEnabled":"true","placeValueSupport":"optional"}'
+>
+```
+
+Field guidance:
+
+- `maxBits` accepts `"4"` through `"8"`
+- `missionLength` accepts `"3"` through `"12"`
+- `challengeTypes` is a comma-separated list using `binary-to-decimal`, `decimal-to-binary`, `compare-binary`, and `order-binary`
+- `hintsEnabled` accepts `"true"` or `"false"`
+- `placeValueSupport` accepts `visible`, `optional`, or `hidden`
+
+### Child embedded launch state
+
+Binary Breach reads these values from `embeddedLaunch.selectedOptions` and normalizes them into the live session's mission settings before students receive challenges.
+
 ## Gallery Walk
 
 ### Deck launch payload
@@ -183,9 +209,11 @@ The current deck example uses:
 
 Use a tiny payload like this for harness or diagnostics activities where the purpose is contract validation rather than rich child configuration.
 
-## Instance-Key Examples
+## Embedded Identity And Location
 
-Current position-based examples from the deck:
+Deck authors should not provide embedded instance IDs. SyncDeck derives runtime identity from the activity id and the slide's actual Reveal position when the instructor loads or enters the deck.
+
+Examples of generated runtime keys:
 
 - `resonance:2:0`
 - `embedded-test:3:0`
@@ -194,7 +222,13 @@ Current position-based examples from the deck:
 - `video-sync:4:0`
 - `gallery-walk:5:0`
 
-These are derived from `activityId` plus slide position and are usually the best default.
+The runtime also stores a separate embedded location such as `{ "h": 3, "v": 1 }`. Student activation should use that location contract rather than any ID authored into the presentation markup. Keep deck markup focused on:
+
+- `data-activity-id`
+- `data-activity-trigger`
+- `data-activity-options`
+
+When a launch request includes `location`, `h` and `v` must be finite integers and the `instanceKey` must match the generated key for that activity and location, such as `raffle:3:1`. Fractional coordinates and mismatched key/location pairs are rejected before a child session is created.
 
 ## Authoring Rules
 
