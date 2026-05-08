@@ -1,18 +1,22 @@
-# Proposal: Inline Activity And Session Services For SyncDeck
+# Proposal: Presentation-Local Activity Session Services For SyncDeck
 
 ## Summary
 
-SyncDeck already supports embedded activities by letting Reveal decks declare launch intent with `data-activity-*` attributes. The host then owns activity lifecycle, session creation, and participant relay.
+SyncDeck already supports embedded ActiveBits activities by letting Reveal decks declare launch intent with `data-activity-*` attributes. The host then owns child-session lifecycle, session creation, participant handoff, and activity launch.
 
-This proposal extends that same philosophy to activities that are authored directly inside a presentation. Deck-local JavaScript should be able to opt into SyncDeck session services without becoming responsible for networking, participant discovery, persistence, or host orchestration.
+This proposal is for a different class of interaction: activities authored directly inside the presentation itself. Deck-local JavaScript should be able to opt into narrowly scoped SyncDeck session services without becoming an ActiveBits activity, creating a child session, or depending on the ActiveBits activity registry.
+
+The core abstraction is an isolated service channel. A presentation-owned widget can declare a channel for a specific local activity instance, and SyncDeck can relay or persist only the state that belongs to that parent session and channel.
 
 The goal is to support a spectrum of classroom interactions:
 
-- local-only student activities that survive reloads
+- local-only student activities that survive reloads, if the host later supports private restore state
 - shared activities where students exchange or submit events
 - instructor-visible progress and checkpoints
 - instructor-controlled shared state such as timers, phases, random seeds, or released challenges
 - eventual dashboard views for activity progress and shared classroom state
+
+The motivating first service is a synchronized timer. When the instructor starts a deck-local timer, all viewers should derive the same remaining time from canonical SyncDeck state. The timer should not become an embedded ActiveBits activity just to synchronize.
 
 ## Motivation
 
@@ -29,18 +33,80 @@ Some of these interactions should remain private and local to each student. Othe
 
 Without a shared SyncDeck service layer, each deck-local activity must either remain isolated or invent its own messaging scheme. That creates duplicated logic and inconsistent behavior across courses.
 
+## Non-Goals
+
+- Do not create ActiveBits child sessions.
+- Do not route students into `/activity`, `/manage`, waiting-room, or child-session entry flows.
+- Do not register presentation-local activities in the ActiveBits activity registry.
+- Do not multiplex full ActiveBits activity websocket traffic through SyncDeck.
+- Do not give deck-authored code direct access to raw SyncDeck session records.
+- Do not use `session.data.embeddedActivities` for presentation-local activity state.
+
+## Relationship To Embedded Activities
+
+This proposal does not replace the existing embedded ActiveBits activity flow.
+
+Embedded ActiveBits activities should continue to use:
+
+- `data-activity-id`
+- `data-activity-trigger`
+- `data-activity-options`
+- `activityRequest`
+- host-owned launch and child session lifecycle
+- child activity websocket and report routes
+
+Presentation-local activity services are for interactions that live inside the Reveal deck itself. They are useful when the activity is small, tightly coupled to slide content, or only needs narrow host services such as shared timers, state replay, or progress aggregation.
+
+The two systems should remain parallel:
+
+- Embedded ActiveBits activity: registered app, child session, activity-owned runtime.
+- Presentation-local activity: deck-owned code, parent session service channel, SyncDeck-owned synchronization.
+
+A deck-local timer should not be represented as an embedded child session, and an embedded ActiveBits activity should not depend on the presentation-local service channel.
+
 ## Design Principles
 
 1. Decks describe intent; the host owns orchestration.
-2. Inline activity APIs should be generic and activity-agnostic.
+2. Presentation-local activity APIs should be generic and activity-agnostic.
 3. Activities must continue to work in standalone Reveal preview mode.
 4. Local student state and shared classroom state should be clearly separate.
 5. Timers and other shared state should sync canonical state, not high-frequency UI updates.
-6. The protocol should use stable activity identity based on `deckId`, `activityId`, and `instanceKey`.
+6. The protocol should use stable local identity based on `localActivityId`, `instanceKey`, and optional slide `location`.
 7. The host should decide routing, persistence, permissions, and dashboard display.
 8. Existing embedded activity contracts should remain unchanged.
 
 ## Proposed Concept
+
+Add a presentation-local activity service layer inside SyncDeck with isolated channels. Each channel belongs to one parent SyncDeck session and one deck-local activity instance.
+
+Suggested persisted namespace:
+
+```ts
+session.data.presentationLocalActivities = {
+  [channelKey: string]: {
+    localActivityId: string
+    instanceKey: string
+    location?: { h: number; v: number; f?: number }
+    updatedAt: number
+    sharedState?: Record<string, unknown>
+    timer?: {
+      status: 'idle' | 'running' | 'paused'
+      durationMs: number
+      startedAt: number | null
+      pausedAt: number | null
+      elapsedBeforePauseMs: number
+    }
+  }
+}
+```
+
+`channelKey` should be derived by the server from normalized inputs rather than trusted directly from the iframe. A good starting shape is:
+
+```ts
+`${localActivityId}:${instanceKey}`
+```
+
+This namespace is intentionally separate from `session.data.embeddedActivities`.
 
 Add a browser API exposed by the SyncDeck Reveal runtime:
 
@@ -52,7 +118,7 @@ This API would sit above the existing `RevealIframeSyncAPI.sendCustom(...)` mech
 
 At a high level:
 
-- inline activities register themselves with the host
+- presentation-local activities register themselves with the host
 - activities can store local state
 - activities can emit progress or shared events
 - activities can subscribe to host-relayed events or state updates
@@ -60,11 +126,11 @@ At a high level:
 
 ## Example Authoring API
 
-### Register An Inline Activity
+### Register A Presentation-Local Activity
 
 ```js
 const keyLab = SyncDeckSession.activities.register({
-  activityId: 'public-private-key-lab',
+  localActivityId: 'public-private-key-lab',
   instanceKey: 'public-private-key-lab:6:0',
   title: 'Public/Private Key Lab',
   visibility: 'instructor',
@@ -74,9 +140,9 @@ const keyLab = SyncDeckSession.activities.register({
 
 The runtime should derive useful defaults when possible:
 
-- `deckId` from the current iframe sync config
-- `indices` from `Reveal.getIndices()`
-- `instanceKey` from `activityId:h:v` if not supplied
+- `location` from `Reveal.getIndices()`
+- `instanceKey` from `localActivityId:h:v` if not supplied
+- role/session support from the SyncDeck host handshake
 
 ### Local Student State
 
@@ -152,49 +218,51 @@ Timer state should sync canonical timestamps rather than remaining seconds:
   "startedAt": 1778240000000,
   "durationMs": 180000,
   "pausedAt": null,
-  "accumulatedPausedMs": 0,
+  "elapsedBeforePauseMs": 0,
   "serverNow": 1778240060000
 }
 ```
 
 Each iframe computes display time locally from the canonical state. This keeps students aligned without sending updates every second.
 
+Student-originated timer control should be rejected unless a future capability explicitly allows student-owned channels.
+
 ## Proposed Message Types
 
 These would be host-facing messages sent through the existing `reveal-sync` envelope.
 
-### `inlineActivityReady`
+### `presentationLocalActivity:declare`
 
-Sent when an inline activity registers.
+Sent when a presentation-local activity declares an isolated channel.
 
 ```json
 {
   "type": "reveal-sync",
-  "action": "inlineActivityReady",
+  "action": "presentationLocalActivity:declare",
   "deckId": "protecting-data",
   "role": "student",
   "payload": {
-    "activityId": "public-private-key-lab",
+    "localActivityId": "public-private-key-lab",
     "instanceKey": "public-private-key-lab:6:0",
     "title": "Public/Private Key Lab",
-    "indices": { "h": 6, "v": 0, "f": -1 },
+    "location": { "h": 6, "v": 0, "f": -1 },
     "capabilities": ["localState", "progress", "sharedEvents"]
   }
 }
 ```
 
-### `inlineActivityEvent`
+### `presentationLocalActivity:event`
 
 Sent when deck-local code emits an event.
 
 ```json
 {
   "type": "reveal-sync",
-  "action": "inlineActivityEvent",
+  "action": "presentationLocalActivity:event",
   "deckId": "protecting-data",
   "role": "student",
   "payload": {
-    "activityId": "public-private-key-lab",
+    "localActivityId": "public-private-key-lab",
     "instanceKey": "public-private-key-lab:6:0",
     "event": "message-submitted",
     "scope": "instructor",
@@ -206,18 +274,18 @@ Sent when deck-local code emits an event.
 }
 ```
 
-### `inlineActivityLocalState`
+### `presentationLocalActivity:localState`
 
 Sent when a student activity updates private restore state.
 
 ```json
 {
   "type": "reveal-sync",
-  "action": "inlineActivityLocalState",
+  "action": "presentationLocalActivity:localState",
   "deckId": "protecting-data",
   "role": "student",
   "payload": {
-    "activityId": "public-private-key-lab",
+    "localActivityId": "public-private-key-lab",
     "instanceKey": "public-private-key-lab:6:0",
     "state": {
       "completedSteps": ["encrypt-message"]
@@ -226,30 +294,32 @@ Sent when a student activity updates private restore state.
 }
 ```
 
-### `sessionSharedStateSet`
+### `presentationLocalActivity:sharedStateSet`
 
-Sent when authorized deck code requests an update to shared state.
+Sent when authorized deck code requests an update to shared state for its isolated channel.
 
 ```json
 {
   "type": "reveal-sync",
-  "action": "sessionSharedStateSet",
+  "action": "presentationLocalActivity:sharedStateSet",
   "deckId": "protecting-data",
   "role": "instructor",
   "payload": {
+    "localActivityId": "discussion-tools",
+    "instanceKey": "discussion-tools:4:0",
     "key": "timer:discussion-timer",
     "value": {
       "status": "running",
       "startedAt": 1778240000000,
       "durationMs": 180000,
       "pausedAt": null,
-      "accumulatedPausedMs": 0
+      "elapsedBeforePauseMs": 0
     }
   }
 }
 ```
 
-### `sessionSharedState`
+### `presentationLocalActivity:sharedState`
 
 Sent by the host to iframes when shared state changes or when a participant joins late.
 
@@ -258,14 +328,16 @@ Sent by the host to iframes when shared state changes or when a participant join
   "type": "reveal-sync",
   "action": "command",
   "payload": {
-    "name": "sessionSharedState",
+    "name": "presentationLocalActivity:sharedState",
+    "localActivityId": "discussion-tools",
+    "instanceKey": "discussion-tools:4:0",
     "key": "timer:discussion-timer",
     "value": {
       "status": "running",
       "startedAt": 1778240000000,
       "durationMs": 180000,
       "pausedAt": null,
-      "accumulatedPausedMs": 0,
+      "elapsedBeforePauseMs": 0,
       "serverNow": 1778240060000
     }
   }
@@ -278,7 +350,7 @@ The host should enforce routing and mutation rules. Suggested defaults:
 
 | Capability | Instructor | Student |
 | --- | --- | --- |
-| Register inline activity | yes | yes |
+| Declare local activity channel | yes | yes |
 | Write local private state | yes | yes |
 | Emit progress | yes | yes |
 | Read aggregate progress | yes | no |
@@ -301,7 +373,7 @@ Suggested event scopes:
 
 ## Privacy And Safety
 
-Inline activities may collect student work or behavior. The API should make data classification explicit:
+Presentation-local activities may collect student work or behavior. The API should make data classification explicit:
 
 - local private state
 - progress metadata
@@ -310,6 +382,38 @@ Inline activities may collect student work or behavior. The API should make data
 - instructor broadcast
 
 The host should avoid broadcasting private local state. Student submissions should be routed according to host policy, and dashboard displays should distinguish aggregate progress from visible student work.
+
+The iframe is deck-authored code, so messages are still untrusted input. The server should validate and bound every payload before persistence or broadcast.
+
+The host should enforce:
+
+- maximum channels per SyncDeck session
+- maximum serialized state size per channel
+- maximum timer duration
+- maximum string lengths for ids and state fields
+- explicit rejection of unknown capabilities or unauthorized scopes
+- pruning for stale channels if needed
+
+## Websocket Behavior
+
+SyncDeck parent websocket remains the transport for presentation-local service events because the activity lives inside the presentation iframe and does not have its own ActiveBits session.
+
+This is different from embedded ActiveBits activities, where the parent websocket carries lifecycle envelopes and the child activity owns its realtime connection.
+
+Expected behavior:
+
+- instructor command arrives through the manager host
+- server validates role and channel identity
+- server persists canonical channel state
+- server broadcasts the channel update to connected SyncDeck viewers
+- manager and student hosts forward the scoped update into their presentation iframes
+- new or reconnecting viewers receive replayed channel state after SyncDeck websocket authentication or registration
+
+## Storage And Cleanup
+
+Presentation-local activity state should live and expire with the parent SyncDeck session. Ending a SyncDeck session removes the local channel state automatically because it is part of the parent session data.
+
+No child-session TTL coupling is needed.
 
 ## Standalone Behavior
 
@@ -330,20 +434,6 @@ if (!SyncDeckSession.supported) {
   startLocalTimer();
 }
 ```
-
-## Relationship To Embedded Activities
-
-This proposal does not replace the existing embedded activity flow.
-
-Embedded activities should continue to use:
-
-- `data-activity-id`
-- `data-activity-trigger`
-- `data-activity-options`
-- `activityRequest`
-- host-owned launch and child session lifecycle
-
-Inline activity services are for interactions that live inside the Reveal deck itself. They are useful when the activity is small, tightly coupled to slide content, or does not need a full separate ActiveBits app.
 
 ## Candidate Use Cases
 
@@ -390,64 +480,43 @@ Each phase is shared state, and deck UI can respond to phase changes.
 
 ## Implementation Roadmap
 
-### Phase 1: Thin Runtime API Over Existing Custom Messages
+### Phase 1: Instructor-Owned Broadcast Channels And Timers
 
-- Add `SyncDeckSession.activities.register(...)`.
-- Add `activity.events.send(...)`.
-- Add `activity.events.on(...)`.
-- Add basic host-relayed message routing.
+- Add shared SyncDeck types for presentation-local activity channel messages.
+- Add a `presentationLocalActivities` normalizer to SyncDeck session data.
+- Add server helpers to normalize `localActivityId`, `instanceKey`, timer state, and state patches.
+- Add instructor-only websocket handling for shared timer commands.
+- Broadcast and replay timer state to instructor and student sockets.
+- Add manager/student host code that forwards scoped channel updates into the Reveal iframe.
 - Provide a standalone no-op/local shim.
+- Add tests for timer start/replay, rejected student mutation, payload limits, session isolation, and no interaction with `embeddedActivities`.
 
-This phase can be implemented mostly as a convenience layer over `RevealIframeSyncAPI.sendCustom(...)`.
+### Phase 2: Local State And Progress
 
-### Phase 2: Local State And Late Join Restore
+- Add student-private local restore state if persistence is needed.
+- Add progress event ingestion with aggregate instructor views.
+- Keep raw student work and aggregate progress as separate data classes.
 
-- Add private local state persistence.
-- Add host restore on reload or reconnect.
-- Add versioned state envelopes.
-- Add limits for payload size and update frequency.
+### Phase 3: Optional Event Routing
 
-### Phase 3: Shared State And Timers
-
-- Add `SyncDeckSession.shared`.
-- Add `SyncDeckSession.timers`.
-- Use canonical timestamp-based timer state.
-- Add instructor-only mutations by default.
-
-### Phase 4: Instructor Dashboard Integration
-
-- Display registered inline activities by slide.
-- Show aggregate progress.
-- Show timer controls.
-- Show submitted artifacts when activities opt in.
-
-### Phase 5: Groups And Partner Routing
-
-- Add group and partner addressing.
-- Support host-assigned pairing.
-- Add instructor controls for routing and visibility.
+- Add controlled event scopes such as `instructor`, `all`, `group`, or `partner`.
+- Add explicit capability gates before students can broadcast or peer-route events.
+- Revisit reporting and scoring only after the channel model is stable.
 
 ## Open Questions
 
-1. Should inline activity registration be declared in HTML, JavaScript, or both?
-2. Should local private state persist across sessions, or only within one live SyncDeck session?
-3. How should payload size and update frequency be limited?
-4. Should students ever be allowed to mutate shared state directly?
-5. Should timer control be globally available in the host UI, deck-local only, or both?
-6. How should grouped or paired activities map to existing SyncDeck session membership?
-7. Should inline activity submissions reuse any existing embedded activity reporting model?
-8. What dashboard affordances are needed for the first useful release?
+- Should deck-local activities be allowed to create student-private state in phase one, or should phase one be instructor-owned broadcast state only?
+- Should shared state updates be full replacement, shallow patch, or operation-based?
+- Should channel declarations be required before updates, or can updates implicitly create channels?
+- Should the deck runtime expose one generic channel API, or separate helpers such as `createSyncedTimer(...)`?
+- How much of this should be available in standalone presentation preview outside a live SyncDeck session?
+- Should channel identity include a deck or presentation identifier beyond the parent SyncDeck session and `instanceKey`?
 
-## Recommended First Slice
+## Definition Of Done
 
-Build the smallest useful slice around timers and progress:
-
-1. Expose `SyncDeckSession.activities.register(...)`.
-2. Expose `activity.progress.emit(...)`.
-3. Expose `SyncDeckSession.timers.get(id)`.
-4. Support instructor-controlled timer start, pause, resume, and reset.
-5. Restore timer state for late joiners.
-6. Keep student timer display read-only by default.
-
-This provides immediate classroom value and validates the session-service architecture before adding peer messaging or richer activity submissions.
-
+- Presentation-local activity service state is clearly separate from embedded ActiveBits activity state.
+- A deck-local timer can be started by the instructor and stays synchronized across manager and student presentation iframes.
+- Late joiners receive current timer state.
+- Student-originated instructor-only mutations are rejected.
+- Payload limits and validation prevent deck-authored messages from writing arbitrary or unbounded session data.
+- Existing embedded activity behavior and tests continue to pass.
