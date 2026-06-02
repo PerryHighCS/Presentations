@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staged Resonance — Test Deck</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap">
+
+<link rel="stylesheet" href="../theme.css">
+</head>
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ============================================================
+     SLIDE 01 · TITLE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:550px;height:550px;background:radial-gradient(circle,rgba(168,85,247,0.12) 0%,transparent 70%);top:-160px;left:-120px;"></div>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(56,189,248,0.09) 0%,transparent 70%);bottom:-80px;right:8%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Activity Testing</span>
+
+    <h1 class="title-h1">
+      <span>Staged</span><br>
+      <span style="color:var(--phosphor);">Resonance</span>
+    </h1>
+
+    <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap);max-width:44ch;line-height:1.6;">
+      Test deck for <code>presentationMode: "staged"</code> — four activity variants, one per slide.
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 02 · HOW STAGED MODE WORKS
+     Fragments: left column bullets, then right column bullets.
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(56,189,248,0.07) 0%,transparent 70%);top:-100px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Background</span>
+    <h2>How Staged Mode <span style="color:var(--phosphor);">Works</span></h2>
+
+    <p style="max-width:72ch;margin-bottom:var(--gap);">
+      Adding <code>"presentationMode": "staged"</code> to the Resonance payload changes how the activity presents its question set to students.
+    </p>
+
+    <div class="split split-top" style="gap:var(--gap-lg);">
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Standard mode (default)</p>
+        <ul class="bullets">
+          <li class="fragment fade-up">All questions appear in the activity panel at once.</li>
+          <li class="fragment fade-up">Multiple-choice answer choices are visible from the moment the activity opens.</li>
+          <li class="fragment fade-up">Students can respond to any question in any order, and all timers start together.</li>
+        </ul>
+      </div>
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--phosphor);margin-bottom:var(--gap-sm);">Staged mode</p>
+        <ul class="bullets">
+          <li class="fragment fade-up">One question is shown at a time; the teacher controls when each question advances.</li>
+          <li class="fragment fade-up">Multiple-choice questions display the <strong>stem only</strong> first; the teacher reveals the answer choices when ready, and the response timer starts at that moment.</li>
+          <li class="fragment fade-up">Free-response questions show the full prompt immediately, since there is nothing to hide before the timer starts.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 03 · TEST A — SINGLE FREE RESPONSE (STAGED)
+     Activity: resonance · slide-enter
+     1 free-response question in staged mode.
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-options='{"presentationMode":"staged","questions":[{"id":"qa1","type":"free-response","text":"In one sentence, describe the most important habit a programmer can build to write correct code.","order":0,"responseTimeLimitMs":60000}]}'
+>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(168,85,247,0.08) 0%,transparent 70%);bottom:-80px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <div class="split-40 split split-top">
+      <div>
+        <span class="slide-tag">Test A</span>
+        <h2>Free Response <span style="color:var(--phosphor);">(Staged)</span></h2>
+
+        <p style="margin-bottom:var(--gap);">
+          A single free-response question with a 60-second response window.
+        </p>
+
+        <div class="callout">
+          <h3>Expected behavior</h3>
+          <ul class="bullets" style="margin-top:var(--gap-sm);">
+            <li style="font-size:var(--small);">The activity launches automatically on slide entry.</li>
+            <li style="font-size:var(--small);">One free-response prompt appears in the activity panel; students type a response and a 60-second countdown runs.</li>
+            <li style="font-size:var(--small);">Staged mode has no visible effect for a single FR question: behavior is identical to standard mode.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Payload</p>
+        <div class="code-card">
+          <div class="code-hdr"><span class="clang">JSON</span></div>
+          <div class="code-body">
+            <pre>{
+  <span class="kw">"presentationMode"</span>: <span class="nm">"staged"</span>,
+  <span class="kw">"questions"</span>: [
+    {
+      <span class="kw">"id"</span>: <span class="nm">"qa1"</span>,
+      <span class="kw">"type"</span>: <span class="nm">"free-response"</span>,
+      <span class="kw">"text"</span>: <span class="nm">"In one sentence..."</span>,
+      <span class="kw">"order"</span>: <span class="nm">0</span>,
+      <span class="kw">"responseTimeLimitMs"</span>: <span class="nm">60000</span>
+    }
+  ]
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 04 · TEST B — SINGLE MC STAGED (STEM FIRST)
+     Activity: resonance · slide-enter
+     1 MC question in staged mode. Key behavior: stem shows before choices.
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-options='{"presentationMode":"staged","questions":[{"id":"qb1","type":"multiple-choice","text":"Which Java keyword declares that a method cannot be overridden in a subclass?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"qb1a","text":"static","isCorrect":false},{"id":"qb1b","text":"final","isCorrect":true},{"id":"qb1c","text":"abstract","isCorrect":false},{"id":"qb1d","text":"private","isCorrect":false}]}]}'
+>
+  <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(56,189,248,0.07) 0%,transparent 70%);top:-100px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <div class="split-40 split split-top">
+      <div>
+        <span class="slide-tag">Test B</span>
+        <h2>MC — <span style="color:var(--phosphor);">Stem First</span></h2>
+
+        <p style="margin-bottom:var(--gap);">
+          A single multiple-choice question in staged mode. This is the primary scenario for staged behavior: the question stem appears before the answer choices are shown.
+        </p>
+
+        <div class="callout">
+          <h3>Expected behavior</h3>
+          <ul class="bullets" style="margin-top:var(--gap-sm);">
+            <li style="font-size:var(--small);">The activity launches; the question stem is visible but the four answer choices are hidden.</li>
+            <li style="font-size:var(--small);">The teacher clicks "Reveal Choices" (or equivalent) to display the options and start the 30-second response timer.</li>
+            <li style="font-size:var(--small);">Correct answer: <span style="color:var(--phosphor);font-weight:600;">final</span>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Payload</p>
+        <div class="code-card">
+          <div class="code-hdr"><span class="clang">JSON</span></div>
+          <div class="code-body">
+            <pre>{
+  <span class="kw">"presentationMode"</span>: <span class="nm">"staged"</span>,
+  <span class="kw">"questions"</span>: [{
+    <span class="kw">"id"</span>: <span class="nm">"qb1"</span>,
+    <span class="kw">"type"</span>: <span class="nm">"multiple-choice"</span>,
+    <span class="kw">"text"</span>: <span class="nm">"Which keyword..."</span>,
+    <span class="kw">"order"</span>: <span class="nm">0</span>,
+    <span class="kw">"responseTimeLimitMs"</span>: <span class="nm">30000</span>,
+    <span class="kw">"options"</span>: [
+      { <span class="kw">"id"</span>: <span class="nm">"qb1a"</span>, <span class="tp">"isCorrect"</span>: <span class="nm">false</span> },
+      { <span class="kw">"id"</span>: <span class="nm">"qb1b"</span>, <span class="tp">"isCorrect"</span>: <span class="nm">true</span>  },
+      { <span class="kw">"id"</span>: <span class="nm">"qb1c"</span>, <span class="tp">"isCorrect"</span>: <span class="nm">false</span> },
+      { <span class="kw">"id"</span>: <span class="nm">"qb1d"</span>, <span class="tp">"isCorrect"</span>: <span class="nm">false</span> }
+    ]
+  }]
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 05 · TEST C — THREE-QUESTION STAGED SET
+     Activity: resonance · slide-enter
+     Q1: MC (one correct), Q2: free-response, Q3: poll MC (none correct).
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-options='{"presentationMode":"staged","questions":[{"id":"qc1","type":"multiple-choice","text":"What does arr.length return for int[][] arr = new int[4][7]?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"qc1a","text":"7","isCorrect":false},{"id":"qc1b","text":"28","isCorrect":false},{"id":"qc1c","text":"4","isCorrect":true},{"id":"qc1d","text":"11","isCorrect":false}]},{"id":"qc2","type":"free-response","text":"Describe one real-world dataset that would be naturally stored as a 2D array.","order":1,"responseTimeLimitMs":45000},{"id":"qc3","type":"multiple-choice","text":"How confident do you feel about 2D arrays right now?","order":2,"responseTimeLimitMs":20000,"options":[{"id":"qc3a","text":"Confident — I get it","isCorrect":false},{"id":"qc3b","text":"Getting there — mostly clear","isCorrect":false},{"id":"qc3c","text":"Still fuzzy — need more practice","isCorrect":false}]}]}'
+>
+  <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(168,85,247,0.07) 0%,transparent 70%);top:-120px;left:-60px;"></div>
+
+  <div class="slide-inner">
+    <div class="split-40 split split-top">
+      <div>
+        <span class="slide-tag">Test C</span>
+        <h2>Three-Question <span style="color:var(--phosphor);">Staged Set</span></h2>
+
+        <p style="margin-bottom:var(--gap);">
+          A mixed set in staged mode: one graded MC question, one free-response question, and one opinion poll with no correct answer.
+        </p>
+
+        <div class="callout">
+          <h3>Expected behavior</h3>
+          <ul class="bullets" style="margin-top:var(--gap-sm);">
+            <li style="font-size:var(--small);"><strong>Q1 (MC, 30 s):</strong> stem shows; teacher reveals choices. Correct answer is <span style="color:var(--phosphor);font-weight:600;">4</span> (the number of rows).</li>
+            <li style="font-size:var(--small);"><strong>Q2 (FR, 45 s):</strong> free-response prompt appears immediately; students type a response.</li>
+            <li style="font-size:var(--small);"><strong>Q3 (Poll, 20 s):</strong> three choices, no <code>isCorrect: true</code> entry, so the activity runs in single-select poll mode.</li>
+            <li style="font-size:var(--small);">The teacher advances each question manually; questions do not auto-advance.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Question set (abbreviated display)</p>
+        <div class="code-card">
+          <div class="code-hdr"><span class="clang">JSON</span></div>
+          <div class="code-body">
+            <pre>{
+  <span class="kw">"presentationMode"</span>: <span class="nm">"staged"</span>,
+  <span class="kw">"questions"</span>: [
+    {
+      <span class="kw">"id"</span>: <span class="nm">"qc1"</span>,
+      <span class="tp">"type"</span>: <span class="nm">"multiple-choice"</span>,
+      <span class="kw">"text"</span>: <span class="nm">"arr.length for new int[4][7]?"</span>,
+      <span class="kw">"order"</span>: <span class="nm">0</span>,  <span class="tp">"responseTimeLimitMs"</span>: <span class="nm">30000</span>,
+      <span class="cm">// options: 7, 28, 4 (correct), 11</span>
+    },
+    {
+      <span class="kw">"id"</span>: <span class="nm">"qc2"</span>,
+      <span class="tp">"type"</span>: <span class="nm">"free-response"</span>,
+      <span class="kw">"text"</span>: <span class="nm">"Real-world 2D array use case?"</span>,
+      <span class="kw">"order"</span>: <span class="nm">1</span>,  <span class="tp">"responseTimeLimitMs"</span>: <span class="nm">45000</span>
+    },
+    {
+      <span class="kw">"id"</span>: <span class="nm">"qc3"</span>,
+      <span class="tp">"type"</span>: <span class="nm">"multiple-choice"</span>,
+      <span class="kw">"text"</span>: <span class="nm">"Confidence check..."</span>,
+      <span class="kw">"order"</span>: <span class="nm">2</span>,  <span class="tp">"responseTimeLimitMs"</span>: <span class="nm">20000</span>,
+      <span class="cm">// 3 options, none isCorrect (poll mode)</span>
+    }
+  ]
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 06 · TEST D — STANDARD MODE (COMPARISON)
+     Activity: resonance · slide-enter
+     Same MC question as Test B but with no presentationMode field.
+     ============================================================ -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-options='{"questions":[{"id":"qd1","type":"multiple-choice","text":"Which Java keyword declares that a method cannot be overridden in a subclass?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"qd1a","text":"static","isCorrect":false},{"id":"qd1b","text":"final","isCorrect":true},{"id":"qd1c","text":"abstract","isCorrect":false},{"id":"qd1d","text":"private","isCorrect":false}]}]}'
+>
+  <div class="glow" style="width:380px;height:380px;background:radial-gradient(circle,rgba(52,211,153,0.06) 0%,transparent 70%);bottom:-80px;right:5%;"></div>
+
+  <div class="slide-inner">
+    <div class="split-40 split split-top">
+      <div>
+        <span class="slide-tag">Test D</span>
+        <h2>Standard Mode <span style="color:var(--amber);">(Comparison)</span></h2>
+
+        <p style="margin-bottom:var(--gap);">
+          The same MC question as Test B, but with no <code>presentationMode</code> field in the payload. This slide exists to confirm that omitting the field preserves standard behavior and that staged mode is producing an observable difference.
+        </p>
+
+        <div class="callout accent-p">
+          <h3>Expected behavior</h3>
+          <ul class="bullets" style="margin-top:var(--gap-sm);">
+            <li style="font-size:var(--small);">The activity launches and all four answer choices appear immediately, with no stem-only phase.</li>
+            <li style="font-size:var(--small);">The 30-second response timer starts as soon as the activity opens.</li>
+            <li style="font-size:var(--small);">Correct answer is still <span style="color:var(--phosphor);font-weight:600;">final</span>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Payload (no presentationMode)</p>
+        <div class="code-card">
+          <div class="code-hdr"><span class="clang">JSON</span></div>
+          <div class="code-body">
+            <pre>{
+  <span class="cm">// no presentationMode field — standard mode</span>
+  <span class="kw">"questions"</span>: [{
+    <span class="kw">"id"</span>: <span class="nm">"qd1"</span>,
+    <span class="kw">"type"</span>: <span class="nm">"multiple-choice"</span>,
+    <span class="kw">"text"</span>: <span class="nm">"Which keyword..."</span>,
+    <span class="kw">"order"</span>: <span class="nm">0</span>,
+    <span class="kw">"responseTimeLimitMs"</span>: <span class="nm">30000</span>,
+    <span class="kw">"options"</span>: [
+      { <span class="kw">"id"</span>: <span class="nm">"qd1a"</span>, <span class="tp">"isCorrect"</span>: <span class="nm">false</span> },
+      { <span class="kw">"id"</span>: <span class="nm">"qd1b"</span>, <span class="tp">"isCorrect"</span>: <span class="nm">true</span>  },
+      { <span class="kw">"id"</span>: <span class="nm">"qd1c"</span>, <span class="tp">"isCorrect"</span>: <span class="nm">false</span> },
+      { <span class="kw">"id"</span>: <span class="nm">"qd1d"</span>, <span class="tp">"isCorrect"</span>: <span class="nm">false</span> }
+    ]
+  }]
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'staged-resonance',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+
+</body>
+</html>
