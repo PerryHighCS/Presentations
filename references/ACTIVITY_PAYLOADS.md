@@ -31,6 +31,44 @@ Minimal free-response example:
 >
 ```
 
+Question `text` fields and multiple-choice `options[].text` fields may contain Markdown. Plain text remains valid.
+
+Markdown-formatted question example:
+
+```json
+{
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple-choice",
+      "text": "Given this code, what is printed?\n\n```python\nvalues = [2, 4, 6]\nprint(values[1])\n```",
+      "order": 0,
+      "responseTimeLimitMs": 30000,
+      "options": [
+        { "id": "q1a", "text": "`2`", "isCorrect": false },
+        { "id": "q1b", "text": "`4`", "isCorrect": true },
+        { "id": "q1c", "text": "`6`", "isCorrect": false }
+      ]
+    }
+  ]
+}
+```
+
+Markdown table and image example:
+
+```json
+{
+  "questions": [
+    {
+      "id": "q1",
+      "type": "free-response",
+      "text": "Use the data table to justify your answer.\n\n| Input | Output |\n| ---: | ---: |\n| 1 | 3 |\n| 2 | 5 |\n| 3 | 7 |\n\n![Graph of the pattern](https://example.com/pattern.png)",
+      "order": 0
+    }
+  ]
+}
+```
+
 Mixed question-set example:
 
 ```json
@@ -59,15 +97,44 @@ Mixed question-set example:
 }
 ```
 
+Staged presentation example:
+
+```json
+{
+  "presentationMode": "staged",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple-choice",
+      "text": "Which function creates a sequence of numbers that a for loop can use?",
+      "order": 0,
+      "responseTimeLimitMs": 30000,
+      "options": [
+        { "id": "q1a", "text": "print()?", "isCorrect": false },
+        { "id": "q1b", "text": "range()?", "isCorrect": true },
+        { "id": "q1c", "text": "input()?", "isCorrect": false },
+        { "id": "q1d", "text": "len()?", "isCorrect": false }
+      ]
+    }
+  ]
+}
+```
+
 Field guidance:
 
 - `questions` is the main launch payload
+- `presentationMode` may be `standard` or `staged`; omit it for standard behavior
 - each question should have a stable `id`
 - `type` should match the activity's supported question types such as `free-response` or `multiple-choice`
 - `order` should be explicit and zero-based
 - `responseTimeLimitMs` should be provided when timed launch behavior matters
 - multiple-choice questions should carry an `options` array
+- `text` and `options[].text` support Markdown for emphasis, lists, links, inline code, fenced code blocks, tables, and images
+- Markdown images may use `http:`, `https:`, or non-SVG base64 image MIME `data:` URLs such as `data:image/png;base64,...`; SVG data URLs, non-base64 data URLs, and unsafe URL schemes such as `javascript:` or `file:` are not supported
 - a resonance MCQ with zero correct options is poll mode and remains single-select; with one correct option it behaves as single-select; with multiple correct options it behaves as multi-select and requires the full correct set
+- with `presentationMode: "staged"`, Resonance presents the question set one question at a time; multiple-choice questions show stem-only first, then start their response timer when the teacher reveals choices
+- in solo/self-paced Resonance launches with no active run, `presentationMode: "staged"` does not hide choices; students still see and answer the full question set
+- when SyncDeck adds `autoActivateAllQuestions: true` to a Resonance launch with `presentationMode: "staged"`, the host starts the staged sequence at the first question; for a multiple-choice first question this shows the stem only and waits for the instructor to reveal choices
 
 ### Child embedded launch state
 
@@ -75,6 +142,7 @@ Resonance persistent and embedded recovery paths may store encrypted question ma
 
 - `q` for encoded question payload
 - `h` for the associated hash
+- `presentationMode` for the set/run presentation mode when a host wants to restore or launch staged behavior
 
 That storage shape is a host/runtime detail. Deck authors should usually provide plain `questions` in the launch payload and let the host normalize as needed.
 
@@ -185,6 +253,33 @@ Practical guidance:
 ### Child embedded launch state
 
 Gallery Walk currently behaves more like a session-configured embedded activity than a deep-link-heavy one. Treat `title` as a host-seeded config value rather than a broad standalone permalink contract.
+
+## MobCode
+
+### Deck launch payload
+
+MobCode can seed starter files for an embedded live coding session.
+
+Example:
+
+```html
+<section
+  data-activity-id="mobcode"
+  data-activity-trigger="slide-enter"
+  data-activity-options='{"files":{"src/Main.java":"public class Main {\n  public static void main(String[] args) {\n    System.out.println(\"Hello, MobCode\");\n  }\n}\n","README.md":"Pair on the starter code and explain each change.\n"},"activeFile":"src/Main.java"}'
+>
+```
+
+Field guidance:
+
+- `files` is an object map of relative virtual paths to UTF-8 text content
+- `activeFile` is optional and should match one of the `files` keys when provided
+- paths should be safe relative paths such as `src/Main.java`; paths containing traversal segments such as `../` are rejected and will not load
+- omit `files` to start with an empty MobCode workspace
+
+### Child embedded launch state
+
+MobCode reads `embeddedLaunch.selectedOptions.files` and `embeddedLaunch.selectedOptions.activeFile` only when the child session is first created without an existing MobCode file tree. After that, the live session state under `groups.default` is authoritative, so later reloads or reconnects do not overwrite instructor edits with the original starter payload.
 
 ## Raffle
 
