@@ -130,7 +130,7 @@ Field guidance:
 - `responseTimeLimitMs` should be provided when timed launch behavior matters
 - multiple-choice questions should carry an `options` array
 - `text` and `options[].text` support Markdown for emphasis, lists, links, inline code, fenced code blocks, tables, and images
-- Markdown images may use `http:`, `https:`, or image MIME `data:` URLs; SVG data URLs and unsafe URL schemes such as `javascript:` or `file:` are not supported
+- Markdown images may use `http:`, `https:`, or non-SVG base64 image MIME `data:` URLs such as `data:image/png;base64,...`; SVG data URLs, non-base64 data URLs, and unsafe URL schemes such as `javascript:` or `file:` are not supported
 - a resonance MCQ with zero correct options is poll mode and remains single-select; with one correct option it behaves as single-select; with multiple correct options it behaves as multi-select and requires the full correct set
 - with `presentationMode: "staged"`, Resonance presents the question set one question at a time; multiple-choice questions show stem-only first, then start their response timer when the teacher reveals choices
 - in solo/self-paced Resonance launches with no active run, `presentationMode: "staged"` does not hide choices; students still see and answer the full question set
@@ -253,6 +253,33 @@ Practical guidance:
 ### Child embedded launch state
 
 Gallery Walk currently behaves more like a session-configured embedded activity than a deep-link-heavy one. Treat `title` as a host-seeded config value rather than a broad standalone permalink contract.
+
+## MobCode
+
+### Deck launch payload
+
+MobCode can seed starter files for an embedded live coding session.
+
+Example:
+
+```html
+<section
+  data-activity-id="mobcode"
+  data-activity-trigger="slide-enter"
+  data-activity-options='{"files":{"src/Main.java":"public class Main {\n  public static void main(String[] args) {\n    System.out.println(\"Hello, MobCode\");\n  }\n}\n","README.md":"Pair on the starter code and explain each change.\n"},"activeFile":"src/Main.java"}'
+>
+```
+
+Field guidance:
+
+- `files` is an object map of relative virtual paths to UTF-8 text content
+- `activeFile` is optional and should match one of the `files` keys when provided
+- paths should be safe relative paths such as `src/Main.java`; paths containing traversal segments such as `../` are rejected and will not load
+- omit `files` to start with an empty MobCode workspace
+
+### Child embedded launch state
+
+MobCode reads `embeddedLaunch.selectedOptions.files` and `embeddedLaunch.selectedOptions.activeFile` only when the child session is first created without an existing MobCode file tree. After that, the live session state under `groups.default` is authoritative, so later reloads or reconnects do not overwrite instructor edits with the original starter payload.
 
 ## Raffle
 
