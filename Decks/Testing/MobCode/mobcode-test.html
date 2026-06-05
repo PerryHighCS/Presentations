@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MobCode — Test Deck</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap">
+
+<link rel="stylesheet" href="../theme.css">
+</head>
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ============================================================
+     SLIDE 01 · TITLE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:550px;height:550px;background:radial-gradient(circle,rgba(168,85,247,0.12) 0%,transparent 70%);top:-160px;left:-120px;"></div>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(56,189,248,0.09) 0%,transparent 70%);bottom:-80px;right:8%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Activity Testing</span>
+
+    <h1 class="title-h1">
+      <span>Mob</span><span style="color:var(--phosphor);">Code</span>
+    </h1>
+
+    <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap);max-width:44ch;line-height:1.6;">
+      Test deck for the <code>mobcode</code> embedded activity: four file-seeding variants across five slides.
+    </p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 02 · HOW MOBCODE WORKS
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(56,189,248,0.07) 0%,transparent 70%);top:-100px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <span class="slide-tag">Background</span>
+    <h2>How MobCode <span style="color:var(--phosphor);">Works</span></h2>
+
+    <p style="max-width:72ch;margin-bottom:var(--gap);">
+      The <code>mobcode</code> activity opens a shared live-coding workspace. The deck can seed it with starter files via the <code>files</code> payload field. Once a session exists, the live state is authoritative and re-entering the slide does not overwrite instructor edits.
+    </p>
+
+    <div class="split split-top" style="gap:var(--gap-lg);">
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Key payload fields</p>
+        <ul class="bullets">
+          <li class="fragment fade-up"><strong>files</strong> — object mapping virtual path to UTF-8 content. Omit entirely for an empty workspace.</li>
+          <li class="fragment fade-up"><strong>activeFile</strong> — optional path that should be focused when the workspace opens. Must match a key in <code>files</code>.</li>
+          <li class="fragment fade-up">Path traversal segments such as <code>../</code> are rejected and will not load.</li>
+        </ul>
+      </div>
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--phosphor);margin-bottom:var(--gap-sm);">What this deck tests</p>
+        <ul class="bullets">
+          <li class="fragment fade-up"><strong>Test A:</strong> empty workspace (no <code>files</code> key).</li>
+          <li class="fragment fade-up"><strong>Test B:</strong> single Java file with <code>activeFile</code>.</li>
+          <li class="fragment fade-up"><strong>Test C:</strong> two Java files with <code>activeFile</code> pointing to the second file.</li>
+          <li class="fragment fade-up"><strong>Test D:</strong> three-file classroom exercise (Java + README) with <code>activeFile</code> on <code>Main.java</code>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 03 · TEST A — EMPTY WORKSPACE
+     Activity: mobcode · slide-enter
+     No files key — workspace opens blank.
+     ============================================================ -->
+<section
+  data-activity-id="mobcode"
+  data-activity-trigger="slide-enter"
+  data-activity-options='{}'
+>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(168,85,247,0.08) 0%,transparent 70%);bottom:-80px;left:3%;"></div>
+
+  <div class="slide-inner">
+    <div class="split-40 split split-top">
+      <div>
+        <span class="slide-tag">Test A</span>
+        <h2>Empty <span style="color:var(--phosphor);">Workspace</span></h2>
+
+        <p style="margin-bottom:var(--gap);">
+          No <code>files</code> field is provided in the payload. The activity should open a blank MobCode workspace with no pre-seeded files.
+        </p>
+
+        <div class="callout">
+          <h3>Expected behavior</h3>
+          <ul class="bullets" style="margin-top:var(--gap-sm);">
+            <li style="font-size:var(--small);">The MobCode workspace opens with an empty file tree.</li>
+            <li style="font-size:var(--small);">No files are shown in the editor; participants start from scratch.</li>
+            <li style="font-size:var(--small);">Files created during the session persist in the live state and are not overwritten when the slide is re-entered.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Payload</p>
+        <div class="code-card">
+          <div class="code-hdr"><span class="clang">JSON</span></div>
+          <div class="code-body">
+            <pre>{
+  <span class="cm">// no "files" key — empty workspace</span>
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 04 · TEST B — SINGLE FILE WITH activeFile
+     Activity: mobcode · slide-enter
+     One Java file; activeFile points to it.
+     ============================================================ -->
+<section
+  data-activity-id="mobcode"
+  data-activity-trigger="slide-enter"
+  data-activity-options='{"files":{"src/Main.java":"public class Main {\n  public static void main(String[] args) {\n    System.out.println(\"Hello, MobCode!\");\n  }\n}\n"},"activeFile":"src/Main.java"}'
+>
+  <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(56,189,248,0.07) 0%,transparent 70%);top:-100px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <div class="split-40 split split-top">
+      <div>
+        <span class="slide-tag">Test B</span>
+        <h2>Single File <span style="color:var(--phosphor);">+ activeFile</span></h2>
+
+        <p style="margin-bottom:var(--gap);">
+          One file is seeded (<code>src/Main.java</code>) and <code>activeFile</code> is set to the same path. This is the simplest real starter scenario.
+        </p>
+
+        <div class="callout">
+          <h3>Expected behavior</h3>
+          <ul class="bullets" style="margin-top:var(--gap-sm);">
+            <li style="font-size:var(--small);">The workspace opens with <code>src/Main.java</code> already visible in the editor.</li>
+            <li style="font-size:var(--small);">The file contains a minimal Hello World program that compiles and prints <span style="color:var(--phosphor);font-weight:600;">Hello, MobCode!</span></li>
+            <li style="font-size:var(--small);">Re-entering the slide after session creation must not reset the file contents to the original starter.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Payload</p>
+        <div class="code-card">
+          <div class="code-hdr"><span class="clang">JSON</span></div>
+          <div class="code-body">
+            <pre>{
+  <span class="kw">"files"</span>: {
+    <span class="nm">"src/Main.java"</span>:
+      <span class="tp">"public class Main {\n</span>
+<span class="tp">  public static void main(</span>
+<span class="tp">      String[] args) {\n</span>
+<span class="tp">    System.out.println(\n</span>
+<span class="tp">      \"Hello, MobCode!\");\n</span>
+<span class="tp">  }\n}\n"</span>
+  },
+  <span class="kw">"activeFile"</span>: <span class="nm">"src/Main.java"</span>
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 05 · TEST C — TWO FILES, activeFile ON SECOND
+     Activity: mobcode · slide-enter
+     Two Java files; activeFile points to Greeter.java, not Main.java.
+     Tests that the editor opens on the correct non-first file.
+     ============================================================ -->
+<section
+  data-activity-id="mobcode"
+  data-activity-trigger="slide-enter"
+  data-activity-options='{"files":{"src/Main.java":"public class Main {\n  public static void main(String[] args) {\n    Greeter g = new Greeter();\n    System.out.println(g.greet(\"World\"));\n  }\n}\n","src/Greeter.java":"public class Greeter {\n  public String greet(String name) {\n    return \"Hello, \" + name + \"!\";\n  }\n}\n"},"activeFile":"src/Greeter.java"}'
+>
+  <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(168,85,247,0.07) 0%,transparent 70%);top:-120px;left:-60px;"></div>
+
+  <div class="slide-inner">
+    <div class="split-40 split split-top">
+      <div>
+        <span class="slide-tag">Test C</span>
+        <h2>Two Files, <span style="color:var(--phosphor);">activeFile on Second</span></h2>
+
+        <p style="margin-bottom:var(--gap);">
+          Two Java files are seeded. <code>activeFile</code> is set to <code>src/Greeter.java</code>, the second file in the map, so the editor should open on that file rather than on <code>Main.java</code>.
+        </p>
+
+        <div class="callout">
+          <h3>Expected behavior</h3>
+          <ul class="bullets" style="margin-top:var(--gap-sm);">
+            <li style="font-size:var(--small);">Both <code>src/Main.java</code> and <code>src/Greeter.java</code> appear in the file tree.</li>
+            <li style="font-size:var(--small);">The editor opens with <code>src/Greeter.java</code> active (not <code>Main.java</code>), verifying that <code>activeFile</code> is respected even when it is not the first key.</li>
+            <li style="font-size:var(--small);">Running the full program should print <span style="color:var(--phosphor);font-weight:600;">Hello, World!</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Payload</p>
+        <div class="code-card">
+          <div class="code-hdr"><span class="clang">JSON</span></div>
+          <div class="code-body">
+            <pre>{
+  <span class="kw">"files"</span>: {
+    <span class="nm">"src/Main.java"</span>: <span class="tp">"..."</span>,
+    <span class="nm">"src/Greeter.java"</span>:
+      <span class="tp">"public class Greeter {\n</span>
+<span class="tp">  public String greet(</span>
+<span class="tp">      String name) {\n</span>
+<span class="tp">    return \"Hello, \"\n</span>
+<span class="tp">      + name + \"!\";\n</span>
+<span class="tp">  }\n}\n"</span>
+  },
+  <span class="cm">// activeFile points to the 2nd file</span>
+  <span class="kw">"activeFile"</span>: <span class="nm">"src/Greeter.java"</span>
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 06 · TEST D — THREE-FILE CLASSROOM EXERCISE
+     Activity: mobcode · slide-enter
+     Main.java (stub), Counter.java (stub), README.md.
+     activeFile on Main.java. Tests a realistic classroom use case.
+     ============================================================ -->
+<section
+  data-activity-id="mobcode"
+  data-activity-trigger="slide-enter"
+  data-activity-options='{"files":{"src/Main.java":"public class Main {\n  public static void main(String[] args) {\n    // TODO: create a Counter, call increment() three times,\n    // and print the final count.\n  }\n}\n","src/Counter.java":"public class Counter {\n  private int count = 0;\n\n  // TODO: implement increment() so it adds 1 to count.\n  public void increment() {\n\n  }\n\n  public int getCount() {\n    return count;\n  }\n}\n","README.md":"# Counter Exercise\n\nComplete the two classes so the program prints `3`.\n\n1. Implement `increment()` in Counter.java.\n2. In Main.java, create a Counter, call `increment()` three times,\n   then print `counter.getCount()`.\n\nExpected output: `3`\n"},"activeFile":"src/Main.java"}'
+>
+  <div class="glow" style="width:380px;height:380px;background:radial-gradient(circle,rgba(52,211,153,0.06) 0%,transparent 70%);bottom:-80px;right:5%;"></div>
+
+  <div class="slide-inner">
+    <div class="split-40 split split-top">
+      <div>
+        <span class="slide-tag">Test D</span>
+        <h2>Three-File <span style="color:var(--amber);">Classroom Exercise</span></h2>
+
+        <p style="margin-bottom:var(--gap);">
+          A realistic starter kit: two stub Java classes and a README with instructions. Students complete <code>Counter.increment()</code> and wire it up in <code>Main</code>. <code>activeFile</code> opens the editor on <code>Main.java</code>.
+        </p>
+
+        <div class="callout accent-p">
+          <h3>Expected behavior</h3>
+          <ul class="bullets" style="margin-top:var(--gap-sm);">
+            <li style="font-size:var(--small);">Three files appear in the file tree: <code>src/Main.java</code>, <code>src/Counter.java</code>, and <code>README.md</code>.</li>
+            <li style="font-size:var(--small);">The editor opens on <code>src/Main.java</code> showing the <code>// TODO</code> stub.</li>
+            <li style="font-size:var(--small);">Once complete, the program should compile and print <span style="color:var(--phosphor);font-weight:600;">3</span>.</li>
+            <li style="font-size:var(--small);">The README renders as a markdown file and is readable from the file tree.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Files (abbreviated)</p>
+        <div class="code-card">
+          <div class="code-hdr"><span class="clang">JSON</span></div>
+          <div class="code-body">
+            <pre>{
+  <span class="kw">"files"</span>: {
+    <span class="nm">"src/Main.java"</span>:
+      <span class="cm">// stub — TODO to create Counter</span>
+      <span class="tp">"public class Main { ... }"</span>,
+    <span class="nm">"src/Counter.java"</span>:
+      <span class="cm">// stub — TODO increment()</span>
+      <span class="tp">"public class Counter { ... }"</span>,
+    <span class="nm">"README.md"</span>:
+      <span class="tp">"# Counter Exercise\n..."</span>
+  },
+  <span class="kw">"activeFile"</span>: <span class="nm">"src/Main.java"</span>
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'mobcode-test',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+
+</body>
+</html>
