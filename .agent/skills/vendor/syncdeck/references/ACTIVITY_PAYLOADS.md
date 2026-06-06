@@ -266,7 +266,7 @@ Example:
 <section
   data-activity-id="mobcode"
   data-activity-trigger="slide-enter"
-  data-activity-options='{"files":{"src/Main.java":"public class Main {\n  public static void main(String[] args) {\n    System.out.println(\"Hello, MobCode\");\n  }\n}\n","README.md":"Pair on the starter code and explain each change.\n"},"activeFile":"src/Main.java"}'
+  data-activity-options='{"files":{"main.py":"name = input(\"Name? \")\nprint(f\"Hello, {name}!\")\n","README.md":"Pair on the starter code and explain each change.\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'
 >
 ```
 
@@ -274,12 +274,16 @@ Field guidance:
 
 - `files` is an object map of relative virtual paths to UTF-8 text content
 - `activeFile` is optional and should match one of the `files` keys when provided
-- paths should be safe relative paths such as `src/Main.java`; paths containing traversal segments such as `../` are rejected and will not load
+- `runnerId` is optional; use `brython-terminal` to preselect the Python popup runner for Python-focused launches
+- paths are normalized as safe relative virtual paths such as `src/Main.java`; traversal segments such as `../`, empty paths, oversized paths, and reserved JavaScript object segments such as `__proto__`, `constructor`, or `prototype` are rejected and will not load
+- MobCode currently keeps up to 250 starter files, truncates individual file content at 1 MB, and stops accepting starter content once the total workspace seed reaches 4 MiB
 - omit `files` to start with an empty MobCode workspace
 
 ### Child embedded launch state
 
 MobCode reads `embeddedLaunch.selectedOptions.files` and `embeddedLaunch.selectedOptions.activeFile` only when the child session is first created without an existing MobCode file tree. After that, the live session state under `groups.default` is authoritative, so later reloads or reconnects do not overwrite instructor edits with the original starter payload.
+
+MobCode also reads `embeddedLaunch.selectedOptions.runnerId` through the child session API so the instructor and students use the instructor-selected runner. The current supported value is `brython-terminal`; unsupported values are ignored and the activity falls back to the default runner. In the student view, available runner options collapse to the instructor-selected runner so students cannot switch to a different implementation.
 
 ## Raffle
 
