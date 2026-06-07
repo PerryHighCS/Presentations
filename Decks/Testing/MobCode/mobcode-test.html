@@ -33,7 +33,7 @@
     </h1>
 
     <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap);max-width:44ch;line-height:1.6;">
-      Test deck for the <code>mobcode</code> embedded activity: four file-seeding variants across five slides.
+      Test deck for the <code>mobcode</code> embedded activity: four file-seeding variants plus two special-case Python tests across six slides.
     </p>
   </div>
 </section>
@@ -66,9 +66,11 @@
         <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--phosphor);margin-bottom:var(--gap-sm);">What this deck tests</p>
         <ul class="bullets">
           <li class="fragment fade-up"><strong>Test A:</strong> empty workspace (no <code>files</code> key).</li>
-          <li class="fragment fade-up"><strong>Test B:</strong> single Java file with <code>activeFile</code>.</li>
-          <li class="fragment fade-up"><strong>Test C:</strong> two Java files with <code>activeFile</code> pointing to the second file.</li>
-          <li class="fragment fade-up"><strong>Test D:</strong> three-file classroom exercise (Java + README) with <code>activeFile</code> on <code>Main.java</code>.</li>
+          <li class="fragment fade-up"><strong>Test B:</strong> single Python file with <code>activeFile</code>.</li>
+          <li class="fragment fade-up"><strong>Test C:</strong> two Python files with <code>activeFile</code> pointing to the second file.</li>
+          <li class="fragment fade-up"><strong>Test D:</strong> three-file classroom exercise (Python + README) with <code>activeFile</code> on <code>main.py</code>.</li>
+          <li class="fragment fade-up"><strong>Test E:</strong> <code>input()</code> special case — blocking stdin prompt.</li>
+          <li class="fragment fade-up"><strong>Test F:</strong> <code>time.sleep()</code> special case — blocking delay.</li>
         </ul>
       </div>
     </div>
@@ -127,12 +129,12 @@
 <!-- ============================================================
      SLIDE 04 · TEST B — SINGLE FILE WITH activeFile
      Activity: mobcode · slide-enter
-     One Java file; activeFile points to it.
+     One Python file; activeFile points to it.
      ============================================================ -->
 <section
   data-activity-id="mobcode"
   data-activity-trigger="slide-enter"
-  data-activity-options='{"files":{"src/Main.java":"public class Main {\n  public static void main(String[] args) {\n    System.out.println(\"Hello, MobCode!\");\n  }\n}\n"},"activeFile":"src/Main.java"}'
+  data-activity-options='{"files":{"main.py":"print(\"Hello, MobCode!\")\n"},"activeFile":"main.py"}'
 >
   <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(56,189,248,0.07) 0%,transparent 70%);top:-100px;right:3%;"></div>
 
@@ -143,14 +145,14 @@
         <h2>Single File <span style="color:var(--phosphor);">+ activeFile</span></h2>
 
         <p style="margin-bottom:var(--gap);">
-          One file is seeded (<code>src/Main.java</code>) and <code>activeFile</code> is set to the same path. This is the simplest real starter scenario.
+          One file is seeded (<code>main.py</code>) and <code>activeFile</code> is set to the same path. This is the simplest real starter scenario.
         </p>
 
         <div class="callout">
           <h3>Expected behavior</h3>
           <ul class="bullets" style="margin-top:var(--gap-sm);">
-            <li style="font-size:var(--small);">The workspace opens with <code>src/Main.java</code> already visible in the editor.</li>
-            <li style="font-size:var(--small);">The file contains a minimal Hello World program that compiles and prints <span style="color:var(--phosphor);font-weight:600;">Hello, MobCode!</span></li>
+            <li style="font-size:var(--small);">The workspace opens with <code>main.py</code> already visible in the editor.</li>
+            <li style="font-size:var(--small);">The file contains a minimal Hello World program that runs and prints <span style="color:var(--phosphor);font-weight:600;">Hello, MobCode!</span></li>
             <li style="font-size:var(--small);">Re-entering the slide after session creation must not reset the file contents to the original starter.</li>
           </ul>
         </div>
@@ -163,15 +165,10 @@
           <div class="code-body">
             <pre>{
   <span class="kw">"files"</span>: {
-    <span class="nm">"src/Main.java"</span>:
-      <span class="tp">"public class Main {\n</span>
-<span class="tp">  public static void main(</span>
-<span class="tp">      String[] args) {\n</span>
-<span class="tp">    System.out.println(\n</span>
-<span class="tp">      \"Hello, MobCode!\");\n</span>
-<span class="tp">  }\n}\n"</span>
+    <span class="nm">"main.py"</span>:
+      <span class="tp">"print(\"Hello, MobCode!\")\n"</span>
   },
-  <span class="kw">"activeFile"</span>: <span class="nm">"src/Main.java"</span>
+  <span class="kw">"activeFile"</span>: <span class="nm">"main.py"</span>
 }</pre>
           </div>
         </div>
@@ -184,13 +181,13 @@
 <!-- ============================================================
      SLIDE 05 · TEST C — TWO FILES, activeFile ON SECOND
      Activity: mobcode · slide-enter
-     Two Java files; activeFile points to Greeter.java, not Main.java.
+     Two Python files; activeFile points to greeter.py, not main.py.
      Tests that the editor opens on the correct non-first file.
      ============================================================ -->
 <section
   data-activity-id="mobcode"
   data-activity-trigger="slide-enter"
-  data-activity-options='{"files":{"src/Main.java":"public class Main {\n  public static void main(String[] args) {\n    Greeter g = new Greeter();\n    System.out.println(g.greet(\"World\"));\n  }\n}\n","src/Greeter.java":"public class Greeter {\n  public String greet(String name) {\n    return \"Hello, \" + name + \"!\";\n  }\n}\n"},"activeFile":"src/Greeter.java"}'
+  data-activity-options='{"files":{"main.py":"from greeter import Greeter\n\ng = Greeter()\nprint(g.greet(\"World\"))\n","greeter.py":"class Greeter:\n    def greet(self, name):\n        return f\"Hello, {name}!\"\n"},"activeFile":"greeter.py"}'
 >
   <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(168,85,247,0.07) 0%,transparent 70%);top:-120px;left:-60px;"></div>
 
@@ -201,14 +198,14 @@
         <h2>Two Files, <span style="color:var(--phosphor);">activeFile on Second</span></h2>
 
         <p style="margin-bottom:var(--gap);">
-          Two Java files are seeded. <code>activeFile</code> is set to <code>src/Greeter.java</code>, the second file in the map, so the editor should open on that file rather than on <code>Main.java</code>.
+          Two Python files are seeded. <code>activeFile</code> is set to <code>greeter.py</code>, the second file in the map, so the editor should open on that file rather than on <code>main.py</code>.
         </p>
 
         <div class="callout">
           <h3>Expected behavior</h3>
           <ul class="bullets" style="margin-top:var(--gap-sm);">
-            <li style="font-size:var(--small);">Both <code>src/Main.java</code> and <code>src/Greeter.java</code> appear in the file tree.</li>
-            <li style="font-size:var(--small);">The editor opens with <code>src/Greeter.java</code> active (not <code>Main.java</code>), verifying that <code>activeFile</code> is respected even when it is not the first key.</li>
+            <li style="font-size:var(--small);">Both <code>main.py</code> and <code>greeter.py</code> appear in the file tree.</li>
+            <li style="font-size:var(--small);">The editor opens with <code>greeter.py</code> active (not <code>main.py</code>), verifying that <code>activeFile</code> is respected even when it is not the first key.</li>
             <li style="font-size:var(--small);">Running the full program should print <span style="color:var(--phosphor);font-weight:600;">Hello, World!</span></li>
           </ul>
         </div>
@@ -221,17 +218,14 @@
           <div class="code-body">
             <pre>{
   <span class="kw">"files"</span>: {
-    <span class="nm">"src/Main.java"</span>: <span class="tp">"..."</span>,
-    <span class="nm">"src/Greeter.java"</span>:
-      <span class="tp">"public class Greeter {\n</span>
-<span class="tp">  public String greet(</span>
-<span class="tp">      String name) {\n</span>
-<span class="tp">    return \"Hello, \"\n</span>
-<span class="tp">      + name + \"!\";\n</span>
-<span class="tp">  }\n}\n"</span>
+    <span class="nm">"main.py"</span>: <span class="tp">"..."</span>,
+    <span class="nm">"greeter.py"</span>:
+      <span class="tp">"class Greeter:\n</span>
+<span class="tp">    def greet(self, name):\n</span>
+<span class="tp">        return f\"Hello, {name}!\"\n"</span>
   },
   <span class="cm">// activeFile points to the 2nd file</span>
-  <span class="kw">"activeFile"</span>: <span class="nm">"src/Greeter.java"</span>
+  <span class="kw">"activeFile"</span>: <span class="nm">"greeter.py"</span>
 }</pre>
           </div>
         </div>
@@ -244,13 +238,13 @@
 <!-- ============================================================
      SLIDE 06 · TEST D — THREE-FILE CLASSROOM EXERCISE
      Activity: mobcode · slide-enter
-     Main.java (stub), Counter.java (stub), README.md.
-     activeFile on Main.java. Tests a realistic classroom use case.
+     main.py (stub), counter.py (stub), README.md.
+     activeFile on main.py. Tests a realistic classroom use case.
      ============================================================ -->
 <section
   data-activity-id="mobcode"
   data-activity-trigger="slide-enter"
-  data-activity-options='{"files":{"src/Main.java":"public class Main {\n  public static void main(String[] args) {\n    // TODO: create a Counter, call increment() three times,\n    // and print the final count.\n  }\n}\n","src/Counter.java":"public class Counter {\n  private int count = 0;\n\n  // TODO: implement increment() so it adds 1 to count.\n  public void increment() {\n\n  }\n\n  public int getCount() {\n    return count;\n  }\n}\n","README.md":"# Counter Exercise\n\nComplete the two classes so the program prints `3`.\n\n1. Implement `increment()` in Counter.java.\n2. In Main.java, create a Counter, call `increment()` three times,\n   then print `counter.getCount()`.\n\nExpected output: `3`\n"},"activeFile":"src/Main.java"}'
+  data-activity-options='{"files":{"main.py":"from counter import Counter\n\n# TODO: create a Counter, call increment() three times,\n# and print the final count.\n","counter.py":"class Counter:\n    def __init__(self):\n        self.count = 0\n\n    # TODO: implement increment() so it adds 1 to count.\n    def increment(self):\n        pass\n\n    def get_count(self):\n        return self.count\n","README.md":"# Counter Exercise\n\nComplete the two files so the program prints `3`.\n\n1. Implement `increment()` in counter.py.\n2. In main.py, create a Counter, call `increment()` three times,\n   then print `counter.get_count()`.\n\nExpected output: `3`\n"},"activeFile":"main.py"}'
 >
   <div class="glow" style="width:380px;height:380px;background:radial-gradient(circle,rgba(52,211,153,0.06) 0%,transparent 70%);bottom:-80px;right:5%;"></div>
 
@@ -261,15 +255,15 @@
         <h2>Three-File <span style="color:var(--amber);">Classroom Exercise</span></h2>
 
         <p style="margin-bottom:var(--gap);">
-          A realistic starter kit: two stub Java classes and a README with instructions. Students complete <code>Counter.increment()</code> and wire it up in <code>Main</code>. <code>activeFile</code> opens the editor on <code>Main.java</code>.
+          A realistic starter kit: two stub Python files and a README with instructions. Students complete <code>Counter.increment()</code> and wire it up in <code>main.py</code>. <code>activeFile</code> opens the editor on <code>main.py</code>.
         </p>
 
         <div class="callout accent-p">
           <h3>Expected behavior</h3>
           <ul class="bullets" style="margin-top:var(--gap-sm);">
-            <li style="font-size:var(--small);">Three files appear in the file tree: <code>src/Main.java</code>, <code>src/Counter.java</code>, and <code>README.md</code>.</li>
-            <li style="font-size:var(--small);">The editor opens on <code>src/Main.java</code> showing the <code>// TODO</code> stub.</li>
-            <li style="font-size:var(--small);">Once complete, the program should compile and print <span style="color:var(--phosphor);font-weight:600;">3</span>.</li>
+            <li style="font-size:var(--small);">Three files appear in the file tree: <code>main.py</code>, <code>counter.py</code>, and <code>README.md</code>.</li>
+            <li style="font-size:var(--small);">The editor opens on <code>main.py</code> showing the <code># TODO</code> stub.</li>
+            <li style="font-size:var(--small);">Once complete, the program should run and print <span style="color:var(--phosphor);font-weight:600;">3</span>.</li>
             <li style="font-size:var(--small);">The README renders as a markdown file and is readable from the file tree.</li>
           </ul>
         </div>
@@ -282,17 +276,114 @@
           <div class="code-body">
             <pre>{
   <span class="kw">"files"</span>: {
-    <span class="nm">"src/Main.java"</span>:
-      <span class="cm">// stub — TODO to create Counter</span>
-      <span class="tp">"public class Main { ... }"</span>,
-    <span class="nm">"src/Counter.java"</span>:
-      <span class="cm">// stub — TODO increment()</span>
-      <span class="tp">"public class Counter { ... }"</span>,
+    <span class="nm">"main.py"</span>:
+      <span class="cm"># stub — TODO to create Counter</span>
+      <span class="tp">"from counter import Counter\n..."</span>,
+    <span class="nm">"counter.py"</span>:
+      <span class="cm"># stub — TODO increment()</span>
+      <span class="tp">"class Counter: ..."</span>,
     <span class="nm">"README.md"</span>:
       <span class="tp">"# Counter Exercise\n..."</span>
   },
-  <span class="kw">"activeFile"</span>: <span class="nm">"src/Main.java"</span>
+  <span class="kw">"activeFile"</span>: <span class="nm">"main.py"</span>
 }</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 07 · TEST E — input() SPECIAL CASE
+     Activity: mobcode · slide-enter
+     Single file using input() — tests blocking stdin handling.
+     ============================================================ -->
+<section
+  data-activity-id="mobcode"
+  data-activity-trigger="slide-enter"
+  data-activity-options='{"files":{"main.py":"name = input(\"Enter your name: \")\nprint(f\"Hello, {name}!\")\n"},"activeFile":"main.py"}'
+>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(56,189,248,0.08) 0%,transparent 70%);top:-100px;right:3%;"></div>
+
+  <div class="slide-inner">
+    <div class="split-40 split split-top">
+      <div>
+        <span class="slide-tag">Test E — Special Case</span>
+        <h2><span style="color:var(--phosphor);">input()</span> Blocking Prompt</h2>
+
+        <p style="margin-bottom:var(--gap);">
+          The program calls <code>input()</code>, which blocks execution until the user types a response and presses Enter. This tests that the workspace correctly surfaces a live stdin prompt rather than hanging silently.
+        </p>
+
+        <div class="callout">
+          <h3>Expected behavior</h3>
+          <ul class="bullets" style="margin-top:var(--gap-sm);">
+            <li style="font-size:var(--small);">Running the program displays the prompt <span style="color:var(--phosphor);font-weight:600;">Enter your name:</span> in the console and waits for input.</li>
+            <li style="font-size:var(--small);">After the user types a name and presses Enter, the program prints <span style="color:var(--phosphor);font-weight:600;">Hello, &lt;name&gt;!</span> and exits normally.</li>
+            <li style="font-size:var(--small);">The workspace must not freeze, time out, or skip the prompt silently.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Seeded file: <code>main.py</code></p>
+        <div class="code-card">
+          <div class="code-hdr"><span class="clang">Python</span></div>
+          <div class="code-body">
+            <pre><span class="nm">name</span> = <span class="kw">input</span>(<span class="tp">"Enter your name: "</span>)
+<span class="kw">print</span>(<span class="tp">f"Hello, {name}!"</span>)</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 08 · TEST F — time.sleep() SPECIAL CASE
+     Activity: mobcode · slide-enter
+     Single file using time.sleep() — tests blocking delay handling.
+     ============================================================ -->
+<section
+  data-activity-id="mobcode"
+  data-activity-trigger="slide-enter"
+  data-activity-options='{"files":{"main.py":"import time\n\nprint(\"Starting...\")\ntime.sleep(2)\nprint(\"Done after 2 seconds!\")\n"},"activeFile":"main.py"}'
+>
+  <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(168,85,247,0.08) 0%,transparent 70%);bottom:-80px;left:4%;"></div>
+
+  <div class="slide-inner">
+    <div class="split-40 split split-top">
+      <div>
+        <span class="slide-tag">Test F — Special Case</span>
+        <h2><span style="color:var(--phosphor);">time.sleep()</span> Blocking Delay</h2>
+
+        <p style="margin-bottom:var(--gap);">
+          The program calls <code>time.sleep(2)</code>, which suspends execution for two seconds before printing a second message. This tests that the runtime tolerates a deliberate blocking delay without killing the process or reporting a timeout error.
+        </p>
+
+        <div class="callout">
+          <h3>Expected behavior</h3>
+          <ul class="bullets" style="margin-top:var(--gap-sm);">
+            <li style="font-size:var(--small);">The console immediately prints <span style="color:var(--phosphor);font-weight:600;">Starting...</span> then pauses for approximately two seconds.</li>
+            <li style="font-size:var(--small);">After the delay, the console prints <span style="color:var(--phosphor);font-weight:600;">Done after 2 seconds!</span> and the process exits normally.</li>
+            <li style="font-size:var(--small);">The workspace must not report an error or kill the process during the sleep interval.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Seeded file: <code>main.py</code></p>
+        <div class="code-card">
+          <div class="code-hdr"><span class="clang">Python</span></div>
+          <div class="code-body">
+            <pre><span class="kw">import</span> <span class="nm">time</span>
+
+<span class="kw">print</span>(<span class="tp">"Starting..."</span>)
+<span class="nm">time</span>.<span class="kw">sleep</span>(<span class="tp">2</span>)
+<span class="kw">print</span>(<span class="tp">"Done after 2 seconds!"</span>)</pre>
           </div>
         </div>
       </div>
