@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import { siteBaseUrl, syncDeckHosting } from '../config/site-map.mjs';
+
 const NATURAL_COLLATOR = new Intl.Collator(undefined, {
   numeric: true,
   sensitivity: 'base',
@@ -81,6 +83,39 @@ export const PAGE_STYLE = `
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
   .folder-name { color: var(--muted); font-weight: 600; }
+  .tree li.file {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    column-gap: 16px;
+    row-gap: 2px;
+    padding: 4px 8px;
+    margin: -4px -8px;
+    border-radius: 8px;
+    transition: background-color 120ms ease;
+  }
+  .tree li.file:hover {
+    background: rgba(139, 211, 255, 0.08);
+  }
+  .file-actions {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .file-actions a { color: inherit; }
+  .file-actions a:hover { color: var(--accent); text-decoration: underline; }
+  .file-actions .sep { color: #3d537e; }
+  @media (max-width: 640px) {
+    .tree li.file {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .file-actions { margin-left: 0; }
+  }
 `;
 
 export const PAGE_SCRIPT = `
@@ -110,6 +145,29 @@ export async function defaultTitleForFile(filePath) {
     // Ignore and fall back to filename.
   }
   return path.basename(filePath, path.extname(filePath)).replace(/[-_]/g, ' ').trim();
+}
+
+function buildAbsolutePresentationUrl(publicRelativePath) {
+  return new URL(publicRelativePath, siteBaseUrl).toString();
+}
+
+function buildActiveBitsUrl(pathname, presentationUrl, extraParams = {}) {
+  const url = new URL(pathname, syncDeckHosting.activeBitsOrigin);
+  url.searchParams.set('presentationUrl', presentationUrl);
+  for (const [key, value] of Object.entries(extraParams)) {
+    url.searchParams.set(key, value);
+  }
+  return url.toString();
+}
+
+function buildInstructorLaunchUrl(publicRelativePath) {
+  const presentationUrl = buildAbsolutePresentationUrl(publicRelativePath);
+  return buildActiveBitsUrl(syncDeckHosting.launchPath, presentationUrl, { mode: 'instructor' });
+}
+
+function buildPermalinkUrl(publicRelativePath) {
+  const presentationUrl = buildAbsolutePresentationUrl(publicRelativePath);
+  return buildActiveBitsUrl(syncDeckHosting.permalinkPath, presentationUrl);
 }
 
 function makePage(titleText, heading, description, listing, generatedAt, generatedAtIso, backLink = null) {
@@ -146,8 +204,15 @@ function renderTree(node, indent = '      ', pathPrefix = '') {
   const lines = [];
 
   for (const file of [...node.files].sort((a, b) => NATURAL_COLLATOR.compare(a.title, b.title))) {
+    const instructorUrl = buildInstructorLaunchUrl(file.rel);
+    const permalinkUrl = buildPermalinkUrl(file.rel);
     lines.push(
-      `${indent}<li class="file"><a href="${escapeHtml(`${pathPrefix}${file.name}`)}">${escapeHtml(file.title)}</a></li>`
+      `${indent}<li class="file"><a href="${escapeHtml(`${pathPrefix}${file.name}`)}">${escapeHtml(file.title)}</a>` +
+        `<span class="file-actions">` +
+        `<a href="${escapeHtml(instructorUrl)}">Start as instructor</a>` +
+        `<span class="sep">&middot;</span>` +
+        `<a href="${escapeHtml(permalinkUrl)}">Get permalink</a>` +
+        `</span></li>`
     );
   }
 
