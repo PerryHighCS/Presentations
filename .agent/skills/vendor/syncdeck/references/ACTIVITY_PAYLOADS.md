@@ -15,6 +15,10 @@ There are two closely related but different shapes to keep straight:
 
 In some activities those shapes are nearly identical. In others, the host normalizes or transforms the launch payload before the child reads it.
 
+## Embedded Instructor Manager Bootstrap
+
+SyncDeck starts embedded instructor iframes only after `POST /api/syncdeck/:sessionId/embedded-activity/start` returns a short-lived `managerEntryToken`. Credentialed child managers exchange that single-use token with `GET /api/syncdeck/embedded-manager-passcode?sessionId=<child-session-id>&token=<manager-entry-token>` to receive their child activity passcode. Credentialless managers, such as Raffle, receive an empty `managerBootstrap` object plus the token so the parent can use the same mount/retry lifecycle, but must not redeem the token; the exchange endpoint rejects child sessions without an instructor passcode. This is host-managed runtime state, not deck-authored `data-activity-options`; do not add credentials or bootstrap tokens to deck payloads.
+
 ## Resonance
 
 ### Deck launch payload
