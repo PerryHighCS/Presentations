@@ -1,0 +1,539 @@
+/* ============================================================
+   AR2 SHARED THEME — Terminal Green Reveal.js theme
+   Shared by all presentations in the Decks/AR2/Welcome/ folder.
+
+   ARCHITECTURE:
+   1. Reveal.js controls reset        → force nav arrows visible
+   2. Explicit theme application      → colors/fonts via CSS rules
+   3. Scanline texture                → persistent background texture
+   4. CSS custom properties           → palette + px sizing tokens
+   5. Structural overrides            → section, slide-inner, progress
+   6. Slide labels & typography       → slide-tag, headings
+   7. Bullet lists                    → .bullets component
+   8. Glow blobs                      → decorative radial gradients
+   9. Fragment overrides              → custom fade-up easing
+  10. Storyboard strip                → SyncDeck thumbnail strip
+  11. Reduced motion                  → accessibility
+  12. Split grid helpers              → two-column layouts
+  13. Callout boxes                   → info / warn / result variants
+  14. Key property card               → .key-prop
+  15. Topic list                      → .topic-list
+  16. Warning blocks                  → .warn-block
+  17. Title slide elements            → .subtitle
+   ============================================================ */
+
+/* ─── 1. Force nav controls visible ──────────────────────── */
+
+.reveal .controls {
+  color: #39d353;
+  z-index: 30;
+}
+.reveal .controls .enabled {
+  opacity: 0.95;
+}
+
+/* ─── 2. Explicit Reveal.js theme application ─────────────
+   NOTE: --r-* CSS custom properties (like --r-background-color)
+   are ONLY consumed by Reveal's bundled theme CSS files.
+   Since we load reveal.css alone (no theme), we MUST use
+   explicit CSS rules on the relevant elements.
+   ──────────────────────────────────────────────────────── */
+
+body,
+.reveal-viewport {
+  background: #0d1117;
+  background-color: #0d1117;
+}
+
+.reveal {
+  background: transparent;
+  color: #e6f7ea;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* Headings — reset Reveal defaults (margin, text-transform, etc.) */
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  color: #e6f7ea;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-transform: none;
+  margin: 0;
+}
+
+/* Body text */
+.reveal p,
+.reveal li,
+.reveal blockquote {
+  color: rgba(230,247,234,0.62);
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* Links */
+.reveal a { color: #39d353; }
+.reveal a:hover { color: rgba(57,211,83,0.7); }
+
+/* Selection */
+.reveal ::selection {
+  background: rgba(57,211,83,0.25);
+  color: #fff;
+}
+
+/* ─── 3. Scanline texture ─────────────────────────────────
+   Subtle horizontal scanlines give a terminal/CRT feel.
+   Fixed so it doesn't scroll/transform with Reveal's canvas.
+   ──────────────────────────────────────────────────────── */
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(57,211,83,0.035) 0px,
+    rgba(57,211,83,0.035) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── 4. CSS Custom Properties ────────────────────────────
+   IMPORTANT: Use px for all font sizes and spacing.
+   Reveal scales the 1600×900 canvas via CSS transform —
+   px values scale correctly through it. em/clamp/vw
+   reference actual viewport dimensions and double-scale.
+   ──────────────────────────────────────────────────────── */
+
+:root {
+  /* Palette */
+  --bg:            #0d1117;
+  --bg-card:       #11181f;
+  --text:          #e6f7ea;
+  --text-muted:    rgba(230,247,234,0.62);
+  --text-dim:      rgba(230,247,234,0.30);
+  --accent:        #39d353;
+  --accent-dim:    rgba(57,211,83,0.12);
+  --accent-border: rgba(57,211,83,0.25);
+  --result:        #5eead4;   /* cyan highlight — secondary accent */
+  --warn:          #ffd166;   /* amber — attention / caution */
+
+  /* Fonts */
+  --font-ui:   'IBM Plex Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Typography — px sized for the 1600×900 slide canvas.
+     Reveal.js JS sets font-size on .reveal as floor(vh*0.04)
+     (~28px at 720px), then scales slides via transform. Using
+     px bypasses the inherited font-size entirely. */
+  --title:  88px;    /* title slide main heading */
+  --h2:     46px;    /* section headings         */
+  --h3:     32px;    /* sub-headings             */
+  --body:   24px;    /* paragraph / bullet text  */
+  --small:  18px;    /* captions / annotations   */
+  --label:  13px;    /* eyebrow labels / tags    */
+  --code:   20px;    /* monospace / formula text */
+
+  /* Spacing */
+  --pad:     64px;   /* slide inner padding      */
+  --gap:     22px;   /* between items            */
+  --gap-sm:  11px;   /* tight gaps               */
+  --gap-lg:  44px;   /* section breaks           */
+
+  /* Animation */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── 5. Structural overrides ─────────────────────────────── */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* CRITICAL: Do NOT set position on sections.
+   Reveal needs position: absolute to layer/fade slides.
+   Overriding it with relative makes slides 2-N appear blank. */
+.reveal .slides > section {
+  height: 100%;
+  padding: 0 !important;   /* override Reveal's default 20px */
+  box-sizing: border-box;
+  text-align: left;
+}
+
+/* Slide inner wrapper: applies padding, centres content.
+   position: relative is safe here (it's a <div>, not <section>). */
+.slide-inner {
+  width: 100%;
+  height: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: var(--pad);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+}
+
+/* Centred layout variant for title/impact slides */
+.slide-center {
+  align-items: center;
+  text-align: center;
+}
+
+/* Progress bar */
+.reveal .progress { height: 3px; }
+.reveal .progress span {
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(57,211,83,0.4);
+}
+
+/* Slide number */
+.reveal .slide-number {
+  font-family: var(--font-mono);
+  font-size: 1em;
+  background: transparent;
+  color: var(--text-dim);
+}
+.reveal .slide-number a,
+.reveal .slide-number a:hover,
+.reveal .slide-number a:focus {
+  color: inherit;
+  text-decoration: none;
+  cursor: default;
+}
+
+/* ─── 6. Slide labels & typography ─────────────────────── */
+
+/* Eyebrow tag above headings */
+.slide-tag {
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: var(--gap);
+  display: block;
+}
+.slide-tag::before { content: '$ '; opacity: 0.7; }
+
+/* Title slide heading */
+.title-h1 {
+  font-size: var(--title);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0;
+}
+
+/* Accent color helper */
+.accent { color: var(--accent); }
+.result-color { color: var(--result); }
+
+/* Heading sizes */
+.reveal h2 { font-size: var(--h2); margin-bottom: var(--gap); }
+.reveal h3 { font-size: var(--h3); margin-bottom: var(--gap-sm); }
+
+/* ─── 7. Bullet lists ──────────────────────────────────── */
+
+.bullets {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.bullets li {
+  position: relative;
+  padding-left: 28px;
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.bullets li::before {
+  content: '>';
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--accent);
+  font-weight: 700;
+  position: absolute;
+  left: 0;
+  top: 0.25em;
+}
+
+.bullets li strong { color: var(--text); font-weight: 600; }
+
+/* ─── 8. Glow blobs ─────────────────────────────────────── */
+
+.glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── 9. Fragment overrides ────────────────────────────── */
+
+.reveal .fragment {
+  transition:
+    opacity 0.45s var(--ease),
+    transform 0.45s var(--ease);
+}
+.reveal .fragment.fade-up {
+  transform: translateY(18px);
+}
+.reveal .fragment.fade-up.visible {
+  transform: translateY(0);
+}
+
+/* ─── 10. Storyboard strip ──────────────────────────────── */
+
+.storyboard {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 0;
+  overflow: hidden;
+  background: rgba(6,10,8,0.97);
+  border-top: 1px solid var(--accent-border);
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.4);
+  z-index: 35;
+  transition: height 0.28s var(--ease);
+}
+
+.storyboard-track {
+  height: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.story-thumb {
+  min-width: 212px;
+  max-width: 212px;
+  height: 150px;
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  background: rgba(10,16,13,0.9);
+  color: var(--text);
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+.story-thumb:hover { border-color: rgba(57,211,83,0.5); }
+.story-thumb.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(57,211,83,0.3) inset;
+}
+
+.story-num {
+  position: absolute;
+  top: 6px; left: 8px;
+  z-index: 2;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(4,8,6,0.8);
+  border: 1px solid var(--accent-border);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--warn);
+  letter-spacing: 0.08em;
+}
+
+.story-preview {
+  width: 192px;
+  height: 108px;
+  flex: 0 0 108px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-border);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.story-scene {
+  width: 1600px;
+  height: 900px;
+  transform: scale(0.12);
+  transform-origin: top left;
+  pointer-events: none;
+}
+
+.story-scene .slides {
+  position: static;
+  width: 1600px;
+  height: 900px;
+  inset: auto;
+  transform: none;
+}
+
+.story-scene .slides > section {
+  position: relative;
+  display: block;
+  top: auto; left: auto;
+  width: 1600px;
+  height: 900px;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.story-caption {
+  flex: 0 0 auto;
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 2px;
+}
+
+body.storyboard-open .storyboard { height: 172px; }
+body.storyboard-open .reveal     { padding-bottom: 172px; }
+
+/* ─── 11. Reduced motion ─────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal .fragment {
+    transition: opacity 0.25s ease !important;
+    transform: none !important;
+  }
+  .storyboard { transition: none; }
+}
+
+/* ─── 12. Split grid helpers ─────────────────────────────────
+   Two-column grid layouts for slide content.
+   .split is the base; combine with a ratio modifier class:
+     class="split split-50"  → equal columns
+     class="split split-40"  → left 40% / right 60%
+     class="split split-60"  → left 60% / right 40%
+   Add .split-top to align content flush to the top edge.
+   ──────────────────────────────────────────────────────── */
+
+.split {
+  display: grid;
+  gap: var(--gap-lg);
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+}
+.split-50  { grid-template-columns: 1fr 1fr; }
+.split-40  { grid-template-columns: 2fr 3fr; }
+.split-60  { grid-template-columns: 3fr 2fr; }
+.split-top { align-items: start; }
+
+/* ─── 13. Callout boxes ──────────────────────────────────── */
+
+.callout {
+  background: var(--accent-dim);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.callout strong { color: var(--text); }
+
+.callout-warn {
+  background: rgba(255,209,102,0.08);
+  border-left: 3px solid var(--warn);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.callout-warn strong { color: var(--warn); }
+
+.callout-result {
+  background: rgba(94,234,212,0.07);
+  border-left: 3px solid var(--result);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.callout-result strong { color: var(--result); }
+
+/* ─── 14. Key property card ──────────────────────────────── */
+
+.key-prop {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.key-prop strong { color: var(--text); display: inline; }
+
+/* ─── 15. Topic list ─────────────────────────────────────── */
+
+.topic-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.topic-list li {
+  position: relative;
+  padding-left: 24px;
+  font-size: 21px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.topic-list li::before {
+  content: '>';
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent);
+  position: absolute;
+  left: 0;
+}
+
+/* ─── 16. Warning blocks ─────────────────────────────────── */
+
+.warn-block {
+  margin-top: var(--gap-sm);
+  padding: 10px 14px;
+  border-left: 3px solid var(--warn);
+  background: rgba(255,209,102,0.06);
+  border-radius: 0 4px 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.warn-label {
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  color: var(--warn);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ─── 17. Title slide elements ───────────────────────────── */
+
+.subtitle {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  color: var(--text-dim);
+  margin-top: 22px;
+  letter-spacing: 0.02em;
+}
