@@ -1,6 +1,7 @@
 /* ============================================================
    HPy SHARED THEME — Warm REPL Reveal.js theme
-   Shared by all presentations in the Decks/HPy/Welcome/ folder.
+   Shared by every presentation under Decks/HPy/ (Welcome and
+   all unit/lesson content decks).
 
    ARCHITECTURE:
    1. Reveal.js controls reset        → force nav arrows visible
@@ -20,6 +21,9 @@
   15. Topic list                      → .topic-list
   16. Warning blocks                  → .warn-block
   17. Title slide elements            → .subtitle
+  18. Code panel                      → .code-card / syntax spans
+  19. MCQ / FRQ fallback              → .mcq-opts / .opt-key / .frq-box
+  20. Variable-box activity           → .var-boxes / .chip-tray
    ============================================================ */
 
 /* ─── 1. Force nav controls visible ──────────────────────── */
@@ -118,6 +122,8 @@ body::before {
   --accent-border: rgba(242,177,52,0.25);
   --result:        #7cd992;   /* green highlight — secondary accent */
   --warn:          #ff6b5b;   /* warm red-orange — attention / caution */
+  --syntax-string: #7ec8e3;   /* soft cyan — python string literals */
+  --syntax-number: #c9a4ff;   /* soft violet — python numeric literals */
 
   /* Fonts */
   --font-ui:   'Manrope', sans-serif;
@@ -532,3 +538,262 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
   margin-top: 22px;
   letter-spacing: 0.02em;
 }
+
+/* ─── 18. Code panel ─────────────────────────────────────────
+   .code-card wraps a terminal-style code block. Combine with
+   either a plain <pre><code> (for static snippets) or a stack
+   of .code-line rows (for line-by-line trace/highlight decks).
+   ──────────────────────────────────────────────────────── */
+
+.code-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.code-hdr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--accent-border);
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+.code-hdr .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent-border);
+}
+.code-hdr .dot:nth-child(1) { background: var(--warn); }
+.code-hdr .dot:nth-child(2) { background: var(--accent); }
+.code-hdr .dot:nth-child(3) { background: var(--result); }
+
+.code-body { padding: 18px 22px; }
+.code-body pre {
+  box-shadow: none;
+  width: auto;
+  background: transparent;
+  margin: 0;
+}
+.code-body pre code {
+  max-height: none;
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  line-height: 1.7;
+  color: var(--text);
+  background: transparent;
+  padding: 0;
+  display: block;
+  white-space: pre;
+}
+
+/* Line-numbered rows for step-by-step trace/highlight */
+.code-line {
+  display: flex;
+  gap: 16px;
+  padding: 2px 0;
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  line-height: 1.7;
+  white-space: pre;
+  transition: color 0.3s var(--ease), opacity 0.3s var(--ease);
+}
+.code-line .car {
+  flex: 0 0 auto;
+  width: 0.9em;
+  color: var(--accent);
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.25s var(--ease);
+}
+.code-line.current .car { opacity: 1; }
+.code-line .ln {
+  flex: 0 0 auto;
+  width: 1.6em;
+  text-align: right;
+  color: var(--text-dim);
+  user-select: none;
+}
+.code-line.current .ln { color: var(--accent); font-weight: 700; }
+.code-line.current {
+  background: rgba(242,177,52,0.08);
+  border-radius: 4px;
+  margin: 2px -8px;
+  padding: 2px 8px;
+}
+.code-line.done { opacity: 0.5; }
+.code-line.pending { opacity: 0.35; }
+
+/* Python syntax token colors — keep usage consistent by concept:
+   keywords/builtins, identifiers, strings, numbers, booleans, comments. */
+.tok-kw   { color: var(--accent); font-weight: 600; }
+.tok-nm   { color: var(--text); font-weight: 600; }
+.tok-str  { color: var(--syntax-string); }
+.tok-num  { color: var(--syntax-number); }
+.tok-bool { color: var(--result); font-weight: 600; }
+.tok-cm   { color: var(--text-dim); font-style: italic; }
+.tok-op   { color: var(--text-muted); }
+
+/* ─── 19. MCQ / FRQ fallback rendering ────────────────────────
+   Static, non-interactive rendering of MCQ options or an FRQ
+   prompt for standalone/preview contexts. The resonance activity
+   owns answer submission and reveal; this is display-only.
+   ──────────────────────────────────────────────────────── */
+
+.mcq-opts {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.mcq-opts li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  font-size: var(--body);
+  color: var(--text-muted);
+}
+.mcq-opts code {
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  color: var(--text);
+}
+.opt-key {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--small);
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+}
+
+/* FRQ prompt box — standalone fallback on resonance free-response slides */
+.frq-box {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+}
+.frq-box p {
+  font-size: var(--body);
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.frq-box p strong { color: var(--text); }
+
+/* ─── 20. Variable-box activity ───────────────────────────────
+   Boxes represent named variables; chips represent candidate
+   values. Students place a chip into a box to match what a line
+   of Python code just assigned. See EMBEDDED_ACTIVITIES.md for
+   why this stays plain HTML/CSS/JS rather than a hosted activity:
+   it is a one-off deck-local exercise, not a reusable SyncDeck
+   activity contract.
+   ──────────────────────────────────────────────────────── */
+
+.var-boxes {
+  display: flex;
+  gap: var(--gap);
+  flex-wrap: wrap;
+}
+.var-box {
+  min-width: 168px;
+  border: 2px solid var(--accent-border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  overflow: hidden;
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease), transform 0.2s var(--ease);
+}
+.var-box-name {
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  color: var(--text);
+  background: rgba(242,177,52,0.08);
+  border-bottom: 1px solid var(--accent-border);
+  white-space: nowrap;
+}
+.var-box-value {
+  padding: 18px 14px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  font-weight: 600;
+  color: var(--text-dim);
+  text-align: center;
+}
+.var-box.empty .var-box-value { font-style: italic; }
+.var-box.target {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(242,177,52,0.18);
+}
+.var-box.target .var-box-value { color: var(--accent); }
+.var-box.correct {
+  border-color: var(--result);
+  box-shadow: 0 0 0 3px rgba(124,217,146,0.2);
+}
+.var-box.correct .var-box-value { color: var(--result); }
+.var-box.shake { animation: var-box-shake 0.4s var(--ease); }
+@keyframes var-box-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.chip-tray {
+  display: flex;
+  gap: var(--gap-sm);
+  flex-wrap: wrap;
+  margin-top: var(--gap);
+}
+.chip {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  font-weight: 600;
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.15s var(--ease), border-color 0.15s var(--ease), opacity 0.2s var(--ease), box-shadow 0.15s var(--ease);
+}
+.chip:hover { border-color: var(--accent); transform: translateY(-2px); }
+.chip.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(242,177,52,0.25);
+}
+.chip.used { opacity: 0.25; pointer-events: none; cursor: default; }
+.chip:active { cursor: grabbing; }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.trace-feedback {
+  margin-top: var(--gap);
+  min-height: 1.4em;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--text-dim);
+}
+.trace-feedback.good { color: var(--result); }
+.trace-feedback.bad { color: var(--warn); }
