@@ -1,0 +1,2049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1.3 Functions</title>
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../../theme.css">
+<style>
+  /* ─── Deck-specific styles: call-trace activity (reuses .var-box) ─── */
+
+  .trace-layout {
+    display: grid;
+    grid-template-columns: 620px 1fr;
+    gap: var(--gap-lg);
+    flex: 1;
+    min-height: 0;
+  }
+
+  .trace-code .code-body { padding: 22px 26px; }
+
+  .trace-boxes-wrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--gap);
+  }
+
+  .var-box {
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+  }
+  .var-box.revealed {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .code-line.context { opacity: 0.55; }
+
+  .trace-prompt {
+    font-family: var(--font-mono);
+    font-size: var(--small);
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+  }
+  .trace-prompt strong { color: var(--accent); }
+
+  .trace-done-banner {
+    display: none;
+    font-family: var(--font-mono);
+    font-size: var(--body);
+    color: var(--result);
+    margin-top: var(--gap);
+  }
+  .trace-done-banner.visible { display: block; }
+
+  .trace-reset {
+    margin-top: var(--gap);
+    align-self: flex-start;
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--accent-border);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: var(--small);
+    cursor: pointer;
+  }
+  .trace-reset:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ============================================================
+         SLIDE 01 · TITLE
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">HPy &middot; Unit 1 Review</span>
+        <h1 class="title-h1">1.3 Functions</h1>
+        <p class="subtitle">Basic Programming Constructs &middot; calling, writing, and testing your own logic</p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 02 · FRQ — warm-up, what is a function?
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What is a function?","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-90px;right:6%;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ &middot; Warm-Up</span>
+        <h2>What is a <span style="color:var(--accent);">function</span>?</h2>
+        <div class="frq-box" style="max-width:700px;margin-top:var(--gap-lg);">
+          <p>In your own words: what is a function, and why would you write one? You've already been calling functions like <code style="color:var(--text);">print()</code> and <code style="color:var(--text);">type()</code>, think about what they have in common.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 03 · SECTION — 1.3.3 Writing Your Own Functions
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.3.3 Writing Your Own Functions</span>
+        <h2>Give a <span style="color:var(--accent);">chunk of code</span> a name</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          Every function you've called so far, <code style="color:var(--text);">print()</code>, <code style="color:var(--text);">type()</code>, <code style="color:var(--text);">len()</code>, was written by someone else.
+          Now you'll write your own: a named, <span style="color:var(--result);">reusable</span> piece of code that takes some inputs and (usually) hands back a result.
+        </p>
+        <ul class="bullets" style="margin-top:var(--gap-lg);font-size:var(--body);">
+          <li class="fragment fade-up">A function is <strong>defined</strong> once, with <code style="color:var(--text);">def</code>.</li>
+          <li class="fragment fade-up">It can be <strong>called</strong> as many times as you like, with different inputs each time.</li>
+          <li class="fragment fade-up">A call to a function is itself a <span style="color:var(--accent);">value</span>, whatever the function returns.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 04 · CODE — trace def cubed(n): return n ** 3
+         ============================================================ -->
+    <section data-fragment-trace>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Try This</span>
+          <h2>Defining and calling a function</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            <code style="color:var(--text);">def</code> creates a new function named <code style="color:var(--text);">cubed</code>. It isn't run yet, Python just remembers it.
+            The function only runs when it is <span style="color:var(--result);">called</span>, once per <code style="color:var(--text);">print(cubed(&hellip;))</code> below.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">cubed</span>(<span class="tok-nm">n</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-nm">n</span> <span class="tok-op">**</span> <span class="tok-num">3</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-kw">print</span>(<span class="tok-nm">cubed</span>(<span class="tok-num">2</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span><span class="tok-kw">print</span>(<span class="tok-nm">cubed</span>(<span class="tok-num">3</span>))</span></div>
+            </div>
+          </div>
+          <p class="fragment fade-up" data-fragment-index="3" data-trace-line="4" style="font-size:var(--body);color:var(--text-dim);margin-top:var(--gap-sm);">
+            Line 1 only defines <code style="color:var(--text);">cubed</code>; nothing runs until line 3 <em>calls</em> it with <code style="color:var(--text);">2</code>.
+          </p>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div class="code-card" style="width:220px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+              <span class="fragment" data-trace-line="1" style="display:none;"></span>
+              <span class="fragment" data-trace-line="2" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-line="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">8</span></span>
+              <span class="fragment fade-up" data-trace-line="4" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">27</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 05 · CONCEPT — anatomy of the function header
+         ============================================================ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Anatomy</span>
+        <h2>The <span style="color:var(--accent);">function header</span>, 4 parts</h2>
+        <div class="code-card" style="max-width:640px;margin-top:var(--gap);">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">cubed</span>(<span class="tok-nm">n</span>):</code></pre></div>
+        </div>
+        <div style="display:flex;gap:var(--gap-sm);margin-top:var(--gap-lg);">
+          <div class="key-prop fragment fade-up" style="flex:1;"><strong style="color:var(--accent);">def</strong><br><span style="font-size:var(--small);color:var(--text-dim);">the keyword that starts a definition</span></div>
+          <div class="key-prop fragment fade-up" style="flex:1;"><strong style="color:var(--text);">cubed</strong><br><span style="font-size:var(--small);color:var(--text-dim);">the function name</span></div>
+          <div class="key-prop fragment fade-up" style="flex:1;"><strong style="color:var(--text);">(n)</strong><br><span style="font-size:var(--small);color:var(--text-dim);">the parameters, in parentheses</span></div>
+          <div class="key-prop fragment fade-up" style="flex:1;"><strong style="color:var(--result);">:</strong><br><span style="font-size:var(--small);color:var(--text-dim);">a colon, always</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 06 · CONCEPT — function body, indentation, return
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The Function Body</span>
+          <h2>What happens <span style="color:var(--accent);">after</span> the colon</h2>
+          <ul class="bullets" style="margin-top:var(--gap);">
+            <li>Everything <strong>indented</strong> under the header is the <span style="color:var(--result);">function body</span>.</li>
+            <li>A <code style="color:var(--text);">return</code> statement <strong>immediately ends</strong> the function and hands back that value to the caller.</li>
+            <li>If the function finishes with <strong>no <code style="color:var(--text);">return</code></strong>, Python automatically returns <code style="color:var(--text);">None</code>.</li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">cubed</span>(<span class="tok-nm">n</span>):
+    <span class="tok-kw">return</span> <span class="tok-nm">n</span> <span class="tok-op">**</span> <span class="tok-num">3</span>  <span class="tok-cm"># body: 1 indented line</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 07 · MCQ — parameters vs arguments
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:7:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What are the parameters and arguments in this code?\n\n```python\ndef f(x, y):\n    return x + y\n\nprint(f(2, 3))\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"2 and 3 are parameters, and x and y are arguments.","isCorrect":false},{"id":"q1b","text":"2 and 3 are both the parameters and arguments.","isCorrect":false},{"id":"q1c","text":"x and y are parameters, and 2 and 3 are arguments.","isCorrect":true},{"id":"q1d","text":"x and y are both the parameters and arguments.","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>Parameters vs <span style="color:var(--accent);">arguments</span></h2>
+        <div class="code-card" style="max-width:520px;margin:var(--gap) 0;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">f</span>(<span class="tok-nm">x</span>, <span class="tok-nm">y</span>):
+    <span class="tok-kw">return</span> <span class="tok-nm">x</span> <span class="tok-op">+</span> <span class="tok-nm">y</span>
+
+<span class="tok-kw">print</span>(<span class="tok-nm">f</span>(<span class="tok-num">2</span>, <span class="tok-num">3</span>))</code></pre>
+          </div>
+        </div>
+        <p style="margin-bottom:var(--gap);">What are the parameters, and what are the arguments?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> <code>2</code> and <code>3</code> are parameters, and <code>x</code> and <code>y</code> are arguments.</li>
+          <li><span class="opt-key">B</span> <code>2</code> and <code>3</code> are both the parameters and arguments.</li>
+          <li><span class="opt-key">C</span> <code>x</code> and <code>y</code> are parameters, and <code>2</code> and <code>3</code> are arguments.</li>
+          <li><span class="opt-key">D</span> <code>x</code> and <code>y</code> are both the parameters and arguments.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 08 · CONCEPT — multiple parameters, order matters
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">More Than One Input</span>
+          <h2>Parameters in <span style="color:var(--accent);">order</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            <code style="color:var(--text);">sumOfSquares</code> takes two parameters, <code style="color:var(--text);">x</code> and <code style="color:var(--text);">y</code>.
+            When you call it, you must supply an argument for <strong>each</strong> parameter, in the <span style="color:var(--result);">same order</span> they were defined.
+          </p>
+        </div>
+        <div>
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">sumOfSquares</span>(<span class="tok-nm">x</span>, <span class="tok-nm">y</span>):
+    <span class="tok-kw">return</span> <span class="tok-nm">x</span><span class="tok-op">**</span><span class="tok-num">2</span> <span class="tok-op">+</span> <span class="tok-nm">y</span><span class="tok-op">**</span><span class="tok-num">2</span>
+
+<span class="tok-kw">print</span>(<span class="tok-nm">sumOfSquares</span>(<span class="tok-num">3</span>, <span class="tok-num">4</span>))</code></pre>
+            </div>
+          </div>
+          <div class="chip fragment fade-up" style="cursor:default;color:var(--result);font-weight:700;margin-top:var(--gap-sm);">&rarr; prints <span class="tok-num">25</span>, since 3&sup2; + 4&sup2; is 9 + 16</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 09 · CONCEPT — functions with no parameters
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Zero Inputs</span>
+          <h2>Functions that take <span style="color:var(--accent);">no parameters</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            A function doesn't have to take any parameters. But the <strong>parentheses are still required</strong>, both when you define it and when you call it.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">bigNumber</span>():
+    <span class="tok-kw">return</span> <span class="tok-num">78238477823487248727834</span>
+
+<span class="tok-kw">print</span>(<span class="tok-nm">bigNumber</span>())  <span class="tok-cm"># still need ()</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 10 · CODE — returning multiple values, tuple unpacking
+         ============================================================ -->
+    <section data-fragment-trace>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">One More Trick</span>
+          <h2>Returning <span style="color:var(--accent);">multiple values</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            Separate the returned values with a comma. When you call the function, you can <span style="color:var(--result);">unpack</span> them into that many variables at once.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">sumAndProduct</span>(<span class="tok-nm">x</span>, <span class="tok-nm">y</span>):</span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-nm">x</span><span class="tok-op">+</span><span class="tok-nm">y</span>, <span class="tok-nm">x</span><span class="tok-op">*</span><span class="tok-nm">y</span></span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-nm">m</span>, <span class="tok-nm">n</span> <span class="tok-op">=</span> <span class="tok-nm">sumAndProduct</span>(<span class="tok-num">2</span>, <span class="tok-num">3</span>)</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span><span class="tok-kw">print</span>(<span class="tok-nm">m</span>, <span class="tok-nm">n</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div style="display:flex;gap:var(--gap-sm);">
+            <div class="var-box fragment fade-up" data-fragment-index="0" data-trace-line="1">
+              <div class="var-box-name">m</div>
+              <div class="var-box-value"><span class="tok-num">5</span></div>
+            </div>
+            <div class="var-box fragment fade-up" data-fragment-index="0" data-trace-line="1">
+              <div class="var-box-name">n</div>
+              <div class="var-box-value"><span class="tok-num">6</span></div>
+            </div>
+          </div>
+          <div class="code-card" style="width:220px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;justify-content:center;">
+              <span class="fragment fade-up" data-fragment-index="1" data-trace-line="2" style="font-family:var(--font-mono);color:var(--text);">5 6</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 11 · MCQ — can a body be one line only?
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:11:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"True or False: The body of a function can only contain one line.","order":0,"responseTimeLimitMs":20000,"options":[{"id":"q1a","text":"True","isCorrect":false},{"id":"q1b","text":"False","isCorrect":true}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>How long can a function body be?</h2>
+        <p style="margin-bottom:var(--gap);">True or False: the body of a function can only contain one line.</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> True</li>
+          <li><span class="opt-key">B</span> False</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 12 · INSTRUCTIONS — Trace the Call activity
+         ============================================================ -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Activity</span>
+        <h2>Trace the Call</h2>
+        <p style="font-size:var(--body);max-width:900px;margin-top:var(--gap);">
+          <code style="color:var(--text);">double(n)</code> is defined below. Each line on the next slide calls it and stores the result in a variable.
+          Work out what each call <span style="color:var(--result);">returns</span>, then drag (or click, then click the box) the matching value chip into the box.
+          Later calls build on earlier results, so trace them <span style="color:var(--warn);">in order</span>.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 13 · ACTIVITY — Trace the Call (custom HTML5 widget)
+         ============================================================ -->
+    <section data-calltrace-activity>
+      <div class="slide-inner">
+        <span class="slide-tag">Activity &middot; Trace the Call</span>
+        <div class="trace-layout">
+          <div class="code-card trace-code">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body" data-trace-code></div>
+          </div>
+          <div class="trace-boxes-wrap">
+            <div class="var-boxes" data-trace-boxes></div>
+            <p class="trace-prompt" data-trace-prompt></p>
+            <div class="chip-tray" data-trace-chips></div>
+            <p class="trace-feedback" data-trace-feedback></p>
+            <p class="trace-done-banner" data-trace-done>All three calls traced correctly. A function call is a value, whatever it returns, and that value can feed straight into the next call.</p>
+            <button type="button" class="trace-reset" data-trace-reset>&#8635; restart trace</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 14 · WRAP-UP — 1.3.3 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Writing your own functions</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li>A header is <code style="color:var(--text);">def</code>, a name, parenthesized parameters, and a colon; the indented lines after it are the <strong>body</strong>.</li>
+          <li><code style="color:var(--text);">return</code> ends the function immediately and hands back a value; no <code style="color:var(--text);">return</code> means the function hands back <code style="color:var(--text);">None</code>.</li>
+          <li><strong>Parameters</strong> are named in the definition; <strong>arguments</strong> are the actual values you pass in when you call it, matched up in order.</li>
+          <li>A function can take zero parameters (parentheses still required) or return several values at once, comma-separated.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 15 · SECTION — 1.3.5 Print Versus Return
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.09) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.3.5 Print Versus Return</span>
+        <h2>A very common <span style="color:var(--warn);">mistake</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          <code style="color:var(--text);">print()</code> and <code style="color:var(--text);">return</code> both seem to "give you back" a value, so it's tempting to mix them up.
+          They do very different jobs: one <span style="color:var(--syntax-string);">displays</span> text in the console, the other <span style="color:var(--result);">hands a value back</span> to whoever called the function.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 16 · CODE — print instead of return, "seems to work"
+         ============================================================ -->
+    <section data-fragment-trace>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Try This</span>
+          <h2>This <span style="color:var(--warn);">looks</span> fine&hellip;</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            <code style="color:var(--text);">cubed</code> prints its answer instead of returning it. Calling it on its own line still shows <code style="color:var(--text);">8</code> in the console, so at first glance it seems to work.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">cubed</span>(<span class="tok-nm">x</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">x</span><span class="tok-op">**</span><span class="tok-num">3</span>)  <span class="tok-cm"># the error!</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-nm">cubed</span>(<span class="tok-num">2</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div class="code-card" style="width:220px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;justify-content:center;">
+              <span class="fragment fade-up" data-trace-line="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">8</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 17 · CODE — print(cubed(2)) reveals the None bug
+         ============================================================ -->
+    <section data-fragment-trace>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Now Watch This</span>
+          <h2>Wrap the call in <span style="color:var(--accent);">print()</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            <code style="color:var(--text);">cubed(2)</code> still prints <code style="color:var(--text);">8</code> from inside the function, but then the outer <code style="color:var(--text);">print()</code> also prints whatever <code style="color:var(--text);">cubed</code> <em>returned</em>.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">cubed</span>(<span class="tok-nm">x</span>):</span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">x</span><span class="tok-op">**</span><span class="tok-num">3</span>)  <span class="tok-cm"># the error!</span></span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-kw">print</span>(<span class="tok-nm">cubed</span>(<span class="tok-num">2</span>))</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div class="code-card" style="width:220px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+              <span class="fragment fade-up" data-fragment-index="0" data-trace-line="0" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">8</span></span>
+              <span class="fragment fade-up" data-fragment-index="1" data-trace-line="1" style="font-family:var(--font-mono);color:var(--warn);"><span class="tok-kw">None</span></span>
+            </div>
+          </div>
+          <p class="fragment fade-up" data-fragment-index="1" data-trace-line="1" style="font-size:var(--small);color:var(--text-dim);text-align:center;max-width:260px;">
+            Two separate prints: the one <em>inside</em> the function, and the one printing what the function returned.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 18 · CODE — x = cubed(2); print(x + 1) crashes
+         ============================================================ -->
+    <section data-fragment-trace>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Proof</span>
+          <h2>The crash that <span style="color:var(--warn);">proves it</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            Store the result and try to use it. <code style="color:var(--text);">x</code> is <code style="color:var(--text);">None</code>, and you cannot add <code style="color:var(--text);">1</code> to <code style="color:var(--text);">None</code>.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">cubed</span>(<span class="tok-nm">x</span>):</span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">x</span><span class="tok-op">**</span><span class="tok-num">3</span>)</span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-nm">x</span> <span class="tok-op">=</span> <span class="tok-nm">cubed</span>(<span class="tok-num">2</span>)</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span><span class="tok-kw">print</span>(<span class="tok-nm">x</span> <span class="tok-op">+</span> <span class="tok-num">1</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap-sm);">
+          <div class="var-box fragment fade-up" data-fragment-index="0" data-trace-line="1">
+            <div class="var-box-name">x</div>
+            <div class="var-box-value"><span class="tok-kw">None</span></div>
+          </div>
+          <div class="code-card" style="width:420px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body fragment fade-up" data-fragment-index="1" data-trace-line="2" style="font-family:var(--font-mono);font-size:var(--small);line-height:1.6;color:var(--warn);">
+              <div>Traceback (most recent call last):</div>
+              <div>&nbsp;&nbsp;File "main.py", line 4</div>
+              <div>&nbsp;&nbsp;&nbsp;&nbsp;print(x + 1)</div>
+              <div style="font-weight:700;">TypeError: unsupported operand type(s) for +: 'NoneType' and 'int'</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 19 · CONCEPT — the fix, plus the key rule
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The Fix</span>
+          <h2>Just use <span style="color:var(--result);">return</span></h2>
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">cubed</span>(<span class="tok-nm">x</span>):
+    <span class="tok-kw">return</span> <span class="tok-nm">x</span><span class="tok-op">**</span><span class="tok-num">3</span>  <span class="tok-cm"># fixed</span>
+
+<span class="tok-nm">x</span> <span class="tok-op">=</span> <span class="tok-nm">cubed</span>(<span class="tok-num">2</span>)
+<span class="tok-kw">print</span>(<span class="tok-nm">x</span> <span class="tok-op">+</span> <span class="tok-num">1</span>)  <span class="tok-cm"># 9, whew!</span></code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="callout-result">
+          <strong>Calling <code>print</code> has no effect on a return value.</strong> Printing something inside a function only sends text to the console, it never sends a value back to the caller.
+          If you want the caller to be able to use the result, you must <code>return</code> it.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 20 · MCQ — f(x): x += 10, no return
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:20:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What will the following code print?\n\n```python\ndef f(x):\n    x += 10\n\nprint(f(10))\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"20","isCorrect":false},{"id":"q1b","text":"This will crash because the function f doesn&#39;t print or return.","isCorrect":false},{"id":"q1c","text":"None","isCorrect":true},{"id":"q1d","text":"10","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>No print, no return, what happens?</h2>
+        <div class="code-card" style="max-width:420px;margin:var(--gap) 0;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">f</span>(<span class="tok-nm">x</span>):
+    <span class="tok-nm">x</span> <span class="tok-op">+=</span> <span class="tok-num">10</span>
+
+<span class="tok-kw">print</span>(<span class="tok-nm">f</span>(<span class="tok-num">10</span>))</code></pre>
+          </div>
+        </div>
+        <p style="margin-bottom:var(--gap);">What will this code print?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> <code>20</code></li>
+          <li><span class="opt-key">B</span> This will crash because the function <code>f</code> doesn't print or return.</li>
+          <li><span class="opt-key">C</span> <code>None</code></li>
+          <li><span class="opt-key">D</span> <code>10</code></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 21 · WRAP-UP — 1.3.5 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Print versus return</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li><code style="color:var(--text);">print()</code> displays text in the console; <code style="color:var(--text);">return</code> hands a value back to whoever called the function.</li>
+          <li>A function with no <code style="color:var(--text);">return</code> statement always hands back <code style="color:var(--text);">None</code>, even if it prints something.</li>
+          <li>If you try to use a <code style="color:var(--text);">None</code> result like a number or string, your code will crash.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 22 · SECTION — 1.3.4 Variable Scope
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.3.4 Variable Scope</span>
+        <h2>Where a variable <span style="color:var(--accent);">exists</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          A variable exists in a specific <span style="color:var(--syntax-string);">scope</span>, based on where it was defined. Use its name outside that scope, and Python won't recognize it.
+          For now we'll consider two scopes: <span style="color:var(--result);">local</span> and <span style="color:var(--warn);">global</span>.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 23 · CONCEPT — local variables
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Local Variables</span>
+          <h2>Variables that live <span style="color:var(--result);">inside</span> a function</h2>
+          <ul class="bullets" style="margin-top:var(--gap);">
+            <li>A function's <strong>parameters</strong>, and any variable assigned <strong>inside its body</strong>, are <span style="color:var(--result);">local variables</span>.</li>
+            <li>Local variables have <strong>local scope</strong>: they can only be used inside that one function.</li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">f</span>(<span class="tok-nm">x</span>):  <span class="tok-cm"># x is local to f</span>
+    <span class="tok-kw">return</span> <span class="tok-nm">x</span> <span class="tok-op">+</span> <span class="tok-num">5</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 24 · CONCEPT — NameError when using a local outside its scope
+         ============================================================ -->
+    <section data-fragment-trace>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Out Of Bounds</span>
+          <h2>Reaching outside the scope</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            <code style="color:var(--text);">x</code> only exists <em>while <code>f</code> is running</em>. Once <code style="color:var(--text);">f(4)</code> returns, <code style="color:var(--text);">x</code> is gone, it was never defined outside of <code style="color:var(--text);">f</code> in the first place.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">f</span>(<span class="tok-nm">x</span>):</span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-nm">x</span> <span class="tok-op">+</span> <span class="tok-num">5</span></span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-kw">print</span>(<span class="tok-nm">f</span>(<span class="tok-num">4</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span><span class="tok-kw">print</span>(<span class="tok-nm">x</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap-sm);">
+          <div class="code-card" style="width:420px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+              <span class="fragment fade-up" data-fragment-index="0" data-trace-line="1" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">9</span></span>
+              <div class="fragment fade-up" data-fragment-index="1" data-trace-line="2" style="font-family:var(--font-mono);font-size:var(--small);line-height:1.6;color:var(--warn);text-align:left;">
+                <div>Traceback (most recent call last):</div>
+                <div>&nbsp;&nbsp;File "main.py", line 4</div>
+                <div>&nbsp;&nbsp;&nbsp;&nbsp;print(x)</div>
+                <div style="font-weight:700;">NameError: name 'x' is not defined</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 25 · CONCEPT — lifetime, same name different scope
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Two More Notes</span>
+          <h2>Every call gets <span style="color:var(--accent);">fresh</span> locals</h2>
+          <ul class="bullets" style="margin-top:var(--gap);">
+            <li>Local variables have a <strong>lifetime</strong>: they exist only during one function call. Each new call gets brand-new locals.</li>
+            <li>If two different functions both have a local variable <code style="color:var(--text);">x</code>, those are <strong>different variables</strong>, even though they share a name.</li>
+          </ul>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="key-prop"><strong>square(x)</strong> has its own local <code style="color:var(--text);">x</code></div>
+          <div class="key-prop"><strong>cube(x)</strong> has a completely separate local <code style="color:var(--text);">x</code></div>
+          <p style="font-size:var(--small);color:var(--text-dim);">Changing one never affects the other, they live in different scopes.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 26 · CONCEPT — global variables, avoid them
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Global Variables</span>
+          <h2>Defined at the <span style="color:var(--warn);">top level</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            A variable assigned <strong>outside</strong> any function definition is a <span style="color:var(--warn);">global variable</span>. It has global scope: it can be used anywhere, including inside functions.
+          </p>
+        </div>
+        <div class="callout-warn">
+          <strong>In general, do not use global variables in your own code.</strong> They can lead to a variety of obscure bugs. We use them occasionally in short notes examples for convenience, but your solutions should avoid them.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 27 · MCQ — are parameters local variables?
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:27:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"True or False: Parameters are local variables.","order":0,"responseTimeLimitMs":20000,"options":[{"id":"q1a","text":"True","isCorrect":true},{"id":"q1b","text":"False","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>Are parameters local variables?</h2>
+        <p style="margin-bottom:var(--gap);">True or False: parameters are local variables.</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> True</li>
+          <li><span class="opt-key">B</span> False</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 28 · MCQ — same-name locals in different functions
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:28:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"True or False: Even if two functions each define a local variable x, these are still different variables.","order":0,"responseTimeLimitMs":20000,"options":[{"id":"q1a","text":"True","isCorrect":true},{"id":"q1b","text":"False","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>Same name, same variable?</h2>
+        <p style="margin-bottom:var(--gap);">True or False: even if two functions each define a local variable <code>x</code>, these are still different variables.</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> True</li>
+          <li><span class="opt-key">B</span> False</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 29 · WRAP-UP — 1.3.4 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Scope, at a glance</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li><strong>Local variables</strong>, parameters and anything assigned inside a function body, only exist inside that function, and only for the duration of one call.</li>
+          <li><strong>Global variables</strong>, defined at the top level, can be used anywhere, but should generally be avoided.</li>
+          <li>Two functions can each have a local variable with the same name; they are still completely separate variables.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 30 · SECTION — 1.3.7 Helper Functions
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.3.7 Helper Functions</span>
+        <h2>Functions that help <span style="color:var(--accent);">other functions</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          A <span style="color:var(--result);">helper function</span> is a function like any other, except its job is to do part of the work for a different function.
+          Breaking a problem into smaller, named pieces is one of the most effective habits you can build as a programmer.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 31 · CODE — onesDigit() helping largerOnesDigit()
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Example</span>
+          <h2>One function, <span style="color:var(--accent);">calling</span> another</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            <code style="color:var(--text);">largerOnesDigit</code> doesn't compute a ones digit itself, it delegates that to <code style="color:var(--text);">onesDigit</code>, its <span style="color:var(--result);">helper</span>.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">onesDigit</span>(<span class="tok-nm">n</span>):
+    <span class="tok-kw">return</span> <span class="tok-kw">abs</span>(<span class="tok-nm">n</span>) <span class="tok-op">%</span> <span class="tok-num">10</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">largerOnesDigit</span>(<span class="tok-nm">x</span>, <span class="tok-nm">y</span>):
+    <span class="tok-kw">return</span> <span class="tok-kw">max</span>(<span class="tok-nm">onesDigit</span>(<span class="tok-nm">x</span>), <span class="tok-nm">onesDigit</span>(<span class="tok-nm">y</span>))
+
+<span class="tok-kw">print</span>(<span class="tok-nm">largerOnesDigit</span>(<span class="tok-num">134</span>, <span class="tok-num">672</span>))  <span class="tok-cm"># 4</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 32 · CONCEPT — 3 advantages of helper functions
+         ============================================================ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Why Bother?</span>
+        <h2>Three reasons to write <span style="color:var(--accent);">helpers</span></h2>
+        <ul class="bullets" style="margin-top:var(--gap-lg);font-size:var(--body);">
+          <li class="fragment fade-up"><strong>Smaller problems.</strong> It's much easier to reason about one small logical chunk at a time than one giant function.</li>
+          <li class="fragment fade-up"><strong>Isolated testing.</strong> A helper can be tested on its own, which makes it far easier to find and fix bugs.</li>
+          <li class="fragment fade-up"><strong>Reusability.</strong> The same helper can be called again from a completely different function later on, saving time and avoiding repeated bugs.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 33 · MCQ — multiple helper functions allowed
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:33:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"True or False: You can write multiple helper functions for one function.","order":0,"responseTimeLimitMs":20000,"options":[{"id":"q1a","text":"True","isCorrect":true},{"id":"q1b","text":"False","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>How many helpers can one function have?</h2>
+        <p style="margin-bottom:var(--gap);">True or False: you can write multiple helper functions for one function.</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> True</li>
+          <li><span class="opt-key">B</span> False</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 34 · WRAP-UP — 1.3.7 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Helper functions</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li>A helper function does part of the work for another function, it's a regular function, used to break a big problem into small ones.</li>
+          <li>One function can have <strong>as many helpers as it needs</strong>, and those helpers can be reused by other functions later.</li>
+          <li>Embrace helper functions liberally, smaller problems are easier to solve, test, and reuse.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 35 · SECTION — 1.3.6 Test Functions
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.3.6 Test Functions</span>
+        <h2>Debugging is the <span style="color:var(--warn);">hardest part</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          You will spend more time <span style="color:var(--warn);">debugging</span>, finding and fixing bugs, than actually writing new code.
+          A <span style="color:var(--result);">test function</span> is one of the best tools you have to make that easier.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 36 · CODE — onesDigit + testOnesDigit (buggy, but passes!)
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">A Test Function</span>
+          <h2>Testing <span style="color:var(--accent);">onesDigit()</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            <code style="color:var(--text);">testOnesDigit</code>'s only job is to check that <code style="color:var(--text);">onesDigit</code> works. Each <code style="color:var(--text);">assert</code> is a <span style="color:var(--result);">test case</span> checking one specific input.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">onesDigit</span>(<span class="tok-nm">n</span>):
+    <span class="tok-kw">return</span> <span class="tok-nm">n</span> <span class="tok-op">%</span> <span class="tok-num">10</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">testOnesDigit</span>():
+    <span class="tok-kw">assert</span>(<span class="tok-nm">onesDigit</span>(<span class="tok-num">5</span>) <span class="tok-op">==</span> <span class="tok-num">5</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">onesDigit</span>(<span class="tok-num">123</span>) <span class="tok-op">==</span> <span class="tok-num">3</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">onesDigit</span>(<span class="tok-num">100</span>) <span class="tok-op">==</span> <span class="tok-num">0</span>)
+    <span class="tok-kw">print</span>(<span class="tok-str">"Passed!"</span>)
+
+<span class="tok-nm">testOnesDigit</span>()  <span class="tok-cm"># Passed!</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 37 · CONCEPT — how assert works
+         ============================================================ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">How assert Works</span>
+        <h2>One line, <span style="color:var(--accent);">two outcomes</span></h2>
+        <div class="split split-50" style="margin-top:var(--gap);">
+          <div class="callout-result">
+            <strong>If the condition is True:</strong> the <code>assert</code> statement does nothing at all, and execution just continues to the next line.
+          </div>
+          <div class="callout-warn">
+            <strong>If the condition is False:</strong> the <code>assert</code> statement crashes immediately with an <code>AssertionError</code>, telling you that test case failed.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 38 · MOBCODE — add a case, testOnesDigit crashes (bug found!)
+         ============================================================ -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"files":{"main.py":"def onesDigit(n):\n    return n % 10\n\ndef testOnesDigit():\n    assert(onesDigit(5) == 5)\n    assert(onesDigit(123) == 3)\n    assert(onesDigit(100) == 0)\n    assert(onesDigit(999) == 9)\n    assert(onesDigit(-123) == 3)  # we just added this case\n    print(&#39;Passed!&#39;)\n\ntestOnesDigit()\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">See For Yourself</span>
+        <h2>One more test case <span style="color:var(--warn);">breaks it</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:900px;">
+          Run this version, with <code style="color:var(--text);">assert(onesDigit(-123) == 3)</code> added. It crashes! That's a <em>good</em> thing, we now know
+          <code style="color:var(--text);">onesDigit</code> had a bug the earlier test cases never caught.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 39 · CONCEPT — why it broke, and the fix
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Finding The Bug</span>
+          <h2><code style="color:var(--text);">%</code> and <span style="color:var(--warn);">negative numbers</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            Try <code style="color:var(--text);">onesDigit(-123)</code> in the console: it returns <code style="color:var(--text);">7</code>, not <code style="color:var(--text);">3</code>.
+            <code style="color:var(--text);">%</code> behaves surprisingly on negative numbers: <code style="color:var(--text);">-3 % 10</code> is <code style="color:var(--text);">7</code>, not <code style="color:var(--text);">3</code>.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span style="color:var(--result);">fixed</span><span style="margin-left:6px;color:var(--text-dim);">&middot; take the absolute value first</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">onesDigit</span>(<span class="tok-nm">n</span>):
+    <span class="tok-kw">return</span> <span class="tok-kw">abs</span>(<span class="tok-nm">n</span>) <span class="tok-op">%</span> <span class="tok-num">10</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 40 · MOBCODE — fixed code passes all tests
+         ============================================================ -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"files":{"main.py":"def onesDigit(n):\n    return abs(n) % 10  # fixed\n\ndef testOnesDigit():\n    assert(onesDigit(5) == 5)\n    assert(onesDigit(123) == 3)\n    assert(onesDigit(100) == 0)\n    assert(onesDigit(999) == 9)\n    assert(onesDigit(-123) == 3)\n    print(&#39;Passed!&#39;)\n\ntestOnesDigit()\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">See For Yourself</span>
+        <h2>Confirm the <span style="color:var(--result);">fix</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:900px;">
+          Run it and watch all five assertions pass. This doesn't guarantee <code style="color:var(--text);">onesDigit</code> works for <em>every</em> possible input,
+          but a thoughtful set of test cases gives you strong confidence that it does.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 41 · CONCEPT — @testFunction decorator
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">A Better assert</span>
+          <h2><span style="color:var(--accent);">@testFunction</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            Plain <code style="color:var(--text);">assert</code> tells you <em>which</em> case failed and what you expected, but not what your code actually returned.
+            <code style="color:var(--text);">@testFunction</code>, from <code style="color:var(--text);">cmu_cpcs_utils</code>, fixes that, and prints "Passed!" for you automatically.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">from</span> <span class="tok-nm">cmu_cpcs_utils</span> <span class="tok-kw">import</span> <span class="tok-nm">testFunction</span>
+
+<span class="tok-nm">@testFunction</span>
+<span class="tok-kw">def</span> <span class="tok-nm">testOnesDigit</span>():
+    <span class="tok-kw">assert</span>(<span class="tok-nm">onesDigit</span>(<span class="tok-num">5</span>) <span class="tok-op">==</span> <span class="tok-num">5</span>)
+    <span class="tok-cm">...</span></code></pre>
+          </div>
+          <p style="font-size:var(--small);color:var(--text-dim);margin-top:var(--gap-sm);">The <code style="color:var(--text);">@</code> makes this a <em>function decorator</em>, it modifies the behavior of the function defined right below it. More on those later.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 42 · MCQ — what happens without @testFunction
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:42:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What will happen in the previous example if we remove @testFunction?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"The tests will display an error, but it will not print the incorrect result the code returned.","isCorrect":true},{"id":"q1b","text":"The tests will display an error, and it will print the incorrect result the code returned.","isCorrect":false},{"id":"q1c","text":"The tests will not display an error, and it will print that the tests passed.","isCorrect":false},{"id":"q1d","text":"The tests will not display an error. Nothing will be printed at all.","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>What if we remove @testFunction?</h2>
+        <p style="margin-bottom:var(--gap);">What will happen in the previous example if we remove <code>@testFunction</code>?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> The tests will display an error, but it will not print the incorrect result the code returned.</li>
+          <li><span class="opt-key">B</span> The tests will display an error, and it will print the incorrect result the code returned.</li>
+          <li><span class="opt-key">C</span> The tests will not display an error, and it will print that the tests passed.</li>
+          <li><span class="opt-key">D</span> The tests will not display an error. Nothing will be printed at all.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 43 · WRAP-UP — 1.3.6 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Testing your functions</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li>A test function runs a set of <code style="color:var(--text);">assert</code> statements, <strong>test cases</strong>, to check that another function returns the right result.</li>
+          <li>A true condition does nothing; a false one crashes with an <code style="color:var(--text);">AssertionError</code>, that's a good thing, it means you found a bug.</li>
+          <li>A thoughtful set of test cases builds real confidence; a thin one can let bugs hide, as it did here.</li>
+          <li><code style="color:var(--text);">@testFunction</code> from <code style="color:var(--text);">cmu_cpcs_utils</code> shows the incorrect result on failure, and prints "Passed!" for you.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 44 · SECTION — 1.3.2 Helpful Functions
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.3.2 Helpful Functions</span>
+        <h2>Functions Python already <span style="color:var(--accent);">wrote for you</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          Python comes with plenty of built-in functions. We won't cover anywhere near all of them, and you shouldn't go hunting for
+          the perfect Python function to shortcut an exercise. The goal of this course is for <em>you</em> to become comfortable writing your own solutions,
+          so use these <span style="color:var(--result);">sparingly</span>.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 45 · CODE — type() and isinstance()
+         ============================================================ -->
+    <section data-fragment-trace>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Checking Types</span>
+          <h2><code style="color:var(--text);">type()</code> and <span style="color:var(--accent);">isinstance()</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            You already know <code style="color:var(--text);">type(value)</code>. <code style="color:var(--text);">isinstance(value, t)</code> asks a yes/no question instead: does this value have type <code style="color:var(--text);">t</code>?
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-nm">s</span> <span class="tok-op">=</span> <span class="tok-str">'abc'</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span><span class="tok-kw">print</span>(<span class="tok-kw">type</span>(<span class="tok-nm">s</span>) <span class="tok-op">==</span> <span class="tok-nm">str</span>)</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-kw">print</span>(<span class="tok-kw">isinstance</span>(<span class="tok-nm">s</span>, <span class="tok-nm">str</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span><span class="tok-kw">print</span>(<span class="tok-kw">isinstance</span>(<span class="tok-nm">s</span>, <span class="tok-nm">int</span>))</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div class="code-card" style="width:220px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+              <span class="fragment" data-trace-line="1" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-line="2" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">True</span></span>
+              <span class="fragment fade-up" data-trace-line="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">True</span></span>
+              <span class="fragment fade-up" data-trace-line="4" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">False</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 46 · MOBCODE — '12' * 5 string repetition surprise
+         ============================================================ -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"files":{"main.py":"s = &#39;12&#39;\nprint(type(s))\nprint(s * 5)\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Predict, Then Run</span>
+        <h2>What does <code style="color:var(--text);">'12' * 5</code> do?</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:900px;">
+          Predict the output first, then run it. <code style="color:var(--text);">s</code> is a <span style="color:var(--syntax-string);">string</span>, so <code style="color:var(--text);">*</code> doesn't multiply like a number,
+          it builds a new string out of that many copies of the original.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 47 · CODE — int('12') fixes the multiplication
+         ============================================================ -->
+    <section data-fragment-trace>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Type Conversion</span>
+          <h2><code style="color:var(--text);">int()</code> converts a value</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            <code style="color:var(--text);">int('12')</code> turns the string <code style="color:var(--text);">'12'</code> into the integer <code style="color:var(--text);">12</code>. Now <code style="color:var(--text);">*</code> does ordinary multiplication.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-nm">n</span> <span class="tok-op">=</span> <span class="tok-kw">int</span>(<span class="tok-str">'12'</span>)</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span><span class="tok-kw">print</span>(<span class="tok-kw">type</span>(<span class="tok-nm">n</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-kw">print</span>(<span class="tok-nm">n</span> <span class="tok-op">*</span> <span class="tok-num">5</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div class="code-card" style="width:260px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+              <span class="fragment" data-trace-line="1" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-line="2" style="font-family:var(--font-mono);color:var(--text);font-size:var(--small);">&lt;class 'int'&gt;</span>
+              <span class="fragment fade-up" data-trace-line="3" style="font-family:var(--font-mono);color:var(--result);"><span class="tok-num">60</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 48 · MCQ — int(12.8) and int('two') predictions
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:48:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What is int(12.8)?","order":0,"responseTimeLimitMs":25000,"options":[{"id":"q1a","text":"12","isCorrect":true},{"id":"q1b","text":"13","isCorrect":false},{"id":"q1c","text":"12.8","isCorrect":false},{"id":"q1d","text":"This crashes.","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"What is int(&#39;two&#39;)?","order":1,"responseTimeLimitMs":25000,"options":[{"id":"q2a","text":"2","isCorrect":false},{"id":"q2b","text":"&#39;two&#39;","isCorrect":false},{"id":"q2c","text":"This crashes.","isCorrect":true}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2><code style="color:var(--text);">int()</code> has its limits</h2>
+        <div class="split split-50" style="margin-top:var(--gap);">
+          <div>
+            <p style="margin-bottom:var(--gap-sm);">What is <code style="color:var(--text);">int(12.8)</code>?</p>
+            <ul class="mcq-opts">
+              <li><span class="opt-key">A</span> <code>12</code></li>
+              <li><span class="opt-key">B</span> <code>13</code></li>
+              <li><span class="opt-key">C</span> <code>12.8</code></li>
+              <li><span class="opt-key">D</span> This crashes.</li>
+            </ul>
+          </div>
+          <div>
+            <p style="margin-bottom:var(--gap-sm);">What is <code style="color:var(--text);">int('two')</code>?</p>
+            <ul class="mcq-opts">
+              <li><span class="opt-key">A</span> <code>2</code></li>
+              <li><span class="opt-key">B</span> <code>'two'</code></li>
+              <li><span class="opt-key">C</span> This crashes.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 49 · CONCEPT — float/str/bool conversions, truthy/falsy
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">More Conversions</span>
+          <h2><code style="color:var(--text);">float()</code>, <code style="color:var(--text);">str()</code>, <span style="color:var(--accent);">bool()</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            Every type has its own conversion function: <code style="color:var(--text);">float('2.5')</code> is <code style="color:var(--text);">2.5</code>, and <code style="color:var(--text);">str(2.5)</code> is <code style="color:var(--text);">'2.5'</code>.
+          </p>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            <code style="color:var(--text);">bool()</code> is the most surprising one: it's <code style="color:var(--text);">False</code> for <code style="color:var(--text);">0</code>, <code style="color:var(--text);">0.0</code>, and <code style="color:var(--text);">''</code> (the empty string), and <code style="color:var(--text);">True</code> for every non-zero number and non-empty string.
+          </p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="var-box revealed" style="width:100%;">
+            <div class="var-box-name">bool(0)</div>
+            <div class="var-box-value"><span class="tok-bool">False</span></div>
+          </div>
+          <div class="var-box revealed" style="width:100%;">
+            <div class="var-box-name">bool('')</div>
+            <div class="var-box-value"><span class="tok-bool">False</span></div>
+          </div>
+          <div class="var-box revealed" style="width:100%;">
+            <div class="var-box-name">bool(-5)</div>
+            <div class="var-box-value"><span class="tok-bool">True</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 50 · INSTRUCTIONS — Truthy or Falsy? activity
+         ============================================================ -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Activity</span>
+        <h2>Truthy or Falsy?</h2>
+        <p style="font-size:var(--body);max-width:900px;margin-top:var(--gap);">
+          Drag (or click, then click the bin) each value chip into <span style="color:var(--result);">Truthy</span> or <span style="color:var(--warn);">Falsy</span>, based on what <code style="color:var(--text);">bool()</code> would return.
+          A couple of these look tricky at first: check whether the value is actually <code style="color:var(--text);">0</code>, <code style="color:var(--text);">0.0</code>, or <code style="color:var(--text);">''</code>, not just whether it looks small or empty.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 51 · ACTIVITY — Truthy or Falsy sort (custom HTML5 widget)
+         ============================================================ -->
+    <section data-truthysort-activity>
+      <div class="slide-inner">
+        <span class="slide-tag">Activity &middot; Truthy or Falsy?</span>
+        <div class="type-bins" data-type-bins></div>
+        <p class="trace-prompt" data-type-progress style="margin-top:var(--gap);"></p>
+        <div class="chip-tray" data-type-chips></div>
+        <p class="trace-feedback" data-type-feedback></p>
+        <p class="trace-done-banner" data-type-done>All 8 values sorted. bool() is False only for 0, 0.0, and the empty string, everything else is truthy.</p>
+        <button type="button" class="trace-reset" data-type-reset>&#8635; restart sort</button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 52 · CONCEPT — abs(), min(), max()
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Basic Math Functions</span>
+          <h2><code style="color:var(--text);">abs()</code>, <code style="color:var(--text);">min()</code>, <span style="color:var(--accent);">max()</span></h2>
+          <ul class="bullets" style="margin-top:var(--gap);">
+            <li><code style="color:var(--text);">abs(n)</code> returns the absolute value of <code style="color:var(--text);">n</code>.</li>
+            <li><code style="color:var(--text);">min()</code> and <code style="color:var(--text);">max()</code> return the smallest or largest of their arguments, and can take <strong>more than two</strong>: <code style="color:var(--text);">min(5, 1, 7)</code> is <code style="color:var(--text);">1</code>.</li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">print</span>(<span class="tok-kw">abs</span>(<span class="tok-op">-</span><span class="tok-num">5</span>))
+<span class="tok-kw">print</span>(<span class="tok-kw">max</span>(<span class="tok-num">2</span>, <span class="tok-num">3</span>))
+<span class="tok-kw">print</span>(<span class="tok-kw">min</span>(<span class="tok-num">2</span>, <span class="tok-num">3</span>))</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 53 · MOBCODE — run abs/min/max, incl. mixed int/float
+         ============================================================ -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"files":{"main.py":"print(abs(-5))\nprint(abs(-12) == abs(-12.0))\nprint(min(2, 3.5))\nprint(max(2, 3.5))\nprint(min(5, 1, 7))\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">See For Yourself</span>
+        <h2>Predict, then <span style="color:var(--accent);">check</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:900px;">
+          Predict each line before you run it. Pay attention to the second line: does <code style="color:var(--text);">abs()</code> care whether the argument is an <code style="color:var(--text);">int</code> or a <code style="color:var(--text);">float</code>?
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 54 · CONCEPT — avoid pow() and round()
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Some Builtins To Avoid</span>
+          <h2><code style="color:var(--text);">pow()</code> and <span style="color:var(--warn);">round()</span></h2>
+          <ul class="bullets" style="margin-top:var(--gap);">
+            <li><code style="color:var(--text);">pow(2, 3)</code> is the same as <code style="color:var(--text);">2 ** 3</code>. It's redundant, stick with <code style="color:var(--text);">**</code>.</li>
+            <li><code style="color:var(--text);">round()</code> does not always round to the nearest integer. On a halfway value like <code style="color:var(--text);">1.5</code> or <code style="color:var(--text);">2.5</code>, it rounds to the nearest <em>even</em> integer.</li>
+          </ul>
+        </div>
+        <div class="callout-warn">
+          Unexpected results should be avoided. Our linter will not accept code that uses the builtin <code>round()</code>. We'll give you a better alternative next.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 55 · MOBCODE — round(1.5) and round(2.5) surprise
+         ============================================================ -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"files":{"main.py":"print(round(1.5))\nprint(round(2.5))\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">See For Yourself</span>
+        <h2>Run it and look <span style="color:var(--warn);">closely</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:900px;">
+          Predict both lines, then run them. <code style="color:var(--text);">round(2.5)</code> probably won't be what you expect, that's the "round-half-to-even" behavior in action.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 56 · CONCEPT — math.floor/ceil + CPCS utils
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">A Better Toolbox</span>
+          <h2>Module &amp; <span style="color:var(--accent);">CPCS Utils</span> functions</h2>
+          <ul class="bullets" style="margin-top:var(--gap);">
+            <li><code style="color:var(--text);">math.floor(n)</code> and <code style="color:var(--text);">math.ceil(n)</code> return the integers just below and just above <code style="color:var(--text);">n</code>.</li>
+            <li>Never compare floats with <code style="color:var(--text);">==</code>. Use <code style="color:var(--text);">almostEqual(x, y)</code> from <code style="color:var(--text);">cmu_cpcs_utils</code> instead.</li>
+            <li>Need to round? Use <code style="color:var(--text);">rounded()</code> from <code style="color:var(--text);">cmu_cpcs_utils</code>, not the builtin <code style="color:var(--text);">round()</code>.</li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">from</span> <span class="tok-nm">cmu_cpcs_utils</span> <span class="tok-kw">import</span> <span class="tok-nm">almostEqual</span>, <span class="tok-nm">rounded</span>
+
+<span class="tok-kw">print</span>(<span class="tok-num">0.1</span> <span class="tok-op">+</span> <span class="tok-num">0.2</span> <span class="tok-op">==</span> <span class="tok-num">0.3</span>)          <span class="tok-cm"># False</span>
+<span class="tok-kw">print</span>(<span class="tok-nm">almostEqual</span>(<span class="tok-num">0.1</span> <span class="tok-op">+</span> <span class="tok-num">0.2</span>, <span class="tok-num">0.3</span>))  <span class="tok-cm"># True, whew!</span>
+<span class="tok-kw">print</span>(<span class="tok-nm">rounded</span>(<span class="tok-num">2.5</span>))               <span class="tok-cm"># 3, yes!</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 57 · MCQ — isclose vs almostEqual pitfall
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:57:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"True or False: math.isclose and almostEqual work identically, just like pow and ** do.","order":0,"responseTimeLimitMs":25000,"options":[{"id":"q1a","text":"True","isCorrect":false},{"id":"q1b","text":"False","isCorrect":true}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>Is <code style="color:var(--text);">math.isclose</code> a safe substitute?</h2>
+        <p style="margin-bottom:var(--gap);">True or False: <code>math.isclose</code> and <code>almostEqual</code> work identically, just like <code>pow</code> and <code>**</code> do.</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> True</li>
+          <li><span class="opt-key">B</span> False</li>
+        </ul>
+        <p style="font-size:var(--small);color:var(--text-dim);margin-top:var(--gap);max-width:900px;"><code style="color:var(--text);">math.isclose()</code> breaks down for values near <code style="color:var(--text);">0</code>: <code style="color:var(--text);">math.isclose(0.1 + 0.2 - 0.3, 0)</code> is <code style="color:var(--text);">False</code>. Stick with <code style="color:var(--text);">almostEqual</code>.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 58 · WRAP-UP — 1.3.2 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Helpful functions, used sparingly</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li><code style="color:var(--text);">isinstance(value, t)</code> checks a type; <code style="color:var(--text);">int()</code>, <code style="color:var(--text);">float()</code>, <code style="color:var(--text);">str()</code>, and <code style="color:var(--text);">bool()</code> convert between types.</li>
+          <li><code style="color:var(--text);">bool()</code> is <code style="color:var(--text);">False</code> only for <code style="color:var(--text);">0</code>, <code style="color:var(--text);">0.0</code>, and <code style="color:var(--text);">''</code>, everything else is truthy.</li>
+          <li>Avoid the builtin <code style="color:var(--text);">pow()</code> and <code style="color:var(--text);">round()</code>; use <code style="color:var(--text);">**</code> and <code style="color:var(--text);">cmu_cpcs_utils.rounded()</code> instead.</li>
+          <li>Never compare floats with <code style="color:var(--text);">==</code>, use <code style="color:var(--text);">almostEqual()</code>, not <code style="color:var(--text);">math.isclose()</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 59 · SECTION — 1.3.8 Console IO Functions
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.3.8 Console IO Functions</span>
+        <h2>Talking to the <span style="color:var(--accent);">console</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          "IO" stands for <span style="color:var(--result);">input and output</span>. The console is a text area where a program's output goes, and where a user can type input back to it.
+          We've used <code style="color:var(--text);">print()</code> for output already; now let's round it out, and meet <code style="color:var(--text);">input()</code>.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 60 · CODE — print() with multiple arguments
+         ============================================================ -->
+    <section data-fragment-trace>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">print(), Revisited</span>
+          <h2><span style="color:var(--accent);">Multiple arguments</span> to print()</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            <code style="color:var(--text);">print()</code> accepts any number of comma-separated values, and prints them on one line, each separated by a <span style="color:var(--result);">single space</span>.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-nm">x</span>, <span class="tok-nm">y</span> <span class="tok-op">=</span> <span class="tok-num">3</span>, <span class="tok-num">2</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span><span class="tok-kw">print</span>(<span class="tok-nm">x</span>, <span class="tok-str">'plus'</span>, <span class="tok-nm">y</span>, <span class="tok-str">'equals'</span>, <span class="tok-nm">x</span><span class="tok-op">+</span><span class="tok-nm">y</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div class="code-card" style="width:320px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;justify-content:center;">
+              <span class="fragment fade-up" data-trace-line="2" style="font-family:var(--font-mono);color:var(--text);">3 plus 2 equals 5</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 61 · MCQ — print(x, y, z)
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:61:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does the following code print?\n\n```python\nx = &#39;a&#39;\ny = &#39;b&#39;\nz = &#39;c&#39;\nprint(x, y, z)\n```","order":0,"responseTimeLimitMs":25000,"options":[{"id":"q1a","text":"&#39;a b c&#39;","isCorrect":false},{"id":"q1b","text":"a, b, c","isCorrect":false},{"id":"q1c","text":"abc","isCorrect":false},{"id":"q1d","text":"a b c","isCorrect":true}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>Three arguments, one line</h2>
+        <div class="code-card" style="max-width:320px;margin:var(--gap) 0;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-nm">x</span> <span class="tok-op">=</span> <span class="tok-str">'a'</span>
+<span class="tok-nm">y</span> <span class="tok-op">=</span> <span class="tok-str">'b'</span>
+<span class="tok-nm">z</span> <span class="tok-op">=</span> <span class="tok-str">'c'</span>
+<span class="tok-kw">print</span>(<span class="tok-nm">x</span>, <span class="tok-nm">y</span>, <span class="tok-nm">z</span>)</code></pre>
+          </div>
+        </div>
+        <p style="margin-bottom:var(--gap);">What does this print?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> <code>'a b c'</code></li>
+          <li><span class="opt-key">B</span> <code>a, b, c</code></li>
+          <li><span class="opt-key">C</span> <code>abc</code></li>
+          <li><span class="opt-key">D</span> <code>a b c</code></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 62 · CONCEPT — input() returns a string
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Getting Input</span>
+          <h2><code style="color:var(--text);">input()</code> always returns a <span style="color:var(--warn);">string</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            <code style="color:var(--text);">input(prompt)</code> shows <code style="color:var(--text);">prompt</code>, waits for the user to type something and press enter, then returns exactly what they typed.
+            Whatever they typed, even digits, comes back as a <span style="color:var(--warn);">str</span>, never a number.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-nm">name</span> <span class="tok-op">=</span> <span class="tok-kw">input</span>(<span class="tok-str">'Enter your name: '</span>)
+<span class="tok-kw">print</span>(<span class="tok-str">'Your name is'</span>, <span class="tok-nm">name</span>)</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 63 · MOBCODE — dogYears string-repetition bug
+         ============================================================ -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"files":{"main.py":"dogYears = input(\"Enter your dog&#39;s age in years: \")\nhumanYears = 7 * dogYears\nprint(\"Your dog&#39;s age in human years is\", humanYears)\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">See For Yourself</span>
+        <h2>Try (and <span style="color:var(--warn);">fail</span>) to input a number</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:900px;">
+          Run this and enter <code style="color:var(--text);">5</code> for the dog's age. Instead of <code style="color:var(--text);">35</code>, you'll see <code style="color:var(--text);">5555555</code>: since <code style="color:var(--text);">dogYears</code> is a <em>string</em>, <code style="color:var(--text);">7 * dogYears</code> repeats the string, it doesn't multiply a number.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 64 · CODE — fixed with int(input(...))
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The Fix</span>
+          <h2>Wrap it in <span style="color:var(--result);">int()</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            Convert the result of <code style="color:var(--text);">input()</code> before doing math with it. Now <code style="color:var(--text);">7 * dogYears</code> is ordinary multiplication.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-nm">dogYears</span> <span class="tok-op">=</span> <span class="tok-kw">int</span>(<span class="tok-kw">input</span>(<span class="tok-str">"Enter your dog's age in years: "</span>))
+<span class="tok-nm">humanYears</span> <span class="tok-op">=</span> <span class="tok-num">7</span> <span class="tok-op">*</span> <span class="tok-nm">dogYears</span>
+<span class="tok-kw">print</span>(<span class="tok-str">"Your dog's age in human years is"</span>, <span class="tok-nm">humanYears</span>)</code></pre>
+          </div>
+          <p style="font-size:var(--small);color:var(--text-dim);margin-top:var(--gap-sm);">We used double quotes here because the prompt text itself contains an apostrophe, in <code style="color:var(--text);">dog's</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 65 · MCQ — non-numeric input crashes on line 1
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:65:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What will happen if you don&#39;t input a number in the example above?\n\n```python\ndogYears = int(input(\"Enter your dog&#39;s age in years: \"))\nhumanYears = 7 * dogYears\nprint(\"Your dog&#39;s age in human years is\", humanYears)\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"It will not crash, and it will print \"Your dog&#39;s age in human years is\".","isCorrect":false},{"id":"q1b","text":"It will crash on line 1.","isCorrect":true},{"id":"q1c","text":"It will crash on line 2.","isCorrect":false},{"id":"q1d","text":"It will not crash, and nothing will print.","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>What if the input isn't a number?</h2>
+        <p style="margin-bottom:var(--gap);">What will happen if you don't input a number in the fixed example?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> It will not crash, and it will print "Your dog's age in human years is".</li>
+          <li><span class="opt-key">B</span> It will crash on line 1.</li>
+          <li><span class="opt-key">C</span> It will crash on line 2.</li>
+          <li><span class="opt-key">D</span> It will not crash, and nothing will print.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 66 · CONCEPT — debugging with labeled print statements
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">One Last Tip</span>
+          <h2>Debugging with <span style="color:var(--accent);">print()</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            As functions get more complex, add print statements inside them to check local variables while a failing test case runs.
+            One line will surprise you, and that's usually where the bug is.
+          </p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="callout-warn"><strong>Hard to read:</strong> <code>print(x)</code> just shows a bare value, with no label.</div>
+          <div class="callout-result"><strong>Better:</strong> <code>print('x:', x)</code> labels the value, so you know which variable produced it.</div>
+          <p style="font-size:var(--small);color:var(--text-dim);">Remove your debugging prints before you submit code to the autograder.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 67 · WRAP-UP — 1.3.8 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Console IO</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li><code style="color:var(--text);">print()</code> can take multiple comma-separated values, and joins them with a single space.</li>
+          <li><code style="color:var(--text);">input(prompt)</code> shows the prompt and always returns the user's text as a <code style="color:var(--text);">str</code>, even if it looks like a number.</li>
+          <li>Convert with <code style="color:var(--text);">int()</code> or <code style="color:var(--text);">float()</code> before doing math with input, or you'll repeat strings instead of computing.</li>
+          <li>Labeled print statements, <code style="color:var(--text);">print('x:', x)</code>, are one of the most effective debugging tools you have.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 68 · DECK WRAP-UP — Functions, the big picture
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Unit Recap</span>
+        <h2>Functions: the <span style="color:var(--accent);">big picture</span></h2>
+        <ul class="bullets" style="margin-top:var(--gap-lg);font-size:var(--body);">
+          <li><strong>Write your own:</strong> <code style="color:var(--text);">def</code>, parameters, a body, and <code style="color:var(--text);">return</code>, the value a call evaluates to.</li>
+          <li><strong>Print is not return.</strong> Only <code style="color:var(--text);">return</code> hands a value back to the caller.</li>
+          <li><strong>Scope</strong> keeps a function's locals private to that one call; avoid globals.</li>
+          <li><strong>Helper functions</strong> break big problems into small, testable, reusable pieces.</li>
+          <li><strong>Test functions</strong>, built from <code style="color:var(--text);">assert</code>, are how you catch the bugs a thin set of examples would miss.</li>
+          <li>Python's own <strong>helpful functions</strong> and <strong>console IO</strong> round out your toolkit, use them, but keep writing your own logic.</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ─── Activity: Trace the Call (slide 13) ───────────────────
+     Same interaction pattern as a var-box trace activity: read
+     a highlighted call, place the matching return-value chip
+     into the box. A static, non-interactive function definition
+     is prepended to the code panel for context. ──────────────── */
+
+  var callTraceSteps = [
+    {
+      varName: 'a',
+      lineHtml: '<span class="tok-nm">a</span> <span class="tok-op">=</span> <span class="tok-nm">double</span>(<span class="tok-num">3</span>)',
+      correct: '6',
+      correctClass: 'tok-num',
+      chips: ['6', '3', '9', '32'],
+      wrongFeedback: 'Substitute n = 3 into the function body: what does n * 2 evaluate to?'
+    },
+    {
+      varName: 'b',
+      lineHtml: '<span class="tok-nm">b</span> <span class="tok-op">=</span> <span class="tok-nm">double</span>(<span class="tok-nm">a</span>)',
+      correct: '12',
+      correctClass: 'tok-num',
+      chips: ['12', '6', '18', '62'],
+      wrongFeedback: 'a now holds 6. Call double with that value: what is 6 * 2?'
+    },
+    {
+      varName: 'c',
+      lineHtml: '<span class="tok-nm">c</span> <span class="tok-op">=</span> <span class="tok-nm">double</span>(<span class="tok-nm">b</span>) <span class="tok-op">+</span> <span class="tok-num">1</span>',
+      correct: '25',
+      correctClass: 'tok-num',
+      chips: ['25', '24', '13', '122'],
+      wrongFeedback: 'double(b) returns b * 2 first (b is 12, so 24). Then add 1 to that result.'
+    }
+  ];
+
+  var callTracePrefixLines = [
+    '<span class="tok-kw">def</span> <span class="tok-nm">double</span>(<span class="tok-nm">n</span>):',
+    '&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-nm">n</span> <span class="tok-op">*</span> <span class="tok-num">2</span>'
+  ];
+
+  function initCallTrace(slide) {
+    if (slide.dataset.traceWired) return;
+    slide.dataset.traceWired = 'true';
+
+    var codeEl = slide.querySelector('[data-trace-code]');
+    var boxesEl = slide.querySelector('[data-trace-boxes]');
+    var chipsEl = slide.querySelector('[data-trace-chips]');
+    var promptEl = slide.querySelector('[data-trace-prompt]');
+    var feedbackEl = slide.querySelector('[data-trace-feedback]');
+    var doneEl = slide.querySelector('[data-trace-done]');
+    var resetBtn = slide.querySelector('[data-trace-reset]');
+
+    var boxOrder = [];
+    callTraceSteps.forEach(function (step) {
+      if (boxOrder.indexOf(step.varName) === -1) boxOrder.push(step.varName);
+    });
+
+    var state = { current: 0, selectedChip: null, boxValues: {} };
+
+    function renderCode() {
+      var prefixHtml = callTracePrefixLines.map(function (html, i) {
+        return '<div class="code-line context"><span class="ln">' + (i + 1) + '</span><span>' + html + '</span></div>';
+      }).join('');
+      var tracedHtml = callTraceSteps.map(function (step, i) {
+        var cls = 'code-line ' + (i < state.current ? 'done' : i === state.current ? 'current' : 'pending');
+        return '<div class="' + cls + '"><span class="ln">' + (i + callTracePrefixLines.length + 1) + '</span><span>' + step.lineHtml + '</span></div>';
+      }).join('');
+      codeEl.innerHTML = prefixHtml + tracedHtml;
+    }
+
+    function renderBoxes() {
+      boxesEl.innerHTML = boxOrder.map(function (name) {
+        var firstStepIndex = callTraceSteps.findIndex(function (s) { return s.varName === name; });
+        var revealed = firstStepIndex <= state.current;
+        var isTarget = revealed && state.current < callTraceSteps.length && callTraceSteps[state.current].varName === name;
+        var value = state.boxValues[name];
+        var cls = 'var-box' + (revealed ? ' revealed' : '') + (isTarget ? ' target' : '');
+        var valueHtml = value ? '<span class="' + value.cls + '">' + escapeHtml(value.html) + '</span>' : '<span>&hellip;</span>';
+        return '<div class="' + cls + '" data-box="' + name + '" tabindex="0" role="button" aria-label="variable box ' + name + '">' +
+          '<div class="var-box-name">' + name + '</div>' +
+          '<div class="var-box-value">' + valueHtml + '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    function renderChips() {
+      if (state.current >= callTraceSteps.length) {
+        chipsEl.innerHTML = '';
+        promptEl.textContent = '';
+        return;
+      }
+      var step = callTraceSteps[state.current];
+      promptEl.innerHTML = 'Place the return value of the call that assigns <strong>' + step.varName + '</strong> on the highlighted line.';
+      chipsEl.innerHTML = step.chips.map(function (chip) {
+        var esc = escapeHtml(chip);
+        return '<div class="chip" draggable="true" tabindex="0" role="button" data-chip="' + esc + '">' + esc + '</div>';
+      }).join('');
+    }
+
+    function clearSelection() {
+      state.selectedChip = null;
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+    }
+
+    function setFeedback(text, kind) {
+      feedbackEl.textContent = text || '';
+      feedbackEl.classList.remove('good', 'bad');
+      if (kind) feedbackEl.classList.add(kind);
+    }
+
+    function attempt(chipValue) {
+      if (state.current >= callTraceSteps.length) return;
+      var step = callTraceSteps[state.current];
+      if (chipValue === step.correct) {
+        state.boxValues[step.varName] = { html: chipValue, cls: step.correctClass };
+        setFeedback('Correct. ' + step.varName + ' now holds ' + chipValue + '.', 'good');
+        state.current += 1;
+        clearSelection();
+        renderCode();
+        renderBoxes();
+        renderChips();
+        if (state.current >= callTraceSteps.length) {
+          doneEl.classList.add('visible');
+          setFeedback('', null);
+        }
+      } else {
+        setFeedback(step.wrongFeedback, 'bad');
+        var targetBox = boxesEl.querySelector('[data-box="' + step.varName + '"]');
+        if (targetBox) {
+          targetBox.classList.remove('shake');
+          void targetBox.offsetWidth;
+          targetBox.classList.add('shake');
+        }
+        clearSelection();
+      }
+    }
+
+    function reset() {
+      state.current = 0;
+      state.selectedChip = null;
+      state.boxValues = {};
+      doneEl.classList.remove('visible');
+      setFeedback('', null);
+      renderCode();
+      renderBoxes();
+      renderChips();
+    }
+
+    chipsEl.addEventListener('dragstart', function (event) {
+      var chip = event.target.closest('[data-chip]');
+      if (!chip) return;
+      event.dataTransfer.setData('text/plain', chip.getAttribute('data-chip'));
+      state.selectedChip = chip.getAttribute('data-chip');
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+    });
+    chipsEl.addEventListener('click', function (event) {
+      var chip = event.target.closest('[data-chip]');
+      if (!chip) return;
+      state.selectedChip = chip.getAttribute('data-chip');
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+    });
+    chipsEl.addEventListener('keydown', function (event) {
+      var chip = event.target.closest('[data-chip]');
+      if (!chip || (event.key !== 'Enter' && event.key !== ' ')) return;
+      event.preventDefault();
+      state.selectedChip = chip.getAttribute('data-chip');
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+    });
+
+    boxesEl.addEventListener('dragover', function (event) {
+      var box = event.target.closest('[data-box]');
+      if (!box || !box.classList.contains('target')) return;
+      event.preventDefault();
+    });
+    boxesEl.addEventListener('drop', function (event) {
+      var box = event.target.closest('[data-box]');
+      if (!box || !box.classList.contains('target')) return;
+      event.preventDefault();
+      var value = event.dataTransfer.getData('text/plain') || state.selectedChip;
+      if (value) attempt(value);
+    });
+    boxesEl.addEventListener('click', function (event) {
+      var box = event.target.closest('[data-box]');
+      if (!box || !box.classList.contains('target') || !state.selectedChip) return;
+      attempt(state.selectedChip);
+    });
+    boxesEl.addEventListener('keydown', function (event) {
+      var box = event.target.closest('[data-box]');
+      if (!box || !box.classList.contains('target')) return;
+      if ((event.key === 'Enter' || event.key === ' ') && state.selectedChip) {
+        event.preventDefault();
+        attempt(state.selectedChip);
+      }
+    });
+
+    resetBtn.addEventListener('click', reset);
+
+    reset();
+  }
+
+  /* ─── Activity: Truthy or Falsy? (slide 51) ─────────────────
+     Same interaction pattern as the type-sort bins activity:
+     drag/click each value chip into the bin it belongs to. ──── */
+
+  var truthyBinOrder = ['Truthy', 'Falsy'];
+  var truthyItems = [
+    { id: 'v1', display: '0', cls: 'tok-num', type: 'Falsy' },
+    { id: 'v2', display: '1', cls: 'tok-num', type: 'Truthy' },
+    { id: 'v3', display: '0.0', cls: 'tok-num', type: 'Falsy' },
+    {
+      id: 'v4', display: '-5', cls: 'tok-num', type: 'Truthy',
+      hint: '-5 is not zero, so bool(-5) is truthy. Only 0 and 0.0 themselves are falsy, negative numbers are still non-zero.'
+    },
+    { id: 'v5', display: "''", cls: 'tok-str', type: 'Falsy' },
+    {
+      id: 'v6', display: "' '", cls: 'tok-str', type: 'Truthy',
+      hint: 'A single space is still a character, so this string has length 1. Only the truly empty string \'\' is falsy.'
+    },
+    {
+      id: 'v7', display: "'False'", cls: 'tok-str', type: 'Truthy',
+      hint: 'This is the non-empty string "False", not the boolean False. Any non-empty string, even this one, is truthy.'
+    },
+    { id: 'v8', display: '0.01', cls: 'tok-num', type: 'Truthy' }
+  ];
+
+  function initTruthySort(slide) {
+    if (slide.dataset.typeWired) return;
+    slide.dataset.typeWired = 'true';
+
+    var binsEl = slide.querySelector('[data-type-bins]');
+    var chipsEl = slide.querySelector('[data-type-chips]');
+    var progressEl = slide.querySelector('[data-type-progress]');
+    var feedbackEl = slide.querySelector('[data-type-feedback]');
+    var doneEl = slide.querySelector('[data-type-done]');
+    var resetBtn = slide.querySelector('[data-type-reset]');
+
+    var state = { placed: {}, selectedChip: null };
+
+    function renderBins() {
+      binsEl.innerHTML = truthyBinOrder.map(function (type) {
+        var items = truthyItems.filter(function (item) { return state.placed[item.id] && item.type === type; });
+        var itemsHtml = items.map(function (item) {
+          return '<span class="type-chip">' + escapeHtml(item.display) + '</span>';
+        }).join('');
+        return '<div class="type-bin" data-bin="' + type + '" tabindex="0" role="button" aria-label="' + type + ' bin">' +
+          '<div class="type-bin-header">' + type + '</div>' +
+          '<div class="type-bin-items">' + itemsHtml + '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    function renderChips() {
+      var remaining = truthyItems.filter(function (item) { return !state.placed[item.id]; });
+      chipsEl.innerHTML = remaining.map(function (item) {
+        return '<div class="chip" draggable="true" tabindex="0" role="button" data-item="' + item.id + '"><span class="' + item.cls + '">' + escapeHtml(item.display) + '</span></div>';
+      }).join('');
+      if (progressEl) {
+        progressEl.textContent = (truthyItems.length - remaining.length) + ' of ' + truthyItems.length + ' sorted';
+      }
+    }
+
+    function clearSelection() {
+      state.selectedChip = null;
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+    }
+
+    function setFeedback(text, kind) {
+      feedbackEl.textContent = text || '';
+      feedbackEl.classList.remove('good', 'bad');
+      if (kind) feedbackEl.classList.add(kind);
+    }
+
+    function attempt(itemId, binType, binEl) {
+      var item = truthyItems.filter(function (i) { return i.id === itemId; })[0];
+      if (!item) return;
+      if (item.type === binType) {
+        state.placed[itemId] = true;
+        setFeedback(item.display + ' is ' + binType.toLowerCase() + '. Correct!', 'good');
+        clearSelection();
+        renderBins();
+        renderChips();
+        if (Object.keys(state.placed).length === truthyItems.length) {
+          doneEl.classList.add('visible');
+          setFeedback('', null);
+        }
+      } else {
+        setFeedback(item.hint || (item.display + ' is not ' + binType.toLowerCase() + '. Look again.'), 'bad');
+        if (binEl) {
+          binEl.classList.remove('shake');
+          void binEl.offsetWidth;
+          binEl.classList.add('shake');
+        }
+        clearSelection();
+      }
+    }
+
+    function reset() {
+      state.placed = {};
+      state.selectedChip = null;
+      doneEl.classList.remove('visible');
+      setFeedback('', null);
+      renderBins();
+      renderChips();
+    }
+
+    chipsEl.addEventListener('dragstart', function (event) {
+      var chip = event.target.closest('[data-item]');
+      if (!chip) return;
+      event.dataTransfer.setData('text/plain', chip.getAttribute('data-item'));
+      state.selectedChip = chip.getAttribute('data-item');
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+    });
+    chipsEl.addEventListener('click', function (event) {
+      var chip = event.target.closest('[data-item]');
+      if (!chip) return;
+      state.selectedChip = chip.getAttribute('data-item');
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+    });
+    chipsEl.addEventListener('keydown', function (event) {
+      var chip = event.target.closest('[data-item]');
+      if (!chip || (event.key !== 'Enter' && event.key !== ' ')) return;
+      event.preventDefault();
+      state.selectedChip = chip.getAttribute('data-item');
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+    });
+
+    binsEl.addEventListener('dragover', function (event) {
+      var bin = event.target.closest('[data-bin]');
+      if (!bin) return;
+      event.preventDefault();
+    });
+    binsEl.addEventListener('drop', function (event) {
+      var bin = event.target.closest('[data-bin]');
+      if (!bin) return;
+      event.preventDefault();
+      var itemId = event.dataTransfer.getData('text/plain') || state.selectedChip;
+      if (itemId) attempt(itemId, bin.getAttribute('data-bin'), bin);
+    });
+    binsEl.addEventListener('click', function (event) {
+      var bin = event.target.closest('[data-bin]');
+      if (!bin || !state.selectedChip) return;
+      attempt(state.selectedChip, bin.getAttribute('data-bin'), bin);
+    });
+    binsEl.addEventListener('keydown', function (event) {
+      var bin = event.target.closest('[data-bin]');
+      if (!bin || (event.key !== 'Enter' && event.key !== ' ') || !state.selectedChip) return;
+      event.preventDefault();
+      attempt(state.selectedChip, bin.getAttribute('data-bin'), bin);
+    });
+
+    resetBtn.addEventListener('click', reset);
+
+    reset();
+  }
+
+  /* ─── data-fragment-trace wiring: keeps the .code-line
+     current/done/pending highlight in sync with whichever
+     fragment is currently shown. Context (static, non-traced)
+     lines are excluded from the position count. ──────────────── */
+
+  function syncFragmentTrace(traceSlide, currentIndex) {
+    var lines = traceSlide.querySelectorAll('.code-line:not(.context)');
+    Array.prototype.forEach.call(lines, function (line, i) {
+      line.classList.remove('current', 'done', 'pending');
+      if (i < currentIndex) line.classList.add('done');
+      else if (i === currentIndex) line.classList.add('current');
+      else line.classList.add('pending');
+    });
+  }
+
+  initSyncDeckReveal({
+    deckId: 'hpy-1-3-functions',
+    standaloneHosting: {
+      activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+      hash: true,
+      hashOneBasedIndex: true,
+      transition: 'fade',
+      transitionSpeed: 'fast',
+      backgroundTransition: 'none',
+      center: false,
+      controls: true,
+      controlsLayout: 'edges',
+      progress: true,
+      slideNumber: 'c/t',
+      keyboard: true,
+      touch: true,
+      fragments: true,
+      width: 1600,
+      height: 900,
+      margin: 0.04,
+      minScale: 0.2,
+      maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+      var callTraceSlide = document.querySelector('[data-calltrace-activity]');
+      if (callTraceSlide) initCallTrace(callTraceSlide);
+
+      var truthySlide = document.querySelector('[data-truthysort-activity]');
+      if (truthySlide) initTruthySort(truthySlide);
+
+      Reveal.on('fragmentshown', function (event) {
+        var traceSlide = event.fragment.closest('section[data-fragment-trace]');
+        if (!traceSlide) return;
+        var traceLine = event.fragment.getAttribute('data-trace-line');
+        if (traceLine !== null) {
+          syncFragmentTrace(traceSlide, Number(traceLine));
+        } else {
+          var fragIndex = Number(event.fragment.getAttribute('data-fragment-index'));
+          syncFragmentTrace(traceSlide, fragIndex + 1);
+        }
+      });
+      Reveal.on('fragmenthidden', function (event) {
+        var traceSlide = event.fragment.closest('section[data-fragment-trace]');
+        if (!traceSlide) return;
+        var traceLine = event.fragment.getAttribute('data-trace-line');
+        if (traceLine !== null) {
+          syncFragmentTrace(traceSlide, Number(traceLine) - 1);
+        } else {
+          var fragIndex = Number(event.fragment.getAttribute('data-fragment-index'));
+          syncFragmentTrace(traceSlide, fragIndex);
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>
