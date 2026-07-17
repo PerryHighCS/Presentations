@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1.4 Binary Numbers</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Binary Numbers
+   ============================================================ */
+
+/* Big centered instructional slides */
+.instruction-icon {
+  font-size: 64px;
+  margin-bottom: var(--gap);
+  display: block;
+}
+
+/* ─── Circle/square pattern grid (place-value columns) ───────────────
+   Each .place-col is one "place." Reading across the columns at a
+   given row gives one full pattern; .place-numbers labels the rows. */
+.place-grid {
+  display: inline-flex;
+  gap: 30px;
+  align-items: flex-start;
+  margin-top: var(--gap-lg);
+}
+.place-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+.pc {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: 2px solid rgba(226,245,242,0.2);
+}
+.pc-circle {
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 16px rgba(0,201,177,0.25);
+}
+.pc-square {
+  border-radius: 5px;
+  background: var(--amber);
+  box-shadow: 0 0 16px rgba(255,212,59,0.2);
+}
+.place-col-underline {
+  width: 44px;
+  height: 2px;
+  background: var(--text-muted);
+  margin-top: 6px;
+}
+.place-numbers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+.place-numbers .pn {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 26px;
+  color: var(--teal);
+}
+
+/* ─── Digit columns (0-9 "shapes") ────────────────────────────────── */
+.digit-col-group {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  margin-top: var(--gap-lg);
+}
+.digit-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+.dc-num {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  color: var(--text);
+  line-height: 1.25;
+}
+.dc-num-sm {
+  font-size: 18px;
+  color: var(--text-muted);
+}
+
+/* ─── Shape → digit morph (custom fragment types) ─────────────────── */
+.morph-stage {
+  display: flex;
+  gap: 110px;
+  justify-content: center;
+  align-items: center;
+  margin-top: var(--gap-lg);
+}
+.morph-slot {
+  width: 150px;
+  height: 150px;
+}
+.morph-shape {
+  width: 120px;
+  height: 120px;
+  border: 2px solid rgba(226,245,242,0.2);
+}
+.morph-circle {
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 30px rgba(0,201,177,0.3);
+}
+.morph-square {
+  border-radius: 8px;
+  background: var(--amber);
+  box-shadow: 0 0 30px rgba(255,212,59,0.25);
+}
+.morph-digit {
+  font-family: var(--font-display);
+  font-size: 130px;
+  font-weight: 700;
+  line-height: 1;
+}
+/* Custom fragment type: visible by default, fades out on activation.
+   Uses 3 classes (.reveal .fragment.shape-out) for higher specificity
+   than theme.css's 2-class .reveal .fragment override. */
+.reveal .fragment.shape-out {
+  opacity: 1 !important;
+  visibility: inherit !important;
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease) !important;
+}
+.reveal .fragment.shape-out.visible {
+  opacity: 0 !important;
+  transform: scale(0.6) !important;
+}
+
+/* Step-through status line: layered via .r-stack; only the most recently
+   revealed fragment stays visible, so each new question replaces the last.
+   :has() finds any visible fragment that still has a later visible sibling
+   (i.e. it's not the latest) and hides it. */
+.reveal .step-through .fragment.visible:has(~ .fragment.visible) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* ─── 8-bit place-value table (Flippy-Do) ─────────────────────────── */
+.bit-table {
+  display: grid;
+  grid-template-columns: 150px repeat(8, 1fr);
+  gap: 3px;
+  margin-top: var(--gap);
+  max-width: 1200px;
+}
+.bt-label {
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--teal);
+  padding: 10px 6px;
+}
+.bt-label-sub { font-size: 14px; }
+.bt-cell {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 30px;
+  color: var(--text-muted);
+  padding: 12px 0;
+}
+.bt-exp { font-size: 17px; color: var(--text-dim); }
+.bt-val { font-size: 24px; }
+.bit-on { color: var(--amber); font-weight: 700; }
+
+/* ─── Decimal / Binary counting table ─────────────────────────────── */
+.dec-bin-table {
+  border-collapse: collapse;
+  margin: var(--gap-lg) auto 0;
+}
+.dec-bin-table th {
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  padding: 10px 34px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+.dec-bin-table td {
+  border: 1px solid var(--teal-border);
+  background: var(--bg-card);
+  padding: 12px 34px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--h3);
+  color: var(--text);
+}
+
+/* ─── Flippy-Do step layout ────────────────────────────────────────── */
+.flippy-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  gap: var(--gap-lg);
+  align-items: center;
+  width: 100%;
+  margin-top: var(--gap);
+}
+.flippy-photo-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flippy-photo-card img {
+  max-width: 100%;
+  max-height: 460px;
+  border-radius: 4px;
+  display: block;
+  box-shadow: 0 10px 34px rgba(0,0,0,0.4);
+}
+.flippy-equation {
+  margin-top: var(--gap);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  color: var(--amber);
+  background: rgba(255,212,59,0.06);
+  border: 1px solid var(--amber-border);
+  border-radius: 4px;
+  padding: 0.7em 1em;
+  display: inline-block;
+}
+
+/* ─── Ordered algorithm steps ──────────────────────────────────────── */
+.algo-steps {
+  list-style: none;
+  counter-reset: algo;
+  margin-top: var(--gap-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.algo-steps li {
+  counter-increment: algo;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  font-size: var(--h3);
+  color: var(--text);
+}
+.algo-steps li::before {
+  content: counter(algo);
+  flex-shrink: 0;
+  width: 1.4em;
+  height: 1.4em;
+  border-radius: 50%;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-size: 0.6em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Big display numbers for the "what comes next" beats */
+.big-digits {
+  font-family: var(--font-mono);
+  font-size: 90px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  text-align: center;
+}
+.big-digits .blank { color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 1 · Lesson 4</span>
+        <h1 class="title-h1">Binary Numbers</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 02 · FRQ: TWO SYMBOLS, HOW FAR CAN THEY GO? -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What are some things we can communicate with only two symbols? Is there a limit?","order":0}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ · Warm-Up</span>
+        <h2>Two Symbols, How Far Can They Go?</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap-sm);max-width:900px;">Last class, we built our own number system out of <span style="color:var(--teal);">circles</span> and <span style="color:var(--amber);">squares</span>.</p>
+        <div class="frq-box" style="margin-top:20px;">
+          <p>What are some things we can communicate with only two symbols? Is there a limit?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;right:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 03 · EXPLORATION -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Exploration</span>
+        <h2 style="margin-bottom:var(--gap);">Today, We Explore Binary Numbers</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1000px;">Every computer you have ever used, from a phone to a supercomputer, stores and moves information using only two symbols. Today we find out just how far two symbols can go.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 04 · ACTIVITY: HEAD TO YOUR TABLES -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="instruction-icon">🧑‍🤝‍🧑</span>
+        <span class="slide-tag">Activity · Get Ready</span>
+        <h2>Head to Your Tables</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-sm);max-width:820px;">Get back into your <span style="color:var(--teal);">pairs</span> from last class. You will need the patterns you built together.</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-150px;bottom:-150px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 05 · ONE PLACE, TWO PATTERNS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap · One Place</span>
+        <h2 style="margin-bottom:var(--gap-sm);">One Place, Two Patterns</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);">With only one spot to fill, a circle-and-square system can make just two different patterns.</p>
+        <div class="place-grid">
+          <div class="place-col">
+            <div class="pc pc-circle fragment" data-fragment-index="0"></div>
+            <div class="pc pc-square fragment" data-fragment-index="1"></div>
+            <div class="place-col-underline"></div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 06 · TWO PLACES, FOUR PATTERNS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap · Two Places</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Two Places, Four Patterns</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);">Add a second place, and the number of possible patterns doubles.</p>
+        <div class="place-grid">
+          <div class="place-col">
+            <div class="pc pc-circle fragment" data-fragment-index="0"></div>
+            <div class="pc pc-circle fragment" data-fragment-index="1"></div>
+            <div class="pc pc-square fragment" data-fragment-index="2"></div>
+            <div class="pc pc-square fragment" data-fragment-index="3"></div>
+            <div class="place-col-underline"></div>
+          </div>
+          <div class="place-col">
+            <div class="pc pc-circle fragment" data-fragment-index="0"></div>
+            <div class="pc pc-square fragment" data-fragment-index="1"></div>
+            <div class="pc pc-circle fragment" data-fragment-index="2"></div>
+            <div class="pc pc-square fragment" data-fragment-index="3"></div>
+            <div class="place-col-underline"></div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 07 · THREE PLACES, EIGHT PATTERNS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap · Three Places</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Three Places, Eight Patterns</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);">Add a third place, and it doubles again.</p>
+        <div class="place-grid">
+          <div class="place-col">
+            <div class="pc pc-circle fragment" data-fragment-index="0"></div>
+            <div class="pc pc-circle fragment" data-fragment-index="1"></div>
+            <div class="pc pc-circle fragment" data-fragment-index="2"></div>
+            <div class="pc pc-circle fragment" data-fragment-index="3"></div>
+            <div class="pc pc-square fragment" data-fragment-index="4"></div>
+            <div class="pc pc-square fragment" data-fragment-index="5"></div>
+            <div class="pc pc-square fragment" data-fragment-index="6"></div>
+            <div class="pc pc-square fragment" data-fragment-index="7"></div>
+            <div class="place-col-underline"></div>
+          </div>
+          <div class="place-col">
+            <div class="pc pc-circle fragment" data-fragment-index="0"></div>
+            <div class="pc pc-circle fragment" data-fragment-index="1"></div>
+            <div class="pc pc-square fragment" data-fragment-index="2"></div>
+            <div class="pc pc-square fragment" data-fragment-index="3"></div>
+            <div class="pc pc-circle fragment" data-fragment-index="4"></div>
+            <div class="pc pc-circle fragment" data-fragment-index="5"></div>
+            <div class="pc pc-square fragment" data-fragment-index="6"></div>
+            <div class="pc pc-square fragment" data-fragment-index="7"></div>
+            <div class="place-col-underline"></div>
+          </div>
+          <div class="place-col">
+            <div class="pc pc-circle fragment" data-fragment-index="0"></div>
+            <div class="pc pc-square fragment" data-fragment-index="1"></div>
+            <div class="pc pc-circle fragment" data-fragment-index="2"></div>
+            <div class="pc pc-square fragment" data-fragment-index="3"></div>
+            <div class="pc pc-circle fragment" data-fragment-index="4"></div>
+            <div class="pc pc-square fragment" data-fragment-index="5"></div>
+            <div class="pc pc-circle fragment" data-fragment-index="6"></div>
+            <div class="pc pc-square fragment" data-fragment-index="7"></div>
+            <div class="place-col-underline"></div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 08 · WE CAN NUMBER EACH PATTERN -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Big Idea</span>
+        <h2 style="margin-bottom:var(--gap-sm);">We Can Number Each Pattern</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);">Line the patterns up in order, and give each one a number.</p>
+        <div class="place-grid">
+          <div class="place-numbers">
+            <div class="pn">0</div><div class="pn">1</div><div class="pn">2</div><div class="pn">3</div>
+            <div class="pn">4</div><div class="pn">5</div><div class="pn">6</div><div class="pn">7</div>
+          </div>
+          <div class="place-col">
+            <div class="pc pc-circle"></div><div class="pc pc-circle"></div><div class="pc pc-circle"></div><div class="pc pc-circle"></div>
+            <div class="pc pc-square"></div><div class="pc pc-square"></div><div class="pc pc-square"></div><div class="pc pc-square"></div>
+            <div class="place-col-underline"></div>
+          </div>
+          <div class="place-col">
+            <div class="pc pc-circle"></div><div class="pc pc-circle"></div><div class="pc pc-square"></div><div class="pc pc-square"></div>
+            <div class="pc pc-circle"></div><div class="pc pc-circle"></div><div class="pc pc-square"></div><div class="pc pc-square"></div>
+            <div class="place-col-underline"></div>
+          </div>
+          <div class="place-col">
+            <div class="pc pc-circle"></div><div class="pc pc-square"></div><div class="pc pc-circle"></div><div class="pc pc-square"></div>
+            <div class="pc pc-circle"></div><div class="pc pc-square"></div><div class="pc pc-circle"></div><div class="pc pc-square"></div>
+            <div class="place-col-underline"></div>
+          </div>
+        </div>
+        <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-dim);margin-top:var(--gap);">Note: computer scientists like to start counting at <span style="color:var(--teal);">0</span>, not 1.</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;left:-160px;bottom:-160px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 09 · INSTEAD OF 2 SHAPES, WHAT ABOUT 10? -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Think About It</span>
+        <h2 style="max-width:1000px;">Instead of two shapes, what if we had ten?</h2>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;top:50%;transform:translateY(-50%);background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · ONE PLACE, TEN PATTERNS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">One Place, Ten Digits</span>
+        <h2 style="margin-bottom:var(--gap-sm);">One Place, Ten Patterns</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);">With ten different shapes to choose from, one place can show ten different patterns: 0 through 9.</p>
+        <div class="digit-col-group">
+          <div class="digit-col">
+            <div class="dc-num">0</div><div class="dc-num">1</div><div class="dc-num">2</div><div class="dc-num">3</div><div class="dc-num">4</div>
+            <div class="dc-num">5</div><div class="dc-num">6</div><div class="dc-num">7</div><div class="dc-num">8</div><div class="dc-num">9</div>
+            <div class="place-col-underline" style="width:56px;"></div>
+          </div>
+        </div>
+        <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-dim);margin-top:var(--gap);">These are still just shapes. We only use the marks 0-9 because they are familiar.</p>
+      </div>
+      <div class="glow" style="width:500px;height:500px;right:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · TWO PLACES, ONE HUNDRED PATTERNS -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Two Places, Ten Digits</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Two Places, One Hundred Patterns</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);">Add a second place, and those ten shapes combine into one hundred different patterns.</p>
+        <div class="digit-col-group" style="gap:20px;">
+          <div class="digit-col fragment fade-up" data-fragment-index="0">
+            <div class="dc-num dc-num-sm">00</div>
+            <div class="dc-num dc-num-sm">01</div>
+            <div class="dc-num dc-num-sm">02</div>
+            <div class="dc-num dc-num-sm">03</div>
+            <div class="dc-num dc-num-sm">04</div>
+            <div class="dc-num dc-num-sm">05</div>
+            <div class="dc-num dc-num-sm">06</div>
+            <div class="dc-num dc-num-sm">07</div>
+            <div class="dc-num dc-num-sm">08</div>
+            <div class="dc-num dc-num-sm">09</div>
+            <div class="place-col-underline" style="width:38px;"></div>
+          </div>
+          <div class="digit-col fragment fade-up" data-fragment-index="1">
+            <div class="dc-num dc-num-sm">10</div>
+            <div class="dc-num dc-num-sm">11</div>
+            <div class="dc-num dc-num-sm">12</div>
+            <div class="dc-num dc-num-sm">13</div>
+            <div class="dc-num dc-num-sm">14</div>
+            <div class="dc-num dc-num-sm">15</div>
+            <div class="dc-num dc-num-sm">16</div>
+            <div class="dc-num dc-num-sm">17</div>
+            <div class="dc-num dc-num-sm">18</div>
+            <div class="dc-num dc-num-sm">19</div>
+            <div class="place-col-underline" style="width:38px;"></div>
+          </div>
+          <div class="digit-col fragment fade-up" data-fragment-index="2">
+            <div class="dc-num dc-num-sm">20</div>
+            <div class="dc-num dc-num-sm">21</div>
+            <div class="dc-num dc-num-sm">22</div>
+            <div class="dc-num dc-num-sm">23</div>
+            <div class="dc-num dc-num-sm">24</div>
+            <div class="dc-num dc-num-sm">25</div>
+            <div class="dc-num dc-num-sm">26</div>
+            <div class="dc-num dc-num-sm">27</div>
+            <div class="dc-num dc-num-sm">28</div>
+            <div class="dc-num dc-num-sm">29</div>
+            <div class="place-col-underline" style="width:38px;"></div>
+          </div>
+          <div class="digit-col fragment fade-up" data-fragment-index="3">
+            <div class="dc-num dc-num-sm">30</div>
+            <div class="dc-num dc-num-sm">31</div>
+            <div class="dc-num dc-num-sm">32</div>
+            <div class="dc-num dc-num-sm">33</div>
+            <div class="dc-num dc-num-sm">34</div>
+            <div class="dc-num dc-num-sm">35</div>
+            <div class="dc-num dc-num-sm">36</div>
+            <div class="dc-num dc-num-sm">37</div>
+            <div class="dc-num dc-num-sm">38</div>
+            <div class="dc-num dc-num-sm">39</div>
+            <div class="place-col-underline" style="width:38px;"></div>
+          </div>
+          <div class="digit-col fragment fade-up" data-fragment-index="4">
+            <div class="dc-num dc-num-sm">40</div>
+            <div class="dc-num dc-num-sm">41</div>
+            <div class="dc-num dc-num-sm">42</div>
+            <div class="dc-num dc-num-sm">43</div>
+            <div class="dc-num dc-num-sm">44</div>
+            <div class="dc-num dc-num-sm">45</div>
+            <div class="dc-num dc-num-sm">46</div>
+            <div class="dc-num dc-num-sm">47</div>
+            <div class="dc-num dc-num-sm">48</div>
+            <div class="dc-num dc-num-sm">49</div>
+            <div class="place-col-underline" style="width:38px;"></div>
+          </div>
+          <div class="digit-col fragment fade-up" data-fragment-index="5">
+            <div class="dc-num dc-num-sm">50</div>
+            <div class="dc-num dc-num-sm">51</div>
+            <div class="dc-num dc-num-sm">52</div>
+            <div class="dc-num dc-num-sm">53</div>
+            <div class="dc-num dc-num-sm">54</div>
+            <div class="dc-num dc-num-sm">55</div>
+            <div class="dc-num dc-num-sm">56</div>
+            <div class="dc-num dc-num-sm">57</div>
+            <div class="dc-num dc-num-sm">58</div>
+            <div class="dc-num dc-num-sm">59</div>
+            <div class="place-col-underline" style="width:38px;"></div>
+          </div>
+          <div class="digit-col fragment fade-up" data-fragment-index="6">
+            <div class="dc-num dc-num-sm">60</div>
+            <div class="dc-num dc-num-sm">61</div>
+            <div class="dc-num dc-num-sm">62</div>
+            <div class="dc-num dc-num-sm">63</div>
+            <div class="dc-num dc-num-sm">64</div>
+            <div class="dc-num dc-num-sm">65</div>
+            <div class="dc-num dc-num-sm">66</div>
+            <div class="dc-num dc-num-sm">67</div>
+            <div class="dc-num dc-num-sm">68</div>
+            <div class="dc-num dc-num-sm">69</div>
+            <div class="place-col-underline" style="width:38px;"></div>
+          </div>
+          <div class="digit-col fragment fade-up" data-fragment-index="7">
+            <div class="dc-num dc-num-sm">70</div>
+            <div class="dc-num dc-num-sm">71</div>
+            <div class="dc-num dc-num-sm">72</div>
+            <div class="dc-num dc-num-sm">73</div>
+            <div class="dc-num dc-num-sm">74</div>
+            <div class="dc-num dc-num-sm">75</div>
+            <div class="dc-num dc-num-sm">76</div>
+            <div class="dc-num dc-num-sm">77</div>
+            <div class="dc-num dc-num-sm">78</div>
+            <div class="dc-num dc-num-sm">79</div>
+            <div class="place-col-underline" style="width:38px;"></div>
+          </div>
+          <div class="digit-col fragment fade-up" data-fragment-index="8">
+            <div class="dc-num dc-num-sm">80</div>
+            <div class="dc-num dc-num-sm">81</div>
+            <div class="dc-num dc-num-sm">82</div>
+            <div class="dc-num dc-num-sm">83</div>
+            <div class="dc-num dc-num-sm">84</div>
+            <div class="dc-num dc-num-sm">85</div>
+            <div class="dc-num dc-num-sm">86</div>
+            <div class="dc-num dc-num-sm">87</div>
+            <div class="dc-num dc-num-sm">88</div>
+            <div class="dc-num dc-num-sm">89</div>
+            <div class="place-col-underline" style="width:38px;"></div>
+          </div>
+          <div class="digit-col fragment fade-up" data-fragment-index="9">
+            <div class="dc-num dc-num-sm">90</div>
+            <div class="dc-num dc-num-sm">91</div>
+            <div class="dc-num dc-num-sm">92</div>
+            <div class="dc-num dc-num-sm">93</div>
+            <div class="dc-num dc-num-sm">94</div>
+            <div class="dc-num dc-num-sm">95</div>
+            <div class="dc-num dc-num-sm">96</div>
+            <div class="dc-num dc-num-sm">97</div>
+            <div class="dc-num dc-num-sm">98</div>
+            <div class="dc-num dc-num-sm">99</div>
+            <div class="place-col-underline" style="width:38px;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;top:-160px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 12 · WHITEBOARD POP QUIZ -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="instruction-icon">🖊️</span>
+        <span class="slide-tag">Whiteboards · Pop Quiz</span>
+        <h2>What Comes Next?</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-sm);max-width:820px;">Grab a <span style="color:var(--teal);">whiteboard</span>.</p>
+        <div class="big-digits" style="margin-top:var(--gap-lg);">0&nbsp;9&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;<span class="blank">_&nbsp;_&nbsp;_</span></div>
+        <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-lg);">Write down what comes next.</p>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 13 · ANSWER REVEAL -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Answer</span>
+        <h2>What Comes Next?</h2>
+        <div class="big-digits" style="margin-top:var(--gap-lg);">
+          0&nbsp;9&nbsp;9&nbsp;&nbsp;&nbsp;&nbsp;<span class="fragment fade-up" style="color:var(--amber);">1&nbsp;0&nbsp;0</span>
+        </div>
+        <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-lg);max-width:900px;">When every place runs out of digits at the same time, a brand-new place appears.</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;bottom:-160px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 14 · WHERE IS THIS HEADING? -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Big Picture</span>
+        <h2 style="max-width:900px;">Where is all of this heading?</h2>
+        <p class="fragment fade-up" style="font-size:110px;font-weight:700;color:var(--amber);margin-top:var(--gap-lg);font-family:var(--font-display);">Binary</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(255,212,59,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 15 · BINARY IS JUST A SYSTEM WITH TWO SHAPES -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Big Idea</span>
+        <h2 style="margin-bottom:var(--gap-sm);">"Binary" Is Just a System With Two Shapes</h2>
+        <div class="morph-stage">
+          <div class="morph-slot r-stack">
+            <div class="morph-shape morph-circle fragment shape-out" data-fragment-index="0"></div>
+            <div class="morph-digit fragment" data-fragment-index="0" style="color:var(--teal);">0</div>
+          </div>
+          <div class="morph-slot r-stack">
+            <div class="morph-shape morph-square fragment shape-out" data-fragment-index="0"></div>
+            <div class="morph-digit fragment" data-fragment-index="0" style="color:var(--amber);">1</div>
+          </div>
+        </div>
+        <p class="fragment fade-up" data-fragment-index="1" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-lg);">Computer scientists call each digit a <span style="color:var(--teal);">bit</span>, short for <span style="color:var(--teal);">bi</span>nary digi<span style="color:var(--teal);">t</span>.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 16 · ORGANIZED LISTS -> COUNTING IN BINARY -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Big Idea</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Making Organized Lists Is Counting in Binary</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);">The same eight patterns from before, numbered 0 through 7, are really just the binary numbers <span style="color:var(--amber);">000</span> through <span style="color:var(--amber);">111</span>.</p>
+        <div class="place-grid">
+          <div class="place-numbers">
+            <div class="pn">0</div><div class="pn">1</div><div class="pn">2</div><div class="pn">3</div>
+            <div class="pn">4</div><div class="pn">5</div><div class="pn">6</div><div class="pn">7</div>
+          </div>
+          <div class="place-col">
+            <div class="pc pc-circle"></div><div class="pc pc-circle"></div><div class="pc pc-circle"></div><div class="pc pc-circle"></div>
+            <div class="pc pc-square"></div><div class="pc pc-square"></div><div class="pc pc-square"></div><div class="pc pc-square"></div>
+            <div class="place-col-underline"></div>
+          </div>
+          <div class="place-col">
+            <div class="pc pc-circle"></div><div class="pc pc-circle"></div><div class="pc pc-square"></div><div class="pc pc-square"></div>
+            <div class="pc pc-circle"></div><div class="pc pc-circle"></div><div class="pc pc-square"></div><div class="pc pc-square"></div>
+            <div class="place-col-underline"></div>
+          </div>
+          <div class="place-col">
+            <div class="pc pc-circle"></div><div class="pc pc-square"></div><div class="pc pc-circle"></div><div class="pc pc-square"></div>
+            <div class="pc pc-circle"></div><div class="pc pc-square"></div><div class="pc pc-circle"></div><div class="pc pc-square"></div>
+            <div class="place-col-underline"></div>
+          </div>
+          <div class="place-numbers fragment fade-up" style="align-items:flex-start;margin-left:8px;">
+            <div class="pn" style="font-family:var(--font-mono);font-size:24px;color:var(--amber);">0 0 0</div>
+            <div class="pn" style="font-family:var(--font-mono);font-size:24px;color:var(--amber);">0 0 1</div>
+            <div class="pn" style="font-family:var(--font-mono);font-size:24px;color:var(--amber);">0 1 0</div>
+            <div class="pn" style="font-family:var(--font-mono);font-size:24px;color:var(--amber);">0 1 1</div>
+            <div class="pn" style="font-family:var(--font-mono);font-size:24px;color:var(--amber);">1 0 0</div>
+            <div class="pn" style="font-family:var(--font-mono);font-size:24px;color:var(--amber);">1 0 1</div>
+            <div class="pn" style="font-family:var(--font-mono);font-size:24px;color:var(--amber);">1 1 0</div>
+            <div class="pn" style="font-family:var(--font-mono);font-size:24px;color:var(--amber);">1 1 1</div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 17 · HOW DOES COUNTING IN BINARY WORK? -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Explanation</span>
+        <h2 style="margin-bottom:var(--gap);">How Does Counting in Binary Work?</h2>
+        <div class="two-col">
+          <p style="font-size:var(--body);color:var(--text-muted);">It works the same way as counting in decimal, just with fewer digits to worry about. Both start at 0. Count up through all your digits, and when you run out in the rightmost column, start that column back at 0 and count up in the next column over. Repeat that pattern for every column.</p>
+          <table class="dec-bin-table" style="margin-top:0;">
+            <thead><tr><th>Decimal</th><th>Binary</th></tr></thead>
+            <tbody>
+              <tr class="fragment fade-up"><td>0</td><td>0</td></tr>
+              <tr class="fragment fade-up"><td>9</td><td>1</td></tr>
+              <tr class="fragment fade-up"><td>10</td><td>10</td></tr>
+              <tr class="fragment fade-up"><td>&hellip;</td><td>&hellip;</td></tr>
+              <tr class="fragment fade-up"><td>19</td><td>11</td></tr>
+              <tr class="fragment fade-up"><td>20</td><td>100</td></tr>
+              <tr class="fragment fade-up"><td>21</td><td>101</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 18 · WHAT COMES NEXT? PRACTICE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Practice</span>
+        <h2>What Comes Next?</h2>
+        <table class="dec-bin-table">
+          <thead><tr><th>Decimal</th><th>Binary</th></tr></thead>
+          <tbody>
+            <tr><td>13</td><td>1101</td></tr>
+            <tr class="fragment fade-up"><td>14</td><td>1110</td></tr>
+          </tbody>
+        </table>
+        <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-lg);max-width:900px;">How can we figure out the binary representation of a number?</p>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;top:50%;transform:translateY(-50%);background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 19 · MAKING A FLIPPY-DO INTRO -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Hands-On · Flippy-Do</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">The Flippy-Do is a tool that will help you convert between decimal and binary by hand.</p>
+          <div class="flippy-photo-card"><img src="media/flippy-intro.jpg" alt="Blank index card and cut place-value flaps used to build a Flippy-Do"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;right:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 20 · STEP 1 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Step 1 of 13</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">Get a 3"&times;5" index card. Write your name in the big section on top.</p>
+          <div class="flippy-photo-card"><img src="media/flippy-step1.jpg" alt="Index card with name written in the top section"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 21 · STEP 2 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Step 2 of 13</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">Fold the section with your name on it backwards, along the line.</p>
+          <div class="flippy-photo-card"><img src="media/flippy-step2.jpg" alt="Index card folded backward along the first line"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 22 · STEP 3 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Step 3 of 13</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">Fold the front flap up along the horizontal line.</p>
+          <div class="flippy-photo-card"><img src="media/flippy-step3.jpg" alt="Front flap folded up along the horizontal line"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;top:50%;transform:translateY(-50%);background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 23 · STEP 4 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Step 4 of 13</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">Fold that flap back down. Cut the top flap along the vertical lines, stopping at the fold you just made.</p>
+          <div class="flippy-photo-card"><img src="media/flippy-step4.jpg" alt="Cutting the top flap along the vertical lines"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;bottom:-160px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 24 · STEP 5 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Step 5 of 13</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">You will now have 8 small flaps.</p>
+          <div class="flippy-photo-card"><img src="media/flippy-step5.jpg" alt="Card with 8 small cut flaps"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 25 · STEP 6 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Step 6 of 13</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">Unfold the card. It now has 3 sections: the top section with 8 flaps, a smaller middle strip, and a large bottom section. Spread glue along the middle strip and fold it closed again. This gives you a half-sized card with flaps along the bottom on the front, and your name on the back.</p>
+          <div class="flippy-photo-card"><img src="media/flippy-step6.jpg" alt="Glue spread along the middle strip before refolding"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 26 · STEP 7 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Step 7 of 13</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">Write a <span style="color:var(--teal);">0</span> in each of the flaps.</p>
+          <div class="flippy-photo-card"><img src="media/flippy-step7.jpg" alt="A zero written on each of the 8 flaps"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;top:50%;transform:translateY(-50%);background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 27 · STEP 8 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Step 8 of 13</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">Along the top edge, directly above each of the 0s you just wrote, write another small <span style="color:var(--teal);">0</span>.</p>
+          <div class="flippy-photo-card"><img src="media/flippy-step8.jpg" alt="A second row of zeros written above the flaps"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;bottom:-160px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 28 · STEP 9 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Step 9 of 13</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">Below the top row of 0s and above the flaps, write out the series of exponents of 2, starting with 2<sup>0</sup> on the right and ending with 2<sup>7</sup> on the left.</p>
+          <div class="flippy-photo-card"><img src="media/flippy-step9.jpg" alt="Exponents of 2 written above the flaps, from 2^7 on the left to 2^0 on the right"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 29 · STEP 10 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Step 10 of 13</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">Flip up the flaps. Along the top of each one, write a <span style="color:var(--amber);">1</span>, the same size as the small 0s from Step 7.</p>
+          <div class="flippy-photo-card"><img src="media/flippy-step10.jpg" alt="A one written on the top of each flipped-up flap"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 30 · STEP 11 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Step 11 of 13</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">Below the 1, write out the series of exponents again, starting with 2<sup>0</sup> on the right and ending with 2<sup>7</sup> on the left.</p>
+          <div class="flippy-photo-card"><img src="media/flippy-step11.jpg" alt="Exponents of 2 written a second time, below the flipped-up flaps"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;top:50%;transform:translateY(-50%);background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 31 · STEP 12 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Step 12 of 13</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">In the space below the flaps, write out the value of each exponent, with 1 on the right, ending with 128 on the left.</p>
+          <div class="flippy-photo-card"><img src="media/flippy-step12.jpg" alt="Place values 128, 64, 32, 16, 8, 4, 2, 1 written below the flaps"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;bottom:-160px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 32 · STEP 13 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Step 13 of 13</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1100px;">You now have a working Flippy-Do. Create a binary number along the top, and add up the numbers on the bottom to find its decimal value.</p>
+        <div style="display:flex;align-items:center;justify-content:center;gap:32px;margin-top:var(--gap-lg);">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
+            <div class="flippy-equation">10101010</div>
+            <div class="flippy-photo-card"><img src="media/flippy-step13.jpg" alt="Finished Flippy-Do showing the binary number 10101010" style="max-height:340px;"></div>
+            <div class="flippy-equation">128 + 0 + 32 + 0 + 8 + 0 + 2 + 0</div>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:60px;font-weight:700;color:var(--amber);">= 170</div>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 33 · STEP 14 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Bonus</span>
+        <h2 style="margin-bottom:var(--gap);">Making a Flippy-Do!</h2>
+        <div class="flippy-layout">
+          <p style="font-size:var(--h3);color:var(--text-muted);">Step 14. There is no step 14. Congratulations, you now have a working Flippy-Do!</p>
+          <div class="flippy-photo-card"><img src="media/flippy-step14.jpg" alt="The completed Flippy-Do materials"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 34 · EIGHT BITS MAKE A BYTE -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Using Your Flippy-Do</span>
+        <h2 style="margin-bottom:var(--gap);">Eight Bits Make a Byte</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1100px;">Each column represents one place in a binary number, called a <span style="color:var(--teal);">bit</span> (short for binary digit). Each bit can be a 0 or a 1. Your Flippy-Do has 8 columns, 8 bits, which together make one <span style="color:var(--amber);">byte</span>.</p>
+        <div class="bit-table">
+          <div class="bt-label">Binary Number</div>
+          <div class="bt-cell">0</div><div class="bt-cell">0</div><div class="bt-cell">0</div><div class="bt-cell">0</div>
+          <div class="bt-cell">0</div><div class="bt-cell">0</div><div class="bt-cell">0</div><div class="bt-cell">0</div>
+          <div class="bt-label bt-label-sub">Place Values</div>
+          <div class="bt-cell bt-exp">2<sup>7</sup></div><div class="bt-cell bt-exp">2<sup>6</sup></div><div class="bt-cell bt-exp">2<sup>5</sup></div><div class="bt-cell bt-exp">2<sup>4</sup></div>
+          <div class="bt-cell bt-exp">2<sup>3</sup></div><div class="bt-cell bt-exp">2<sup>2</sup></div><div class="bt-cell bt-exp">2<sup>1</sup></div><div class="bt-cell bt-exp">2<sup>0</sup></div>
+          <div class="bt-label"></div>
+          <div class="bt-cell bt-val">0</div><div class="bt-cell bt-val">0</div><div class="bt-cell bt-val">0</div><div class="bt-cell bt-val">0</div>
+          <div class="bt-cell bt-val">0</div><div class="bt-cell bt-val">0</div><div class="bt-cell bt-val">0</div><div class="bt-cell bt-val">0</div>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;right:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 35 · READING A BINARY NUMBER -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Worked Example</span>
+        <h2 style="margin-bottom:var(--gap);">Reading a Binary Number</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1100px;">Make the top row of your Flippy-Do look like the binary number <span style="color:var(--amber);">0001 0010</span>.</p>
+        <p class="big-quote" style="max-width:1100px;margin-top:var(--gap);">To make long binary numbers easier to read, we split the digits into groups of four, the same way commas split decimal digits into groups of three, like in 1,453,334.</p>
+        <div class="bit-table">
+          <div class="bt-label">Binary Number</div>
+          <div class="bt-cell">0</div><div class="bt-cell">0</div><div class="bt-cell">0</div><div class="bt-cell bit-on">1</div>
+          <div class="bt-cell">0</div><div class="bt-cell">0</div><div class="bt-cell bit-on">1</div><div class="bt-cell">0</div>
+          <div class="bt-label bt-label-sub">Place Values</div>
+          <div class="bt-cell bt-exp">2<sup>7</sup></div><div class="bt-cell bt-exp">2<sup>6</sup></div><div class="bt-cell bt-exp">2<sup>5</sup></div><div class="bt-cell bt-exp">2<sup>4</sup></div>
+          <div class="bt-cell bt-exp">2<sup>3</sup></div><div class="bt-cell bt-exp">2<sup>2</sup></div><div class="bt-cell bt-exp">2<sup>1</sup></div><div class="bt-cell bt-exp">2<sup>0</sup></div>
+          <div class="bt-label"></div>
+          <div class="bt-cell bt-val">0</div><div class="bt-cell bt-val">0</div><div class="bt-cell bt-val">0</div><div class="bt-cell bt-val bit-on">16</div>
+          <div class="bt-cell bt-val">0</div><div class="bt-cell bt-val">0</div><div class="bt-cell bt-val bit-on">2</div><div class="bt-cell bt-val">0</div>
+        </div>
+        <p class="fragment fade-up" style="margin-top:var(--gap);text-align:center;"><span class="flippy-equation">16 + 2 = 18</span></p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-100px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 36 · CONVERTING DECIMAL TO BINARY -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">The Other Direction</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Converting Decimal to Binary</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);">To go the other way, use your Flippy-Do to work through your number one place at a time.</p>
+        <ol class="algo-steps">
+          <li class="fragment fade-up">Flip every bit up.</li>
+          <li class="fragment fade-up">Flip down any place value bigger than your number.</li>
+          <li class="fragment fade-up">Subtract the biggest value left from your number.</li>
+          <li class="fragment fade-up">Move to the next column and repeat.</li>
+          <li class="fragment fade-up">Stop when you hit 0, and flip any remaining flaps to the right back down.</li>
+        </ol>
+      </div>
+      <div class="glow" style="width:500px;height:500px;right:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 37 · WORKED EXAMPLE: CONVERTING 5 TO BINARY -->
+    <section>
+      <div class="slide-inner" style="padding-top:40px;">
+        <span class="slide-tag">Worked Example</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Converting 5 to Binary</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);">We start with the number <span style="font-family:var(--font-mono);font-weight:700;color:var(--amber);">5</span> and step through each place value, from left to right.</p>
+
+        <div class="bit-table" style="margin-top:var(--gap-sm);">
+          <div class="bt-label">Binary Number</div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="1">1</span>
+            <span class="fragment" data-fragment-index="1" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="3">1</span>
+            <span class="fragment" data-fragment-index="3" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="5">1</span>
+            <span class="fragment" data-fragment-index="5" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="7">1</span>
+            <span class="fragment" data-fragment-index="7" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="9">1</span>
+            <span class="fragment" data-fragment-index="9" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="11">1</span>
+            <span class="fragment bit-on" data-fragment-index="11">1</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="15">1</span>
+            <span class="fragment" data-fragment-index="15" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="17">1</span>
+            <span class="fragment bit-on" data-fragment-index="17">1</span>
+          </div></div>
+
+          <div class="bt-label bt-label-sub">Place Values</div>
+          <div class="bt-cell bt-exp">2<sup>7</sup></div><div class="bt-cell bt-exp">2<sup>6</sup></div><div class="bt-cell bt-exp">2<sup>5</sup></div><div class="bt-cell bt-exp">2<sup>4</sup></div>
+          <div class="bt-cell bt-exp">2<sup>3</sup></div><div class="bt-cell bt-exp">2<sup>2</sup></div><div class="bt-cell bt-exp">2<sup>1</sup></div><div class="bt-cell bt-exp">2<sup>0</sup></div>
+
+          <div class="bt-label"></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="1">128</span>
+            <span class="fragment" data-fragment-index="1" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="3">64</span>
+            <span class="fragment" data-fragment-index="3" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="5">32</span>
+            <span class="fragment" data-fragment-index="5" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="7">16</span>
+            <span class="fragment" data-fragment-index="7" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="9">8</span>
+            <span class="fragment" data-fragment-index="9" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="11">4</span>
+            <span class="fragment bit-on" data-fragment-index="11">4</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="15">2</span>
+            <span class="fragment" data-fragment-index="15" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="17">1</span>
+            <span class="fragment bit-on" data-fragment-index="17">1</span>
+          </div></div>
+        </div>
+
+        <div class="r-stack step-through" style="margin-top:var(--gap);min-height:80px;">
+          <p class="fragment fade-up" data-fragment-index="0" style="font-size:var(--body);color:var(--text-muted);text-align:center;">Is <strong style="color:var(--text);">128</strong> bigger than 5? <span class="fragment" data-fragment-index="1" style="color:var(--text-dim);">Yes, flip it down.</span></p>
+          <p class="fragment fade-up" data-fragment-index="2" style="font-size:var(--body);color:var(--text-muted);text-align:center;">Is <strong style="color:var(--text);">64</strong> bigger than 5? <span class="fragment" data-fragment-index="3" style="color:var(--text-dim);">Yes, flip it down.</span></p>
+          <p class="fragment fade-up" data-fragment-index="4" style="font-size:var(--body);color:var(--text-muted);text-align:center;">Is <strong style="color:var(--text);">32</strong> bigger than 5? <span class="fragment" data-fragment-index="5" style="color:var(--text-dim);">Yes, flip it down.</span></p>
+          <p class="fragment fade-up" data-fragment-index="6" style="font-size:var(--body);color:var(--text-muted);text-align:center;">Is <strong style="color:var(--text);">16</strong> bigger than 5? <span class="fragment" data-fragment-index="7" style="color:var(--text-dim);">Yes, flip it down.</span></p>
+          <p class="fragment fade-up" data-fragment-index="8" style="font-size:var(--body);color:var(--text-muted);text-align:center;">Is <strong style="color:var(--text);">8</strong> bigger than 5? <span class="fragment" data-fragment-index="9" style="color:var(--text-dim);">Yes, flip it down.</span></p>
+          <p class="fragment fade-up" data-fragment-index="10" style="font-size:var(--body);color:var(--text-muted);text-align:center;">
+            Is <strong style="color:var(--text);">4</strong> bigger than 5? <span class="fragment" data-fragment-index="11" style="color:var(--amber);">No, keep it.</span>
+            <span class="fragment fade-up" data-fragment-index="12" style="display:block;color:var(--amber);margin-top:8px;">5 &minus; 4 = 1.</span>
+            <span class="fragment fade-up" data-fragment-index="13" style="display:block;color:var(--text-muted);margin-top:8px;">Keep going, but now with 1 instead of 5.</span>
+          </p>
+          <p class="fragment fade-up" data-fragment-index="14" style="font-size:var(--body);color:var(--text-muted);text-align:center;">Is <strong style="color:var(--text);">2</strong> bigger than 1? <span class="fragment" data-fragment-index="15" style="color:var(--text-dim);">Yes, flip it down.</span></p>
+          <p class="fragment fade-up" data-fragment-index="16" style="font-size:var(--body);color:var(--text-muted);text-align:center;">
+            Is <strong style="color:var(--text);">1</strong> bigger than 1? <span class="fragment" data-fragment-index="17" style="color:var(--amber);">No, keep it.</span>
+            <span class="fragment fade-up" data-fragment-index="18" style="display:block;color:var(--amber);margin-top:8px;">1 &minus; 1 = 0.</span>
+            <span class="fragment fade-up" data-fragment-index="19" style="display:block;color:var(--text-muted);margin-top:8px;">We hit 0, so we stop, flipping any flaps to the right back down. <span style="color:var(--text-dim);">(There are no flaps to the right in this case.)</span></span>
+          </p>
+        </div>
+
+        <p class="fragment fade-up" data-fragment-index="20" style="text-align:center;margin-top:var(--gap-sm);"><span class="flippy-equation">5 = 0000 0101, or just 101</span></p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;bottom:-160px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 38 · PRACTICE: BINARY TO DECIMAL (PREDICT FIRST) -->
+    <section>
+      <div class="slide-inner" style="padding-top:48px;">
+        <span class="slide-tag">Practice · Predict First</span>
+        <h2 style="margin-bottom:var(--gap-sm);">What's the Decimal Value?</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);">Here's a binary number: <span style="font-family:var(--font-mono);font-weight:700;color:var(--amber);">0001 1010</span></p>
+        <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-sm);">Before we work it out: what do you predict this equals in decimal? Talk with your partner, then write your guess on your whiteboard.</p>
+
+        <div class="bit-table fragment fade-up" style="margin-top:var(--gap);">
+          <div class="bt-label">Binary Number</div>
+          <div class="bt-cell">0</div><div class="bt-cell">0</div><div class="bt-cell">0</div><div class="bt-cell bit-on">1</div>
+          <div class="bt-cell bit-on">1</div><div class="bt-cell">0</div><div class="bt-cell bit-on">1</div><div class="bt-cell">0</div>
+          <div class="bt-label bt-label-sub">Place Values</div>
+          <div class="bt-cell bt-exp">2<sup>7</sup></div><div class="bt-cell bt-exp">2<sup>6</sup></div><div class="bt-cell bt-exp">2<sup>5</sup></div><div class="bt-cell bt-exp">2<sup>4</sup></div>
+          <div class="bt-cell bt-exp">2<sup>3</sup></div><div class="bt-cell bt-exp">2<sup>2</sup></div><div class="bt-cell bt-exp">2<sup>1</sup></div><div class="bt-cell bt-exp">2<sup>0</sup></div>
+          <div class="bt-label"></div>
+          <div class="bt-cell bt-val">0</div><div class="bt-cell bt-val">0</div><div class="bt-cell bt-val">0</div><div class="bt-cell bt-val bit-on">16</div>
+          <div class="bt-cell bt-val bit-on">8</div><div class="bt-cell bt-val">0</div><div class="bt-cell bt-val bit-on">2</div><div class="bt-cell bt-val">0</div>
+        </div>
+        <p class="fragment fade-up" style="text-align:center;margin-top:var(--gap-sm);"><span class="flippy-equation">16 + 8 + 2 = 26</span></p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 39 · PRACTICE: DECIMAL TO BINARY (PREDICT FIRST) -->
+    <section>
+      <div class="slide-inner" style="padding-top:40px;">
+        <span class="slide-tag">Practice · Predict First</span>
+        <h2 style="margin-bottom:var(--gap-sm);">What's the Binary Value?</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);">Let's convert the number <span style="font-family:var(--font-mono);font-weight:700;color:var(--amber);">36</span> to binary, an even number this time.</p>
+        <p class="fragment fade-up" data-fragment-index="0" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-sm);">Before we work it out: what do you predict this looks like in binary? Talk with your partner, then write your guess on your whiteboard.</p>
+
+        <div class="bit-table" style="margin-top:var(--gap-sm);">
+          <div class="bt-label">Binary Number</div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="2">1</span>
+            <span class="fragment" data-fragment-index="2" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="4">1</span>
+            <span class="fragment" data-fragment-index="4" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="6">1</span>
+            <span class="fragment bit-on" data-fragment-index="6">1</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="10">1</span>
+            <span class="fragment" data-fragment-index="10" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="12">1</span>
+            <span class="fragment" data-fragment-index="12" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="14">1</span>
+            <span class="fragment bit-on" data-fragment-index="14">1</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="16">1</span>
+            <span class="fragment" data-fragment-index="16" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="16">1</span>
+            <span class="fragment" data-fragment-index="16" style="color:var(--text-dim);">0</span>
+          </div></div>
+
+          <div class="bt-label bt-label-sub">Place Values</div>
+          <div class="bt-cell bt-exp">2<sup>7</sup></div><div class="bt-cell bt-exp">2<sup>6</sup></div><div class="bt-cell bt-exp">2<sup>5</sup></div><div class="bt-cell bt-exp">2<sup>4</sup></div>
+          <div class="bt-cell bt-exp">2<sup>3</sup></div><div class="bt-cell bt-exp">2<sup>2</sup></div><div class="bt-cell bt-exp">2<sup>1</sup></div><div class="bt-cell bt-exp">2<sup>0</sup></div>
+
+          <div class="bt-label"></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="2">128</span>
+            <span class="fragment" data-fragment-index="2" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="4">64</span>
+            <span class="fragment" data-fragment-index="4" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="6">32</span>
+            <span class="fragment bit-on" data-fragment-index="6">32</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="10">16</span>
+            <span class="fragment" data-fragment-index="10" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="12">8</span>
+            <span class="fragment" data-fragment-index="12" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="14">4</span>
+            <span class="fragment bit-on" data-fragment-index="14">4</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="16">2</span>
+            <span class="fragment" data-fragment-index="16" style="color:var(--text-dim);">0</span>
+          </div></div>
+          <div class="bt-cell bt-val"><div class="r-stack">
+            <span class="fragment shape-out" data-fragment-index="16">1</span>
+            <span class="fragment" data-fragment-index="16" style="color:var(--text-dim);">0</span>
+          </div></div>
+        </div>
+
+        <div class="r-stack step-through" style="margin-top:var(--gap);min-height:80px;">
+          <p class="fragment fade-up" data-fragment-index="1" style="font-size:var(--body);color:var(--text-muted);text-align:center;">Is <strong style="color:var(--text);">128</strong> bigger than 36? <span class="fragment" data-fragment-index="2" style="color:var(--text-dim);">Yes, flip it down.</span></p>
+          <p class="fragment fade-up" data-fragment-index="3" style="font-size:var(--body);color:var(--text-muted);text-align:center;">Is <strong style="color:var(--text);">64</strong> bigger than 36? <span class="fragment" data-fragment-index="4" style="color:var(--text-dim);">Yes, flip it down.</span></p>
+          <p class="fragment fade-up" data-fragment-index="5" style="font-size:var(--body);color:var(--text-muted);text-align:center;">
+            Is <strong style="color:var(--text);">32</strong> bigger than 36? <span class="fragment" data-fragment-index="6" style="color:var(--amber);">No, keep it.</span>
+            <span class="fragment fade-up" data-fragment-index="7" style="display:block;color:var(--amber);margin-top:8px;">36 &minus; 32 = 4.</span>
+            <span class="fragment fade-up" data-fragment-index="8" style="display:block;color:var(--text-muted);margin-top:8px;">Keep going, but now with 4 instead of 36.</span>
+          </p>
+          <p class="fragment fade-up" data-fragment-index="9" style="font-size:var(--body);color:var(--text-muted);text-align:center;">Is <strong style="color:var(--text);">16</strong> bigger than 4? <span class="fragment" data-fragment-index="10" style="color:var(--text-dim);">Yes, flip it down.</span></p>
+          <p class="fragment fade-up" data-fragment-index="11" style="font-size:var(--body);color:var(--text-muted);text-align:center;">Is <strong style="color:var(--text);">8</strong> bigger than 4? <span class="fragment" data-fragment-index="12" style="color:var(--text-dim);">Yes, flip it down.</span></p>
+          <p class="fragment fade-up" data-fragment-index="13" style="font-size:var(--body);color:var(--text-muted);text-align:center;">
+            Is <strong style="color:var(--text);">4</strong> bigger than 4? <span class="fragment" data-fragment-index="14" style="color:var(--amber);">No, keep it.</span>
+            <span class="fragment fade-up" data-fragment-index="15" style="display:block;color:var(--amber);margin-top:8px;">4 &minus; 4 = 0.</span>
+            <span class="fragment fade-up" data-fragment-index="16" style="display:block;color:var(--text-muted);margin-top:8px;">We hit 0 with two columns still to go, so we flip the <strong style="color:var(--text);">2</strong> and <strong style="color:var(--text);">1</strong> flaps down together, without even checking them.</span>
+          </p>
+        </div>
+
+        <p class="fragment fade-up" data-fragment-index="17" style="text-align:center;margin-top:var(--gap-sm);"><span class="flippy-equation">36 = 0010 0100</span></p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;bottom:-160px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 40 · WRAP UP -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Wrap Up</span>
+        <h2 style="margin-bottom:var(--gap);">Two Ways to Write the Same Number</h2>
+        <div class="two-col">
+          <div>
+            <p style="font-size:var(--body);color:var(--text-muted);margin-bottom:var(--gap-sm);"><strong style="color:var(--text);">Decimal Number:</strong> a base 10 number with 10 possible digits, 0 through 9.</p>
+            <table class="dec-bin-table" style="margin:0;">
+              <tbody>
+                <tr><td>10<sup>1</sup></td><td>10<sup>0</sup></td></tr>
+                <tr><td>10</td><td>1</td></tr>
+                <tr><td>2</td><td>3</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <p style="font-size:var(--body);color:var(--text-muted);margin-bottom:var(--gap-sm);"><strong style="color:var(--text);">Binary Number:</strong> a base 2 number with 2 possible digits, 0 and 1.</p>
+            <table class="dec-bin-table" style="margin:0;">
+              <tbody>
+                <tr><td>2<sup>4</sup></td><td>2<sup>3</sup></td><td>2<sup>2</sup></td><td>2<sup>1</sup></td><td>2<sup>0</sup></td></tr>
+                <tr><td>16</td><td>8</td><td>4</td><td>2</td><td>1</td></tr>
+                <tr><td>1</td><td>0</td><td>1</td><td>1</td><td>1</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="fragment fade-up" style="text-align:center;margin-top:var(--gap-lg);">
+          <p style="font-size:var(--h3);color:var(--teal);text-align:center;margin-top:var(--gap-lg);">23 in decimal is 10111 in binary.</p>
+          <p style="font-size:var(--h3);color:var(--text-muted);text-align:center;">Both forms represent the same value.</p>
+          <p style="font-size:var(--h3);color:var(--text-muted);text-align:center;">We just have two different ways to write it.</p>      
+        </div>
+      </div>
+      <div class="glow" style="width:700px;height:700px;right:-180px;top:-180px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 68%);"></div>
+      <div class="glow" style="width:500px;height:500px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-1-4-binary-numbers',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
