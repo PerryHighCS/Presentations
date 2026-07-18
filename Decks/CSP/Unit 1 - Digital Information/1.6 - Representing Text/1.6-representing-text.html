@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1.6 Representing Text</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Representing Text
+   ============================================================ */
+
+/* Big centered instructional slides */
+.instruction-icon {
+  font-size: 64px;
+  margin-bottom: var(--gap);
+  display: block;
+}
+
+/* ─── Warm-up number-pair table ───────────────────────────────────── */
+.pair-table {
+  border-collapse: collapse;
+  margin: var(--gap-lg) auto 0;
+}
+.pair-table td {
+  border: 1px solid var(--teal-border);
+  background: var(--bg-card);
+  padding: 10px 40px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--h3);
+  color: var(--text);
+}
+
+/* ─── Sample-message chips ────────────────────────────────────────── */
+.sample-row {
+  display: flex;
+  gap: 24px;
+  margin-top: var(--gap-lg);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.sample-chip {
+  background: var(--bg-card);
+  border: 1px solid var(--amber-border);
+  border-radius: 6px;
+  padding: 14px 30px;
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--amber);
+}
+
+/* ─── Answer reveal box ────────────────────────────────────────────── */
+.answer-box {
+  display: inline-block;
+  margin-top: var(--gap-lg);
+  padding: 0.5em 0.9em;
+  border: 2px solid var(--amber-border);
+  background: rgba(255,212,59,0.08);
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 60px;
+  font-weight: 700;
+  color: var(--amber);
+}
+
+/* ─── No-talking notice ───────────────────────────────────────────── */
+.no-talking {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: var(--gap-lg) auto 0;
+  padding: 10px 24px;
+  border: 1px solid rgba(255,107,107,0.4);
+  background: rgba(255,107,107,0.07);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--red);
+}
+
+/* ─── Control-character chips ─────────────────────────────────────── */
+.ctrl-row {
+  display: flex;
+  gap: 14px;
+  margin-top: var(--gap-lg);
+  flex-wrap: wrap;
+}
+.ctrl-chip {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  background: rgba(255,107,107,0.07);
+  border: 1px solid rgba(255,107,107,0.35);
+  border-radius: 999px;
+  padding: 8px 18px;
+}
+.ctrl-code {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--red);
+  font-size: 18px;
+}
+.ctrl-name {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+/* ─── ASCII grid (32-127) ─────────────────────────────────────────── */
+.ascii-grid {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 4px;
+  margin-top: var(--gap);
+}
+.ascii-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 3px;
+  padding: 9px 2px;
+}
+.ac-code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.ac-char {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-muted);
+}
+.ac-sp {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+.ac-digit { }
+.ac-digit .ac-char { color: var(--amber); }
+.ac-upper { }
+.ac-upper .ac-char { color: var(--teal); }
+.ac-lower { }
+.ac-lower .ac-char { color: var(--green); }
+.ac-sym .ac-char { color: var(--text-muted); font-weight: 400; }
+.ac-ctrl {
+  border-color: rgba(255,107,107,0.35);
+  background: rgba(255,107,107,0.06);
+}
+.ac-ctrl .ac-char { color: var(--red); font-size: 14px; }
+
+/* ─── ASCII legend ─────────────────────────────────────────────────── */
+.ascii-legend {
+  display: flex;
+  gap: 26px;
+  margin-top: var(--gap-sm);
+  flex-wrap: wrap;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ─── Layer stack (Text → ASCII → Binary) ─────────────────────────── */
+.layer-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: var(--gap-lg);
+}
+.layer-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.layer-label {
+  width: 84px;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  text-align: right;
+}
+.layer-grid {
+  display: grid;
+  grid-template-columns: repeat(15, 1fr);
+  gap: 4px;
+  flex: 1;
+}
+.layer-cell {
+  text-align: center;
+  font-family: var(--font-mono);
+  padding: 8px 2px;
+  border-radius: 3px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+}
+.lc-text { font-size: 22px; font-weight: 700; color: var(--text); }
+.lc-code { font-size: 15px; color: var(--teal); }
+.lc-bin { font-size: 11px; letter-spacing: -0.02em; color: var(--amber); }
+
+/* ─── Bit-stream display ──────────────────────────────────────────── */
+.bitstream-block {
+  margin-top: var(--gap);
+}
+.bitstream-line {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  letter-spacing: 3px;
+  line-height: 1.8;
+  word-break: break-all;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 20px 26px;
+}
+.bitstream-line.grouped {
+  letter-spacing: normal;
+  word-break: normal;
+  color: var(--amber);
+  border-color: var(--amber-border);
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 1 · Lesson 6</span>
+        <h1 class="title-h1">Representing Text</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 02 · FRQ: WARM-UP, WHAT DOES THIS LIST REPRESENT -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What do you think this list represents?\n\n- 1 1\n- 2 14\n- 7 4\n- 10 31\n\nOnce you have an idea, come up with another item that belongs on the list, and be ready to explain why.","order":0}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ · Warm-Up</span>
+        <h2>What Does This List Represent?</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap-sm);max-width:900px;">On your own, look at the list of number pairs below.</p>
+        <table class="pair-table">
+          <tbody>
+            <tr><td>1</td><td>1</td></tr>
+            <tr><td>2</td><td>14</td></tr>
+            <tr><td>7</td><td>4</td></tr>
+            <tr><td>10</td><td>31</td></tr>
+          </tbody>
+        </table>
+        <div class="frq-box" style="margin-top:var(--gap-lg);">
+          <p>What do you think this list represents? Once you have an idea, come up with another item that belongs on the list, and be ready to explain why.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;right:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 03 · ACTIVITY: HEAD TO YOUR TABLES -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="instruction-icon">🧑‍🤝‍🧑</span>
+        <span class="slide-tag">Activity · Get Ready</span>
+        <h2>Head to Your Tables</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-sm);max-width:900px;">For this activity, get into <span style="color:var(--teal);">pairs</span>. You'll need a way to send short messages back and forth without talking.</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-150px;bottom:-150px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 04 · SENDING MESSAGES: DESIGN A SYSTEM -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Activity · Design Challenge</span>
+        <h2 style="margin-bottom:var(--gap);">Sending Messages</h2>
+        <p style="font-size:var(--h3);color:var(--text);">Look at the samples below. Using <strong style="color:var(--text);">only numbers</strong>, you will need to communicate messages like these to your partner. No letters or other characters allowed, <em style="color:var(--amber);">just numbers!</em></p>
+        <p style="font-size:var(--h3);color:var(--text);margin-top:var(--gap-sm);">Together, come up with a system that will let you do this.</p>
+        <div class="sample-row">
+          <div class="sample-chip">hey</div>
+          <div class="sample-chip">ttyl</div>
+          <div class="sample-chip">morning</div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 05 · SHARE YOUR SYSTEM -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Design Challenge · Share Out</span>
+        <h2 style="margin-bottom:var(--gap);">Share Your System</h2>
+        <p class="big-quote">Before we start sending real messages, each pair briefly explain the system you came up with. What does each number mean?</p>
+      </div>
+      <div class="glow" style="width:500px;height:500px;right:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 06 · CHALLENGE 1: ROLES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Challenge 1</span>
+        <h2 style="margin-bottom:var(--gap);">Send the Message</h2>
+        <div class="two-col">
+          <div class="callout">
+            <h3>Partner A</h3>
+            <p>Come up front to find out the message you'll need to send. Using your system, send it to your partner.</p>
+          </div>
+          <div class="callout accent-amber">
+            <h3>Partner B</h3>
+            <p>Figure out what the message says. You'll need to tell me what it said.</p>
+          </div>
+        </div>
+        <div class="slide-center" style="align-items:center;"><span class="no-talking">🤐 No talking!</span></div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 07 · CHALLENGE 1: SHARE YOUR SYSTEM -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Challenge 1 · Share Out</span>
+        <h2 style="margin-bottom:var(--gap);">How Did You Send It?</h2>
+        <p class="big-quote">Each pair, explain your system: how did you turn the message into numbers, and how did your partner turn the numbers back into words?</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;bottom:-160px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 08 · CHALLENGE 1: CHECK YOUR ANSWER -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Challenge 1 · Answer</span>
+        <h2>Check Your Answer</h2>
+        <div class="answer-box fragment fade-up">Tsk tsk</div>
+        <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-dim);margin-top:var(--gap-sm);">Make sure your message matches this exactly, including capitalization and spacing.</p>
+        <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-lg);">Take a minute with your partner to update your system if you need to.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 09 · CHALLENGE 2: ROLES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Challenge 2</span>
+        <h2 style="margin-bottom:var(--gap);">Send the Message</h2>
+        <div class="two-col">
+          <div class="callout accent-amber">
+            <h3>Partner A</h3>
+            <p>Figure out what the message says. You'll need to tell me what it said.</p>
+          </div>
+          <div class="callout">
+            <h3>Partner B</h3>
+            <p>Come up front to find out the message you'll need to send. Using your system, send it to your partner.</p>
+          </div>
+        </div>
+        <div class="slide-center" style="align-items:center;"><span class="no-talking">🤐 No talking!</span></div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · CHALLENGE 2: SHARE YOUR SYSTEM -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Challenge 2 · Share Out</span>
+        <h2 style="margin-bottom:var(--gap);">How Did You Send It?</h2>
+        <p class="big-quote">Each pair, explain your system: how did you turn the message into numbers, and how did your partner turn the numbers back into words?</p>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;top:50%;transform:translateY(-50%);background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · CHALLENGE 2: CHECK YOUR ANSWER -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Challenge 2 · Answer</span>
+        <h2>Check Your Answer</h2>
+        <div class="answer-box fragment fade-up">great!</div>
+        <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-dim);margin-top:var(--gap-sm);">Make sure your message matches this exactly, including the punctuation.</p>
+        <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-lg);">Take a minute with your partner to update your system if you need to.</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;left:-160px;bottom:-160px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 12 · CHALLENGE 3: ROLES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Challenge 3</span>
+        <h2 style="margin-bottom:var(--gap);">Send the Message</h2>
+        <div class="two-col">
+          <div class="callout">
+            <h3>Partner A</h3>
+            <p>Come up front to find out the message you'll need to send. Using your system, send it to your partner.</p>
+          </div>
+          <div class="callout accent-amber">
+            <h3>Partner B</h3>
+            <p>Figure out what the message says. You'll need to tell me what it said.</p>
+          </div>
+        </div>
+        <div class="slide-center" style="align-items:center;"><span class="no-talking">🤐 No talking!</span></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 13 · CHALLENGE 3: SHARE YOUR SYSTEM -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Challenge 3 · Share Out</span>
+        <h2 style="margin-bottom:var(--gap);">How Did You Send It?</h2>
+        <p class="big-quote">Each pair, explain your system: how did you turn the message into numbers, and how did your partner turn the numbers back into words?</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;top:-160px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 14 · CHALLENGE 3: CHECK YOUR ANSWER -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Challenge 3 · Answer</span>
+        <h2>Check Your Answer</h2>
+        <div class="answer-box fragment fade-up">Free at 5?</div>
+        <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-dim);margin-top:var(--gap-sm);">Make sure your message matches this exactly, including capitalization, punctuation, and spacing.</p>
+        <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-lg);">Take a minute with your partner to update your system if you need to.</p>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 15 · CHALLENGE 4: ROLES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Challenge 4</span>
+        <h2 style="margin-bottom:var(--gap);">Send the Message</h2>
+        <div class="two-col">
+          <div class="callout accent-amber">
+            <h3>Partner A</h3>
+            <p>Figure out what the message says. You'll need to tell me what it said.</p>
+          </div>
+          <div class="callout">
+            <h3>Partner B</h3>
+            <p>Check the chat for the message you need to send. Using your system, send it to your partner.</p>
+          </div>
+        </div>
+        <div class="slide-center" style="align-items:center;"><span class="no-talking">🤐 No talking!</span></div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;top:50%;transform:translateY(-50%);background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 16 · CHALLENGE 4: SHARE YOUR SYSTEM -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Challenge 4 · Share Out</span>
+        <h2 style="margin-bottom:var(--gap);">How Did You Send It?</h2>
+        <p class="big-quote">Each pair, explain your system: how did you turn the message into numbers, and how did your partner turn the numbers back into words?</p>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 17 · CHALLENGE 4: CHECK YOUR ANSWER -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Challenge 4 · Answer</span>
+        <h2>Check Your Answer</h2>
+        <div class="answer-box fragment fade-up">Cya 2nite!</div>
+        <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-dim);margin-top:var(--gap-sm);">Make sure your message matches this exactly, including capitalization, punctuation, and spacing.</p>
+        <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-lg);">Nice work. You just built your own system for representing text with numbers.</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;bottom:-160px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 18 · DISCUSSION: YOUR SYSTEM AND BITS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Class Discussion</span>
+        <h2 style="margin-bottom:var(--gap);">What Was Your System?</h2>
+        <p class="big-quote">How many bits would you need to send one character in your message? How do you know?</p>
+        <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-dim);margin-top:var(--gap-sm);padding-left:var(--gap-lg);" data-fragment-index="0">Hint: What is the largest number your system uses? How many bits would it take to represent that number?</p>
+        <p class="big-quote fragment fade-up" style="border-color:var(--amber);margin-top:var(--gap);" data-fragment-index="1">Let's call the number of bits it takes to send one character a <span style="color:var(--amber);">byte</span>. How many bytes would it take to send a message like this one?</p>
+        <div class="sample-chip fragment fade-up" style="margin-top:var(--gap-sm);align-self:flex-start;" data-fragment-index="1">running late, omw</div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 19 · EVERY CHARACTER GETS A NUMBER -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">How Computers Represent Text</span>
+        <h2 style="margin-bottom:var(--gap);">Every Character Gets a Number</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1200px;">Computers assign a number to every letter, digit, and symbol on a keyboard, plus a handful of <span style="color:var(--amber);">control characters</span> that don't print anything at all. Control characters are instructions like move over one space or move to the next line.</p>
+        <div class="ctrl-row">
+          <div class="ctrl-chip"><span class="ctrl-code">0</span><span class="ctrl-name">NUL</span></div>
+          <div class="ctrl-chip"><span class="ctrl-code">9</span><span class="ctrl-name">TAB</span></div>
+          <div class="ctrl-chip"><span class="ctrl-code">10</span><span class="ctrl-name">LF &middot; new line</span></div>
+          <div class="ctrl-chip"><span class="ctrl-code">13</span><span class="ctrl-name">CR &middot; return</span></div>
+          <div class="ctrl-chip"><span class="ctrl-code">27</span><span class="ctrl-name">ESC</span></div>
+          <div class="ctrl-chip"><span class="ctrl-code">127</span><span class="ctrl-name">DEL</span></div>
+        </div>
+        <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-dim);margin-top:var(--gap-sm);">Every time you press Tab or Enter, you're sending one of these numbers.</p>
+        <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap-lg);">This numbering system is called <span style="color:var(--teal);">ASCII</span> (pronounced "ask-ee").</p>
+      </div>
+      <div class="glow" style="width:500px;height:500px;right:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 20 · THE FULL ASCII TABLE -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Reference</span>
+        <h2 style="margin-bottom:var(--gap-sm);">The Printable ASCII Characters</h2>
+        <div class="ascii-legend">
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--amber);"></span>digits</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--teal);"></span>uppercase</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--green);"></span>lowercase</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--text-muted);"></span>punctuation</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--red);"></span>control</div>
+        </div>
+        <div class="ascii-grid">
+          <div class="ascii-cell ac-sym"><span class="ac-code">32</span><span class="ac-char"><span class="ac-sp">SP</span></span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">33</span><span class="ac-char">!</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">34</span><span class="ac-char">&quot;</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">35</span><span class="ac-char">#</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">36</span><span class="ac-char">$</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">37</span><span class="ac-char">%</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">38</span><span class="ac-char">&amp;</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">39</span><span class="ac-char">&#x27;</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">40</span><span class="ac-char">(</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">41</span><span class="ac-char">)</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">42</span><span class="ac-char">*</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">43</span><span class="ac-char">+</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">44</span><span class="ac-char">,</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">45</span><span class="ac-char">-</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">46</span><span class="ac-char">.</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">47</span><span class="ac-char">/</span></div>
+          <div class="ascii-cell ac-digit"><span class="ac-code">48</span><span class="ac-char">0</span></div>
+          <div class="ascii-cell ac-digit"><span class="ac-code">49</span><span class="ac-char">1</span></div>
+          <div class="ascii-cell ac-digit"><span class="ac-code">50</span><span class="ac-char">2</span></div>
+          <div class="ascii-cell ac-digit"><span class="ac-code">51</span><span class="ac-char">3</span></div>
+          <div class="ascii-cell ac-digit"><span class="ac-code">52</span><span class="ac-char">4</span></div>
+          <div class="ascii-cell ac-digit"><span class="ac-code">53</span><span class="ac-char">5</span></div>
+          <div class="ascii-cell ac-digit"><span class="ac-code">54</span><span class="ac-char">6</span></div>
+          <div class="ascii-cell ac-digit"><span class="ac-code">55</span><span class="ac-char">7</span></div>
+          <div class="ascii-cell ac-digit"><span class="ac-code">56</span><span class="ac-char">8</span></div>
+          <div class="ascii-cell ac-digit"><span class="ac-code">57</span><span class="ac-char">9</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">58</span><span class="ac-char">:</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">59</span><span class="ac-char">;</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">60</span><span class="ac-char">&lt;</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">61</span><span class="ac-char">=</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">62</span><span class="ac-char">&gt;</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">63</span><span class="ac-char">?</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">64</span><span class="ac-char">@</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">65</span><span class="ac-char">A</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">66</span><span class="ac-char">B</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">67</span><span class="ac-char">C</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">68</span><span class="ac-char">D</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">69</span><span class="ac-char">E</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">70</span><span class="ac-char">F</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">71</span><span class="ac-char">G</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">72</span><span class="ac-char">H</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">73</span><span class="ac-char">I</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">74</span><span class="ac-char">J</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">75</span><span class="ac-char">K</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">76</span><span class="ac-char">L</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">77</span><span class="ac-char">M</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">78</span><span class="ac-char">N</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">79</span><span class="ac-char">O</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">80</span><span class="ac-char">P</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">81</span><span class="ac-char">Q</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">82</span><span class="ac-char">R</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">83</span><span class="ac-char">S</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">84</span><span class="ac-char">T</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">85</span><span class="ac-char">U</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">86</span><span class="ac-char">V</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">87</span><span class="ac-char">W</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">88</span><span class="ac-char">X</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">89</span><span class="ac-char">Y</span></div>
+          <div class="ascii-cell ac-upper"><span class="ac-code">90</span><span class="ac-char">Z</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">91</span><span class="ac-char">[</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">92</span><span class="ac-char">\</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">93</span><span class="ac-char">]</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">94</span><span class="ac-char">^</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">95</span><span class="ac-char">_</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">96</span><span class="ac-char">`</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">97</span><span class="ac-char">a</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">98</span><span class="ac-char">b</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">99</span><span class="ac-char">c</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">100</span><span class="ac-char">d</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">101</span><span class="ac-char">e</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">102</span><span class="ac-char">f</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">103</span><span class="ac-char">g</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">104</span><span class="ac-char">h</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">105</span><span class="ac-char">i</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">106</span><span class="ac-char">j</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">107</span><span class="ac-char">k</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">108</span><span class="ac-char">l</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">109</span><span class="ac-char">m</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">110</span><span class="ac-char">n</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">111</span><span class="ac-char">o</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">112</span><span class="ac-char">p</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">113</span><span class="ac-char">q</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">114</span><span class="ac-char">r</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">115</span><span class="ac-char">s</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">116</span><span class="ac-char">t</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">117</span><span class="ac-char">u</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">118</span><span class="ac-char">v</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">119</span><span class="ac-char">w</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">120</span><span class="ac-char">x</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">121</span><span class="ac-char">y</span></div>
+          <div class="ascii-cell ac-lower"><span class="ac-code">122</span><span class="ac-char">z</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">123</span><span class="ac-char">{</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">124</span><span class="ac-char">|</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">125</span><span class="ac-char">}</span></div>
+          <div class="ascii-cell ac-sym"><span class="ac-code">126</span><span class="ac-char">~</span></div>
+          <div class="ascii-cell ac-ctrl"><span class="ac-code">127</span><span class="ac-char">DEL</span></div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 21 · WRAP UP SECTION BANNER -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Wrap Up</span>
+        <h2 style="max-width:900px;">From Words to Numbers to Bits</h2>
+      </div>
+      <div class="glow" style="width:700px;height:700px;right:-180px;top:-180px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 68%);"></div>
+      <div class="glow" style="width:500px;height:500px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 22 · LAYERS: TEXT -> ASCII -> BINARY -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Wrap Up · Layers</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Every Message Is Just Numbers</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);">Take an ordinary text message.</p>
+        <div class="layer-stack">
+          <div class="layer-row">
+            <span class="layer-label">Text</span>
+            <div class="layer-grid">
+              <div class="layer-cell lc-text">h</div><div class="layer-cell lc-text">o</div><div class="layer-cell lc-text">w</div><div class="layer-cell lc-text">&#x27;</div><div class="layer-cell lc-text">s</div><div class="layer-cell lc-text">&nbsp;</div><div class="layer-cell lc-text">i</div><div class="layer-cell lc-text">t</div><div class="layer-cell lc-text">&nbsp;</div><div class="layer-cell lc-text">g</div><div class="layer-cell lc-text">o</div><div class="layer-cell lc-text">i</div><div class="layer-cell lc-text">n</div><div class="layer-cell lc-text">g</div><div class="layer-cell lc-text">?</div>
+            </div>
+          </div>
+          <div class="layer-row fragment fade-up" data-fragment-index="0">
+            <span class="layer-label" style="color:var(--teal);">ASCII</span>
+            <div class="layer-grid">
+              <div class="layer-cell lc-code">104</div><div class="layer-cell lc-code">111</div><div class="layer-cell lc-code">119</div><div class="layer-cell lc-code">39</div><div class="layer-cell lc-code">115</div><div class="layer-cell lc-code">32</div><div class="layer-cell lc-code">105</div><div class="layer-cell lc-code">116</div><div class="layer-cell lc-code">32</div><div class="layer-cell lc-code">103</div><div class="layer-cell lc-code">111</div><div class="layer-cell lc-code">105</div><div class="layer-cell lc-code">110</div><div class="layer-cell lc-code">103</div><div class="layer-cell lc-code">63</div>
+            </div>
+          </div>
+          <div class="layer-row fragment fade-up" data-fragment-index="1">
+            <span class="layer-label" style="color:var(--amber);">Binary</span>
+            <div class="layer-grid">
+              <div class="layer-cell lc-bin">01101000</div><div class="layer-cell lc-bin">01101111</div><div class="layer-cell lc-bin">01110111</div><div class="layer-cell lc-bin">00100111</div><div class="layer-cell lc-bin">01110011</div><div class="layer-cell lc-bin">00100000</div><div class="layer-cell lc-bin">01101001</div><div class="layer-cell lc-bin">01110100</div><div class="layer-cell lc-bin">00100000</div><div class="layer-cell lc-bin">01100111</div><div class="layer-cell lc-bin">01101111</div><div class="layer-cell lc-bin">01101001</div><div class="layer-cell lc-bin">01101110</div><div class="layer-cell lc-bin">01100111</div><div class="layer-cell lc-bin">00111111</div>
+            </div>
+          </div>
+        </div>
+        <p class="fragment fade-up" data-fragment-index="2" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-lg);">We don't have to think about these layers when we send a text message, but every message is really just zeros and ones underneath.</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;top:-160px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 23 · BIT STREAM: WHERE DOES ONE NUMBER END -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">The Real Challenge</span>
+        <h2 style="margin-bottom:var(--gap);">Where Does One Number End?</h2>
+        <p class="big-quote">Recall: how did you make sure your partner knew where one number ended and the next began?</p>
+        <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);max-width:1200px;margin-top:var(--gap);">On your whiteboards, you had gaps between your numbers. A computer's <span style="color:var(--teal);">bit stream</span> doesn't. It's just one long line of 0s and 1s with no spaces at all.</p>
+        <div class="bitstream-block fragment fade-up">
+          <div class="bitstream-line">011010000110111101110111001001110111001100100000011010010111010000100000011001110110111101101001011011100110011100111111</div>
+        </div>
+        <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap);">So how does the computer know where <strong style="color:var(--text);">h</strong> ends and <strong style="color:var(--text);">o</strong> begins?</p>
+        <div class="bitstream-block fragment fade-up">
+          <div class="bitstream-line grouped">01101000 01101111 01110111 00100111 01110011 00100000 01101001 01110100 00100000 01100111 01101111 01101001 01101110 01100111 00111111</div>
+        </div>
+        <p class="fragment fade-up big-quote" style="margin-top:var(--gap);">Everyone agrees ahead of time: every character is exactly <span style="color:var(--amber);">8 bits</span>, one <span style="color:var(--teal);">byte</span>. Count off eight bits, and you've found the next character, no gaps required.</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;left:-160px;bottom:-160px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 24 · FINISH IT OFF -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Wrap Up</span>
+        <h2 style="margin-bottom:var(--gap);">Finish It Off</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:820px;">Answer the reflection question on code.org. <a href="https://learn.mycode.run/link/xhqnj" target="_blank" rel="noopener" style="color:var(--teal);">Use this link to get there.</a></p>
+      </div>
+      <div class="glow" style="width:700px;height:700px;right:-180px;top:-180px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 68%);"></div>
+      <div class="glow" style="width:500px;height:500px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-1-6-representing-text',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
