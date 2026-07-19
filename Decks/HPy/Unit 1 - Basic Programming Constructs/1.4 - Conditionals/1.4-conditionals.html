@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1.4 Conditionals</title>
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../../theme.css">
+<style>
+  /* ─── Deck-specific styles: branch-trace + bool-sort activities
+     (reuse .var-box / .chip-tray / .type-bins from theme.css) ─── */
+
+  .trace-layout {
+    display: grid;
+    grid-template-columns: 660px 1fr;
+    gap: var(--gap-lg);
+    flex: 1;
+    min-height: 0;
+  }
+
+  .trace-code .code-body { padding: 20px 24px; }
+
+  .trace-boxes-wrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--gap);
+  }
+
+  .var-box {
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+  }
+  .var-box.revealed {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .code-line.context { opacity: 0.7; }
+
+  /* Highlights a branch of the if/elif/else once its call has been
+     correctly traced, showing which path execution actually took.
+     Used by the "Trace the Branch" activity (branchtrace-activity). */
+  .code-line.path-hit {
+    border-left: 3px solid var(--result);
+    background: rgba(124,217,146,0.08);
+    margin: 2px -8px 2px -11px;
+    padding: 2px 8px;
+    opacity: 1 !important;
+  }
+
+  /* On fragment-trace slides, the call site that dispatched into the
+     function body stays visible while execution is inside it: an
+     outlined (not filled) caret, distinct from the solid .current
+     highlight, like a paused stack frame. */
+  .code-line.active-call {
+    opacity: 0.9;
+  }
+  .code-line.active-call .car {
+    opacity: 1;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--accent);
+  }
+
+  .trace-prompt {
+    font-family: var(--font-mono);
+    font-size: var(--small);
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+  }
+  .trace-prompt strong { color: var(--accent); }
+
+  .trace-done-banner {
+    display: none;
+    font-family: var(--font-mono);
+    font-size: var(--body);
+    color: var(--result);
+    margin-top: var(--gap);
+  }
+  .trace-done-banner.visible { display: block; }
+
+  .trace-reset {
+    margin-top: var(--gap);
+    align-self: flex-start;
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--accent-border);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: var(--small);
+    cursor: pointer;
+  }
+  .trace-reset:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Compact code card: for the 5-branch elif chain (17 lines), the
+     theme's default 20px/1.7 code-line sizing overflows the slide.
+     Tighten font size, line height, and body padding just here. */
+  .code-card.compact .code-body { padding: 10px 20px; }
+  .code-card.compact .code-line {
+    font-size: 16px;
+    line-height: 1.4;
+    padding: 1px 0;
+  }
+  .code-card.compact .code-body pre code { font-size: 16px; line-height: 1.4; }
+
+  /* Static truth-table rendering */
+  .truth-table {
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: var(--code);
+  }
+  .truth-table th, .truth-table td {
+    border: 1px solid var(--accent-border);
+    padding: 8px 22px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .truth-table th { color: var(--text); background: rgba(242,177,52,0.08); }
+  .truth-table td.tt-true { color: var(--result); font-weight: 600; }
+  .truth-table td.tt-false { color: var(--warn); font-weight: 600; }
+  .truth-table td.tt-highlight { background: rgba(242,177,52,0.08); color: var(--text); font-weight: 700; }
+
+  /* Boolean-expression chip in the bool-sort activity: full expressions,
+     so render as plain mono text rather than a single colored token. */
+  .bool-chip-code { font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ============================================================
+         SLIDE 01 · TITLE
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">HPy &middot; Unit 1 Review</span>
+        <h1 class="title-h1">1.4 Conditionals</h1>
+        <p class="subtitle">Basic Programming Constructs &middot; branching logic, truth tables, and tracing the path your code actually takes</p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 02 · FRQ — warm-up, what does a conditional let you do?
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What does an if statement let a program do that statement let a program do that it couldn\u0027t do by just running one line after another?","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-90px;right:6%;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ &middot; Warm-Up</span>
+        <h2>What can a <span style="color:var(--accent);">conditional</span> do?</h2>
+        <div class="frq-box" style="max-width:700px;margin-top:var(--gap-lg);">
+          <p>In your own words: what does an <code style="color:var(--text);">if</code> statement let a program do that it couldn't do by just running one line after another?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 03 · SECTION — 1.4.1 if Statements
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.4.1 if Statements</span>
+        <h2>Running code, <span style="color:var(--accent);">only sometimes</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          A <span style="color:var(--result);">conditional</span>, often called an <span style="color:var(--accent);">if statement</span>, runs a chunk of code only when some
+          <span style="color:var(--result);">boolean test</span> is <code style="color:var(--text);">True</code>. This section covers conditionals in Python.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 04 · CONCEPT — general if form
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The General Form</span>
+          <h2>Test, then <span style="color:var(--accent);">maybe</span> run the body</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            Python evaluates the <code style="color:var(--text);">TEST</code>. If, and only if, it is <code style="color:var(--text);">True</code>, Python runs the indented
+            <code style="color:var(--text);">BODY</code>. If the test is <code style="color:var(--text);">False</code>, Python simply skips it and moves on to whatever comes next.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">if</span> <span class="tok-nm">TEST</span>:
+    <span class="tok-nm">BODY</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 05 · CODE — signString, single if, traced across 3 calls
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="6">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Try This</span>
+          <h2><span style="color:var(--accent);">One</span> branch, two outcomes</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            The test is <code style="color:var(--text);">n &lt; 0</code>. Since <code style="color:var(--text);">return</code> exits the function immediately, line 4 only runs when the test was <code style="color:var(--text);">False</code>.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">signString</span>(<span class="tok-nm">n</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-num">0</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Negative'</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Non-negative'</span></span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">5</span><span>&nbsp;</span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">6</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-op">-</span><span class="tok-num">5</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">7</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">42</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">8</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">0</span>))</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div class="code-card" style="width:260px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+              <span class="fragment" data-trace-current="2" data-trace-active-call="6" style="display:none;"></span>
+              <span class="fragment" data-trace-current="3" data-trace-active-call="6" style="display:none;"></span>
+              <span class="fragment" data-trace-current="6" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="7" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Negative'</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-trace-current="4" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-trace-current="7" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="8" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Non-negative'</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="8" style="display:none;"></span>
+              <span class="fragment" data-trace-current="4" data-trace-active-call="8" style="display:none;"></span>
+              <span class="fragment" data-trace-current="8" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="9" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Non-negative'</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 06 · CODE — multi-line body, A/B/C, traced across 3 calls
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="9">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Body With Multiple Lines</span>
+          <h2>Some lines <span style="color:var(--accent);">always</span> run</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            The body of a conditional can be several lines, all indented the same amount. <code style="color:var(--text);">'A'</code> prints on every call, but
+            <code style="color:var(--text);">'B'</code> only prints when the <code style="color:var(--text);">if</code> body actually runs.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">signString</span>(<span class="tok-nm">n</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-str">'A'</span>)</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-num">0</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-str">'B'</span>)</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Negative'</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">6</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-str">'C'</span>)</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">7</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Non-negative'</span></span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">8</span><span>&nbsp;</span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">9</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-op">-</span><span class="tok-num">5</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">10</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">42</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">11</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">0</span>))</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div class="code-card" style="width:260px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;flex-direction:column;gap:4px;align-items:center;font-family:var(--font-mono);color:var(--text);">
+              <span class="fragment" data-trace-current="2" data-trace-active-call="9" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="3" data-trace-active-call="9">A</span>
+              <span class="fragment" data-trace-current="4" data-trace-active-call="9" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="5" data-trace-active-call="9">B</span>
+              <span class="fragment" data-trace-current="9" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="10"><span class="tok-str">Negative</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="10" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="3" data-trace-active-call="10">A</span>
+              <span class="fragment" data-trace-current="6" data-trace-active-call="10" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="7" data-trace-active-call="10">C</span>
+              <span class="fragment" data-trace-current="10" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="11"><span class="tok-str">Non-negative</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="11" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="3" data-trace-active-call="11">A</span>
+              <span class="fragment" data-trace-current="6" data-trace-active-call="11" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="7" data-trace-active-call="11">C</span>
+              <span class="fragment" data-trace-current="11" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="12"><span class="tok-str">Non-negative</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 07 · CONCEPT — one-line body shorthand
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Body On The Same Line</span>
+          <h2>A <span style="color:var(--warn);">shortcut</span>, used sparingly</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            When the condition is simple and the body is one short line, you can put both on the same line.
+            This can save space, but it also makes code harder to scan.
+          </p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">if</span> <span class="tok-nm">x</span> <span class="tok-op">&gt;</span> <span class="tok-num">10</span>: <span class="tok-kw">print</span>(<span class="tok-str">'yes!'</span>)</code></pre>
+            </div>
+          </div>
+          <div class="callout-warn">
+            Only use this for very simple cases. If your condition or body has any real complexity, keep them on separate, indented lines.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 08 · MCQ — f(): if True: print('a'); print('b')
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:8:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What is printed by the following code?\n\n```python\ndef f():\n    if True:\n        print(&#39;a&#39;)\n    print(&#39;b&#39;)\n\nprint(f())\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"a","isCorrect":false},{"id":"q1b","text":"a then b","isCorrect":false},{"id":"q1c","text":"a then b then None","isCorrect":true},{"id":"q1d","text":"a then None","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>What does this actually print?</h2>
+        <div class="code-card" style="max-width:420px;margin:var(--gap) 0;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">f</span>():
+    <span class="tok-kw">if</span> <span class="tok-bool">True</span>:
+        <span class="tok-kw">print</span>(<span class="tok-str">'a'</span>)
+    <span class="tok-kw">print</span>(<span class="tok-str">'b'</span>)
+
+<span class="tok-kw">print</span>(<span class="tok-nm">f</span>())</code></pre>
+          </div>
+        </div>
+        <p style="margin-bottom:var(--gap);">What is printed by this code?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> <code>a</code></li>
+          <li><span class="opt-key">B</span> <code>a</code> then <code>b</code></li>
+          <li><span class="opt-key">C</span> <code>a</code> then <code>b</code> then <code>None</code></li>
+          <li><span class="opt-key">D</span> <code>a</code> then <code>None</code></li>
+        </ul>
+        <p style="font-size:var(--small);color:var(--text-dim);margin-top:var(--gap);max-width:900px;"><code style="color:var(--text);">f</code> has no <code style="color:var(--text);">return</code>, so once it prints <code style="color:var(--text);">a</code> and <code style="color:var(--text);">b</code>, the outer <code style="color:var(--text);">print(f())</code> still prints whatever <code style="color:var(--text);">f</code> returned: <code style="color:var(--text);">None</code>.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 09 · WRAP-UP — 1.4.1 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>if statements</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li>An <code style="color:var(--text);">if TEST:</code> only runs its indented <strong>body</strong> when <code style="color:var(--text);">TEST</code> is <code style="color:var(--text);">True</code>; otherwise Python skips straight past it.</li>
+          <li>The body can be one line or many, but every line must be indented the same amount.</li>
+          <li>A one-line <code style="color:var(--text);">if TEST: BODY</code> shortcut exists, but save it for the simplest cases.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 10 · SECTION — 1.4.2 if-else Statements
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.4.2 if-else Statements</span>
+        <h2>Covering the <span style="color:var(--result);">other</span> case</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          A plain <code style="color:var(--text);">if</code> only handles the <code style="color:var(--text);">True</code> case. An <span style="color:var(--result);">if-else</span> statement adds a second body that runs
+          whenever the condition is <code style="color:var(--text);">False</code>, so every possibility is covered in one clean structure.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 11 · CODE — if-else rewrite, traced across 3 calls
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="7">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Try This</span>
+          <h2>Same logic, <span style="color:var(--result);">one</span> structure</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            Python runs the <code style="color:var(--text);">else</code> body only when the <code style="color:var(--text);">if</code>'s condition was <code style="color:var(--text);">False</code>. Exactly one of the two bodies runs, never both, never neither.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">signString</span>(<span class="tok-nm">n</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-num">0</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Negative'</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">else</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Non-negative'</span></span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">6</span><span>&nbsp;</span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">7</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-op">-</span><span class="tok-num">5</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">8</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">42</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">9</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">0</span>))</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div class="code-card" style="width:260px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+              <span class="fragment" data-trace-current="2" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-trace-current="3" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-trace-current="7" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="8" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Negative'</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="8" style="display:none;"></span>
+              <span class="fragment" data-trace-current="4" data-trace-active-call="8" style="display:none;"></span>
+              <span class="fragment" data-trace-current="5" data-trace-active-call="8" style="display:none;"></span>
+              <span class="fragment" data-trace-current="8" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="9" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Non-negative'</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="9" style="display:none;"></span>
+              <span class="fragment" data-trace-current="4" data-trace-active-call="9" style="display:none;"></span>
+              <span class="fragment" data-trace-current="5" data-trace-active-call="9" style="display:none;"></span>
+              <span class="fragment" data-trace-current="9" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="10" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Non-negative'</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 12 · MCQ — if False: ... else: ...
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:12:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What is printed by the following code?\n\n```python\ndef f():\n    if False:\n        print(&#39;a&#39;)\n    else:\n        print(&#39;b&#39;)\n\nprint(f())\n```","order":0,"responseTimeLimitMs":25000,"options":[{"id":"q1a","text":"a then b","isCorrect":false},{"id":"q1b","text":"a then None","isCorrect":false},{"id":"q1c","text":"None","isCorrect":false},{"id":"q1d","text":"b then None","isCorrect":true}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>Which body runs when the test is <span style="color:var(--warn);">False</span>?</h2>
+        <div class="code-card" style="max-width:420px;margin:var(--gap) 0;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">f</span>():
+    <span class="tok-kw">if</span> <span class="tok-bool">False</span>:
+        <span class="tok-kw">print</span>(<span class="tok-str">'a'</span>)
+    <span class="tok-kw">else</span>:
+        <span class="tok-kw">print</span>(<span class="tok-str">'b'</span>)
+
+<span class="tok-kw">print</span>(<span class="tok-nm">f</span>())</code></pre>
+          </div>
+        </div>
+        <p style="margin-bottom:var(--gap);">What is printed?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> <code>a</code> then <code>b</code></li>
+          <li><span class="opt-key">B</span> <code>a</code> then <code>None</code></li>
+          <li><span class="opt-key">C</span> <code>None</code></li>
+          <li><span class="opt-key">D</span> <code>b</code> then <code>None</code></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 13 · WRAP-UP — 1.4.2 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>if-else statements</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li>An <code style="color:var(--text);">else</code> body runs only when the paired <code style="color:var(--text);">if</code>'s condition was <code style="color:var(--text);">False</code>.</li>
+          <li>Exactly one of the two bodies runs on any given call, so an <code style="color:var(--text);">if-else</code> always covers both possibilities.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 14 · SECTION — 1.4.3 Nested Conditionals
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.09) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.4.3 Nested Conditionals</span>
+        <h2>A conditional <span style="color:var(--accent);">inside</span> a conditional</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          What if there are three cases instead of two? Say we want <span style="color:var(--syntax-string);">negative</span>, <span style="color:var(--syntax-string);">positive</span>, and
+          <span style="color:var(--syntax-string);">zero</span>. A <span style="color:var(--accent);">nested conditional</span>, an <code style="color:var(--text);">if</code> inside the body of another <code style="color:var(--text);">if</code>, handles it.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 15 · CODE — nested if inside else, traced across 3 calls
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="11">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Try This</span>
+          <h2>Three cases, <span style="color:var(--accent);">two</span> levels deep</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            Python only enters the <code style="color:var(--text);">else</code> body when <code style="color:var(--text);">n &lt; 0</code> was <code style="color:var(--text);">False</code>. Only then does it check the nested <code style="color:var(--text);">n &gt; 0</code>.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">signString</span>(<span class="tok-nm">n</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-num">0</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Negative'</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">else</span>:</span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-cm"># n is either positive or zero</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">6</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&gt;</span> <span class="tok-num">0</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">7</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Positive'</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">8</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">else</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">9</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Zero'</span></span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">10</span><span>&nbsp;</span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">11</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-op">-</span><span class="tok-num">5</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">12</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">42</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">13</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">0</span>))</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div class="code-card" style="width:260px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+              <span class="fragment" data-trace-current="2" data-trace-active-call="11" style="display:none;"></span>
+              <span class="fragment" data-trace-current="3" data-trace-active-call="11" style="display:none;"></span>
+              <span class="fragment" data-trace-current="11" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="12" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Negative'</span></span>
+              <span class="fragment" data-trace-current="4" data-trace-active-call="12" style="display:none;"></span>
+              <span class="fragment" data-trace-current="6" data-trace-active-call="12" style="display:none;"></span>
+              <span class="fragment" data-trace-current="7" data-trace-active-call="12" style="display:none;"></span>
+              <span class="fragment" data-trace-current="12" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="13" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Positive'</span></span>
+              <span class="fragment" data-trace-current="4" data-trace-active-call="13" style="display:none;"></span>
+              <span class="fragment" data-trace-current="6" data-trace-active-call="13" style="display:none;"></span>
+              <span class="fragment" data-trace-current="8" data-trace-active-call="13" style="display:none;"></span>
+              <span class="fragment" data-trace-current="9" data-trace-active-call="13" style="display:none;"></span>
+              <span class="fragment" data-trace-current="13" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="14" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Zero'</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 16 · CONCEPT — why the nested condition is safe to assume
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Reading The Comment</span>
+          <h2>By the time we get <span style="color:var(--result);">there</span>&hellip;</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            The comment <code style="color:var(--text);"># n is either positive or zero</code> isn't decoration. It records what we can safely assume once we've reached that line:
+            the outer test already ruled out negative values.
+          </p>
+        </div>
+        <div class="callout-result">
+          <strong>Each level of nesting narrows the possibilities.</strong> The outer <code>if</code> splits the world into "negative" and "everything else". The inner <code>if</code> then splits "everything else" into "positive" and "zero". Nesting is how you narrow down step by step.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 17 · MCQ — nested if inside if, nested-else example
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:17:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does this print for f(True, False)?\n\n```python\ndef f(x, y):\n    if x:\n        if y:\n            return &#39;a&#39;\n        else:\n            return &#39;b&#39;\n    else:\n        return &#39;c&#39;\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"&#39;a&#39;","isCorrect":false},{"id":"q1b","text":"&#39;b&#39;","isCorrect":true},{"id":"q1c","text":"&#39;c&#39;","isCorrect":false},{"id":"q1d","text":"None","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>Two levels of <span style="color:var(--accent);">nesting</span></h2>
+        <div class="code-card" style="max-width:420px;margin:var(--gap) 0;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">f</span>(<span class="tok-nm">x</span>, <span class="tok-nm">y</span>):
+    <span class="tok-kw">if</span> <span class="tok-nm">x</span>:
+        <span class="tok-kw">if</span> <span class="tok-nm">y</span>:
+            <span class="tok-kw">return</span> <span class="tok-str">'a'</span>
+        <span class="tok-kw">else</span>:
+            <span class="tok-kw">return</span> <span class="tok-str">'b'</span>
+    <span class="tok-kw">else</span>:
+        <span class="tok-kw">return</span> <span class="tok-str">'c'</span></code></pre>
+          </div>
+        </div>
+        <p style="margin-bottom:var(--gap);">What does <code>f(True, False)</code> return?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> <code>'a'</code></li>
+          <li><span class="opt-key">B</span> <code>'b'</code></li>
+          <li><span class="opt-key">C</span> <code>'c'</code></li>
+          <li><span class="opt-key">D</span> <code>None</code></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 18 · WRAP-UP — 1.4.3 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Nested conditionals</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li>An <code style="color:var(--text);">if</code> can live inside the body of another <code style="color:var(--text);">if</code> or <code style="color:var(--text);">else</code>, letting you split cases into finer and finer pieces.</li>
+          <li>Once you're inside a nested body, you can safely assume the outer test's result, that's why it's worth commenting.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 19 · SECTION — 1.4.4 if-elif-else
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.4.4 if-elif-else</span>
+        <h2>Flattening the <span style="color:var(--accent);">nesting</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          Nesting an <code style="color:var(--text);">if</code> inside every <code style="color:var(--text);">else</code> is so common that Python gives it a shortcut: <code style="color:var(--text);">elif</code>, short for
+          <span style="color:var(--result);">"else if"</span>. It reads top to bottom instead of drifting rightward.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 20 · CONCEPT — checks in order, first True wins, stops
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">How It's Checked</span>
+          <h2>First <span style="color:var(--accent);">True</span> wins, then it <span style="color:var(--warn);">stops</span></h2>
+          <ul class="bullets" style="margin-top:var(--gap);">
+            <li class="fragment fade-up">Python checks the <code style="color:var(--text);">if</code>, then each <code style="color:var(--text);">elif</code>, <strong>in order</strong>.</li>
+            <li class="fragment fade-up">As soon as one condition is <code style="color:var(--text);">True</code>, Python runs that body and <strong>skips every remaining test</strong>.</li>
+            <li class="fragment fade-up">If none of them are <code style="color:var(--text);">True</code>, Python runs the <code style="color:var(--text);">else</code> body, if there is one.</li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">if</span> <span class="tok-nm">TEST1</span>:
+    <span class="tok-nm">BODY1</span>
+<span class="tok-kw">elif</span> <span class="tok-nm">TEST2</span>:
+    <span class="tok-nm">BODY2</span>
+<span class="tok-kw">else</span>:
+    <span class="tok-nm">BODY3</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 21 · CODE — elif rewrite of the nested version
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="9">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Try This</span>
+          <h2>The <span style="color:var(--accent);">same</span> three cases</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            This is exactly the nested version from before, rewritten with <code style="color:var(--text);">elif</code>. Same behavior, no rightward drift.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">signString</span>(<span class="tok-nm">n</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-num">0</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Negative'</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">elif</span> <span class="tok-nm">n</span> <span class="tok-op">&gt;</span> <span class="tok-num">0</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Positive'</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">6</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">else</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">7</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Zero'</span></span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">8</span><span>&nbsp;</span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">9</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-op">-</span><span class="tok-num">5</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">10</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">42</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">11</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">0</span>))</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div class="code-card" style="width:260px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+              <span class="fragment" data-trace-current="2" data-trace-active-call="9" style="display:none;"></span>
+              <span class="fragment" data-trace-current="3" data-trace-active-call="9" style="display:none;"></span>
+              <span class="fragment" data-trace-current="9" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="10" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Negative'</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="10" style="display:none;"></span>
+              <span class="fragment" data-trace-current="4" data-trace-active-call="10" style="display:none;"></span>
+              <span class="fragment" data-trace-current="5" data-trace-active-call="10" style="display:none;"></span>
+              <span class="fragment" data-trace-current="10" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="11" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Positive'</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="11" style="display:none;"></span>
+              <span class="fragment" data-trace-current="4" data-trace-active-call="11" style="display:none;"></span>
+              <span class="fragment" data-trace-current="6" data-trace-active-call="11" style="display:none;"></span>
+              <span class="fragment" data-trace-current="7" data-trace-active-call="11" style="display:none;"></span>
+              <span class="fragment" data-trace-current="11" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="12" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Zero'</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 22 · CODE — multi-elif chain, traced across 5 calls
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="13">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Using Multiple elifs</span>
+          <h2>Zero or <span style="color:var(--accent);">more</span> elifs</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            You can chain as many <code style="color:var(--text);">elif</code>s as you need. Python still checks them strictly in order and stops at the first match.
+          </p>
+          <div class="code-card trace-code compact" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">signString</span>(<span class="tok-nm">n</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-op">-</span><span class="tok-num">1000</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Very negative'</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">elif</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-num">0</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'A bit negative'</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">6</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">elif</span> <span class="tok-nm">n</span> <span class="tok-op">&gt;</span> <span class="tok-num">1000</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">7</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Very positive'</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">8</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">elif</span> <span class="tok-nm">n</span> <span class="tok-op">&gt;</span> <span class="tok-num">0</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">9</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'A bit positive'</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">10</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">else</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">11</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Zero'</span></span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">12</span><span>&nbsp;</span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">13</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-op">-</span><span class="tok-num">1234</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">14</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-op">-</span><span class="tok-num">12</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">15</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">1234</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">16</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">12</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">17</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">0</span>))</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div class="code-card" style="width:260px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;flex-direction:column;gap:6px;align-items:center;">
+              <span class="fragment" data-trace-current="2" data-trace-active-call="13" style="display:none;"></span>
+              <span class="fragment" data-trace-current="3" data-trace-active-call="13" style="display:none;"></span>
+              <span class="fragment" data-trace-current="13" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="14" style="font-family:var(--font-mono);font-size:var(--small);color:var(--text);"><span class="tok-str">'Very negative'</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="14" style="display:none;"></span>
+              <span class="fragment" data-trace-current="4" data-trace-active-call="14" style="display:none;"></span>
+              <span class="fragment" data-trace-current="5" data-trace-active-call="14" style="display:none;"></span>
+              <span class="fragment" data-trace-current="14" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="15" style="font-family:var(--font-mono);font-size:var(--small);color:var(--text);"><span class="tok-str">'A bit negative'</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="15" style="display:none;"></span>
+              <span class="fragment" data-trace-current="4" data-trace-active-call="15" style="display:none;"></span>
+              <span class="fragment" data-trace-current="6" data-trace-active-call="15" style="display:none;"></span>
+              <span class="fragment" data-trace-current="7" data-trace-active-call="15" style="display:none;"></span>
+              <span class="fragment" data-trace-current="15" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="16" style="font-family:var(--font-mono);font-size:var(--small);color:var(--text);"><span class="tok-str">'Very positive'</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="16" style="display:none;"></span>
+              <span class="fragment" data-trace-current="4" data-trace-active-call="16" style="display:none;"></span>
+              <span class="fragment" data-trace-current="6" data-trace-active-call="16" style="display:none;"></span>
+              <span class="fragment" data-trace-current="8" data-trace-active-call="16" style="display:none;"></span>
+              <span class="fragment" data-trace-current="9" data-trace-active-call="16" style="display:none;"></span>
+              <span class="fragment" data-trace-current="16" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="17" style="font-family:var(--font-mono);font-size:var(--small);color:var(--text);"><span class="tok-str">'A bit positive'</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="17" style="display:none;"></span>
+              <span class="fragment" data-trace-current="4" data-trace-active-call="17" style="display:none;"></span>
+              <span class="fragment" data-trace-current="6" data-trace-active-call="17" style="display:none;"></span>
+              <span class="fragment" data-trace-current="8" data-trace-active-call="17" style="display:none;"></span>
+              <span class="fragment" data-trace-current="10" data-trace-active-call="17" style="display:none;"></span>
+              <span class="fragment" data-trace-current="11" data-trace-active-call="17" style="display:none;"></span>
+              <span class="fragment" data-trace-current="17" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="18" style="font-family:var(--font-mono);font-size:var(--small);color:var(--text);"><span class="tok-str">'Zero'</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 23 · MCQ — delete the else, what happens?
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:23:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"An else is not required. If you delete the else and its body from an if-elif chain, and none of the if/elif tests are True, what happens?\n\n```python\ndef signString(n):\n    if n < 0:\n        return &#39;Negative&#39;\n    elif n > 0:\n        return &#39;Positive&#39;\n\nprint(signString(0))\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"It crashes with a SyntaxError, an if-elif chain must end with else.","isCorrect":false},{"id":"q1b","text":"Python silently falls through the whole chain, and the function returns None.","isCorrect":true},{"id":"q1c","text":"Python re-checks the if test one more time before giving up.","isCorrect":false},{"id":"q1d","text":"It prints an empty string.","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2><code style="color:var(--text);">else</code> is <span style="color:var(--accent);">optional</span></h2>
+        <div class="code-card" style="max-width:420px;margin:var(--gap) 0;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">signString</span>(<span class="tok-nm">n</span>):
+    <span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-num">0</span>:
+        <span class="tok-kw">return</span> <span class="tok-str">'Negative'</span>
+    <span class="tok-kw">elif</span> <span class="tok-nm">n</span> <span class="tok-op">&gt;</span> <span class="tok-num">0</span>:
+        <span class="tok-kw">return</span> <span class="tok-str">'Positive'</span>
+
+<span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">0</span>))</code></pre>
+          </div>
+        </div>
+        <p style="margin-bottom:var(--gap);">There's no <code>else</code>. What happens for <code>signString(0)</code>, where neither test is <code>True</code>?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> It crashes with a <code>SyntaxError</code>, a chain must end with <code>else</code>.</li>
+          <li><span class="opt-key">B</span> Python silently falls through the whole chain, and the function returns <code>None</code>.</li>
+          <li><span class="opt-key">C</span> Python re-checks the <code>if</code> test one more time before giving up.</li>
+          <li><span class="opt-key">D</span> It prints an empty string.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 24 · INSTRUCTIONS — Trace the Branch activity
+         ============================================================ -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Activity</span>
+        <h2>Trace the Branch</h2>
+        <p style="font-size:var(--body);max-width:900px;margin-top:var(--gap);">
+          <code style="color:var(--text);">letterGrade(score)</code> is defined on the next slide, with one <code style="color:var(--text);">if</code>, two <code style="color:var(--text);">elif</code>s, and an <code style="color:var(--text);">else</code>.
+          For each call on the next slide, work out which single branch actually runs, drag (or click, then click the box) its return value into place.
+          As you go, the branch you just traced lights up in the code, so you can see the <span style="color:var(--result);">execution path</span> that call took. Each new correct answer moves the highlight to its own branch.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 25 · ACTIVITY — Trace the Branch (custom HTML5 widget)
+         ============================================================ -->
+    <section data-branchtrace-activity>
+      <div class="slide-inner">
+        <span class="slide-tag">Activity &middot; Trace the Branch</span>
+        <div class="trace-layout">
+          <div class="code-card trace-code">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body" data-branch-code></div>
+          </div>
+          <div class="trace-boxes-wrap">
+            <div class="var-boxes" data-branch-boxes></div>
+            <p class="trace-prompt" data-branch-prompt></p>
+            <div class="chip-tray" data-branch-chips></div>
+            <p class="trace-feedback" data-branch-feedback></p>
+            <p class="trace-done-banner" data-branch-done>All four calls traced. Each call took exactly one path through the if-elif-else chain, and Python stopped checking the moment it found a match. Only the most recent branch stays highlighted, since only one path runs per call.</p>
+            <button type="button" class="trace-reset" data-branch-reset>&#8635; restart trace</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 26 · WRAP-UP — 1.4.4 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>if-elif-else</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li>Python checks each test <strong>in order</strong> and runs only the body of the <strong>first</strong> one that's <code style="color:var(--text);">True</code>, skipping the rest.</li>
+          <li>You can chain zero or more <code style="color:var(--text);">elif</code>s after an <code style="color:var(--text);">if</code>; the trailing <code style="color:var(--text);">else</code> is optional.</li>
+          <li>Without an <code style="color:var(--text);">else</code>, if every test is <code style="color:var(--text);">False</code>, Python falls through silently, no crash, just nothing runs.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 27 · SECTION — 1.4.5 if-else Expressions
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.4.5 if-else Expressions</span>
+        <h2>A conditional that's a <span style="color:var(--result);">value</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          An <code style="color:var(--text);">if-else</code> <span style="color:var(--accent);">statement</span> runs one of two bodies. An <code style="color:var(--text);">if-else</code> <span style="color:var(--result);">expression</span> instead
+          evaluates to one of two <em>values</em>, in a single line.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 28 · CONCEPT — general form TRUE_VALUE if TEST else FALSE_VALUE
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The General Form</span>
+          <h2>The order <span style="color:var(--warn);">flips</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            Look closely at the order: the value comes <strong>first</strong>, then the test, then the fallback value. That's the opposite order from an <code style="color:var(--text);">if-else</code> statement, which can feel backwards at first.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-nm">TRUE_VALUE</span> <span class="tok-kw">if</span> <span class="tok-nm">TEST</span> <span class="tok-kw">else</span> <span class="tok-nm">FALSE_VALUE</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 29 · CODE — statement vs expression, traced across 3 calls
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="4">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Try This</span>
+          <h2>Five lines <span style="color:var(--warn);">become</span> one</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            This <code style="color:var(--text);">if-else</code> expression is exactly equivalent to the <code style="color:var(--text);">if-else</code> statement we just saw. Use expressions like this sparingly, only when they clearly make code easier to read.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">signString</span>(<span class="tok-nm">n</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">'Negative'</span> <span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-num">0</span> <span class="tok-kw">else</span> <span class="tok-str">'Non-negative'</span></span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;</span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">4</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-op">-</span><span class="tok-num">5</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">5</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">42</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">6</span><span><span class="tok-kw">print</span>(<span class="tok-nm">signString</span>(<span class="tok-num">0</span>))</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <div class="code-card" style="width:260px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+              <span class="fragment" data-trace-current="2" data-trace-active-call="4" style="display:none;"></span>
+              <span class="fragment" data-trace-current="4" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="5" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Negative'</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="5" style="display:none;"></span>
+              <span class="fragment" data-trace-current="5" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="6" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Non-negative'</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="6" style="display:none;"></span>
+              <span class="fragment" data-trace-current="6" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="7" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-str">'Non-negative'</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 30 · MCQ — x = 0; print('a' if x == 0 else 'b')
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:30:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What is printed by the following code?\n\n```python\nx = 5\nprint(&#39;a&#39; if x == 0 else &#39;b&#39;)\n```","order":0,"responseTimeLimitMs":20000,"options":[{"id":"q1a","text":"None","isCorrect":false},{"id":"q1b","text":"b","isCorrect":true},{"id":"q1c","text":"a if x == 0 else b","isCorrect":false},{"id":"q1d","text":"a","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>Evaluate the <span style="color:var(--accent);">expression</span> directly</h2>
+        <div class="code-card" style="max-width:400px;margin:var(--gap) 0;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-nm">x</span> <span class="tok-op">=</span> <span class="tok-num">5</span>
+<span class="tok-kw">print</span>(<span class="tok-str">'a'</span> <span class="tok-kw">if</span> <span class="tok-nm">x</span> <span class="tok-op">==</span> <span class="tok-num">0</span> <span class="tok-kw">else</span> <span class="tok-str">'b'</span>)</code></pre>
+          </div>
+        </div>
+        <p style="margin-bottom:var(--gap);">What does this print?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> <code>None</code></li>
+          <li><span class="opt-key">B</span> <code>b</code></li>
+          <li><span class="opt-key">C</span> the literal text <code>a if x == 0 else b</code></li>
+          <li><span class="opt-key">D</span> <code>a</code></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 31 · WRAP-UP — 1.4.5 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>if-else expressions</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li>The general form is <code style="color:var(--text);">TRUE_VALUE if TEST else FALSE_VALUE</code>, note the value comes before the test.</li>
+          <li>Unlike a statement, an <code style="color:var(--text);">if-else</code> expression evaluates to a single value that you can use anywhere a value is expected.</li>
+          <li>Use these sparingly, only when they genuinely make a line easier to read.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 32 · SECTION — 1.4.6 Short-Circuit Evaluation
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.4.6 Short-Circuit Evaluation</span>
+        <h2>Stopping as soon as the <span style="color:var(--warn);">answer</span> is known</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          Conditions using <code style="color:var(--text);">and</code> and <code style="color:var(--text);">or</code> don't always evaluate both sides. Python <span style="color:var(--accent);">short-circuits</span>: it stops as soon
+          as it knows the overall answer, and this can be surprisingly useful.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 33 · FRQ — predict short-circuit outcome, and-crash example
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:33:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What do you think happens when this code executes?\n\n```python\nprint((1 == 2/0) and (3 == 4))\n```","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ &middot; Predict First</span>
+        <h2>What do you think <span style="color:var(--warn);">happens</span>?</h2>
+        <div class="frq-box" style="max-width:700px;margin-top:var(--gap-lg);">
+          <p>Before you run it, predict: does this code crash? If not, what does it print?</p>
+          <div class="code-card" style="margin-top:var(--gap);text-align:left;">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">print</span>((<span class="tok-num">1</span> <span class="tok-op">==</span> <span class="tok-num">2</span><span class="tok-op">/</span><span class="tok-num">0</span>) <span class="tok-kw">and</span> (<span class="tok-num">3</span> <span class="tok-op">==</span> <span class="tok-num">4</span>))</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 34 · MOBCODE — (1 == 2/0) and (3 == 4) crashes, then swap and rerun
+         ============================================================ -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"files":{"main.py":"print((1 == 2/0) and (3 == 4))  # run this. Then swap the two sides and run again.\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">See For Yourself</span>
+        <h2>Run this. It will <span style="color:var(--warn);">crash</span>.</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:900px;">
+          Python evaluates the left side of <code style="color:var(--text);">and</code> first. <code style="color:var(--text);">1 == 2/0</code> divides by zero before the right side is ever considered. Once you've seen it crash, edit the code to swap the two sides of <code style="color:var(--text);">and</code> and run it again.
+        </p>
+        <div class="code-card" style="margin-top:var(--gap);max-width:1040px;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">print</span>((<span class="tok-num">1</span> <span class="tok-op">==</span> <span class="tok-num">2</span><span class="tok-op">/</span><span class="tok-num">0</span>) <span class="tok-kw">and</span> (<span class="tok-num">3</span> <span class="tok-op">==</span> <span class="tok-num">4</span>))  <span class="tok-cm"># run this, it crashes. Then swap the sides and run again.</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 35 · CONCEPT — reversed order, no crash, short-circuit
+         ============================================================ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Now Reverse The Order</span>
+        <h2>Same values <span style="color:var(--result);">swapped</span>: no crash</h2>
+        <div class="code-card" style="max-width:820px;margin-top:var(--gap);">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body" style="position:relative;">
+            <pre class="fragment fade-out" data-fragment-index="0"><code><span class="tok-kw">print</span>((<span class="tok-num">1</span> <span class="tok-op">==</span> <span class="tok-num">2</span><span class="tok-op">/</span><span class="tok-num">0</span>) <span class="tok-kw">and</span> (<span class="tok-num">3</span> <span class="tok-op">==</span> <span class="tok-num">4</span>))  <span class="tok-cm"># crashes!</span></code></pre>
+            <pre class="fragment" data-fragment-index="0" style="position:absolute;top:18px;left:22px;margin:0;"><code><span class="tok-kw">print</span>((<span class="tok-num">3</span> <span class="tok-op">==</span> <span class="tok-num">4</span>) <span class="tok-kw">and</span> (<span class="tok-num">1</span> <span class="tok-op">==</span> <span class="tok-num">2</span><span class="tok-op">/</span><span class="tok-num">0</span>))  <span class="tok-cm"># prints False, no crash!</span></code></pre>
+          </div>
+        </div>
+        <div style="display:flex;gap:var(--gap-sm);margin-top:var(--gap-lg);">
+          <div class="key-prop fragment fade-up" data-fragment-index="1" style="flex:1;"><strong style="color:var(--accent);">Step 1</strong><br><span style="font-size:var(--small);color:var(--text-dim);">Python checks <code>(3 == 4)</code>, which is <code>False</code>.</span></div>
+          <div class="key-prop fragment fade-up" data-fragment-index="2" style="flex:1;"><strong style="color:var(--text);">Step 2</strong><br><span style="font-size:var(--small);color:var(--text-dim);"><code>False and anything</code> is always <code>False</code>, no matter what the right side is.</span></div>
+          <div class="key-prop fragment fade-up" data-fragment-index="3" style="flex:1;"><strong style="color:var(--result);">Step 3</strong><br><span style="font-size:var(--small);color:var(--text-dim);">So Python <em>never evaluates</em> <code>1 == 2/0</code>. It short-circuits straight to <code>False</code>.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 36 · CONCEPT — or short-circuits to True
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The or Operator</span>
+          <h2>Short-circuits to <span style="color:var(--result);">True</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            <code style="color:var(--text);">or</code> works the same way, just aimed at the opposite outcome. As soon as Python finds a <code style="color:var(--text);">True</code> (or even just truthy) left side, it stops, since <code style="color:var(--text);">True or anything</code> is always <code style="color:var(--text);">True</code>.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">print</span>((<span class="tok-num">1</span> <span class="tok-op">&lt;</span> <span class="tok-num">2</span>) <span class="tok-kw">or</span> (<span class="tok-num">3</span> <span class="tok-op">&lt;</span> <span class="tok-num">4</span><span class="tok-op">/</span><span class="tok-num">0</span>))  <span class="tok-cm"># True, no crash</span>
+<span class="tok-kw">print</span>((<span class="tok-num">1</span> <span class="tok-op">&gt;</span> <span class="tok-num">2</span>) <span class="tok-kw">or</span> (<span class="tok-num">3</span> <span class="tok-op">&gt;</span> <span class="tok-num">4</span><span class="tok-op">/</span><span class="tok-num">0</span>))  <span class="tok-cm"># crashes!</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 37 · CONCEPT — practical guard pattern
+         ============================================================ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Why This Matters</span>
+        <h2>Guarding against a <span style="color:var(--warn);">crash</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:900px;">
+          Say <code style="color:var(--text);">score</code> is usually a number, but is sometimes <code style="color:var(--text);">None</code>. Testing <code style="color:var(--text);">score &gt; 100</code> directly would crash whenever <code style="color:var(--text);">score</code> is <code style="color:var(--text);">None</code>.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);margin-top:var(--gap-lg);max-width:900px;">
+          <div class="callout-warn"><strong>Crashes sometimes:</strong> <code>if score &gt; 100:</code></div>
+          <div class="callout-result"><strong>Always safe:</strong> <code>if (score != None) and (score &gt; 100):</code></div>
+          <p style="font-size:var(--small);color:var(--text-dim);">When <code style="color:var(--text);">score</code> is <code style="color:var(--text);">None</code>, <code style="color:var(--text);">score != None</code> is <code style="color:var(--text);">False</code>, and <code style="color:var(--text);">and</code> short-circuits before ever comparing <code style="color:var(--text);">None &gt; 100</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 38 · MCQ — two short-circuit checkpoints in one slide
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:37:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does (3 > 4) and (5 == 1/0) evaluate to?","order":0,"responseTimeLimitMs":20000,"options":[{"id":"q1a","text":"It crashes.","isCorrect":false},{"id":"q1b","text":"None","isCorrect":false},{"id":"q1c","text":"True","isCorrect":false},{"id":"q1d","text":"False","isCorrect":true}]},{"id":"q2","type":"multiple-choice","text":"What does (3 < 4) and (5 == 1/0) evaluate to?","order":1,"responseTimeLimitMs":20000,"options":[{"id":"q2a","text":"It crashes.","isCorrect":true},{"id":"q2b","text":"False","isCorrect":false},{"id":"q2c","text":"True","isCorrect":false},{"id":"q2d","text":"None","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>Crash, or <span style="color:var(--result);">short-circuit</span>?</h2>
+        <div class="split split-50" style="margin-top:var(--gap);">
+          <div>
+            <p style="margin-bottom:var(--gap-sm);">What does <code style="color:var(--text);">(3 &gt; 4) and (5 == 1/0)</code> evaluate to?</p>
+            <ul class="mcq-opts">
+              <li><span class="opt-key">A</span> It crashes.</li>
+              <li><span class="opt-key">B</span> <code>None</code></li>
+              <li><span class="opt-key">C</span> <code>True</code></li>
+              <li><span class="opt-key">D</span> <code>False</code></li>
+            </ul>
+          </div>
+          <div>
+            <p style="margin-bottom:var(--gap-sm);">What does <code style="color:var(--text);">(3 &lt; 4) and (5 == 1/0)</code> evaluate to?</p>
+            <ul class="mcq-opts">
+              <li><span class="opt-key">A</span> It crashes.</li>
+              <li><span class="opt-key">B</span> <code>False</code></li>
+              <li><span class="opt-key">C</span> <code>True</code></li>
+              <li><span class="opt-key">D</span> <code>None</code></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 39 · WRAP-UP — 1.4.6 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Short-circuit evaluation</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li><code style="color:var(--text);">and</code> stops as soon as it sees a <code style="color:var(--text);">False</code> left side; the right side is never evaluated.</li>
+          <li><code style="color:var(--text);">or</code> stops as soon as it sees a <code style="color:var(--text);">True</code> (or truthy) left side.</li>
+          <li>This lets a guard like <code style="color:var(--text);">(x != None) and (x &gt; 100)</code> avoid a crash, but use short-circuiting sparingly, only when it makes code clearer.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 40 · SECTION — 1.4.7 Truth Tables and De Morgan's Laws
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.4.7 Truth Tables &amp; De Morgan's Laws</span>
+        <h2>Every possible <span style="color:var(--accent);">combination</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          A <span style="color:var(--result);">Boolean expression</span> is an expression that always evaluates to <code style="color:var(--text);">True</code> or <code style="color:var(--text);">False</code>, no matter what values go in.
+          Once more than one or two variables are involved, it can be easy to lose track of every possible case by eye. A <span style="color:var(--accent);">truth table</span> solves that: it lists every combination
+          of inputs in its own row, with a final column showing what the expression evaluates to for that combination of inputs.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 41 · CONCEPT — truth table basics, (A or B)
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">A First Table</span>
+          <h2>The table for <span style="color:var(--accent);">(A or B)</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            With two variables, there are four possible combinations. Let's step through building each row.
+          </p>
+          <div style="position:relative;margin-top:var(--gap-lg);min-height:110px;">
+            <p class="fragment fade-in-then-out" data-fragment-index="1" style="font-size:var(--body);position:absolute;top:0;left:0;right:0;">
+              In row 1:<br/><code style="color:var(--text);">A</code> is <code style="color:var(--text);">True</code> and <code style="color:var(--text);">B</code> is <code style="color:var(--text);">True</code>, so <code style="color:var(--text);">(A or B)</code> is <code style="color:var(--text);">(True or True)</code>, which is <code style="color:var(--text);">True</code>.
+            </p>
+            <p class="fragment fade-in-then-out" data-fragment-index="3" style="font-size:var(--body);position:absolute;top:0;left:0;right:0;">
+              In row 2:<br/><code style="color:var(--text);">A</code> is <code style="color:var(--text);">True</code> and <code style="color:var(--text);">B</code> is <code style="color:var(--text);">False</code>, so <code style="color:var(--text);">(A or B)</code> is <code style="color:var(--text);">(True or False)</code>, which is <code style="color:var(--text);">True</code>. Only one side needs to be <code style="color:var(--text);">True</code>.
+            </p>
+            <p class="fragment fade-in-then-out" data-fragment-index="5" style="font-size:var(--body);position:absolute;top:0;left:0;right:0;">
+              In row 3:<br/><code style="color:var(--text);">A</code> is <code style="color:var(--text);">False</code> and <code style="color:var(--text);">B</code> is <code style="color:var(--text);">True</code>, so <code style="color:var(--text);">(A or B)</code> is <code style="color:var(--text);">(False or True)</code>, which is <code style="color:var(--text);">True</code>.
+            </p>
+            <p class="fragment fade-up" data-fragment-index="7" style="font-size:var(--body);position:absolute;top:0;left:0;right:0;">
+              In row 4:<br/><code style="color:var(--text);">A</code> is <code style="color:var(--text);">False</code> and <code style="color:var(--text);">B</code> is <code style="color:var(--text);">False</code>, so <code style="color:var(--text);">(A or B)</code> is <code style="color:var(--text);">(False or False)</code>, the only case where <code style="color:var(--text);">or</code> is <code style="color:var(--text);">False</code>.
+            </p>
+          </div>
+        </div>
+        <table class="truth-table">
+          <tr><th>A</th><th>B</th><th>(A or B)</th></tr>
+          <tr>
+            <td class="fragment" data-fragment-index="0">True</td>
+            <td class="fragment" data-fragment-index="0">True</td>
+            <td class="tt-true fragment" data-fragment-index="1">True</td>
+          </tr>
+          <tr>
+            <td class="fragment" data-fragment-index="2">True</td>
+            <td class="fragment" data-fragment-index="2">False</td>
+            <td class="tt-true fragment" data-fragment-index="3">True</td>
+          </tr>
+          <tr>
+            <td class="fragment" data-fragment-index="4">False</td>
+            <td class="fragment" data-fragment-index="4">True</td>
+            <td class="tt-true fragment" data-fragment-index="5">True</td>
+          </tr>
+          <tr>
+            <td class="fragment" data-fragment-index="6">False</td>
+            <td class="fragment" data-fragment-index="6">False</td>
+            <td class="tt-false fragment" data-fragment-index="7">False</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 42 · CONCEPT — helper columns, (A and (not B))
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Helper Columns</span>
+          <h2>Build up to the <span style="color:var(--accent);">full</span> expression</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            For a more complex expression, add a column for each subexpression first. Here, <code style="color:var(--text);">not B</code> is computed before the final column,
+            which keeps the last step simple and less error-prone.
+          </p>
+        </div>
+        <table class="truth-table">
+          <tr><th>A</th><th>B</th><th>not B</th><th>(A and (not B))</th></tr>
+          <tr>
+            <td class="fragment" data-fragment-index="0">True</td>
+            <td class="fragment" data-fragment-index="0">True</td>
+            <td class="fragment" data-fragment-index="1">False</td>
+            <td class="tt-false fragment" data-fragment-index="2">False</td>
+          </tr>
+          <tr>
+            <td class="fragment" data-fragment-index="3">True</td>
+            <td class="fragment" data-fragment-index="3">False</td>
+            <td class="fragment" data-fragment-index="4">True</td>
+            <td class="tt-true fragment" data-fragment-index="5">True</td>
+          </tr>
+          <tr>
+            <td class="fragment" data-fragment-index="6">False</td>
+            <td class="fragment" data-fragment-index="6">True</td>
+            <td class="fragment" data-fragment-index="7">False</td>
+            <td class="tt-false fragment" data-fragment-index="8">False</td>
+          </tr>
+          <tr>
+            <td class="fragment" data-fragment-index="9">False</td>
+            <td class="fragment" data-fragment-index="9">False</td>
+            <td class="fragment" data-fragment-index="10">True</td>
+            <td class="tt-false fragment" data-fragment-index="11">False</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 43 · CONCEPT — equivalence + De Morgan's Laws statement
+         ============================================================ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">De Morgan's Laws</span>
+        <h2>Two expressions, <span style="color:var(--result);">one</span> table</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1100px;">
+          If the last column of two truth tables matches exactly, the expressions are <span style="color:var(--result);">equivalent</span>, and you can safely swap one for the other. The mathematician Augustus De Morgan proved two especially useful equivalences:
+        </p>
+        <div style="display:flex;gap:var(--gap-sm);margin-top:var(--gap-lg);">
+          <div class="key-prop fragment fade-up" style="flex:1;"><strong style="color:var(--accent);">Law 1</strong><br><span style="font-size:var(--body);color:var(--text);">not (A or B) &equiv; (not A) and (not B)</span></div>
+          <div class="key-prop fragment fade-up" style="flex:1;"><strong style="color:var(--accent);">Law 2</strong><br><span style="font-size:var(--body);color:var(--text);">not (A and B) &equiv; (not A) or (not B)</span></div>
+        </div>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap);"><strong>The pattern:</strong> pushing a <code style="color:var(--text);">not</code> through an <code style="color:var(--text);">or</code>/<code style="color:var(--text);">and</code> flips it to the other operator, and negates each side.</div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 44 · CONCEPT — using De Morgan's to simplify a real expression
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Using It In Practice</span>
+          <h2>Simplify a <span style="color:var(--warn);">tangled</span> condition</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            A restaurant is <span style="color:var(--warn);">closed</span> after noon and all day on Monday. (<code style="color:var(--text);">hour &gt; 12</code>) or (<code style="color:var(--text);">day == 'Monday'</code>). To check whether it is <span style="color:var(--result);">open</span>, you need the opposite of that, the <code style="color:var(--text);">not</code> of the whole thing, and that's the tangled condition shown.
+          </p>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);" class="fragment fade-up" data-fragment-index="1">
+            De Morgan's first law lets you push the <code style="color:var(--text);">not</code> inward instead of leaving it wrapped around everything: <code style="color:var(--text);">or</code> becomes <code style="color:var(--text);">and</code>, and each side gets its own <code style="color:var(--text);">not</code>.
+          </p>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);" class="fragment fade-up" data-fragment-index="2">
+            Each <span style="color:var(--text);">negated</span> comparison simplifies on its own.
+          </p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="code-card">
+            <div class="code-hdr"><span style="color:var(--warn);">tangled</span><span style="margin-left:6px;color:var(--text-dim);">&middot; hard to read at a glance</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">not</span> ((<span class="tok-nm">hour</span> <span class="tok-op">&gt;</span> <span class="tok-num">12</span>) <span class="tok-kw">or</span> (<span class="tok-nm">day</span> <span class="tok-op">==</span> <span class="tok-str">'Monday'</span>))</code></pre>
+            </div>
+          </div>
+          <div class="code-card fragment fade-up" data-fragment-index="1">
+            <div class="code-hdr"><span style="color:var(--accent);">Law 1 applied</span><span style="margin-left:6px;color:var(--text-dim);">&middot; push the not inward</span></div>
+            <div class="code-body"><pre><code>(<span class="tok-kw">not</span> (<span class="tok-nm">hour</span> <span class="tok-op">&gt;</span> <span class="tok-num">12</span>)) <span class="tok-kw">and</span> (<span class="tok-kw">not</span> (<span class="tok-nm">day</span> <span class="tok-op">==</span> <span class="tok-str">'Monday'</span>))</code></pre>
+            </div>
+          </div>
+          <div class="code-card fragment fade-up" data-fragment-index="2">
+            <div class="code-hdr"><span style="color:var(--result);">simplified</span><span style="margin-left:6px;color:var(--text-dim);">&middot; simplify each negated comparison</span></div>
+            <div class="code-body"><pre><code>(<span class="tok-nm">hour</span> <span class="tok-op">&lt;=</span> <span class="tok-num">12</span>) <span class="tok-kw">and</span> (<span class="tok-nm">day</span> <span class="tok-op">!=</span> <span class="tok-str">'Monday'</span>)</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 45 · MCQ — identify De Morgan's Law
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:44:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which of the following is NOT one of De Morgan&#39;s Laws?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"(not (A and B)) is equivalent to ((not A) or (not B))","isCorrect":false},{"id":"q1b","text":"(A and B) is equivalent to ((not A) or (not B))","isCorrect":true},{"id":"q1c","text":"(not (A or B)) is equivalent to ((not A) and (not B))","isCorrect":false},{"id":"q1d","text":"None of these, they are all De Morgan&#39;s Laws.","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>Spot the <span style="color:var(--warn);">imposter</span></h2>
+        <p style="margin-bottom:var(--gap);">Which of the following is <strong>NOT</strong> one of De Morgan's Laws?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> <code>(not (A and B))</code> is equivalent to <code>((not A) or (not B))</code></li>
+          <li><span class="opt-key">B</span> <code>(A and B)</code> is equivalent to <code>((not A) or (not B))</code></li>
+          <li><span class="opt-key">C</span> <code>(not (A or B))</code> is equivalent to <code>((not A) and (not B))</code></li>
+          <li><span class="opt-key">D</span> None of these, they are all De Morgan's Laws.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 46 · INSTRUCTIONS — True or False? activity
+         ============================================================ -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Activity</span>
+        <h2>True or False?</h2>
+        <p style="font-size:var(--body);max-width:900px;margin-top:var(--gap);">
+          On the next slide, each chip is a Boolean expression, some built straight from <code style="color:var(--text);">True</code>/<code style="color:var(--text);">False</code>, some as De Morgan pairs of each other.
+          Drag (or click, then click the bin) each one into <span style="color:var(--result);">True</span> or <span style="color:var(--warn);">False</span>, based on what it actually evaluates to.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 47 · ACTIVITY — True or False sort (custom HTML5 widget)
+         ============================================================ -->
+    <section data-boolsort-activity>
+      <div class="slide-inner">
+        <span class="slide-tag">Activity &middot; True or False?</span>
+        <div class="type-bins" data-bool-bins></div>
+        <p class="trace-prompt" data-bool-progress style="margin-top:var(--gap);"></p>
+        <div class="chip-tray" data-bool-chips></div>
+        <p class="trace-feedback" data-bool-feedback></p>
+        <p class="trace-done-banner" data-bool-done>All 8 expressions sorted. Notice the De Morgan pairs, like not (True or False) and (not True) and (not False), always land in the same bin.</p>
+        <button type="button" class="trace-reset" data-bool-reset>&#8635; restart sort</button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 48 · WRAP-UP — 1.4.7 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Truth tables &amp; De Morgan's Laws</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li>A truth table lists every combination of inputs and the expression's value in each case; matching last columns mean the expressions are <strong>equivalent</strong>.</li>
+          <li>Helper columns for subexpressions make the final column easier and less error-prone to fill in.</li>
+          <li><code style="color:var(--text);">not (A or B)</code> &equiv; <code style="color:var(--text);">(not A) and (not B)</code>, and <code style="color:var(--text);">not (A and B)</code> &equiv; <code style="color:var(--text);">(not A) or (not B)</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 49 · SECTION — 1.4.8 Improper Use of Conditionals
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">1.4.8 Improper Use of Conditionals</span>
+        <h2>Ways to <span style="color:var(--warn);">misuse</span> what you just learned</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          Conditionals are powerful enough that Python lets you write them in some genuinely bad ways. Here are the common
+          traps, so you recognize them in other people's code, and avoid them in your own.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 50 · CONCEPT — if instead of elif/else, right vs wrong
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Trap 1</span>
+          <h2>Using <span style="color:var(--warn);">if</span> instead of <span style="color:var(--result);">elif</span>/<span style="color:var(--result);">else</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            A common newcomer mistake: writing a second, independent <code style="color:var(--text);">if</code> when a single <code style="color:var(--text);">if-elif</code> or <code style="color:var(--text);">if-else</code> was the better choice.
+            They may run identically, but they are not equally good code.
+          </p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="code-card">
+            <div class="code-hdr"><span style="color:var(--result);">the right way</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-num">0</span>:
+    <span class="tok-kw">return</span> <span class="tok-str">'Negative'</span>
+<span class="tok-kw">else</span>:
+    <span class="tok-kw">return</span> <span class="tok-str">'Non-negative'</span></code></pre>
+            </div>
+          </div>
+          <div class="code-card">
+            <div class="code-hdr"><span style="color:var(--warn);">the wrong way</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-num">0</span>:
+    <span class="tok-kw">return</span> <span class="tok-str">'Negative'</span>
+<span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&gt;=</span> <span class="tok-num">0</span>:
+    <span class="tok-kw">return</span> <span class="tok-str">'Non-negative'</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 51 · CONCEPT — 3 reasons why
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Why It Matters</span>
+          <h2>Three reasons <span style="color:var(--result);">else</span> wins</h2>
+          <ul class="bullets" style="margin-top:var(--gap-lg);font-size:var(--body);">
+            <li class="fragment fade-up"><strong>Easier to read.</strong> With <code style="color:var(--text);">else</code>, it's obvious every value is covered. With two separate <code style="color:var(--text);">if</code>s, you have to reason through both tests yourself.</li>
+            <li class="fragment fade-up"><strong>Fewer bugs.</strong> Clearer code is easier to reason about, and bugs hide in code you don't fully understand.</li>
+            <li class="fragment fade-up"><strong>Faster.</strong> The <code style="color:var(--text);">if-else</code> version runs one test. The two-<code style="color:var(--text);">if</code> version always runs both, even though the second is redundant.</li>
+          </ul>
+        </div>
+        <div class="fragment fade-up" style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="code-card">
+            <div class="code-hdr"><span style="color:var(--warn);">two ifs can even change the answer</span></div>
+            <div class="code-body"><pre><code><span class="tok-nm">n</span> <span class="tok-op">=</span> <span class="tok-num">5</span>
+<span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&gt;</span> <span class="tok-num">0</span>:
+    <span class="tok-nm">n</span> <span class="tok-op">=</span> <span class="tok-nm">n</span> <span class="tok-op">-</span> <span class="tok-num">10</span>
+<span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-num">0</span>:
+    <span class="tok-kw">print</span>(<span class="tok-str">'Negative'</span>)  <span class="tok-cm"># this runs too!</span></code></pre>
+            </div>
+          </div>
+          <p style="font-size:var(--small);color:var(--text-dim);">
+            <code style="color:var(--text);">n</code> starts at <code style="color:var(--text);">5</code>, positive, so the first body runs and changes <code style="color:var(--text);">n</code> to <code style="color:var(--text);">-5</code>. The second <code style="color:var(--text);">if</code> then tests that <strong>new</strong> value, finds it negative, and runs too. So this doesn't just run a redundant extra test, it can silently produce a completely different result than an <code style="color:var(--text);">if-elif</code> chain would, which only ever checks the original value once.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 52 · CONCEPT — nested if-else expressions, bad idea
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Trap 2</span>
+          <h2>Nesting <span style="color:var(--warn);">if-else expressions</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            You <em>can</em> chain <code style="color:var(--text);">if-else</code> expressions together. It "works", but it's confusing and hard to read, which makes it easy to introduce bugs.
+          </p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="code-card">
+            <div class="code-hdr"><span style="color:var(--warn);">avoid this</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">return</span> <span class="tok-str">'Negative'</span> <span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-num">0</span> <span class="tok-kw">else</span> <span class="tok-str">'Positive'</span> <span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&gt;</span> <span class="tok-num">0</span> <span class="tok-kw">else</span> <span class="tok-str">'Zero'</span></code></pre>
+            </div>
+          </div>
+          <div class="callout-warn">
+            Only use <code>if-else</code> expressions in the simplest cases, and never nest them. For anything with real complexity, including nested logic, reach for an <code>if-else</code> or <code>if-elif-else</code> statement instead.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 53 · MOBCODE — boolean values in arithmetic
+         ============================================================ -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"files":{"main.py":"strength = 25\n\nscore = 50\nif strength > 20:\n    score += 10\nprint(score)\n\n# Sneaking a boolean into arithmetic \"works\", but hides the conditional:\nscore2 = 50 + (strength > 20) * 10\nprint(score2)\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Trap 3 &middot; See For Yourself</span>
+        <h2>Booleans <span style="color:var(--warn);">sneaking</span> into arithmetic</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:900px;">
+          Both versions print the same score. Python automatically converts <code style="color:var(--text);">True</code> to <code style="color:var(--text);">1</code> and <code style="color:var(--text);">False</code> to <code style="color:var(--text);">0</code> in arithmetic,
+          so <code style="color:var(--text);">(strength &gt; 20) * 10</code> silently "works". Run it and compare.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 54 · CONCEPT — the takeaway on bool arithmetic
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The Takeaway</span>
+          <h2>It works. <span style="color:var(--warn);">Don't</span> do it.</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            <code style="color:var(--text);">int(True)</code> is <code style="color:var(--text);">1</code> and <code style="color:var(--text);">int(False)</code> is <code style="color:var(--text);">0</code>. You can even drop the explicit <code style="color:var(--text);">int()</code> call, since Python converts booleans for you inside arithmetic.
+          </p>
+        </div>
+        <div class="callout-warn">
+          <strong>This conceals the conditional entirely.</strong> A reader scanning <code>score = 50 + (strength &gt; 20) * 10</code> has to notice the boolean-arithmetic trick just to realize there's branching logic here at all. Write the <code>if</code> statement instead.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 55 · MOBCODE — non-booleans in boolean expressions
+         ============================================================ -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"files":{"main.py":"print(&#39;&#39; or &#39;abc&#39;)\n\nname = &#39;&#39;\nname = name or &#39;Unknown&#39;  # \"works\" but conceals the conditional\nprint(name)\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Trap 4 &middot; See For Yourself</span>
+        <h2>Strings inside <span style="color:var(--warn);">or</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:900px;">
+          <code style="color:var(--text);">''</code> is falsy, so <code style="color:var(--text);">or</code> short-circuits past it and returns <code style="color:var(--text);">'abc'</code>. This is the same truthy/falsy conversion from
+          <code style="color:var(--text);">bool()</code>, just applied inside <code style="color:var(--text);">and</code>/<code style="color:var(--text);">or</code> instead of an explicit <code style="color:var(--text);">if</code>.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 56 · CONCEPT — 3 ways to write "default to Unknown"
+         ============================================================ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Three Ways To Write The Same Fix</span>
+        <h2>From <span style="color:var(--warn);">clever</span> to <span style="color:var(--result);">clear</span></h2>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);margin-top:var(--gap);">
+          <div class="callout-warn"><strong>Not advised:</strong> <code>name = name or 'Unknown'</code>, a non-Boolean hiding inside <code>or</code>.</div>
+          <div class="callout"><strong>Better:</strong> <code>name = 'Unknown' if name == '' else name</code>, an honest Boolean test.</div>
+          <div class="callout-result"><strong>Best:</strong> <code>if name == '': name = 'Unknown'</code>, the clearest of the three, and it never reassigns <code>name</code> to itself.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 57 · MCQ — spot the bug, two-if pattern
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:56:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Where is the improper use of conditionals in the following code?\n\n```python\ndef testSign(n):\n    if n < 0:\n        return &#39;Negative&#39;\n    if n > 0:\n        return &#39;Non-negative&#39;\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"The second if should be an elif or else, since the two tests are meant to be mutually exclusive alternatives.","isCorrect":true},{"id":"q1b","text":"The function is missing a return statement.","isCorrect":false},{"id":"q1c","text":"n < 0 should be n <= 0.","isCorrect":false},{"id":"q1d","text":"There is no bug, this is perfectly fine style.","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>Where's the <span style="color:var(--warn);">improper</span> use?</h2>
+        <div class="code-card" style="max-width:420px;margin:var(--gap) 0;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">testSign</span>(<span class="tok-nm">n</span>):
+    <span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&lt;</span> <span class="tok-num">0</span>:
+        <span class="tok-kw">return</span> <span class="tok-str">'Negative'</span>
+    <span class="tok-kw">if</span> <span class="tok-nm">n</span> <span class="tok-op">&gt;</span> <span class="tok-num">0</span>:
+        <span class="tok-kw">return</span> <span class="tok-str">'Non-negative'</span></code></pre>
+          </div>
+        </div>
+        <p style="margin-bottom:var(--gap);">This also has a subtler bug than style: what does it return for <code>n == 0</code>? But first, spot the <em>improper use of conditionals</em>.</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> The second <code>if</code> should be an <code>elif</code> or <code>else</code>, the two tests are meant to be mutually exclusive alternatives.</li>
+          <li><span class="opt-key">B</span> The function is missing a <code>return</code> statement.</li>
+          <li><span class="opt-key">C</span> <code>n &lt; 0</code> should be <code>n &lt;= 0</code>.</li>
+          <li><span class="opt-key">D</span> There is no bug, this is perfectly fine style.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 58 · WRAP-UP — 1.4.8 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Improper use of conditionals</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li>Don't use a second <code style="color:var(--text);">if</code> when <code style="color:var(--text);">elif</code> or <code style="color:var(--text);">else</code> says the same thing more clearly and runs faster.</li>
+          <li>Don't nest <code style="color:var(--text);">if-else</code> expressions; use an <code style="color:var(--text);">if-elif-else</code> statement once things get complex.</li>
+          <li>Don't fold Booleans into arithmetic, and don't use non-Booleans directly inside <code style="color:var(--text);">and</code>/<code style="color:var(--text);">or</code>. Both "work" but conceal the conditional from readers.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 59 · DECK WRAP-UP — Conditionals, the big picture
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Unit Recap</span>
+        <h2>Conditionals: the <span style="color:var(--accent);">big picture</span></h2>
+        <ul class="bullets" style="margin-top:var(--gap-lg);font-size:var(--body);">
+          <li><strong>if / if-else</strong> runs a body only when a test is <code style="color:var(--text);">True</code>, or picks between two bodies based on it.</li>
+          <li><strong>Nesting and elif</strong> both handle more than two cases; <code style="color:var(--text);">elif</code> is usually the cleaner, flatter choice.</li>
+          <li><strong>if-else expressions</strong> evaluate to a value in one line, used sparingly and never nested.</li>
+          <li><strong>Short-circuit evaluation</strong> lets <code style="color:var(--text);">and</code>/<code style="color:var(--text);">or</code> skip work, and even guard against crashes.</li>
+          <li><strong>Truth tables and De Morgan's Laws</strong> let you prove two Boolean expressions are equivalent, and simplify tangled ones.</li>
+          <li>Every one of these has a proper and an improper form. <strong>Tracing the execution path</strong>, which branch actually runs for a given input, is how you tell the difference.</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ─── Activity: Trace the Branch (slide 25) ──────────────────
+     Like Trace the Call, but the "prefix" is an if-elif-else
+     chain instead of a straight-line function body. Each traced
+     step is a call; correctly matching its return value also
+     highlights (path-hit) every prefix line belonging to the
+     branch that call actually took, building up a visual record
+     of the execution paths explored so far. ──────────────────── */
+
+  var branchTracePrefixLines = [
+    { html: '<span class="tok-kw">def</span> <span class="tok-nm">letterGrade</span>(<span class="tok-nm">score</span>):' },
+    { html: '&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">if</span> <span class="tok-nm">score</span> <span class="tok-op">&lt;</span> <span class="tok-num">60</span>:', tag: 'if' },
+    { html: '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">\'D\'</span>', tag: 'if' },
+    { html: '&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">elif</span> <span class="tok-nm">score</span> <span class="tok-op">&lt;</span> <span class="tok-num">75</span>:', tag: 'elif1' },
+    { html: '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">\'C\'</span>', tag: 'elif1' },
+    { html: '&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">elif</span> <span class="tok-nm">score</span> <span class="tok-op">&lt;</span> <span class="tok-num">90</span>:', tag: 'elif2' },
+    { html: '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">\'B\'</span>', tag: 'elif2' },
+    { html: '&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">else</span>:', tag: 'else' },
+    { html: '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-str">\'A\'</span>', tag: 'else' }
+  ];
+
+  var branchTraceSteps = [
+    {
+      varName: 'letterGrade(68)',
+      lineHtml: '<span class="tok-kw">print</span>(<span class="tok-nm">letterGrade</span>(<span class="tok-num">68</span>))',
+      correct: "'C'",
+      correctClass: 'tok-str',
+      branchTag: 'elif1',
+      branchLabel: 'first elif',
+      chips: ["'D'", "'C'", "'A'", "'B'"],
+      wrongFeedback: 'score is 68. score < 60 is False, so Python checks the next test: is 68 < 75?'
+    },
+    {
+      varName: 'letterGrade(95)',
+      lineHtml: '<span class="tok-kw">print</span>(<span class="tok-nm">letterGrade</span>(<span class="tok-num">95</span>))',
+      correct: "'A'",
+      correctClass: 'tok-str',
+      branchTag: 'else',
+      branchLabel: 'else',
+      chips: ["'B'", "'D'", "'C'", "'A'"],
+      wrongFeedback: 'score is 95. It fails every if/elif test, so Python falls through to the else, the branch that always catches whatever is left.'
+    },
+    {
+      varName: 'letterGrade(58)',
+      lineHtml: '<span class="tok-kw">print</span>(<span class="tok-nm">letterGrade</span>(<span class="tok-num">58</span>))',
+      correct: "'D'",
+      correctClass: 'tok-str',
+      branchTag: 'if',
+      branchLabel: 'if',
+      chips: ["'D'", "'B'", "'A'", "'C'"],
+      wrongFeedback: 'score is 58. Check the first test: is 58 < 60? Whichever test is True first is the branch that runs, and the only one, even though 58 is close to passing.'
+    },
+    {
+      varName: 'letterGrade(82)',
+      lineHtml: '<span class="tok-kw">print</span>(<span class="tok-nm">letterGrade</span>(<span class="tok-num">82</span>))',
+      correct: "'B'",
+      correctClass: 'tok-str',
+      branchTag: 'elif2',
+      branchLabel: 'second elif',
+      chips: ["'A'", "'C'", "'B'", "'D'"],
+      wrongFeedback: 'score is 82. It fails score < 60 and score < 75, but 82 < 90 is True, that is the branch that runs, even though 82 looks close to a top score.'
+    }
+  ];
+
+  function initBranchTrace(slide) {
+    if (slide.dataset.branchWired) return;
+    slide.dataset.branchWired = 'true';
+
+    var codeEl = slide.querySelector('[data-branch-code]');
+    var boxesEl = slide.querySelector('[data-branch-boxes]');
+    var chipsEl = slide.querySelector('[data-branch-chips]');
+    var promptEl = slide.querySelector('[data-branch-prompt]');
+    var feedbackEl = slide.querySelector('[data-branch-feedback]');
+    var doneEl = slide.querySelector('[data-branch-done]');
+    var resetBtn = slide.querySelector('[data-branch-reset]');
+
+    var boxOrder = branchTraceSteps.map(function (step) { return step.varName; });
+
+    var state = { current: 0, selectedChip: null, boxValues: {}, lastBranchTag: null };
+
+    function renderCode() {
+      var prefixHtml = branchTracePrefixLines.map(function (line, i) {
+        var hit = line.tag && line.tag === state.lastBranchTag;
+        var cls = 'code-line context' + (hit ? ' path-hit' : '');
+        return '<div class="' + cls + '"><span class="car">&rsaquo;</span><span class="ln">' + (i + 1) + '</span><span>' + line.html + '</span></div>';
+      }).join('');
+      var blankLn = branchTracePrefixLines.length + 1;
+      var blankHtml = '<div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">' + blankLn + '</span><span>&nbsp;</span></div>';
+      var tracedHtml = branchTraceSteps.map(function (step, i) {
+        var cls = 'code-line ' + (i < state.current ? 'done' : i === state.current ? 'current' : 'pending');
+        return '<div class="' + cls + '"><span class="car">&rsaquo;</span><span class="ln">' + (i + branchTracePrefixLines.length + 2) + '</span><span>' + step.lineHtml + '</span></div>';
+      }).join('');
+      codeEl.innerHTML = prefixHtml + blankHtml + tracedHtml;
+    }
+
+    function renderBoxes() {
+      boxesEl.innerHTML = boxOrder.map(function (name, idx) {
+        var revealed = idx <= state.current;
+        var isTarget = idx === state.current && state.current < branchTraceSteps.length;
+        var value = state.boxValues[name];
+        var cls = 'var-box' + (revealed ? ' revealed' : '') + (isTarget ? ' target' : '');
+        var valueHtml = value ? '<span class="' + value.cls + '">' + escapeHtml(value.html) + '</span>' : '<span>&hellip;</span>';
+        return '<div class="' + cls + '" data-box="' + idx + '" tabindex="0" role="button" aria-label="result of ' + name + '">' +
+          '<div class="var-box-name">' + name + '</div>' +
+          '<div class="var-box-value">' + valueHtml + '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    function renderChips() {
+      if (state.current >= branchTraceSteps.length) {
+        chipsEl.innerHTML = '';
+        promptEl.textContent = '';
+        return;
+      }
+      var step = branchTraceSteps[state.current];
+      promptEl.innerHTML = 'Which branch does <strong>' + step.varName + '</strong> take? Place its return value in the highlighted box.';
+      chipsEl.innerHTML = step.chips.map(function (chip) {
+        var esc = escapeHtml(chip);
+        return '<div class="chip" draggable="true" tabindex="0" role="button" data-chip="' + esc + '">' + esc + '</div>';
+      }).join('');
+    }
+
+    function clearSelection() {
+      state.selectedChip = null;
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+    }
+
+    function setFeedback(text, kind) {
+      feedbackEl.textContent = text || '';
+      feedbackEl.classList.remove('good', 'bad');
+      if (kind) feedbackEl.classList.add(kind);
+    }
+
+    function attempt(chipValue) {
+      if (state.current >= branchTraceSteps.length) return;
+      var step = branchTraceSteps[state.current];
+      if (chipValue === step.correct) {
+        state.boxValues[step.varName] = { html: chipValue, cls: step.correctClass };
+        state.lastBranchTag = step.branchTag;
+        setFeedback('Correct. ' + step.varName + ' took the ' + step.branchLabel + ' branch and returned ' + chipValue + '.', 'good');
+        state.current += 1;
+        clearSelection();
+        renderCode();
+        renderBoxes();
+        renderChips();
+        if (state.current >= branchTraceSteps.length) {
+          doneEl.classList.add('visible');
+          setFeedback('', null);
+        }
+      } else {
+        setFeedback(step.wrongFeedback, 'bad');
+        var targetBox = boxesEl.querySelector('[data-box="' + state.current + '"]');
+        if (targetBox) {
+          targetBox.classList.remove('shake');
+          void targetBox.offsetWidth;
+          targetBox.classList.add('shake');
+        }
+        clearSelection();
+      }
+    }
+
+    function reset() {
+      state.current = 0;
+      state.selectedChip = null;
+      state.boxValues = {};
+      state.lastBranchTag = null;
+      doneEl.classList.remove('visible');
+      setFeedback('', null);
+      renderCode();
+      renderBoxes();
+      renderChips();
+    }
+
+    chipsEl.addEventListener('dragstart', function (event) {
+      var chip = event.target.closest('[data-chip]');
+      if (!chip) return;
+      event.dataTransfer.setData('text/plain', chip.getAttribute('data-chip'));
+      state.selectedChip = chip.getAttribute('data-chip');
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+    });
+    chipsEl.addEventListener('click', function (event) {
+      var chip = event.target.closest('[data-chip]');
+      if (!chip) return;
+      state.selectedChip = chip.getAttribute('data-chip');
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+    });
+    chipsEl.addEventListener('keydown', function (event) {
+      var chip = event.target.closest('[data-chip]');
+      if (!chip || (event.key !== 'Enter' && event.key !== ' ')) return;
+      event.preventDefault();
+      state.selectedChip = chip.getAttribute('data-chip');
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+    });
+
+    boxesEl.addEventListener('dragover', function (event) {
+      var box = event.target.closest('[data-box]');
+      if (!box || !box.classList.contains('target')) return;
+      event.preventDefault();
+    });
+    boxesEl.addEventListener('drop', function (event) {
+      var box = event.target.closest('[data-box]');
+      if (!box || !box.classList.contains('target')) return;
+      event.preventDefault();
+      var value = event.dataTransfer.getData('text/plain') || state.selectedChip;
+      if (value) attempt(value);
+    });
+    boxesEl.addEventListener('click', function (event) {
+      var box = event.target.closest('[data-box]');
+      if (!box || !box.classList.contains('target') || !state.selectedChip) return;
+      attempt(state.selectedChip);
+    });
+    boxesEl.addEventListener('keydown', function (event) {
+      var box = event.target.closest('[data-box]');
+      if (!box || !box.classList.contains('target')) return;
+      if ((event.key === 'Enter' || event.key === ' ') && state.selectedChip) {
+        event.preventDefault();
+        attempt(state.selectedChip);
+      }
+    });
+
+    resetBtn.addEventListener('click', reset);
+
+    reset();
+  }
+
+  /* ─── Activity: True or False? (slide 46) ────────────────────
+     Same interaction pattern as the type-sort bins activity, but
+     the chips are whole Boolean expressions instead of values,
+     sorted into a True or False bin. ─────────────────────────── */
+
+  var boolBinOrder = ['True', 'False'];
+  var boolItems = [
+    { id: 'b1', display: 'not (True or False)', type: 'False',
+      hint: 'True or False is True first, so not(...) flips it to False.' },
+    { id: 'b2', display: '(not True) and (not False)', type: 'False',
+      hint: 'not True is False, and False and anything is False. This is the De Morgan pair of not(True or False), same result either way.' },
+    { id: 'b3', display: 'not (True and False)', type: 'True',
+      hint: 'True and False is False first, so not(...) flips it to True.' },
+    { id: 'b4', display: '(not True) or (not False)', type: 'True',
+      hint: 'not True is False, but not False is True, and anything or True is True. This is the De Morgan pair of not(True and False).' },
+    { id: 'b5', display: 'True and (not True)', type: 'False',
+      hint: 'not True is False, and True and False is False.' },
+    { id: 'b6', display: '(3 > 4) or (5 == 5)', type: 'True',
+      hint: '3 > 4 is False, but 5 == 5 is True, and False or True is True.' },
+    { id: 'b7', display: '(3 < 4) and (5 != 5)', type: 'False',
+      hint: '3 < 4 is True, but 5 != 5 is False, and True and False is False.' },
+    { id: 'b8', display: 'not (1 == 2)', type: 'True',
+      hint: '1 == 2 is False, so not(...) flips it to True.' }
+  ];
+
+  function initBoolSort(slide) {
+    if (slide.dataset.boolWired) return;
+    slide.dataset.boolWired = 'true';
+
+    var binsEl = slide.querySelector('[data-bool-bins]');
+    var chipsEl = slide.querySelector('[data-bool-chips]');
+    var progressEl = slide.querySelector('[data-bool-progress]');
+    var feedbackEl = slide.querySelector('[data-bool-feedback]');
+    var doneEl = slide.querySelector('[data-bool-done]');
+    var resetBtn = slide.querySelector('[data-bool-reset]');
+
+    var state = { placed: {}, selectedChip: null };
+
+    function renderBins() {
+      binsEl.innerHTML = boolBinOrder.map(function (type) {
+        var items = boolItems.filter(function (item) { return state.placed[item.id] && item.type === type; });
+        var itemsHtml = items.map(function (item) {
+          return '<span class="type-chip bool-chip-code">' + escapeHtml(item.display) + '</span>';
+        }).join('');
+        return '<div class="type-bin" data-bin="' + type + '" tabindex="0" role="button" aria-label="' + type + ' bin">' +
+          '<div class="type-bin-header">' + type + '</div>' +
+          '<div class="type-bin-items">' + itemsHtml + '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    function renderChips() {
+      var remaining = boolItems.filter(function (item) { return !state.placed[item.id]; });
+      chipsEl.innerHTML = remaining.map(function (item) {
+        return '<div class="chip bool-chip-code" draggable="true" tabindex="0" role="button" data-item="' + item.id + '">' + escapeHtml(item.display) + '</div>';
+      }).join('');
+      if (progressEl) {
+        progressEl.textContent = (boolItems.length - remaining.length) + ' of ' + boolItems.length + ' sorted';
+      }
+    }
+
+    function clearSelection() {
+      state.selectedChip = null;
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+    }
+
+    function setFeedback(text, kind) {
+      feedbackEl.textContent = text || '';
+      feedbackEl.classList.remove('good', 'bad');
+      if (kind) feedbackEl.classList.add(kind);
+    }
+
+    function attempt(itemId, binType, binEl) {
+      var item = boolItems.filter(function (i) { return i.id === itemId; })[0];
+      if (!item) return;
+      if (item.type === binType) {
+        state.placed[itemId] = true;
+        setFeedback(item.display + ' is ' + binType + '. Correct!', 'good');
+        clearSelection();
+        renderBins();
+        renderChips();
+        if (Object.keys(state.placed).length === boolItems.length) {
+          doneEl.classList.add('visible');
+          setFeedback('', null);
+        }
+      } else {
+        setFeedback(item.hint || (item.display + ' is not ' + binType + '. Look again.'), 'bad');
+        if (binEl) {
+          binEl.classList.remove('shake');
+          void binEl.offsetWidth;
+          binEl.classList.add('shake');
+        }
+        clearSelection();
+      }
+    }
+
+    function reset() {
+      state.placed = {};
+      state.selectedChip = null;
+      doneEl.classList.remove('visible');
+      setFeedback('', null);
+      renderBins();
+      renderChips();
+    }
+
+    chipsEl.addEventListener('dragstart', function (event) {
+      var chip = event.target.closest('[data-item]');
+      if (!chip) return;
+      event.dataTransfer.setData('text/plain', chip.getAttribute('data-item'));
+      state.selectedChip = chip.getAttribute('data-item');
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+    });
+    chipsEl.addEventListener('click', function (event) {
+      var chip = event.target.closest('[data-item]');
+      if (!chip) return;
+      state.selectedChip = chip.getAttribute('data-item');
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+    });
+    chipsEl.addEventListener('keydown', function (event) {
+      var chip = event.target.closest('[data-item]');
+      if (!chip || (event.key !== 'Enter' && event.key !== ' ')) return;
+      event.preventDefault();
+      state.selectedChip = chip.getAttribute('data-item');
+      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function (c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+    });
+
+    binsEl.addEventListener('dragover', function (event) {
+      var bin = event.target.closest('[data-bin]');
+      if (!bin) return;
+      event.preventDefault();
+    });
+    binsEl.addEventListener('drop', function (event) {
+      var bin = event.target.closest('[data-bin]');
+      if (!bin) return;
+      event.preventDefault();
+      var itemId = event.dataTransfer.getData('text/plain') || state.selectedChip;
+      if (itemId) attempt(itemId, bin.getAttribute('data-bin'), bin);
+    });
+    binsEl.addEventListener('click', function (event) {
+      var bin = event.target.closest('[data-bin]');
+      if (!bin || !state.selectedChip) return;
+      attempt(state.selectedChip, bin.getAttribute('data-bin'), bin);
+    });
+    binsEl.addEventListener('keydown', function (event) {
+      var bin = event.target.closest('[data-bin]');
+      if (!bin || (event.key !== 'Enter' && event.key !== ' ') || !state.selectedChip) return;
+      event.preventDefault();
+      attempt(state.selectedChip, bin.getAttribute('data-bin'), bin);
+    });
+
+    resetBtn.addEventListener('click', reset);
+
+    reset();
+  }
+
+  /* ─── data-fragment-trace wiring ──────────────────────────────
+     Each fragment names the single line (by its printed .ln number)
+     that becomes the "current" cursor at that step, via
+     data-trace-current. A step can also name the call site the
+     cursor is currently inside via data-trace-active-call, so the
+     call line shows a hollow outlined caret (like a paused stack
+     frame) while the cursor is off tracing the function body, and
+     reverts to a filled current highlight once execution returns to
+     it. On every shown/hidden event we recompute from scratch by
+     reading which fragments Reveal currently has marked .visible,
+     so back-navigation "just works" without separate bookkeeping.
+     Lines never named by any fragment (the def line, blank
+     separator lines, comments) stay authored as .context and are
+     left untouched, dim for the whole slide. ──────────────────── */
+
+  function syncBodyTrace(traceSlide) {
+    // The very first call site is current before any fragment fires (authored
+    // directly in the HTML), so it never appears in a fragment's
+    // data-trace-current. Seed the visited list with it via data-trace-start
+    // so it correctly becomes .done once the cursor moves on from it.
+    var startLine = traceSlide.getAttribute('data-trace-start');
+    var fragments = traceSlide.querySelectorAll('.fragment[data-trace-current]');
+    var visited = startLine ? [startLine] : [];
+    var activeCall = null;
+    Array.prototype.forEach.call(fragments, function (frag) {
+      if (!frag.classList.contains('visible')) return;
+      visited.push(frag.getAttribute('data-trace-current'));
+      activeCall = frag.getAttribute('data-trace-active-call');
+    });
+    if (!visited.length) return; // nothing shown yet: keep the authored initial state
+
+    var currentLine = visited[visited.length - 1];
+    var doneSet = {};
+    visited.slice(0, -1).forEach(function (ln) { doneSet[ln] = true; });
+
+    var lines = traceSlide.querySelectorAll('.code-line:not(.context)');
+    Array.prototype.forEach.call(lines, function (line) {
+      var lnEl = line.querySelector('.ln');
+      var ln = lnEl ? lnEl.textContent.trim() : null;
+      line.classList.remove('current', 'done', 'pending', 'active-call');
+      if (ln === currentLine) {
+        line.classList.add('current');
+      } else if (activeCall && ln === activeCall) {
+        line.classList.add('active-call');
+      } else if (doneSet[ln]) {
+        line.classList.add('done');
+      } else {
+        line.classList.add('pending');
+      }
+    });
+  }
+
+  initSyncDeckReveal({
+    deckId: 'hpy-1-4-conditionals',
+    standaloneHosting: {
+      activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+      hash: true,
+      hashOneBasedIndex: true,
+      transition: 'fade',
+      transitionSpeed: 'fast',
+      backgroundTransition: 'none',
+      center: false,
+      controls: true,
+      controlsLayout: 'edges',
+      progress: true,
+      slideNumber: 'c/t',
+      keyboard: true,
+      touch: true,
+      fragments: true,
+      width: 1600,
+      height: 900,
+      margin: 0.04,
+      minScale: 0.2,
+      maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+      var branchTraceSlide = document.querySelector('[data-branchtrace-activity]');
+      if (branchTraceSlide) initBranchTrace(branchTraceSlide);
+
+      var boolSortSlide = document.querySelector('[data-boolsort-activity]');
+      if (boolSortSlide) initBoolSort(boolSortSlide);
+
+      Reveal.on('fragmentshown', function (event) {
+        var traceSlide = event.fragment.closest('section[data-fragment-trace]');
+        if (traceSlide) syncBodyTrace(traceSlide);
+      });
+      Reveal.on('fragmenthidden', function (event) {
+        var traceSlide = event.fragment.closest('section[data-fragment-trace]');
+        if (traceSlide) syncBodyTrace(traceSlide);
+      });
+    }
+  });
+</script>
+</body>
+</html>
