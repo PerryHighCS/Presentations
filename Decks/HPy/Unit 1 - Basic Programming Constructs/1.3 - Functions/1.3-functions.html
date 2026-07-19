@@ -39,6 +39,19 @@
 
   .code-line.context { opacity: 0.55; }
 
+  /* On fragment-trace slides, the call site that dispatched into the
+     function body stays visible while execution is inside it: an
+     outlined (not filled) caret, distinct from the solid .current
+     highlight, like a paused stack frame. */
+  .code-line.active-call {
+    opacity: 0.9;
+  }
+  .code-line.active-call .car {
+    opacity: 1;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--accent);
+  }
+
   .trace-prompt {
     font-family: var(--font-mono);
     font-size: var(--small);
@@ -128,7 +141,7 @@
     <!-- ============================================================
          SLIDE 04 · CODE — trace def cubed(n): return n ** 3
          ============================================================ -->
-    <section data-fragment-trace>
+    <section data-fragment-trace data-trace-start="3">
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Try This</span>
@@ -140,24 +153,26 @@
           <div class="code-card trace-code" style="margin-top:var(--gap);">
             <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
             <div class="code-body">
-              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">cubed</span>(<span class="tok-nm">n</span>):</span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">cubed</span>(<span class="tok-nm">n</span>):</span></div>
               <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-nm">n</span> <span class="tok-op">**</span> <span class="tok-num">3</span></span></div>
-              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-kw">print</span>(<span class="tok-nm">cubed</span>(<span class="tok-num">2</span>))</span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-kw">print</span>(<span class="tok-nm">cubed</span>(<span class="tok-num">2</span>))</span></div>
               <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span><span class="tok-kw">print</span>(<span class="tok-nm">cubed</span>(<span class="tok-num">3</span>))</span></div>
             </div>
           </div>
-          <p class="fragment fade-up" data-fragment-index="3" data-trace-line="4" style="font-size:var(--body);color:var(--text-dim);margin-top:var(--gap-sm);">
-            Line 1 only defines <code style="color:var(--text);">cubed</code>; nothing runs until line 3 <em>calls</em> it with <code style="color:var(--text);">2</code>.
+          <p class="fragment fade-up" data-fragment-index="5" style="font-size:var(--body);color:var(--text-dim);margin-top:var(--gap-sm);">
+            Line 1 only defines <code style="color:var(--text);">cubed</code>; nothing runs until line 3 <em>calls</em> it with <code style="color:var(--text);">2</code>, and each call jumps back into line 2 to compute its own result before <code style="color:var(--text);">print()</code> shows it.
           </p>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
           <div class="code-card" style="width:220px;">
             <div class="code-hdr" style="justify-content:center;">console</div>
             <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
-              <span class="fragment" data-trace-line="1" style="display:none;"></span>
-              <span class="fragment" data-trace-line="2" style="display:none;"></span>
-              <span class="fragment fade-up" data-trace-line="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">8</span></span>
-              <span class="fragment fade-up" data-trace-line="4" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">27</span></span>
+              <span class="fragment" data-fragment-index="0" data-trace-current="2" data-trace-active-call="3" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="1" data-trace-current="3" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="2" data-trace-current="4" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">8</span></span>
+              <span class="fragment" data-fragment-index="3" data-trace-current="2" data-trace-active-call="4" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="4" data-trace-current="4" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="5" data-trace-current="5" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">27</span></span>
             </div>
           </div>
         </div>
@@ -290,7 +305,7 @@
     <!-- ============================================================
          SLIDE 10 · CODE — returning multiple values, tuple unpacking
          ============================================================ -->
-    <section data-fragment-trace>
+    <section data-fragment-trace data-trace-start="3">
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">One More Trick</span>
@@ -302,19 +317,21 @@
             <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
             <div class="code-body">
               <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">sumAndProduct</span>(<span class="tok-nm">x</span>, <span class="tok-nm">y</span>):</span></div>
-              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-nm">x</span><span class="tok-op">+</span><span class="tok-nm">y</span>, <span class="tok-nm">x</span><span class="tok-op">*</span><span class="tok-nm">y</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-nm">x</span><span class="tok-op">+</span><span class="tok-nm">y</span>, <span class="tok-nm">x</span><span class="tok-op">*</span><span class="tok-nm">y</span></span></div>
               <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-nm">m</span>, <span class="tok-nm">n</span> <span class="tok-op">=</span> <span class="tok-nm">sumAndProduct</span>(<span class="tok-num">2</span>, <span class="tok-num">3</span>)</span></div>
               <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span><span class="tok-kw">print</span>(<span class="tok-nm">m</span>, <span class="tok-nm">n</span>)</span></div>
             </div>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap);">
+          <span class="fragment" data-fragment-index="0" data-trace-current="2" data-trace-active-call="3" style="display:none;"></span>
+          <span class="fragment" data-fragment-index="1" data-trace-current="3" style="display:none;"></span>
           <div style="display:flex;gap:var(--gap-sm);">
-            <div class="var-box fragment fade-up" data-fragment-index="0" data-trace-line="1">
+            <div class="var-box fragment fade-up" data-fragment-index="2" data-trace-current="4">
               <div class="var-box-name">m</div>
               <div class="var-box-value"><span class="tok-num">5</span></div>
             </div>
-            <div class="var-box fragment fade-up" data-fragment-index="0" data-trace-line="1">
+            <div class="var-box fragment fade-up" data-fragment-index="2" data-trace-current="4">
               <div class="var-box-name">n</div>
               <div class="var-box-value"><span class="tok-num">6</span></div>
             </div>
@@ -322,7 +339,7 @@
           <div class="code-card" style="width:220px;">
             <div class="code-hdr" style="justify-content:center;">console</div>
             <div class="code-body" style="display:flex;justify-content:center;">
-              <span class="fragment fade-up" data-fragment-index="1" data-trace-line="2" style="font-family:var(--font-mono);color:var(--text);">5 6</span>
+              <span class="fragment fade-up" data-fragment-index="3" data-trace-current="5" style="font-family:var(--font-mono);color:var(--text);">5 6</span>
             </div>
           </div>
         </div>
@@ -422,7 +439,7 @@
     <!-- ============================================================
          SLIDE 16 · CODE — print instead of return, "seems to work"
          ============================================================ -->
-    <section data-fragment-trace>
+    <section data-fragment-trace data-trace-start="3">
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Try This</span>
@@ -433,9 +450,9 @@
           <div class="code-card trace-code" style="margin-top:var(--gap);">
             <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
             <div class="code-body">
-              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">cubed</span>(<span class="tok-nm">x</span>):</span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">cubed</span>(<span class="tok-nm">x</span>):</span></div>
               <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">x</span><span class="tok-op">**</span><span class="tok-num">3</span>)  <span class="tok-cm"># the error!</span></span></div>
-              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-nm">cubed</span>(<span class="tok-num">2</span>)</span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-nm">cubed</span>(<span class="tok-num">2</span>)</span></div>
             </div>
           </div>
         </div>
@@ -443,7 +460,8 @@
           <div class="code-card" style="width:220px;">
             <div class="code-hdr" style="justify-content:center;">console</div>
             <div class="code-body" style="display:flex;justify-content:center;">
-              <span class="fragment fade-up" data-trace-line="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">8</span></span>
+              <span class="fragment" data-trace-current="2" data-trace-active-call="3" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">8</span></span>
             </div>
           </div>
         </div>
@@ -453,7 +471,7 @@
     <!-- ============================================================
          SLIDE 17 · CODE — print(cubed(2)) reveals the None bug
          ============================================================ -->
-    <section data-fragment-trace>
+    <section data-fragment-trace data-trace-start="3">
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Now Watch This</span>
@@ -465,7 +483,7 @@
             <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
             <div class="code-body">
               <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">cubed</span>(<span class="tok-nm">x</span>):</span></div>
-              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">x</span><span class="tok-op">**</span><span class="tok-num">3</span>)  <span class="tok-cm"># the error!</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">x</span><span class="tok-op">**</span><span class="tok-num">3</span>)  <span class="tok-cm"># the error!</span></span></div>
               <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-kw">print</span>(<span class="tok-nm">cubed</span>(<span class="tok-num">2</span>))</span></div>
             </div>
           </div>
@@ -474,11 +492,12 @@
           <div class="code-card" style="width:220px;">
             <div class="code-hdr" style="justify-content:center;">console</div>
             <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
-              <span class="fragment fade-up" data-fragment-index="0" data-trace-line="0" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">8</span></span>
-              <span class="fragment fade-up" data-fragment-index="1" data-trace-line="1" style="font-family:var(--font-mono);color:var(--warn);"><span class="tok-kw">None</span></span>
+              <span class="fragment" data-fragment-index="0" data-trace-current="2" data-trace-active-call="3" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="1" data-trace-current="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">8</span></span>
+              <span class="fragment fade-up" data-fragment-index="2" data-trace-current="4" style="font-family:var(--font-mono);color:var(--warn);"><span class="tok-kw">None</span></span>
             </div>
           </div>
-          <p class="fragment fade-up" data-fragment-index="1" data-trace-line="1" style="font-size:var(--small);color:var(--text-dim);text-align:center;max-width:260px;">
+          <p class="fragment fade-up" data-fragment-index="2" style="font-size:var(--small);color:var(--text-dim);text-align:center;max-width:260px;">
             Two separate prints: the one <em>inside</em> the function, and the one printing what the function returned.
           </p>
         </div>
@@ -488,7 +507,7 @@
     <!-- ============================================================
          SLIDE 18 · CODE — x = cubed(2); print(x + 1) crashes
          ============================================================ -->
-    <section data-fragment-trace>
+    <section data-fragment-trace data-trace-start="3">
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Proof</span>
@@ -500,20 +519,27 @@
             <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
             <div class="code-body">
               <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">cubed</span>(<span class="tok-nm">x</span>):</span></div>
-              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">x</span><span class="tok-op">**</span><span class="tok-num">3</span>)</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">x</span><span class="tok-op">**</span><span class="tok-num">3</span>)</span></div>
               <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-nm">x</span> <span class="tok-op">=</span> <span class="tok-nm">cubed</span>(<span class="tok-num">2</span>)</span></div>
               <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span><span class="tok-kw">print</span>(<span class="tok-nm">x</span> <span class="tok-op">+</span> <span class="tok-num">1</span>)</span></div>
             </div>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gap-sm);">
-          <div class="var-box fragment fade-up" data-fragment-index="0" data-trace-line="1">
+          <span class="fragment" data-fragment-index="0" data-trace-current="2" data-trace-active-call="3" style="display:none;"></span>
+          <div class="code-card" style="width:220px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="display:flex;justify-content:center;">
+              <span class="fragment fade-up" data-fragment-index="1" data-trace-current="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">8</span></span>
+            </div>
+          </div>
+          <div class="var-box fragment fade-up" data-fragment-index="2" data-trace-current="4">
             <div class="var-box-name">x</div>
             <div class="var-box-value"><span class="tok-kw">None</span></div>
           </div>
           <div class="code-card" style="width:420px;">
             <div class="code-hdr" style="justify-content:center;">console</div>
-            <div class="code-body fragment fade-up" data-fragment-index="1" data-trace-line="2" style="font-family:var(--font-mono);font-size:var(--small);line-height:1.6;color:var(--warn);">
+            <div class="code-body fragment fade-up" data-fragment-index="3" data-trace-current="4" style="font-family:var(--font-mono);font-size:var(--small);line-height:1.6;color:var(--warn);">
               <div>Traceback (most recent call last):</div>
               <div>&nbsp;&nbsp;File "main.py", line 4</div>
               <div>&nbsp;&nbsp;&nbsp;&nbsp;print(x + 1)</div>
@@ -635,7 +661,7 @@
     <!-- ============================================================
          SLIDE 24 · CONCEPT — NameError when using a local outside its scope
          ============================================================ -->
-    <section data-fragment-trace>
+    <section data-fragment-trace data-trace-start="3">
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Out Of Bounds</span>
@@ -647,7 +673,7 @@
             <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
             <div class="code-body">
               <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">f</span>(<span class="tok-nm">x</span>):</span></div>
-              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-nm">x</span> <span class="tok-op">+</span> <span class="tok-num">5</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-nm">x</span> <span class="tok-op">+</span> <span class="tok-num">5</span></span></div>
               <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">3</span><span><span class="tok-kw">print</span>(<span class="tok-nm">f</span>(<span class="tok-num">4</span>))</span></div>
               <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span><span class="tok-kw">print</span>(<span class="tok-nm">x</span>)</span></div>
             </div>
@@ -657,8 +683,10 @@
           <div class="code-card" style="width:420px;">
             <div class="code-hdr" style="justify-content:center;">console</div>
             <div class="code-body" style="display:flex;flex-direction:column;gap:10px;align-items:center;">
-              <span class="fragment fade-up" data-fragment-index="0" data-trace-line="1" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">9</span></span>
-              <div class="fragment fade-up" data-fragment-index="1" data-trace-line="2" style="font-family:var(--font-mono);font-size:var(--small);line-height:1.6;color:var(--warn);text-align:left;">
+              <span class="fragment" data-fragment-index="0" data-trace-current="2" data-trace-active-call="3" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="1" data-trace-current="3" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="2" data-trace-current="4" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">9</span></span>
+              <div class="fragment fade-up" data-fragment-index="3" data-trace-current="4" style="font-family:var(--font-mono);font-size:var(--small);line-height:1.6;color:var(--warn);text-align:left;">
                 <div>Traceback (most recent call last):</div>
                 <div>&nbsp;&nbsp;File "main.py", line 4</div>
                 <div>&nbsp;&nbsp;&nbsp;&nbsp;print(x)</div>
@@ -1096,7 +1124,7 @@
     <!-- ============================================================
          SLIDE 45 · CODE — type() and isinstance()
          ============================================================ -->
-    <section data-fragment-trace>
+    <section data-fragment-trace data-trace-start="1">
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Checking Types</span>
@@ -1118,10 +1146,10 @@
           <div class="code-card" style="width:220px;">
             <div class="code-hdr" style="justify-content:center;">console</div>
             <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
-              <span class="fragment" data-trace-line="1" style="display:none;"></span>
-              <span class="fragment fade-up" data-trace-line="2" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">True</span></span>
-              <span class="fragment fade-up" data-trace-line="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">True</span></span>
-              <span class="fragment fade-up" data-trace-line="4" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">False</span></span>
+              <span class="fragment" data-trace-current="2" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">True</span></span>
+              <span class="fragment fade-up" data-trace-current="4" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">True</span></span>
+              <span class="fragment fade-up" data-trace-current="5" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">False</span></span>
             </div>
           </div>
         </div>
@@ -1156,7 +1184,7 @@
     <!-- ============================================================
          SLIDE 47 · CODE — int('12') fixes the multiplication
          ============================================================ -->
-    <section data-fragment-trace>
+    <section data-fragment-trace data-trace-start="1">
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Type Conversion</span>
@@ -1177,9 +1205,9 @@
           <div class="code-card" style="width:260px;">
             <div class="code-hdr" style="justify-content:center;">console</div>
             <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
-              <span class="fragment" data-trace-line="1" style="display:none;"></span>
-              <span class="fragment fade-up" data-trace-line="2" style="font-family:var(--font-mono);color:var(--text);font-size:var(--small);">&lt;class 'int'&gt;</span>
-              <span class="fragment fade-up" data-trace-line="3" style="font-family:var(--font-mono);color:var(--result);"><span class="tok-num">60</span></span>
+              <span class="fragment" data-trace-current="2" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="3" style="font-family:var(--font-mono);color:var(--text);font-size:var(--small);">&lt;class 'int'&gt;</span>
+              <span class="fragment fade-up" data-trace-current="4" style="font-family:var(--font-mono);color:var(--result);"><span class="tok-num">60</span></span>
             </div>
           </div>
         </div>
@@ -1307,7 +1335,7 @@
     <!-- ============================================================
          SLIDE 53 · CODE — trace abs/min/max before running it live
          ============================================================ -->
-    <section data-fragment-trace>
+    <section data-fragment-trace data-trace-start="1">
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Trace It First</span>
@@ -1330,11 +1358,11 @@
           <div class="code-card" style="width:260px;">
             <div class="code-hdr" style="justify-content:center;">console</div>
             <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
-              <span class="fragment fade-up" data-trace-line="1" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">5</span></span>
-              <span class="fragment fade-up" data-trace-line="2" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">True</span></span>
-              <span class="fragment fade-up" data-trace-line="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">2</span></span>
-              <span class="fragment fade-up" data-trace-line="4" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">3.5</span></span>
-              <span class="fragment fade-up" data-trace-line="5" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">1</span></span>
+              <span class="fragment fade-up" data-trace-current="2" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">5</span></span>
+              <span class="fragment fade-up" data-trace-current="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">True</span></span>
+              <span class="fragment fade-up" data-trace-current="4" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">2</span></span>
+              <span class="fragment fade-up" data-trace-current="5" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">3.5</span></span>
+              <span class="fragment fade-up" data-trace-current="6" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">1</span></span>
             </div>
           </div>
         </div>
@@ -1412,7 +1440,7 @@
     <!-- ============================================================
          SLIDE 57 · CONCEPT — math.floor/ceil + CPCS utils
          ============================================================ -->
-    <section data-fragment-trace>
+    <section data-fragment-trace data-trace-start="1">
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">A Better Toolbox</span>
@@ -1436,9 +1464,9 @@
           <div class="code-card" style="width:220px;align-self:center;">
             <div class="code-hdr" style="justify-content:center;">console</div>
             <div class="code-body" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
-              <span class="fragment fade-up" data-trace-line="1" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">False</span></span>
-              <span class="fragment fade-up" data-trace-line="2" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">True</span></span>
-              <span class="fragment fade-up" data-trace-line="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">3</span></span>
+              <span class="fragment fade-up" data-trace-current="2" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">False</span></span>
+              <span class="fragment fade-up" data-trace-current="3" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-bool">True</span></span>
+              <span class="fragment fade-up" data-trace-current="4" style="font-family:var(--font-mono);color:var(--text);"><span class="tok-num">3</span></span>
             </div>
           </div>
         </div>
@@ -1501,7 +1529,7 @@
     <!-- ============================================================
          SLIDE 61 · CODE — print() with multiple arguments
          ============================================================ -->
-    <section data-fragment-trace>
+    <section data-fragment-trace data-trace-start="1">
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">print(), Revisited</span>
@@ -1521,7 +1549,8 @@
           <div class="code-card" style="width:320px;">
             <div class="code-hdr" style="justify-content:center;">console</div>
             <div class="code-body" style="display:flex;justify-content:center;">
-              <span class="fragment fade-up" data-trace-line="2" style="font-family:var(--font-mono);color:var(--text);">3 plus 2 equals 5</span>
+              <span class="fragment" data-trace-current="2" style="display:none;"></span>
+              <span class="fragment fade-up" data-trace-current="3" style="font-family:var(--font-mono);color:var(--text);">3 plus 2 equals 5</span>
             </div>
           </div>
         </div>
@@ -2081,18 +2110,53 @@
     reset();
   }
 
-  /* ─── data-fragment-trace wiring: keeps the .code-line
-     current/done/pending highlight in sync with whichever
-     fragment is currently shown. Context (static, non-traced)
-     lines are excluded from the position count. ──────────────── */
+  /* ─── data-fragment-trace wiring ──────────────────────────────
+     Each fragment names the single line (by its printed .ln number)
+     that becomes the "current" cursor at that step, via
+     data-trace-current. A step can also name the call site the
+     cursor is currently inside via data-trace-active-call, so the
+     call line shows a hollow outlined caret (like a paused stack
+     frame) while the cursor is off tracing the function body, and
+     reverts to a filled current highlight once execution returns to
+     it. On every shown/hidden event we recompute from scratch by
+     reading which fragments Reveal currently has marked .visible,
+     so back-navigation "just works" without separate bookkeeping.
+     data-trace-start seeds the very first line (hardcoded as
+     .current directly in the HTML, before any fragment fires) so it
+     correctly becomes .done once the trace moves past it. Lines
+     never named by any fragment (a def line, blank separator lines)
+     stay authored as .context and are left untouched. ───────────── */
 
-  function syncFragmentTrace(traceSlide, currentIndex) {
+  function syncBodyTrace(traceSlide) {
+    var startLine = traceSlide.getAttribute('data-trace-start');
+    var fragments = traceSlide.querySelectorAll('.fragment[data-trace-current]');
+    var visited = startLine ? [startLine] : [];
+    var activeCall = null;
+    Array.prototype.forEach.call(fragments, function (frag) {
+      if (!frag.classList.contains('visible')) return;
+      visited.push(frag.getAttribute('data-trace-current'));
+      activeCall = frag.getAttribute('data-trace-active-call');
+    });
+    if (!visited.length) return; // nothing shown yet: keep the authored initial state
+
+    var currentLine = visited[visited.length - 1];
+    var doneSet = {};
+    visited.slice(0, -1).forEach(function (ln) { doneSet[ln] = true; });
+
     var lines = traceSlide.querySelectorAll('.code-line:not(.context)');
-    Array.prototype.forEach.call(lines, function (line, i) {
-      line.classList.remove('current', 'done', 'pending');
-      if (i < currentIndex) line.classList.add('done');
-      else if (i === currentIndex) line.classList.add('current');
-      else line.classList.add('pending');
+    Array.prototype.forEach.call(lines, function (line) {
+      var lnEl = line.querySelector('.ln');
+      var ln = lnEl ? lnEl.textContent.trim() : null;
+      line.classList.remove('current', 'done', 'pending', 'active-call');
+      if (ln === currentLine) {
+        line.classList.add('current');
+      } else if (activeCall && ln === activeCall) {
+        line.classList.add('active-call');
+      } else if (doneSet[ln]) {
+        line.classList.add('done');
+      } else {
+        line.classList.add('pending');
+      }
     });
   }
 
@@ -2130,25 +2194,11 @@
 
       Reveal.on('fragmentshown', function (event) {
         var traceSlide = event.fragment.closest('section[data-fragment-trace]');
-        if (!traceSlide) return;
-        var traceLine = event.fragment.getAttribute('data-trace-line');
-        if (traceLine !== null) {
-          syncFragmentTrace(traceSlide, Number(traceLine));
-        } else {
-          var fragIndex = Number(event.fragment.getAttribute('data-fragment-index'));
-          syncFragmentTrace(traceSlide, fragIndex + 1);
-        }
+        if (traceSlide) syncBodyTrace(traceSlide);
       });
       Reveal.on('fragmenthidden', function (event) {
         var traceSlide = event.fragment.closest('section[data-fragment-trace]');
-        if (!traceSlide) return;
-        var traceLine = event.fragment.getAttribute('data-trace-line');
-        if (traceLine !== null) {
-          syncFragmentTrace(traceSlide, Number(traceLine) - 1);
-        } else {
-          var fragIndex = Number(event.fragment.getAttribute('data-fragment-index'));
-          syncFragmentTrace(traceSlide, fragIndex);
-        }
+        if (traceSlide) syncBodyTrace(traceSlide);
       });
     }
   });
