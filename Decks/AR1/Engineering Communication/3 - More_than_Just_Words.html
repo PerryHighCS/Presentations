@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3 - More than Just Words</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../DCCircuits/theme.css">
+
+<style>
+/* ── Big class-discussion prompt slides ──────────────────────────── */
+
+.discuss-slide .slide-inner {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.discuss-glyph {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 640px;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.05;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -54%);
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+}
+.discuss-q {
+  position: relative;
+  z-index: 2;
+  font-size: 50px;
+  line-height: 1.3;
+  max-width: 1180px;
+  color: var(--text);
+}
+
+/* ── Quote block (reused pattern) ─────────────────────────────────── */
+
+.quote-block {
+  background: var(--bg-card);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 22px 28px;
+  font-size: var(--body);
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 1080px;
+}
+
+/* ── Numbered step / how-to-play list ────────────────────────────── */
+
+.step-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+.step-num {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--small);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-text {
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding-top: 3px;
+}
+.step-text strong { color: var(--text); }
+
+/* ── Robot-arm comparison slide (slides 4-6 combined) ────────────── */
+
+.compare-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+  align-items: center;
+}
+.compare-img-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fdf6e3;
+  border-radius: 10px;
+  padding: 22px;
+  height: 280px;
+  box-shadow: 0 0 0 1px rgba(42,143,255,0.2), 0 6px 24px rgba(0,0,0,0.5);
+}
+.compare-img-frame img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.compare-static-text {
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.compare-reveal {
+  margin-top: var(--gap-lg);
+  padding-top: var(--gap);
+  border-top: 1px solid var(--accent-border);
+}
+.compare-heading {
+  position: relative;
+  height: 52px;
+}
+.compare-heading span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: var(--h2);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+.compare-body {
+  position: relative;
+  min-height: 100px;
+  margin-top: var(--gap-sm);
+}
+.compare-body p {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 40px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ── Full-bleed technical-drawing carousel (slides 7-10 combined) ── */
+
+.tech-slide .slide-inner { justify-content: flex-start; }
+
+.tech-carousel {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-top: var(--gap-lg);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f4f1ea;
+  box-shadow: 0 0 0 1px rgba(42,143,255,0.2), 0 6px 24px rgba(0,0,0,0.5);
+}
+.tech-carousel img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 30px;
+  box-sizing: border-box;
+}
+.tech-label {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 6;
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #060b14;
+  background: rgba(255,255,255,0.88);
+  border: 1px solid rgba(6,11,20,0.15);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+.tech-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  padding: 26px 32px 28px;
+  background: linear-gradient(to top, rgba(6,11,20,0.94), rgba(6,11,20,0.7) 60%, transparent);
+}
+.tech-caption p {
+  color: #f4f8ff;
+  font-size: var(--body);
+  line-height: 1.55;
+  max-width: 1100px;
+}
+
+/* ── Sketching-tip slides ────────────────────────────────────────── */
+
+.tip-slide .split { flex: none; }
+.tip-text {
+  font-size: 30px;
+  color: var(--text);
+  line-height: 1.5;
+  font-weight: 500;
+}
+.tip-text .accent { font-weight: 700; }
+.sketch-img-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 420px;
+  background: #fdf6e3;
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 0 0 1px rgba(42,143,255,0.2), 0 6px 24px rgba(0,0,0,0.5);
+}
+.sketch-img-frame img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* ── Disruptus interactive game slide ────────────────────────────── */
+
+.disruptus-slide .slide-inner { justify-content: flex-start; }
+
+.disruptus-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-top: var(--gap);
+  border-radius: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.disruptus-panel {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--gap);
+  padding: var(--pad);
+  max-width: 1100px;
+}
+.disruptus-stage[data-state="idle"] .disruptus-panel-idle,
+.disruptus-stage[data-state="mode"] .disruptus-panel-mode,
+.disruptus-stage[data-state="cards"] .disruptus-panel-cards,
+.disruptus-stage[data-state="done"] .disruptus-panel-done {
+  display: flex;
+}
+
+.disruptus-play-glyph {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--accent-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  animation: disruptus-pulse 2.2s ease-in-out infinite;
+}
+.disruptus-play-glyph svg { width: 30px; height: 30px; }
+@keyframes disruptus-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(42,143,255,0.35); }
+  50% { box-shadow: 0 0 0 14px rgba(42,143,255,0); }
+}
+
+.disruptus-stage .disruptus-prompt {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.disruptus-mode-name {
+  font-size: 68px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.disruptus-stage .disruptus-mode-desc {
+  font-size: 28px;
+  color: var(--text);
+  line-height: 1.5;
+  max-width: 900px;
+}
+
+.disruptus-cards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 56px;
+}
+.disruptus-card-img {
+  display: block;
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+  border-radius: 14px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.55);
+}
+
+.disruptus-stage .disruptus-done-text {
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--warn);
+  letter-spacing: -0.01em;
+}
+.disruptus-reset-btn {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #060b14;
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  padding: 14px 30px;
+  cursor: pointer;
+}
+.disruptus-reset-btn:hover { background: #5aa8ff; }
+
+.disruptus-active-mode {
+  display: none;
+  position: absolute;
+  top: 32px;
+  left: 36px;
+  z-index: 10;
+  max-width: 620px;
+  text-align: left;
+}
+.disruptus-stage[data-state="cards"] .disruptus-active-mode,
+.disruptus-stage[data-state="done"] .disruptus-active-mode {
+  display: block;
+}
+.disruptus-active-mode-name {
+  display: block;
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.disruptus-stage .disruptus-active-mode-desc {
+  font-size: 24px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.disruptus-timer {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  z-index: 10;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: conic-gradient(var(--accent) calc(var(--pct, 100) * 1%), rgba(255,255,255,0.1) 0);
+}
+.disruptus-stage[data-state="cards"] .disruptus-timer,
+.disruptus-stage[data-state="done"] .disruptus-timer {
+  display: flex;
+}
+.disruptus-timer::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: var(--bg-card);
+}
+.disruptus-timer-num {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 26px;
+  color: var(--text);
+}
+.disruptus-timer--warn {
+  background: conic-gradient(var(--warn) calc(var(--pct, 100) * 1%), rgba(255,255,255,0.1) 0);
+  animation: disruptus-timer-flash 1s step-start infinite;
+}
+@keyframes disruptus-timer-flash {
+  50% { filter: brightness(1.5); }
+}
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal"><div class="slides">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 01 · Title
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:700px;height:700px;top:-80px;right:-120px;background:radial-gradient(circle,rgba(42,143,255,0.10),transparent 70%);"></div>
+    <span class="slide-tag">Unit 1</span>
+    <h1 class="title-h1">More than Just Words</h1>
+    <p class="subtitle">Engineering Communication</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 02 · Warm-Up
+     ══════════════════════════════════════════════════════════════════ -->
+<section
+  class="discuss-slide"
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:2:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Have you ever tried to use or build something complicated with instructions that didn&#39;t have pictures? How did that go?","order":0,"responseTimeLimitMs":45000}]}'>
+  <div class="discuss-glyph">?</div>
+  <div class="slide-inner">
+    <span class="slide-tag">Warm-Up · FRQ</span>
+    <h2 class="discuss-q">Have you ever tried to use or build something complicated with instructions that didn't have pictures? How did that go?</h2>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 03 · Words Are Hard
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Words vs. Pictures</span>
+    <h2>Words Are Hard</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1080px;line-height:1.6;">We've seen how hard it is to explain how something works using <span class="accent">only words</span>. Even with well-written instructions, it's easy to miss a detail, misunderstand a step, or imagine the wrong part.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 04 · Which Is Better? (combines original slides 4-6)
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Words vs. Pictures</span>
+    <div class="compare-top">
+      <div class="compare-img-frame">
+        <img class="img-zoomable" src="More_than_Just_Words_Assets/robot-arm-diagram.png" alt="Diagram of a robot claw arm with three pull-strings labeled: string 1 raises the claw, string 2 rotates the arm, and string 3 closes the claw.">
+      </div>
+      <p class="compare-static-text">To operate the robot arm, begin by pulling the first string on the left side slowly to raise the claw. Then, once the claw is at the desired height, pull the second string to rotate the arm counterclockwise. After that, gently release the first string to lower the claw toward the object. To grip the object, pull the third string connected to the claw's closing mechanism. Be careful not to release the other strings too quickly, as this may cause the arm to shake or drop the object.</p>
+    </div>
+    <div class="compare-reveal">
+      <h2 class="compare-heading">
+        <span class="fragment fade-out" data-fragment-index="2">Which is better?</span>
+        <span class="fragment" data-fragment-index="2">Maybe neither?</span>
+      </h2>
+      <div class="compare-body">
+        <p class="fragment current-visible" data-fragment-index="1">Do both of these examples convey the same information to the user?</p>
+        <p class="fragment" data-fragment-index="2">Pictures can help communicate complex information at a glance. They work especially well showing structure, shape, and relationships between parts. But a single image can't always show the order of steps or the nuanced actions involved in a process. That kind of detail is often more easily explained with <span class="accent">words</span>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 05 · A Visual Language (combines original slides 7-10)
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="tech-slide">
+  <div class="slide-inner">
+    <span class="slide-tag">Visual Languages</span>
+    <h2>A Visual Language of Symbols</h2>
+    <div class="tech-carousel">
+      <span class="tech-label fragment fade-out" data-fragment-index="1">Electrical Schematic</span>
+      <span class="tech-label fragment current-visible" data-fragment-index="1">Dimensioned Drawing</span>
+      <span class="tech-label fragment current-visible" data-fragment-index="2">Lighting Plot</span>
+      <span class="tech-label fragment" data-fragment-index="3">Isometric CAD</span>
+      <img class="img-zoomable" src="More_than_Just_Words_Assets/tech-drawing-schematic.png" alt="Electrical schematic of a microcontroller board with labeled sections for the microcontroller, power regulation, connectivity headers, flash storage, I2C sensors, and USB port.">
+      <img class="img-zoomable fragment" data-fragment-index="1" src="More_than_Just_Words_Assets/tech-drawing-dimensioned.png" alt="Dimensioned mechanical drawing of a hose-to-camlock adapter, including a section view, a detail callout, and an isometric view with measurements.">
+      <img class="img-zoomable fragment" data-fragment-index="2" src="More_than_Just_Words_Assets/tech-drawing-lighting-plot.png" alt="Theatrical lighting and rigging plot showing electrics, battens, and equipment positions labeled with location codes.">
+      <img class="img-zoomable fragment" data-fragment-index="3" src="More_than_Just_Words_Assets/tech-drawing-isometric.png" alt="Isometric CAD drawing of a machined bracket part with dimensions and hole callouts.">
+      <div class="tech-caption">
+        <p>To help communicate specific details, different types of technical drawings use their own sets of symbols and conventions. Almost like a <span class="accent">visual language</span>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 06 · Lots of Languages
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Visual Languages</span>
+    <h2>Lots of Languages</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1080px;line-height:1.6;">Other professions, for example bakers, use <span class="accent">their own language</span>: abbreviations for measurements, symbols for temperature, and specific words for techniques like folding or whisking.</p>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1080px;line-height:1.6;">In the same way, technical drawings use <span class="accent">specialized symbols</span> to quickly and clearly communicate important details. We'll be looking at many different types of technical drawings in this class and will learn to interpret each one.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 07 · Quick Communications
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Sketching</span>
+    <h2>Quick Communications</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1080px;line-height:1.6;">Not every drawing needs to be a fully detailed technical drawing. Sometimes, a <span class="accent">quick sketch</span> is all it takes to share an idea, plan a solution, or explain how something works. Sketching is one of the fastest ways to think visually and collaborate with others.</p>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1080px;line-height:1.6;">Engineers don't need to be artists, but they do need to make clear, useful sketches that communicate <span class="accent">shape, size, structure, and function</span>, especially in the early stages of design.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 08 · Tips for Sketching (intro)
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Sketching</span>
+    <h2>Tips for Sketching</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1080px;line-height:1.6;">Here are some tips that will help you create sketches to illustrate your point.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 09 · Tip 1 — Use the Whole Page
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="tip-slide">
+  <div class="slide-inner">
+    <span class="slide-tag">Sketching · Tip 1/6</span>
+    <h2>Use the Whole Page</h2>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-lg);">
+      <p class="tip-text">Larger sketches make it easier to show <span class="accent">detail</span> and add labels, so use the whole page instead of a cramped corner.</p>
+      <div class="sketch-img-frame">
+        <img class="img-zoomable" src="More_than_Just_Words_Assets/tech-drawing-dimensioned.png" alt="A dimensioned mechanical drawing that fills the entire page with detail, callouts, and multiple views.">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 10 · Tip 2 — Start with Simple Shapes
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="tip-slide">
+  <div class="slide-inner">
+    <span class="slide-tag">Sketching · Tip 2/6</span>
+    <h2>Start with Simple Shapes</h2>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-lg);">
+      <p class="tip-text">Break objects down into <span class="accent">boxes, circles, and lines</span> before adding detail, the same way this horse starts as simple blocked-in shapes.</p>
+      <div class="sketch-img-frame">
+        <img class="img-zoomable" src="More_than_Just_Words_Assets/sketch-simple-shapes-horse.png" alt="A finished line drawing of a horse above a version of the same horse blocked out with simple circles, boxes, and lines.">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 11 · Tip 3 — Draw Lightly First
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="tip-slide">
+  <div class="slide-inner">
+    <span class="slide-tag">Sketching · Tip 3/6</span>
+    <h2>Draw Lightly First</h2>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-lg);">
+      <p class="tip-text">Use <span class="accent">light lines</span> to block out your sketch first. You can always erase or darken lines later.</p>
+      <div class="sketch-img-frame">
+        <img class="img-zoomable" src="More_than_Just_Words_Assets/sketch-simple-shapes-horse.png" alt="A finished line drawing of a horse above a version of the same horse blocked out with light construction lines before the final outline was added.">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 12 · Tip 4 — Keep It Neat and Readable
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="tip-slide">
+  <div class="slide-inner">
+    <span class="slide-tag">Sketching · Tip 4/6</span>
+    <h2>Keep It Neat and Readable</h2>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-lg);">
+      <p class="tip-text">Careful <span class="accent">spacing, alignment, and clear lettering</span> make a sketch far more useful to the people reading it.</p>
+      <div class="sketch-img-frame">
+        <img class="img-zoomable" src="More_than_Just_Words_Assets/sketch-room-interior.jpg" alt="A detailed, neatly drawn pen sketch of a cluttered living room interior, showing bookshelves, furniture, and a rug drawn with clean, readable line work.">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 13 · Tip 5 — Include Measurements If Known
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="tip-slide">
+  <div class="slide-inner">
+    <span class="slide-tag">Sketching · Tip 5/6</span>
+    <h2>Include Measurements If Known</h2>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-lg);">
+      <p class="tip-text">Add estimates or exact values for <span class="accent">length, width, and height</span> whenever you know them.</p>
+      <div class="sketch-img-frame">
+        <img class="img-zoomable" src="More_than_Just_Words_Assets/sketch-floor-plan-measurements.png" alt="Two hand-drawn floor plan sketches with handwritten measurements labeled along the walls, such as 5 feet 6 inches and 4 feet 6 inches clear.">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 14 · Tip 6 — Sketch to Communicate, Not Impress
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="tip-slide">
+  <div class="slide-inner">
+    <span class="slide-tag">Sketching · Tip 6/6</span>
+    <h2>Sketch to Communicate, Not Impress</h2>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-lg);">
+      <p class="tip-text">A sketch doesn't have to be <span class="accent">beautiful</span>, it just has to <span class="accent">make sense</span> to whoever reads it next.</p>
+      <div class="sketch-img-frame">
+        <img class="img-zoomable" src="More_than_Just_Words_Assets/sketch-communicate-not-impress.png" alt="A simple line-drawing sequence showing a lightbulb plus an alarm clock combining into a hand holding a sparkling diamond, representing an idea coming together.">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 15 · Disruptus (activity divider)
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:640px;height:640px;bottom:-140px;left:-100px;background:radial-gradient(circle,rgba(42,143,255,0.10),transparent 70%);"></div>
+    <span class="slide-tag">Activity · Classroom Version</span>
+    <h1 class="title-h1" style="font-size:80px;">Disruptus</h1>
+    <p class="subtitle">A quick-sketch creativity game</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 16 · How to Play
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Activity</span>
+    <h2>How to Play</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1100px;line-height:1.6;">I'll show you an image of an object, or two objects, and you'll be asked to do one of the following:</p>
+    <ol class="step-list" style="margin-top:var(--gap);">
+      <li class="step-item"><span class="step-num">1</span><div class="step-text"><strong>Use it:</strong> imagine a new way this object could be used.</div></li>
+      <li class="step-item"><span class="step-num">2</span><div class="step-text"><strong>Improve it:</strong> modify the object to make it more effective, efficient, or fun to use for its current purpose.</div></li>
+      <li class="step-item"><span class="step-num">3</span><div class="step-text"><strong>Transform it:</strong> change the object in some way to solve a completely different problem.</div></li>
+      <li class="step-item"><span class="step-num">4</span><div class="step-text"><strong>Combine it:</strong> merge two unrelated objects or ideas into a single new invention.</div></li>
+    </ol>
+    <div class="callout" style="margin-top:var(--gap-lg);max-width:1100px;">
+      Sketch your innovation as clearly as you can. Give it a name, label its parts, and describe what it does and why it's useful.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 17 · Disruptus (interactive round timer)
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="disruptus-slide" id="disruptus-game">
+  <div class="slide-inner">
+    <span class="slide-tag">Activity · Disruptus</span>
+    <div class="disruptus-stage" data-state="idle">
+      <div class="disruptus-active-mode" aria-hidden="true">
+        <span class="disruptus-active-mode-name"></span>
+        <p class="disruptus-active-mode-desc"></p>
+      </div>
+      <div class="disruptus-timer" aria-hidden="true"><span class="disruptus-timer-num">60</span></div>
+
+      <div class="disruptus-panel disruptus-panel-idle">
+        <div class="disruptus-play-glyph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <p class="disruptus-prompt">Click to start the round</p>
+      </div>
+
+      <div class="disruptus-panel disruptus-panel-mode">
+        <span class="disruptus-mode-name"></span>
+        <p class="disruptus-mode-desc"></p>
+        <p class="disruptus-prompt">Click to draw your card<span class="disruptus-plural">s</span> &rarr;</p>
+      </div>
+
+      <div class="disruptus-panel disruptus-panel-cards">
+        <div class="disruptus-cards"></div>
+      </div>
+
+      <div class="disruptus-panel disruptus-panel-done">
+        <p class="disruptus-done-text">Time's Up!</p>
+        <button type="button" class="disruptus-reset-btn">New Round</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'more-than-just-words',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function (Reveal) {
+    initDisruptusGame(Reveal);
+  },
+});
+
+function initDisruptusGame(Reveal) {
+  var liveSlide = Array.prototype.find.call(
+    document.querySelectorAll('#disruptus-game'),
+    function (slide) { return !slide.closest('#storyboard'); }
+  );
+  if (!liveSlide) return;
+
+  var stage = liveSlide.querySelector('.disruptus-stage');
+  var modeNameEl = liveSlide.querySelector('.disruptus-mode-name');
+  var modeDescEl = liveSlide.querySelector('.disruptus-mode-desc');
+  var pluralEl = liveSlide.querySelector('.disruptus-plural');
+  var activeModeNameEl = liveSlide.querySelector('.disruptus-active-mode-name');
+  var activeModeDescEl = liveSlide.querySelector('.disruptus-active-mode-desc');
+  var cardsEl = liveSlide.querySelector('.disruptus-cards');
+  var timerEl = liveSlide.querySelector('.disruptus-timer');
+  var timerNumEl = liveSlide.querySelector('.disruptus-timer-num');
+  var resetBtn = liveSlide.querySelector('.disruptus-reset-btn');
+
+  var MODES = [
+    { name: 'Use It', cardCount: 1, desc: 'Imagine a new way this object could be used.' },
+    { name: 'Improve It', cardCount: 1, desc: 'Modify the object to make it more effective, efficient, or fun to use for its current purpose.' },
+    { name: 'Transform It', cardCount: 1, desc: 'Change the object in some way to solve a completely different problem.' },
+    { name: 'Combine It', cardCount: 2, desc: 'Merge two unrelated objects or ideas into a single new invention.' },
+  ];
+  var CARD_COUNT = 83;
+  var ROTATIONS = [0, 90, 180, 270];
+  var ROUND_SECONDS = 60;
+
+  var currentMode = null;
+  var timerId = null;
+
+  function randomInt(n) { return Math.floor(Math.random() * n); }
+
+  function cardFile(n) {
+    var padded = n < 10 ? '0' + n : String(n);
+    return 'Disruptus_Assets/cards/card-' + padded + '.png';
+  }
+
+  function pickCardNumbers(count) {
+    var pool = [];
+    for (var i = 1; i <= CARD_COUNT; i++) pool.push(i);
+    var picked = [];
+    for (var c = 0; c < count; c++) {
+      picked.push(pool.splice(randomInt(pool.length), 1)[0]);
+    }
+    return picked;
+  }
+
+  function setState(state) {
+    stage.setAttribute('data-state', state);
+  }
+
+  function startRound() {
+    currentMode = MODES[randomInt(MODES.length)];
+    modeNameEl.textContent = currentMode.name;
+    modeDescEl.textContent = currentMode.desc;
+    pluralEl.style.display = currentMode.cardCount > 1 ? '' : 'none';
+    activeModeNameEl.textContent = currentMode.name;
+    activeModeDescEl.textContent = currentMode.desc;
+    setState('mode');
+  }
+
+  function dealCards() {
+    var numbers = pickCardNumbers(currentMode.cardCount);
+    cardsEl.innerHTML = '';
+    numbers.forEach(function (n) {
+      var rotation = ROTATIONS[randomInt(ROTATIONS.length)];
+      var img = document.createElement('img');
+      img.src = cardFile(n);
+      img.alt = 'Disruptus object card';
+      img.className = 'disruptus-card-img';
+      img.style.transform = 'rotate(' + rotation + 'deg)';
+      cardsEl.appendChild(img);
+    });
+    setState('cards');
+    startTimer();
+  }
+
+  function startTimer() {
+    var remaining = ROUND_SECONDS;
+    timerNumEl.textContent = remaining;
+    timerEl.style.setProperty('--pct', 100);
+    timerEl.classList.remove('disruptus-timer--warn');
+    clearInterval(timerId);
+    timerId = setInterval(function () {
+      remaining -= 1;
+      timerNumEl.textContent = Math.max(remaining, 0);
+      timerEl.style.setProperty('--pct', Math.max((remaining / ROUND_SECONDS) * 100, 0));
+      if (remaining <= 10) timerEl.classList.add('disruptus-timer--warn');
+      if (remaining <= 0) {
+        clearInterval(timerId);
+        timerId = null;
+        onTimeUp();
+      }
+    }, 1000);
+  }
+
+  function onTimeUp() {
+    setState('done');
+    try {
+      new Audio('Disruptus_Assets/times-up.mp3').play().catch(function () {});
+    } catch (e) { /* audio playback is best-effort */ }
+  }
+
+  function resetRound() {
+    clearInterval(timerId);
+    timerId = null;
+    cardsEl.innerHTML = '';
+    setState('idle');
+  }
+
+  stage.addEventListener('click', function (evt) {
+    if (evt.target.closest('.disruptus-reset-btn')) return;
+    var state = stage.getAttribute('data-state');
+    if (state === 'idle') startRound();
+    else if (state === 'mode') dealCards();
+  });
+
+  resetBtn.addEventListener('click', function (evt) {
+    evt.stopPropagation();
+    resetRound();
+  });
+
+  Reveal.on('slidechanged', function (event) {
+    if (event.currentSlide !== liveSlide) resetRound();
+  });
+}
+</script>
+</body>
+</html>
