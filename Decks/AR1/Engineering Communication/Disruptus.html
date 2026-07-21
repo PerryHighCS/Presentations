@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disruptus</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../DCCircuits/theme.css">
+
+<style>
+/* ── Numbered step / how-to-play list ────────────────────────────── */
+
+.step-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+.step-num {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--small);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-text {
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding-top: 3px;
+}
+.step-text strong { color: var(--text); }
+
+/* ── Disruptus interactive game slide ────────────────────────────── */
+
+.disruptus-slide .slide-inner { justify-content: flex-start; }
+
+.disruptus-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-top: var(--gap);
+  border-radius: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.disruptus-panel {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--gap);
+  padding: var(--pad);
+  max-width: 1100px;
+}
+.disruptus-stage[data-state="idle"] .disruptus-panel-idle,
+.disruptus-stage[data-state="mode"] .disruptus-panel-mode,
+.disruptus-stage[data-state="cards"] .disruptus-panel-cards,
+.disruptus-stage[data-state="done"] .disruptus-panel-done {
+  display: flex;
+}
+
+.disruptus-play-glyph {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--accent-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  animation: disruptus-pulse 2.2s ease-in-out infinite;
+}
+.disruptus-play-glyph svg { width: 30px; height: 30px; }
+@keyframes disruptus-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(42,143,255,0.35); }
+  50% { box-shadow: 0 0 0 14px rgba(42,143,255,0); }
+}
+
+.disruptus-stage .disruptus-prompt {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.disruptus-mode-name {
+  font-size: 68px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.disruptus-stage .disruptus-mode-desc {
+  font-size: 28px;
+  color: var(--text);
+  line-height: 1.5;
+  max-width: 900px;
+}
+
+.disruptus-cards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 56px;
+}
+.disruptus-card-img {
+  display: block;
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+  border-radius: 14px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.55);
+}
+
+.disruptus-stage .disruptus-done-text {
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--warn);
+  letter-spacing: -0.01em;
+}
+.disruptus-reset-btn {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #060b14;
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  padding: 14px 30px;
+  cursor: pointer;
+}
+.disruptus-reset-btn:hover { background: #5aa8ff; }
+
+.disruptus-active-mode {
+  display: none;
+  position: absolute;
+  top: 32px;
+  left: 36px;
+  z-index: 10;
+  max-width: 620px;
+  text-align: left;
+}
+.disruptus-stage[data-state="cards"] .disruptus-active-mode,
+.disruptus-stage[data-state="done"] .disruptus-active-mode {
+  display: block;
+}
+.disruptus-active-mode-name {
+  display: block;
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.disruptus-stage .disruptus-active-mode-desc {
+  font-size: 24px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.disruptus-timer {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  z-index: 10;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: conic-gradient(var(--accent) calc(var(--pct, 100) * 1%), rgba(255,255,255,0.1) 0);
+}
+.disruptus-stage[data-state="cards"] .disruptus-timer,
+.disruptus-stage[data-state="done"] .disruptus-timer {
+  display: flex;
+}
+.disruptus-timer::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: var(--bg-card);
+}
+.disruptus-timer-num {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 26px;
+  color: var(--text);
+}
+.disruptus-timer--warn {
+  background: conic-gradient(var(--warn) calc(var(--pct, 100) * 1%), rgba(255,255,255,0.1) 0);
+  animation: disruptus-timer-flash 1s step-start infinite;
+}
+@keyframes disruptus-timer-flash {
+  50% { filter: brightness(1.5); }
+}
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal"><div class="slides">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 01 · Disruptus (activity divider)
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:640px;height:640px;bottom:-140px;left:-100px;background:radial-gradient(circle,rgba(42,143,255,0.10),transparent 70%);"></div>
+    <span class="slide-tag">Activity · Classroom Version</span>
+    <h1 class="title-h1" style="font-size:80px;">Disruptus</h1>
+    <p class="subtitle">A quick-sketch creativity game</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 02 · How to Play
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Activity</span>
+    <h2>How to Play</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1100px;line-height:1.6;">I'll show you an image of an object, or two objects, and you'll be asked to do one of the following:</p>
+    <ol class="step-list" style="margin-top:var(--gap);">
+      <li class="step-item"><span class="step-num">1</span><div class="step-text"><strong>Use it:</strong> imagine a new way this object could be used.</div></li>
+      <li class="step-item"><span class="step-num">2</span><div class="step-text"><strong>Improve it:</strong> modify the object to make it more effective, efficient, or fun to use for its current purpose.</div></li>
+      <li class="step-item"><span class="step-num">3</span><div class="step-text"><strong>Transform it:</strong> change the object in some way to solve a completely different problem.</div></li>
+      <li class="step-item"><span class="step-num">4</span><div class="step-text"><strong>Combine it:</strong> merge two unrelated objects or ideas into a single new invention.</div></li>
+    </ol>
+    <div class="callout" style="margin-top:var(--gap-lg);max-width:1100px;">
+      Sketch your innovation as clearly as you can. Give it a name, label its parts, and describe what it does and why it's useful.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 03 · Disruptus (interactive round timer)
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="disruptus-slide" id="disruptus-game">
+  <div class="slide-inner">
+    <span class="slide-tag">Activity · Disruptus</span>
+    <div class="disruptus-stage" data-state="idle">
+      <div class="disruptus-active-mode" aria-hidden="true">
+        <span class="disruptus-active-mode-name"></span>
+        <p class="disruptus-active-mode-desc"></p>
+      </div>
+      <div class="disruptus-timer" aria-hidden="true"><span class="disruptus-timer-num">60</span></div>
+
+      <div class="disruptus-panel disruptus-panel-idle">
+        <div class="disruptus-play-glyph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <p class="disruptus-prompt">Click to start the round</p>
+      </div>
+
+      <div class="disruptus-panel disruptus-panel-mode">
+        <span class="disruptus-mode-name"></span>
+        <p class="disruptus-mode-desc"></p>
+        <p class="disruptus-prompt">Click to draw your card<span class="disruptus-plural">s</span> &rarr;</p>
+      </div>
+
+      <div class="disruptus-panel disruptus-panel-cards">
+        <div class="disruptus-cards"></div>
+      </div>
+
+      <div class="disruptus-panel disruptus-panel-done">
+        <p class="disruptus-done-text">Time's Up!</p>
+        <button type="button" class="disruptus-reset-btn">New Round</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'disruptus',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function (Reveal) {
+    initDisruptusGame(Reveal);
+  },
+});
+
+function initDisruptusGame(Reveal) {
+  var liveSlide = Array.prototype.find.call(
+    document.querySelectorAll('#disruptus-game'),
+    function (slide) { return !slide.closest('#storyboard'); }
+  );
+  if (!liveSlide) return;
+
+  var stage = liveSlide.querySelector('.disruptus-stage');
+  var modeNameEl = liveSlide.querySelector('.disruptus-mode-name');
+  var modeDescEl = liveSlide.querySelector('.disruptus-mode-desc');
+  var pluralEl = liveSlide.querySelector('.disruptus-plural');
+  var activeModeNameEl = liveSlide.querySelector('.disruptus-active-mode-name');
+  var activeModeDescEl = liveSlide.querySelector('.disruptus-active-mode-desc');
+  var cardsEl = liveSlide.querySelector('.disruptus-cards');
+  var timerEl = liveSlide.querySelector('.disruptus-timer');
+  var timerNumEl = liveSlide.querySelector('.disruptus-timer-num');
+  var resetBtn = liveSlide.querySelector('.disruptus-reset-btn');
+
+  var MODES = [
+    { name: 'Use It', cardCount: 1, desc: 'Imagine a new way this object could be used.' },
+    { name: 'Improve It', cardCount: 1, desc: 'Modify the object to make it more effective, efficient, or fun to use for its current purpose.' },
+    { name: 'Transform It', cardCount: 1, desc: 'Change the object in some way to solve a completely different problem.' },
+    { name: 'Combine It', cardCount: 2, desc: 'Merge two unrelated objects or ideas into a single new invention.' },
+  ];
+  var CARD_COUNT = 83;
+  var ROTATIONS = [0, 90, 180, 270];
+  var ROUND_SECONDS = 60;
+
+  var currentMode = null;
+  var timerId = null;
+
+  function randomInt(n) { return Math.floor(Math.random() * n); }
+
+  function cardFile(n) {
+    var padded = n < 10 ? '0' + n : String(n);
+    return 'Disruptus_Assets/cards/card-' + padded + '.png';
+  }
+
+  function pickCardNumbers(count) {
+    var pool = [];
+    for (var i = 1; i <= CARD_COUNT; i++) pool.push(i);
+    var picked = [];
+    for (var c = 0; c < count; c++) {
+      picked.push(pool.splice(randomInt(pool.length), 1)[0]);
+    }
+    return picked;
+  }
+
+  function setState(state) {
+    stage.setAttribute('data-state', state);
+  }
+
+  function startRound() {
+    currentMode = MODES[randomInt(MODES.length)];
+    modeNameEl.textContent = currentMode.name;
+    modeDescEl.textContent = currentMode.desc;
+    pluralEl.style.display = currentMode.cardCount > 1 ? '' : 'none';
+    activeModeNameEl.textContent = currentMode.name;
+    activeModeDescEl.textContent = currentMode.desc;
+    setState('mode');
+  }
+
+  function dealCards() {
+    var numbers = pickCardNumbers(currentMode.cardCount);
+    cardsEl.innerHTML = '';
+    numbers.forEach(function (n) {
+      var rotation = ROTATIONS[randomInt(ROTATIONS.length)];
+      var img = document.createElement('img');
+      img.src = cardFile(n);
+      img.alt = 'Disruptus object card';
+      img.className = 'disruptus-card-img';
+      img.style.transform = 'rotate(' + rotation + 'deg)';
+      cardsEl.appendChild(img);
+    });
+    setState('cards');
+    startTimer();
+  }
+
+  function startTimer() {
+    var remaining = ROUND_SECONDS;
+    timerNumEl.textContent = remaining;
+    timerEl.style.setProperty('--pct', 100);
+    timerEl.classList.remove('disruptus-timer--warn');
+    clearInterval(timerId);
+    timerId = setInterval(function () {
+      remaining -= 1;
+      timerNumEl.textContent = Math.max(remaining, 0);
+      timerEl.style.setProperty('--pct', Math.max((remaining / ROUND_SECONDS) * 100, 0));
+      if (remaining <= 10) timerEl.classList.add('disruptus-timer--warn');
+      if (remaining <= 0) {
+        clearInterval(timerId);
+        timerId = null;
+        onTimeUp();
+      }
+    }, 1000);
+  }
+
+  function onTimeUp() {
+    setState('done');
+    try {
+      new Audio('Disruptus_Assets/times-up.mp3').play().catch(function () {});
+    } catch (e) { /* audio playback is best-effort */ }
+  }
+
+  function resetRound() {
+    clearInterval(timerId);
+    timerId = null;
+    cardsEl.innerHTML = '';
+    setState('idle');
+  }
+
+  stage.addEventListener('click', function (evt) {
+    if (evt.target.closest('.disruptus-reset-btn')) return;
+    var state = stage.getAttribute('data-state');
+    if (state === 'idle') startRound();
+    else if (state === 'mode') dealCards();
+  });
+
+  resetBtn.addEventListener('click', function (evt) {
+    evt.stopPropagation();
+    resetRound();
+  });
+
+  Reveal.on('slidechanged', function (event) {
+    if (event.currentSlide !== liveSlide) resetRound();
+  });
+}
+</script>
+</body>
+</html>
