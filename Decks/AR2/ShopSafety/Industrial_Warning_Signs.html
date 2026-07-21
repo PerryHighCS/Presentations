@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industrial Warning Signs</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../theme.css">
+
+<style>
+/* ── Sign color tokens (real-world safety colors, distinct from the terminal accent palette) ── */
+:root {
+  --sign-yellow: #ffcc00;
+  --sign-black:  #171717;
+  --sign-red:    #d0271d;
+  --sign-orange: #f57c00;
+  --sign-blue:   #005ea8;
+  --sign-green:  #00843d;
+  --sign-white:  #ffffff;
+}
+
+/* ── Numbered step / how-to-play list ────────────────────────────── */
+.step-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+.step-num {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--small);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-text {
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding-top: 3px;
+}
+.step-text strong { color: var(--text); }
+
+/* ── Sign game slide ─────────────────────────────────────────────── */
+.game-slide .slide-inner { justify-content: flex-start; }
+
+.game-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.sign-progress {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.sign-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-top: var(--gap);
+  border-radius: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 64px;
+  padding: 32px;
+}
+
+.sign-face {
+  width: 260px;
+  height: 260px;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  filter: drop-shadow(0 12px 30px rgba(0,0,0,0.45));
+}
+.sign-face img { width: 100%; height: 100%; object-fit: contain; }
+
+.sign-prompt-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 640px;
+}
+.sign-prompt {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+.sign-prompt::before { content: '>> '; opacity: 0.7; }
+
+.sign-answer { display: none; flex-direction: column; gap: 10px; max-width: 640px; }
+.sign-stage[data-revealed="true"] .sign-answer { display: flex; }
+.sign-stage[data-revealed="true"] .sign-prompt-col > .sign-prompt { display: none; }
+
+.sign-name {
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  line-height: 1.1;
+}
+.sign-category {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.sign-meaning {
+  font-size: 22px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.sign-nav {
+  position: absolute;
+  bottom: 22px;
+  right: 26px;
+  display: flex;
+  gap: 12px;
+  z-index: 10;
+}
+.sign-btn {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #060b14;
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  padding: 10px 22px;
+  cursor: pointer;
+}
+.sign-btn:hover { background: rgba(57,211,83,0.7); }
+.sign-btn:disabled { background: var(--text-dim); cursor: default; opacity: 0.5; }
+.sign-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+}
+.sign-btn--ghost:hover { border-color: var(--accent); }
+
+/* ── Category system cards (shape + color debrief) ──────────────── */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap);
+  margin-top: var(--gap-lg);
+}
+.cat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.cat-swatch {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+.cat-swatch svg,
+.cat-swatch img { width: 100%; height: 100%; object-fit: contain; }
+.cat-text h4 {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+.cat-text p {
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* ── ANSI signal-word panels ─────────────────────────────────────── */
+.word-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+  margin-top: var(--gap-lg);
+  flex: 1;
+  align-items: stretch;
+}
+.word-panel {
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.word-panel-head {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  padding: 14px 8px;
+}
+.word-panel-body {
+  background: var(--bg-card);
+  flex: 1;
+  padding: 16px 18px;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.word-panel--danger .word-panel-head  { background: var(--sign-red); color: #fff; }
+.word-panel--warning .word-panel-head { background: var(--sign-orange); color: #1a1000; }
+.word-panel--caution .word-panel-head { background: var(--sign-yellow); color: #1a1000; }
+.word-panel--notice .word-panel-head  { background: var(--sign-blue); color: #fff; }
+
+/* ── Reference grid ──────────────────────────────────────────────── */
+.ref-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+  margin-top: var(--gap);
+  flex: 1;
+}
+.ref-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+.ref-face {
+  width: 110px;
+  height: 110px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ref-face img { width: 100%; height: 100%; object-fit: contain; }
+.ref-name { font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.ref-cat { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal"><div class="slides">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 01 · Title
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:640px;height:640px;top:-160px;right:-120px;background:radial-gradient(circle,rgba(255,204,0,0.10),transparent 70%);"></div>
+    <span class="slide-tag">Shop Safety</span>
+    <h1 class="title-h1">Industrial Warning Signs</h1>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 02 · How to Play
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Warm-Up Game</span>
+    <h2>Guess the Sign</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1100px;line-height:1.6;">
+      Every sign on the next screen is a real symbol you could find on a factory floor, in a lab, or in our own shop.
+      Before the answer appears, call out what you think the sign is warning you about, and what you'd do in response.
+    </p>
+    <ol class="step-list" style="margin-top:var(--gap-lg);">
+      <li class="step-item"><span class="step-num">1</span><div class="step-text"><strong>Look</strong> at the shape and color first. They carry meaning before you ever see the picture inside.</div></li>
+      <li class="step-item"><span class="step-num">2</span><div class="step-text"><strong>Guess</strong> the specific hazard or instruction the sign is communicating.</div></li>
+      <li class="step-item"><span class="step-num">3</span><div class="step-text"><strong>Reveal</strong> the answer by clicking anywhere on the sign.</div></li>
+      <li class="step-item"><span class="step-num">4</span><div class="step-text"><strong>Next</strong> moves to a new sign. There are 16 in all.</div></li>
+    </ol>
+    <div class="callout" style="margin-top:var(--gap-lg);max-width:1100px;">
+      There is no penalty for a wrong guess here. The goal is to notice how much information a well-designed sign gives you in under a second.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 03 · Guessing Game
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="game-slide" id="sign-game">
+  <div class="slide-inner">
+    <div class="game-header">
+      <span class="slide-tag">Guess the Sign</span>
+      <span class="sign-progress"></span>
+    </div>
+    <div class="sign-stage" data-revealed="false">
+      <div class="sign-face"></div>
+      <div class="sign-prompt-col">
+        <p class="sign-prompt">What does this sign mean? Click to reveal.</p>
+        <div class="sign-answer">
+          <span class="sign-category"></span>
+          <span class="sign-name"></span>
+          <p class="sign-meaning"></p>
+        </div>
+      </div>
+      <div class="sign-nav">
+        <button type="button" class="sign-btn sign-btn--ghost sign-prev">Prev</button>
+        <button type="button" class="sign-btn sign-next">Next</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 04 · Shape + Color System
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Code Behind the Picture</span>
+    <h2>Shape and Color Speak First</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1300px;line-height:1.6;">
+      Every sign you just guessed follows the international <span style="color:var(--accent);">ISO 7010</span> system. Before you read the pictogram inside, the outline and background color already tell you what <em>kind</em> of message you're looking at, which is exactly why a worker can react to a sign from across a noisy shop floor.
+    </p>
+    <div class="cat-grid">
+      <div class="cat-card fragment fade-up">
+        <div class="cat-swatch"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="#fff" stroke="#d0271d" stroke-width="16"/><line x1="38" y1="38" x2="162" y2="162" stroke="#d0271d" stroke-width="14"/></svg></div>
+        <div class="cat-text"><h4 style="color:var(--sign-red);">Red Circle, Diagonal Bar</h4><p>Prohibition. An action that is forbidden in this area.</p></div>
+      </div>
+      <div class="cat-card fragment fade-up">
+        <div class="cat-swatch"><svg viewBox="0 0 200 200"><polygon points="100,18 187,178 13,178" fill="#ffcc00" stroke="#171717" stroke-width="8"/></svg></div>
+        <div class="cat-text"><h4 style="color:var(--sign-yellow);">Yellow Triangle</h4><p>Warning. A hazard that requires caution or extra awareness.</p></div>
+      </div>
+      <div class="cat-card fragment fade-up">
+        <div class="cat-swatch"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="#005ea8"/></svg></div>
+        <div class="cat-text"><h4 style="color:var(--sign-blue);">Blue Circle</h4><p>Mandatory. A specific protective action you must take.</p></div>
+      </div>
+      <div class="cat-card fragment fade-up">
+        <div class="cat-swatch"><svg viewBox="0 0 200 200"><rect x="10" y="10" width="180" height="180" rx="14" fill="#00843d"/></svg></div>
+        <div class="cat-text"><h4 style="color:var(--sign-green);">Green Square</h4><p>Safe condition. Exits, first aid, and rescue equipment.</p></div>
+      </div>
+      <div class="cat-card fragment fade-up">
+        <div class="cat-swatch"><svg viewBox="0 0 200 200"><rect x="10" y="10" width="180" height="180" rx="14" fill="#d0271d"/></svg></div>
+        <div class="cat-text"><h4 style="color:var(--sign-red);">Red Square</h4><p>Fire equipment, such as extinguishers, alarms, and hose reels.</p></div>
+      </div>
+      <div class="cat-card fragment fade-up">
+        <div class="cat-swatch"><img src="Industrial_Warning_Signs_Assets/signs/ghs-toxic.svg" alt="GHS toxic pictogram: skull and crossbones on a white diamond with a red border"></div>
+        <div class="cat-text"><h4 style="color:var(--sign-red);">White Diamond, Red Border</h4><p>GHS chemical hazard. A separate global system, used on containers rather than on walls or equipment.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 05 · ANSI Signal Words
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">American Standard · ANSI Z535 / OSHA 1910.145</span>
+    <h2>When the Sign Uses Words Instead</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1300px;line-height:1.6;">
+      American shops often pair a pictogram with a text signal panel. The header color tells you how severe the hazard is before you finish reading the sentence underneath.
+    </p>
+    <div class="word-row">
+      <div class="word-panel fragment fade-up word-panel--danger">
+        <div class="word-panel-head">DANGER</div>
+        <div class="word-panel-body">An immediate hazard that <strong style="color:var(--text);">will</strong> cause death or serious injury if not avoided.</div>
+      </div>
+      <div class="word-panel fragment fade-up word-panel--warning">
+        <div class="word-panel-head">WARNING</div>
+        <div class="word-panel-body">A hazard that <strong style="color:var(--text);">could</strong> cause death or serious injury.</div>
+      </div>
+      <div class="word-panel fragment fade-up word-panel--caution">
+        <div class="word-panel-head">CAUTION</div>
+        <div class="word-panel-body">A hazard that could cause minor or moderate injury.</div>
+      </div>
+      <div class="word-panel fragment fade-up word-panel--notice">
+        <div class="word-panel-head">NOTICE</div>
+        <div class="word-panel-body">Important information that isn't a personal-injury hazard, like a maintenance policy.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 06 · Quick Reference (Prohibition / Mandatory / Safe Condition)
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Quick Reference · 1 of 2</span>
+    <h2>Prohibition, Mandatory &amp; Safe-Condition Signs</h2>
+    <div class="ref-grid" data-ref-group="group1"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 07 · Quick Reference (Warning / GHS / Fire)
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Quick Reference · 2 of 2</span>
+    <h2>Warning, Chemical &amp; Fire Signs</h2>
+    <div class="ref-grid" data-ref-group="group2"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 08 · Closing
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Why It Matters</span>
+    <h2>Don't Let It Become Wallpaper</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1200px;line-height:1.6;">
+      Safety researchers call it <span style="color:var(--warn);">sign blindness</span>: a warning stops working the moment it blends into the wallpaper. A sign you walk past every day still needs to register the instant it matters, whether that's the first day you touch a new machine or the one day something goes wrong.
+    </p>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1200px;line-height:1.6;">
+      Before you run any machine in this shop for the first time, find its signs. Know which ones are <span style="color:var(--sign-red);">prohibitions</span>, which are <span style="color:var(--sign-blue);">mandatory</span>, and which mark the nearest <span style="color:var(--sign-green);">safe exit</span> or <span style="color:var(--sign-green);">first aid station</span>. That five-second habit is what the signs are actually for.
+    </p>
+  </div>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+/* ── Sign data ─────────────────────────────────────────────────────
+   Pictograms are the official ISO 7010 registered signs (public domain),
+   vendored locally in Industrial_Warning_Signs_Assets/signs/.
+   ────────────────────────────────────────────────────────────────── */
+var SIGNS = [
+  {
+    id: 'exit', name: 'Emergency Exit', categoryLabel: 'Safe Condition', categoryColor: 'var(--sign-green)', file: 'exit.svg',
+    meaning: 'Marks the nearest evacuation route. Follow the arrow toward the nearest safe exit.'
+  },
+  {
+    id: 'electrical', name: 'Electrical Hazard', categoryLabel: 'Warning', categoryColor: 'var(--sign-yellow)', file: 'electrical.svg',
+    meaning: 'Live wiring or energized equipment nearby. Risk of shock or electrocution.'
+  },
+  {
+    id: 'hot-surface', name: 'Hot Surface', categoryLabel: 'Warning', categoryColor: 'var(--sign-yellow)', file: 'hot-surface.svg',
+    meaning: 'The surface is hot enough to burn skin on contact. Do not touch.'
+  },
+  {
+    id: 'crushing', name: 'Crushing Hazard', categoryLabel: 'Warning', categoryColor: 'var(--sign-yellow)', file: 'crushing.svg',
+    meaning: 'Moving parts can close on and crush a hand caught between them. Keep clear of the pinch point.'
+  },
+  {
+    id: 'rotating', name: 'Rotating Parts', categoryLabel: 'Warning', categoryColor: 'var(--sign-yellow)', file: 'rotating.svg',
+    meaning: 'Rollers or shafts turning toward each other can pull in loose clothing, hair, or fingers.'
+  },
+  {
+    id: 'toxic', name: 'Toxic Material', categoryLabel: 'Warning', categoryColor: 'var(--sign-yellow)', file: 'toxic.svg',
+    meaning: 'Fatal or toxic if swallowed, inhaled, or absorbed through the skin.'
+  },
+  {
+    id: 'laser', name: 'Laser Radiation', categoryLabel: 'Warning', categoryColor: 'var(--sign-yellow)', file: 'laser.svg',
+    meaning: 'A concentrated beam that can damage eyes or skin. Never look into the beam.'
+  },
+  {
+    id: 'eye-protection', name: 'Eye Protection Required', categoryLabel: 'Mandatory', categoryColor: 'var(--sign-blue)', file: 'eye-protection.svg',
+    meaning: 'Safety glasses or goggles must be worn in this area, no exceptions.'
+  },
+  {
+    id: 'e-stop', name: 'Emergency Stop', categoryLabel: 'Safe Condition', categoryColor: 'var(--sign-green)', file: 'e-stop.svg',
+    meaning: 'Marks the control that instantly cuts power to a machine. Pressing it is always the safe move, which is why the sign is green rather than red.'
+  },
+  {
+    id: 'no-smoking', name: 'No Smoking', categoryLabel: 'Prohibition', categoryColor: 'var(--sign-red)', file: 'no-smoking.svg',
+    meaning: 'Smoking, lighters, and open flame are forbidden here, usually near fuel or flammable materials.'
+  },
+  {
+    id: 'no-pedestrians', name: 'No Pedestrian Access', categoryLabel: 'Prohibition', categoryColor: 'var(--sign-red)', file: 'no-pedestrians.svg',
+    meaning: 'Walking is not permitted in this area, often because it is an active vehicle or forklift lane.'
+  },
+  {
+    id: 'hearing-protection', name: 'Hearing Protection Required', categoryLabel: 'Mandatory', categoryColor: 'var(--sign-blue)', file: 'hearing-protection.svg',
+    meaning: 'Noise levels here can damage hearing over time. Ear muffs or plugs are required.'
+  },
+  {
+    id: 'hard-hat', name: 'Hard Hat Required', categoryLabel: 'Mandatory', categoryColor: 'var(--sign-blue)', file: 'hard-hat.svg',
+    meaning: 'Head protection is required, typically due to overhead work or a falling-object risk.'
+  },
+  {
+    id: 'first-aid', name: 'First Aid Station', categoryLabel: 'Safe Condition', categoryColor: 'var(--sign-green)', file: 'first-aid.svg',
+    meaning: 'Marks the location of first aid supplies or a trained first aid responder.'
+  },
+  {
+    id: 'fire-extinguisher', name: 'Fire Extinguisher', categoryLabel: 'Fire Equipment', categoryColor: 'var(--sign-red)', file: 'fire-extinguisher.svg',
+    meaning: 'Marks the location of a fire extinguisher. Learn where the nearest one is before you need it.'
+  },
+  {
+    id: 'biohazard', name: 'Biological Hazard', categoryLabel: 'Warning', categoryColor: 'var(--sign-yellow)', file: 'biohazard.svg',
+    meaning: 'Infectious agents or biological materials are present. Handle only with proper protective equipment.'
+  }
+];
+
+var SIGN_ASSET_PATH = 'Industrial_Warning_Signs_Assets/signs/';
+
+function renderSignFace(sign) {
+  return '<img src="' + SIGN_ASSET_PATH + sign.file + '" alt="' + sign.name + ' sign">';
+}
+
+/* ── Fill the two static reference grids before Reveal / storyboard init ── */
+(function populateReferenceGrids() {
+  var groups = {
+    group1: ['no-smoking', 'no-pedestrians', 'eye-protection', 'hearing-protection', 'hard-hat', 'exit', 'first-aid', 'e-stop'],
+    group2: ['electrical', 'hot-surface', 'crushing', 'rotating', 'laser', 'biohazard', 'toxic', 'fire-extinguisher']
+  };
+  var byId = {};
+  SIGNS.forEach(function (s) { byId[s.id] = s; });
+
+  Object.keys(groups).forEach(function (groupKey) {
+    document.querySelectorAll('[data-ref-group="' + groupKey + '"]').forEach(function (container) {
+      var html = '';
+      groups[groupKey].forEach(function (id) {
+        var sign = byId[id];
+        html += '<div class="ref-item">' +
+          '<div class="ref-face">' + renderSignFace(sign) + '</div>' +
+          '<span class="ref-name">' + sign.name + '</span>' +
+          '<span class="ref-cat" style="color:' + sign.categoryColor + ';">' + sign.categoryLabel + '</span>' +
+          '</div>';
+      });
+      container.innerHTML = html;
+    });
+  });
+})();
+
+initSyncDeckReveal({
+  deckId: 'industrial-warning-signs',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function (Reveal) {
+    initSignGame(Reveal);
+  },
+});
+
+function initSignGame(Reveal) {
+  var liveSlide = Array.prototype.find.call(
+    document.querySelectorAll('#sign-game'),
+    function (slide) { return !slide.closest('#storyboard'); }
+  );
+  if (!liveSlide) return;
+
+  var stage = liveSlide.querySelector('.sign-stage');
+  var faceEl = liveSlide.querySelector('.sign-face');
+  var progressEl = liveSlide.querySelector('.sign-progress');
+  var categoryEl = liveSlide.querySelector('.sign-category');
+  var nameEl = liveSlide.querySelector('.sign-name');
+  var meaningEl = liveSlide.querySelector('.sign-meaning');
+  var prevBtn = liveSlide.querySelector('.sign-prev');
+  var nextBtn = liveSlide.querySelector('.sign-next');
+
+  var idx = 0;
+  var revealed = false;
+
+  function render() {
+    var sign = SIGNS[idx];
+    faceEl.innerHTML = renderSignFace(sign);
+    progressEl.textContent = 'Sign ' + (idx + 1) + ' of ' + SIGNS.length;
+    stage.setAttribute('data-revealed', revealed ? 'true' : 'false');
+    categoryEl.textContent = sign.categoryLabel;
+    categoryEl.style.color = sign.categoryColor;
+    nameEl.textContent = sign.name;
+    meaningEl.textContent = sign.meaning;
+    prevBtn.disabled = idx === 0;
+    nextBtn.textContent = !revealed ? 'Reveal' : (idx === SIGNS.length - 1 ? 'Restart' : 'Next');
+  }
+
+  stage.addEventListener('click', function (evt) {
+    if (evt.target.closest('.sign-nav')) return;
+    revealed = !revealed;
+    render();
+  });
+
+  nextBtn.addEventListener('click', function (evt) {
+    evt.stopPropagation();
+    if (!revealed) {
+      revealed = true;
+    } else if (idx === SIGNS.length - 1) {
+      idx = 0;
+      revealed = false;
+    } else {
+      idx += 1;
+      revealed = false;
+    }
+    render();
+  });
+
+  prevBtn.addEventListener('click', function (evt) {
+    evt.stopPropagation();
+    idx = Math.max(idx - 1, 0);
+    revealed = false;
+    render();
+  });
+
+  Reveal.on('slidechanged', function (event) {
+    if (event.currentSlide !== liveSlide) {
+      idx = 0;
+      revealed = false;
+      render();
+    }
+  });
+
+  render();
+}
+</script>
+</body>
+</html>
