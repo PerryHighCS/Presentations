@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Making Warning Signs Unnecessary</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../theme.css">
+
+<style>
+/* ── Numbered step / how-to-play list ────────────────────────────── */
+.step-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+.step-num {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--small);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-text {
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding-top: 3px;
+}
+.step-text strong { color: var(--text); }
+
+/* ── Hierarchy of controls pyramid ───────────────────────────────── */
+.hierarchy-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--gap-lg);
+  flex: 1;
+  justify-content: center;
+}
+.hierarchy-tier {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 62px;
+  border-radius: 8px;
+  color: #06120b;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: 0.03em;
+  position: relative;
+  gap: 16px;
+}
+.hierarchy-tier .tier-name { font-size: 20px; }
+.hierarchy-tier .tier-note {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: 15px;
+  opacity: 0.85;
+}
+.hierarchy-tier--1 { width: 40%;  background: #39d353; }
+.hierarchy-tier--2 { width: 52%;  background: #63dd76; }
+.hierarchy-tier--3 { width: 64%;  background: #8ee79a; }
+.hierarchy-tier--4 { width: 76%;  background: var(--warn); }
+.hierarchy-tier--5 { width: 88%;  background: #e5484d; color: #fff; }
+.hierarchy-side {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  display: flex;
+  justify-content: space-between;
+  width: 88%;
+  margin-top: 10px;
+}
+
+/* ── Beyond-the-sign activity slide ──────────────────────────────── */
+.beyond-slide .slide-inner { justify-content: flex-start; }
+.beyond-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.beyond-body {
+  display: flex;
+  gap: 40px;
+  margin-top: var(--gap);
+  flex: 1;
+  min-height: 0;
+}
+.beyond-media {
+  flex: 0 0 46%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.beyond-media img {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--accent-border);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+  display: block;
+}
+.beyond-caption {
+  font-size: var(--small);
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+.beyond-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  overflow-y: auto;
+}
+.beyond-stage {
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  opacity: 0.35;
+}
+.beyond-stage.done { opacity: 1; }
+.beyond-stage-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.beyond-stage-text {
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin-top: 6px;
+  display: none;
+}
+.beyond-stage.done .beyond-stage-text { display: block; }
+.beyond-stage.done .beyond-stage-text strong { color: var(--text); }
+
+.beyond-verdict { display: none; }
+.beyond-stage.done .beyond-verdict { display: block; }
+.beyond-verdict-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-top: 6px;
+}
+.beyond-verdict--eliminated .beyond-verdict-badge { background: rgba(57,211,83,0.18); color: var(--accent); }
+.beyond-verdict--changed .beyond-verdict-badge { background: rgba(94,234,212,0.16); color: var(--result); }
+.beyond-verdict--required .beyond-verdict-badge { background: rgba(255,209,102,0.18); color: var(--warn); }
+
+.beyond-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 10px;
+}
+.beyond-progress {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.beyond-btn {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #060b14;
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  padding: 10px 22px;
+  cursor: pointer;
+}
+.beyond-btn:hover { background: rgba(57,211,83,0.7); }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal"><div class="slides">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 01 · Title
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:640px;height:640px;top:-160px;left:-120px;background:radial-gradient(circle,rgba(57,211,83,0.10),transparent 70%);"></div>
+    <span class="slide-tag">Shop Safety · Beyond the Sign</span>
+    <h1 class="title-h1">Making Warning Signs Unnecessary</h1>
+    <p class="subtitle">A sign is a request for someone to remember to be careful, forever. The best fix removes the need to remember.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 02 · Reframe: a sign is a backup plan
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Picking Up From Last Time</span>
+    <h2>A Sign Only Works If Someone Reads It</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1300px;line-height:1.6;">
+      Last class you learned to recognize warning signs and to notice <span style="color:var(--warn);">sign blindness</span>, the way a sign you walk past every day quietly stops registering. That's not a flaw in a specific sign. It's a limit of what any sign can do: a sign only works in the instant someone actually looks at it, reads it, and reacts in time.
+    </p>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1300px;line-height:1.6;">
+      So before reaching for a sign, ask a better question first: <span style="color:var(--accent);">can the hazard itself be changed</span> so that forgetting, rushing, or not noticing doesn't lead to an injury? Today's activity walks through five real shop situations and asks that question directly.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 03 · Hierarchy of Controls
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Hierarchy of Hazard Controls</span>
+    <h2>Five Ways to Handle Any Hazard</h2>
+    <p style="font-size:19px;color:var(--text-muted);margin-top:10px;max-width:1300px;line-height:1.5;">
+      Safety professionals rank fixes from most to least reliable. A sign lives near the bottom, because it depends on a person, not on the hazard itself, getting it right every single time.
+    </p>
+    <div class="hierarchy-wrap">
+      <div class="hierarchy-tier hierarchy-tier--1 fragment fade-up"><span class="tier-name">Elimination</span><span class="tier-note">remove the hazard entirely</span></div>
+      <div class="hierarchy-tier hierarchy-tier--2 fragment fade-up"><span class="tier-name">Substitution</span><span class="tier-note">swap in something less dangerous</span></div>
+      <div class="hierarchy-tier hierarchy-tier--3 fragment fade-up"><span class="tier-name">Engineering Controls</span><span class="tier-note">guard, contain, or redesign it</span></div>
+      <div class="hierarchy-tier hierarchy-tier--4 fragment fade-up"><span class="tier-name">Administrative Controls</span><span class="tier-note">signs, labels, training, rules</span></div>
+      <div class="hierarchy-tier hierarchy-tier--5 fragment fade-up"><span class="tier-name">PPE</span><span class="tier-note">the last line of defense, worn by a person</span></div>
+      <div class="hierarchy-side"><span>Most reliable</span><span>Least reliable</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 04 · How to Play
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Activity</span>
+    <h2>Beyond the Sign</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1200px;line-height:1.6;">
+      Five scenes from a shop like ours, each with something wrong. For every scene, work through the same four questions before the next one reveals.
+    </p>
+    <ol class="step-list" style="margin-top:var(--gap-lg);">
+      <li class="step-item"><span class="step-num">1</span><div class="step-text"><strong>Signs Needed.</strong> What warning sign, if any, belongs in this scene as it is right now?</div></li>
+      <li class="step-item"><span class="step-num">2</span><div class="step-text"><strong>Why It Could Fail.</strong> Even with that sign posted, how could someone still get hurt here?</div></li>
+      <li class="step-item"><span class="step-num">3</span><div class="step-text"><strong>A Better Fix.</strong> What change, higher up the hierarchy, removes the hazard instead of just labeling it?</div></li>
+      <li class="step-item"><span class="step-num">4</span><div class="step-text"><strong>Still Need a Sign?</strong> After that fix, does the original sign become unnecessary, change, or stay exactly as important?</div></li>
+    </ol>
+    <div class="callout" style="margin-top:var(--gap-lg);max-width:1200px;">
+      There's no single right answer. Argue it out before you click to the next stage.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 05 · Beyond the Sign (Activity)
+     ══════════════════════════════════════════════════════════════════ -->
+<section class="beyond-slide" id="beyond-game">
+  <div class="slide-inner">
+    <div class="beyond-header">
+      <span class="slide-tag">Beyond the Sign</span>
+      <span class="beyond-progress"></span>
+    </div>
+    <div class="beyond-body">
+      <div class="beyond-media">
+        <img class="img-zoomable" src="" alt="">
+        <p class="beyond-caption"></p>
+      </div>
+      <div class="beyond-panel">
+        <div class="beyond-stage" data-stage="1">
+          <div class="beyond-stage-label">1 · Signs Needed</div>
+          <div class="beyond-stage-text"></div>
+        </div>
+        <div class="beyond-stage" data-stage="2">
+          <div class="beyond-stage-label">2 · Why It Could Fail</div>
+          <div class="beyond-stage-text"></div>
+        </div>
+        <div class="beyond-stage" data-stage="3">
+          <div class="beyond-stage-label">3 · A Better Fix</div>
+          <div class="beyond-stage-text"></div>
+        </div>
+        <div class="beyond-stage" data-stage="4">
+          <div class="beyond-stage-label">4 · Still Need a Sign?</div>
+          <div class="beyond-stage-text"></div>
+          <div class="beyond-verdict"><span class="beyond-verdict-badge"></span></div>
+        </div>
+        <div class="beyond-nav">
+          <span></span>
+          <button type="button" class="beyond-btn beyond-next">Reveal: Signs Needed</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 06 · Debrief
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Debrief</span>
+    <h2>Not Every Hazard Ends the Same Way</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1300px;line-height:1.6;">
+      Notice the pattern across the five stations. The <span style="color:var(--accent);">extension cord</span> and the <span style="color:var(--accent);">exposed belt</span> disappeared as hazards once the room and the machine were redesigned, no sign required. The <span style="color:var(--result);">hot plate</span> kept part of its danger but changed what the sign was actually protecting. The <span style="color:var(--warn);">unlabeled chemicals</span> couldn't be fixed by changing the room at all, because the hazard travels with the container. The label had to move with it.
+    </p>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1300px;line-height:1.6;">
+      That's the real skill: not memorizing more signs, but asking every time whether a hazard can be pushed up the hierarchy before you ever rely on a sign, or on someone remembering to be careful.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 07 · Bridge to next stop
+     ══════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:600px;height:600px;bottom:-160px;right:-100px;background:radial-gradient(circle,rgba(255,209,102,0.10),transparent 70%);"></div>
+    <span class="slide-tag">Next Stop</span>
+    <h2 style="font-size:56px;">PPE &amp; Safe Behavior</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1100px;line-height:1.6;">
+      Elimination and engineering controls can't remove every hazard from a working shop. What's left over is the job of the person: the gear you wear and the habits you keep. That's where we go next.
+    </p>
+  </div>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+/* ── Beyond the Sign scenario data ──────────────────────────────── */
+var SITUATIONS = [
+  {
+    file: 'situation1.png',
+    alt: 'A miter saw on a rolling cart with its power cord running across the open floor to a wall outlet on the far side of the room.',
+    caption: 'A miter saw station, powered by a cord that runs straight across the main walkway to the nearest outlet.',
+    stages: [
+      { label: '1 · Signs Needed', text: 'A <strong>trip hazard</strong> floor sign near the cord, warning people to watch their step as they cross it.' },
+      { label: '2 · Why It Could Fail', text: 'People watch where the door and the group table are, not the floor by their feet. A sign posted once can\'t follow the cord if it gets rerouted tomorrow, and a student carrying stock with both hands may never see it at all.' },
+      { label: '3 · A Better Fix', text: 'This is an <strong>engineering control</strong>: move the tool closer to the outlet or run power to that station without crossing the aisle, add a floor outlet or ceiling drop near the saw, or route the cord along the wall through a cord cover.' },
+      { label: '4 · Still Need a Sign?', text: 'Once the cord is out of the walkway, there\'s nothing left to trip over.' }
+    ],
+    verdict: { kind: 'eliminated', label: 'Sign Eliminated' }
+  },
+  {
+    file: 'situation2.png',
+    alt: 'A round metal rod resting loose near the edge of a workbench, close enough to roll off onto the floor.',
+    caption: 'A length of round stock sits loose near the edge of the workbench, close enough to roll off.',
+    stages: [
+      { label: '1 · Signs Needed', text: 'A general <strong>"secure round stock"</strong> caution placard at the bench is about the best a sign can do here.' },
+      { label: '2 · Why It Could Fail', text: 'Round stock rolls on its own the moment it\'s bumped, no reading required. The hazard isn\'t a fixed feature of the room either, it\'s whatever happens to be sitting near the edge today, so a sign can warn that it happens without ever pointing at this specific rod, right now, already halfway to the floor.' },
+      { label: '3 · A Better Fix', text: 'This is an <strong>engineering control</strong>: keep round stock in a rack or bin instead of laid flat on the bench, or add a lip, V-block, or stock stop along the table edge so nothing loose can roll off in the first place.' },
+      { label: '4 · Still Need a Sign?', text: 'Once round stock physically can\'t reach the edge, there\'s nothing left to roll off.' }
+    ],
+    verdict: { kind: 'eliminated', label: 'Sign Eliminated' }
+  },
+  {
+    file: 'situation3.png',
+    alt: 'A pan of liquid on a hot plate that sits on a table near an outlet, with no one attending it.',
+    caption: 'An unattended pan of liquid on a hot plate, plugged into the wall a few feet away.',
+    stages: [
+      { label: '1 · Signs Needed', text: 'A <strong>DANGER: hot surface</strong> sign at the station, and a Fire Extinguisher location sign nearby if one isn\'t already posted.' },
+      { label: '2 · Why It Could Fail', text: 'A sign warns about the hazard in general, but it can\'t shut anything off. The moment this gets left unattended under time pressure, no one is even looking at the sign anymore, they\'re looking at the door.' },
+      { label: '3 · A Better Fix', text: 'This is a mix of <strong>engineering and administrative controls</strong>: a hot plate with an automatic shutoff or timer, flammables kept clear of the station, a fire extinguisher and blanket within reach, and a firm rule that a lit station is never left unattended.' },
+      { label: '4 · Still Need a Sign?', text: 'The danger shrinks once shutoff and supervision are built in, but this station still needs its own signage: where the extinguisher is, and a mandatory reminder never to walk away while it\'s running.' }
+    ],
+    verdict: { kind: 'changed', label: 'Sign Changed' }
+  },
+  {
+    file: 'situation4.png',
+    alt: 'A row of unlabeled spray bottles and containers holding different colored liquids, sitting on an open shelf.',
+    caption: 'Unlabeled bottles and containers of unknown liquids, stored in the open on a shelf.',
+    stages: [
+      { label: '1 · Signs Needed', text: 'A <strong>GHS hazard placard</strong> on the shelf or cabinet, plus, more importantly, a proper hazard label on every individual container.' },
+      { label: '2 · Why It Could Fail', text: 'A single sign on the shelf can\'t tell you which specific bottle is corrosive, flammable, or harmless. Once someone carries a container away from the shelf to actually use it, a shelf sign can\'t travel with it, only a label on the bottle itself can.' },
+      { label: '3 · A Better Fix', text: 'Reach for <strong>substitution</strong> where possible (the least hazardous product that does the job), then engineering and administrative controls: label every container the moment it\'s filled, store incompatible chemicals separately in a closed, ventilated cabinet, and keep the safety data sheets on hand.' },
+      { label: '4 · Still Need a Sign?', text: 'Yes, this one can\'t be engineered away. Because the hazard travels with the container, the label on it is the one warning that has to stay no matter what else changes.' }
+    ],
+    verdict: { kind: 'required', label: 'Sign Still Required' }
+  },
+  {
+    file: 'situation5.png',
+    alt: 'An exposed motor, belt, and pulley drive sitting on a benchtop with no guard covering the moving parts.',
+    caption: 'A belt-and-pulley drive on a benchtop, fully exposed with no guard over the moving parts.',
+    stages: [
+      { label: '1 · Signs Needed', text: 'A <strong>rotating parts</strong> warning sign posted right at the station.' },
+      { label: '2 · Why It Could Fail', text: 'A sign next to the machine tells you the hazard exists, but it can\'t stop a sleeve, a strap, or loose hair from reaching the pinch point while it\'s running. Once someone is focused on the work, a static sign on the wall stops registering.' },
+      { label: '3 · A Better Fix', text: 'This is a textbook <strong>engineering control</strong>: install a fixed guard over the belt and pulleys so the moving parts are physically inaccessible while the machine runs.' },
+      { label: '4 · Still Need a Sign?', text: 'The rotating-parts warning becomes unnecessary once the parts are covered. A smaller mandatory reminder, keep the guard in place, might still earn a spot on the machine.' }
+    ],
+    verdict: { kind: 'changed', label: 'Sign Changed' }
+  }
+];
+
+var SITUATION_ASSET_PATH = 'Making_Warnings_Unnecessary_Assets/';
+
+initSyncDeckReveal({
+  deckId: 'making-warnings-unnecessary',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function (Reveal) {
+    initBeyondGame(Reveal);
+  },
+});
+
+function initBeyondGame(Reveal) {
+  var liveSlide = Array.prototype.find.call(
+    document.querySelectorAll('#beyond-game'),
+    function (slide) { return !slide.closest('#storyboard'); }
+  );
+  if (!liveSlide) return;
+
+  var imgEl = liveSlide.querySelector('.beyond-media img');
+  var captionEl = liveSlide.querySelector('.beyond-caption');
+  var progressEl = liveSlide.querySelector('.beyond-progress');
+  var stageEls = liveSlide.querySelectorAll('.beyond-stage');
+  var nextBtn = liveSlide.querySelector('.beyond-next');
+
+  var idx = 0;
+  var stage = 0; /* 0 = nothing revealed yet, 4 = all revealed */
+
+  function render() {
+    var situation = SITUATIONS[idx];
+    imgEl.src = SITUATION_ASSET_PATH + situation.file;
+    imgEl.alt = situation.alt;
+    captionEl.textContent = situation.caption;
+    progressEl.textContent = 'Situation ' + (idx + 1) + ' of ' + SITUATIONS.length;
+
+    Array.prototype.forEach.call(stageEls, function (stageEl, i) {
+      var stageData = situation.stages[i];
+      var textEl = stageEl.querySelector('.beyond-stage-text');
+      textEl.innerHTML = stageData.text;
+      stageEl.classList.toggle('done', i < stage);
+
+      var verdictEl = stageEl.querySelector('.beyond-verdict');
+      if (verdictEl) {
+        var badge = verdictEl.querySelector('.beyond-verdict-badge');
+        badge.textContent = situation.verdict.label;
+        verdictEl.className = 'beyond-verdict beyond-verdict--' + situation.verdict.kind;
+      }
+    });
+
+    if (stage < 4) {
+      nextBtn.textContent = 'Reveal: ' + situation.stages[stage].label.replace(/^\d+ · /, '');
+    } else {
+      nextBtn.textContent = idx === SITUATIONS.length - 1 ? 'Restart' : 'Next Situation';
+    }
+  }
+
+  nextBtn.addEventListener('click', function (evt) {
+    evt.stopPropagation();
+    if (stage < 4) {
+      stage += 1;
+      render();
+      return;
+    }
+    idx = idx === SITUATIONS.length - 1 ? 0 : idx + 1;
+    stage = 0;
+    render();
+  });
+
+  Reveal.on('slidechanged', function (event) {
+    if (event.currentSlide !== liveSlide) {
+      idx = 0;
+      stage = 0;
+      render();
+    }
+  });
+
+  render();
+}
+</script>
+</body>
+</html>
