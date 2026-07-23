@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1.8 - Color Images</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Color Images
+   ============================================================ */
+
+.instruction-icon {
+  font-size: 64px;
+  margin-bottom: var(--gap);
+  display: block;
+}
+
+:root {
+  --color-blue: #4dabf7;
+  --color-blue-border: rgba(77,171,247,0.35);
+  --color-blue-glow: rgba(77,171,247,0.4);
+}
+
+/* ─── Step-through scenes: only the most recently revealed scene in a
+   .r-stack stays visible, so each new scene replaces the last. Mirrors
+   the pattern used in 1.4 Binary Numbers. ─────────────────────────── */
+.reveal .step-through .fragment.visible:has(~ .fragment.visible) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Custom fragment type: visible by default, fades out on activation.
+   3 classes give higher specificity than theme.css's 2-class override. */
+.reveal .fragment.shape-out {
+  opacity: 1 !important;
+  visibility: inherit !important;
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease) !important;
+}
+.reveal .fragment.shape-out.visible {
+  opacity: 0 !important;
+  transform: scale(0.85) !important;
+}
+
+/* ─── Light-switch component ───────────────────────────────────────── */
+.switch-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.switch-name {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.switch-unit.ch-red .switch-name    { color: var(--red); }
+.switch-unit.ch-green .switch-name  { color: var(--green); }
+.switch-unit.ch-blue .switch-name   { color: var(--color-blue); }
+
+.switch-plate {
+  width: 64px;
+  height: 96px;
+  border-radius: 10px;
+  border: 3px solid rgba(226,245,242,0.22);
+  background: var(--bg-card);
+  position: relative;
+  transition: border-color 0.4s var(--ease), box-shadow 0.4s var(--ease);
+}
+.switch-nub {
+  position: absolute;
+  left: 50%;
+  width: 34px;
+  height: 42px;
+  border-radius: 6px;
+  border: 3px solid rgba(226,245,242,0.3);
+  background: transparent;
+  top: 44px;
+  transform: translateX(-50%) rotate(-16deg);
+  transition: all 0.5s var(--ease);
+}
+.switch-plate.on .switch-nub {
+  top: 6px;
+  transform: translateX(-50%) rotate(0deg);
+}
+.switch-unit.ch-neutral .switch-plate.on { border-color: var(--text); box-shadow: 0 0 18px rgba(226,245,242,0.35); }
+.switch-unit.ch-neutral .switch-plate.on .switch-nub { background: var(--text); border-color: var(--text); }
+.switch-unit.ch-red .switch-plate.on { border-color: var(--red); box-shadow: 0 0 18px rgba(255,107,107,0.4); }
+.switch-unit.ch-red .switch-plate.on .switch-nub { background: var(--red); border-color: var(--red); }
+.switch-unit.ch-green .switch-plate.on { border-color: var(--green); box-shadow: 0 0 18px rgba(105,219,124,0.4); }
+.switch-unit.ch-green .switch-plate.on .switch-nub { background: var(--green); border-color: var(--green); }
+.switch-unit.ch-blue .switch-plate.on { border-color: var(--color-blue); box-shadow: 0 0 18px var(--color-blue-glow); }
+.switch-unit.ch-blue .switch-plate.on .switch-nub { background: var(--color-blue); border-color: var(--color-blue); }
+
+.switch-bit-label {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.switch-unit.ch-neutral .switch-bit-label.on { color: var(--text); }
+.switch-unit.ch-red .switch-bit-label.on     { color: var(--red); }
+.switch-unit.ch-green .switch-bit-label.on   { color: var(--green); }
+.switch-unit.ch-blue .switch-bit-label.on    { color: var(--color-blue); }
+
+.switch-row {
+  display: flex;
+  gap: 22px;
+}
+.switch-scene-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+}
+.scene-arrow {
+  font-size: 32px;
+  color: var(--text-dim);
+}
+.scene-caption {
+  text-align: center;
+  margin-top: 14px;
+  color: var(--text-muted);
+  font-size: var(--body);
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.color-swatch {
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  border: 2px solid rgba(226,245,242,0.25);
+  box-shadow: 0 10px 26px rgba(0,0,0,0.4);
+  flex-shrink: 0;
+}
+.swatch-red    { background: var(--red); }
+.swatch-green  { background: var(--green); }
+.swatch-yellow { background: var(--amber); }
+.swatch-black  { background: #0d0d0d; }
+.swatch-white  { background: #f4f4f4; }
+
+/* ─── Layers of abstraction stack ──────────────────────────────────── */
+.layer-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--gap);
+  width: 100%;
+  max-width: 1150px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.layer-card {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--teal-border);
+  background: var(--bg-card);
+  padding: 14px 28px;
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+}
+.layer-name {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  min-width: 250px;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+.layer-desc {
+  font-size: var(--small);
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+.layer-connector {
+  font-size: var(--small);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+.layer-image    { border-color: var(--teal-border); }
+.layer-image .layer-name    { color: var(--teal); }
+.layer-sampling { border-color: rgba(255,212,59,0.35); }
+.layer-sampling .layer-name { color: var(--amber); }
+.layer-pixel    { border-color: var(--color-blue-border); }
+.layer-pixel .layer-name    { color: var(--color-blue); }
+.layer-binary   { border-color: rgba(255,159,67,0.35); }
+.layer-binary .layer-name   { color: var(--gold); }
+
+/* ─── Compact tip callout (single paragraph, amber accent) ───────── */
+.tip-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,212,59,0.4);
+  border-left: 3px solid var(--yellow);
+  border-radius: 3px;
+  padding: 0.7em 1.2em;
+}
+.tip-box p {
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 1 · Lesson 8</span>
+        <h1 class="title-h1">Color Images</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(77,171,247,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 02 · POSTBOARD: SHADES OF BLUE -->
+    <section
+      data-activity-id="postboard"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="postboard:2:0"
+      data-activity-options='{"prompt":"How many different shades of the color blue can you name?","autoApprove":"false"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Postboard</span>
+        <h2 style="margin-bottom:var(--gap);">How Many Shades of Blue?</h2>
+        <div class="frq-box">
+          <p>How many different shades of the color <span style="color:var(--color-blue);">blue</span> can you name? Post as many as you can think of. We'll take a look at the board together once everyone has posted.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(77,171,247,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 03 · RECAP: BLACK AND WHITE IMAGES -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="instruction-icon">🖼️</span>
+        <span class="slide-tag">Recap</span>
+        <h2>Images, One Bit at a Time</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-sm);max-width:1000px;">Last lesson, we looked at black and white pictures and how we can represent them using <span style="color:var(--teal);">binary</span>.</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-150px;bottom:-150px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 04 · FRQ: BINARY SIZE RECAP -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:4:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What did you notice about the size of the binary as you increased the size of the images you drew?","order":0}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ · Recap</span>
+        <h2>Bigger Pictures, Bigger Binary</h2>
+        <div class="frq-box" style="margin-top:var(--gap-lg);max-width:1000px;">
+          <p>What did you notice about the size of the binary as you increased the size of the images you drew?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:600px;height:600px;left:-150px;top:-150px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 05 · INTRO: COLORS! -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="instruction-icon">🎨</span>
+        <span class="slide-tag">Colors</span>
+        <h2>Colors!</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-sm);max-width:1100px;">Today, we're going to see how the relationship between analog and digital plays out in the world of <span style="color:var(--color-blue);">color</span>. You'll get a chance to play with the pixelation widget again, but this time you'll use it to make your own color blends, or <span style="color:var(--amber);">gradients</span>.</p>
+        <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap);max-width:1100px;">But first, we need to look at how color works inside the pixelation widget.</p>
+      </div>
+      <div class="glow" style="width:650px;height:650px;right:-160px;top:-160px;background:radial-gradient(circle,rgba(77,171,247,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 06 · ONE SWITCH, TWO CHOICES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:64px;">
+        <span class="slide-tag">Colors</span>
+        <h2 style="margin-bottom:var(--gap);">One Switch, Two Choices</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1200px;">Last lesson, we used <span style="color:var(--teal);">1 bit</span> for each pixel. That meant we had only two choices for each pixel: black or white.</p>
+        <p class="fragment fade-up" data-fragment-index="0" style="font-size:var(--h3);color:var(--text-muted);max-width:1200px;margin-top:var(--gap-sm);">You could think of each bit like a <span style="color:var(--amber);">light switch</span>.</p>
+
+        <div class="fragment fade-up" data-fragment-index="1" style="margin-top:var(--gap-lg);">
+          <div class="switch-unit ch-neutral" style="margin:0 auto;">
+            <span class="switch-name">Bit</span>
+            <div class="r-stack" style="width:64px;height:96px;">
+              <div class="fragment shape-out" data-fragment-index="2"><div class="switch-plate"><div class="switch-nub"></div></div></div>
+              <div class="fragment" data-fragment-index="2"><div class="switch-plate on"><div class="switch-nub"></div></div></div>
+            </div>
+            <div class="r-stack" style="width:60px;height:26px;">
+              <span class="switch-bit-label fragment shape-out" data-fragment-index="2">0</span>
+              <span class="switch-bit-label on fragment" data-fragment-index="2">1</span>
+            </div>
+            <div class="r-stack" style="width:180px;height:24px;">
+              <span class="fragment shape-out" data-fragment-index="2" style="color:var(--text-dim);">black pixel</span>
+              <span class="fragment" data-fragment-index="2" style="color:var(--text);">white pixel</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;right:-100px;top:-100px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 07 · THREE SWITCHES, THREE LIGHTS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Colors</span>
+        <h2 style="margin-bottom:var(--gap);">Three Switches, Three Lights</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1300px;">Now we'll use at least <span style="color:var(--amber);">3 bits</span> for each pixel. Think of each bit as a switch that controls a different color of light inside the pixel: <span style="color:var(--red);">red</span>, <span style="color:var(--green);">green</span>, and <span style="color:var(--color-blue);">blue</span>.</p>
+
+        <div class="r-stack step-through" style="margin-top:var(--gap-lg);width:100%;min-height:300px;">
+
+          <div class="fragment fade-up" data-fragment-index="0">
+            <div class="switch-scene-top">
+              <div class="switch-row">
+                <div class="switch-unit ch-red"><span class="switch-name">Red</span><div class="switch-plate on"><div class="switch-nub"></div></div><span class="switch-bit-label on">1</span></div>
+                <div class="switch-unit ch-green"><span class="switch-name">Green</span><div class="switch-plate"><div class="switch-nub"></div></div><span class="switch-bit-label">0</span></div>
+                <div class="switch-unit ch-blue"><span class="switch-name">Blue</span><div class="switch-plate"><div class="switch-nub"></div></div><span class="switch-bit-label">0</span></div>
+              </div>
+              <span class="scene-arrow">→</span>
+              <div class="color-swatch swatch-red"></div>
+            </div>
+            <p class="scene-caption">Turning on the first bit turns on the red light and makes the pixel red.</p>
+          </div>
+
+          <div class="fragment fade-up" data-fragment-index="1">
+            <div class="switch-scene-top">
+              <div class="switch-row">
+                <div class="switch-unit ch-red"><span class="switch-name">Red</span><div class="switch-plate"><div class="switch-nub"></div></div><span class="switch-bit-label">0</span></div>
+                <div class="switch-unit ch-green"><span class="switch-name">Green</span><div class="switch-plate on"><div class="switch-nub"></div></div><span class="switch-bit-label on">1</span></div>
+                <div class="switch-unit ch-blue"><span class="switch-name">Blue</span><div class="switch-plate"><div class="switch-nub"></div></div><span class="switch-bit-label">0</span></div>
+              </div>
+              <span class="scene-arrow">→</span>
+              <div class="color-swatch swatch-green"></div>
+            </div>
+            <p class="scene-caption">Turning on the second bit turns on the green light and makes the pixel green.</p>
+          </div>
+
+          <div class="fragment fade-up" data-fragment-index="2">
+            <div class="switch-scene-top">
+              <div class="switch-row">
+                <div class="switch-unit ch-red"><span class="switch-name">Red</span><div class="switch-plate on"><div class="switch-nub"></div></div><span class="switch-bit-label on">1</span></div>
+                <div class="switch-unit ch-green"><span class="switch-name">Green</span><div class="switch-plate on"><div class="switch-nub"></div></div><span class="switch-bit-label on">1</span></div>
+                <div class="switch-unit ch-blue"><span class="switch-name">Blue</span><div class="switch-plate"><div class="switch-nub"></div></div><span class="switch-bit-label">0</span></div>
+              </div>
+              <span class="scene-arrow">→</span>
+              <div class="color-swatch swatch-yellow"></div>
+            </div>
+            <p class="scene-caption">Turning on the first and second bits turns on both the red and green lights, making the pixel yellow.</p>
+          </div>
+
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 08 · ALL OFF, ALL ON -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Colors</span>
+        <h2 style="margin-bottom:var(--gap);">All Off, All On</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1300px;">With three bits, we can have <span style="color:var(--amber);">8 colors</span> in total, since 2<sup>3</sup> = 8.</p>
+
+        <div class="r-stack step-through" style="margin-top:var(--gap-lg);width:100%;min-height:340px;">
+
+          <div class="fragment fade-up" data-fragment-index="0">
+            <p style="font-size:var(--h3);color:var(--text-muted);text-align:center;max-width:1000px;margin:0 auto;">What color would you get if all the bits are <strong style="color:var(--text);">0</strong>?</p>
+            <div class="switch-scene-top" style="margin-top:var(--gap);">
+              <div class="switch-row">
+                <div class="switch-unit ch-red"><span class="switch-name">Red</span><div class="switch-plate"><div class="switch-nub"></div></div><span class="switch-bit-label">0</span></div>
+                <div class="switch-unit ch-green"><span class="switch-name">Green</span><div class="switch-plate"><div class="switch-nub"></div></div><span class="switch-bit-label">0</span></div>
+                <div class="switch-unit ch-blue"><span class="switch-name">Blue</span><div class="switch-plate"><div class="switch-nub"></div></div><span class="switch-bit-label">0</span></div>
+              </div>
+              <span class="fragment fade-up scene-arrow" data-fragment-index="1">→</span>
+              <div class="fragment fade-up color-swatch swatch-black" data-fragment-index="1"></div>
+            </div>
+            <p class="fragment fade-up scene-caption" data-fragment-index="1">All the lights in the pixel are off, so we get black.</p>
+          </div>
+
+          <div class="fragment fade-up" data-fragment-index="2">
+            <p style="font-size:var(--h3);color:var(--text-muted);text-align:center;max-width:1000px;margin:0 auto;">What color would we get if all of the bits are <strong style="color:var(--text);">on</strong>?</p>
+            <div class="switch-scene-top" style="margin-top:var(--gap);">
+              <div class="switch-row">
+                <div class="switch-unit ch-red"><span class="switch-name">Red</span><div class="switch-plate on"><div class="switch-nub"></div></div><span class="switch-bit-label on">1</span></div>
+                <div class="switch-unit ch-green"><span class="switch-name">Green</span><div class="switch-plate on"><div class="switch-nub"></div></div><span class="switch-bit-label on">1</span></div>
+                <div class="switch-unit ch-blue"><span class="switch-name">Blue</span><div class="switch-plate on"><div class="switch-nub"></div></div><span class="switch-bit-label on">1</span></div>
+              </div>
+              <span class="fragment fade-up scene-arrow" data-fragment-index="3">→</span>
+              <div class="fragment fade-up color-swatch swatch-white" data-fragment-index="3"></div>
+            </div>
+            <p class="fragment fade-up scene-caption" data-fragment-index="3">White. Red, green, and blue are <span style="color:var(--amber);">additive primaries</span>: when we add all of them together, we get white.</p>
+          </div>
+
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 09 · VIDEO: BETTER CONTROL OF RGB COLOR (PART 1) -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:9:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=763E3_Z6Hng"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap);">Better Control of RGB Color (Part 1)</h2>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · CODE.ORG: LEVEL 2 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">To Code.org</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Your Turn: Level 2</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);">Follow <a href="https://learn.mycode.run/link/lttjg" target="_blank" rel="noopener" style="color:var(--teal);">this link to code.org</a> to complete level 2.</p>
+        <div class="tip-box" style="margin-top:var(--gap-sm);max-width:1200px;">
+          <p>Check the metadata: the first 3 bytes of each image's data describe what the bits that come after mean. Look at the top left corner for a diagram. These bytes are the image's <strong style="color:var(--amber);">metadata</strong>: data about the data.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · VIDEO: BETTER CONTROL OF RGB COLOR (PART 3) -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:11:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=xK9z51Tin4E"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap);">Better Control of RGB Color (Part 3)</h2>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 12 · CODE.ORG: LEVELS 4-9 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">To Code.org</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Keep Going: Levels 4-9</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);">Follow <a href="https://learn.mycode.run/link/lttjg" target="_blank" rel="noopener" style="color:var(--teal);">the same link to code.org</a> to complete levels 4 through 9.</p>
+        <div class="tip-box" style="margin-top:var(--gap-sm);max-width:1200px;">
+          <p>Check in with your partner as you complete each level to double check your work.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 13 · WRAP UP SECTION BANNER -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Wrap Up</span>
+        <h2 style="max-width:900px;">Color, Bit by Bit</h2>
+      </div>
+      <div class="glow" style="width:700px;height:700px;right:-180px;top:-180px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 68%);"></div>
+      <div class="glow" style="width:500px;height:500px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(77,171,247,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 14 · VIDEO: RGB COLOR IN BINARY -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:14:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=15aqFQQVBWU"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap);">RGB Color Values in Binary</h2>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 15 · LAYERS OF ABSTRACTION -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Abstractions</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Layers of Abstraction in Color Images</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1300px;">In computer science, <span style="color:var(--teal);">abstractions</span> come up a lot, and images are no different. Each layer builds on the one beneath it, without needing to know exactly how that lower layer works.</p>
+
+        <div class="layer-stack">
+          <div class="layer-card layer-image">
+            <span class="layer-name">Digital Image Layer</span>
+            <p class="layer-desc fragment fade-up" data-fragment-index="0">A digital approximation of an analog image, made up of a grid of pixels.</p>
+          </div>
+          <span class="layer-connector">↓ sampling assigns pixels</span>
+          <div class="layer-card layer-sampling">
+            <span class="layer-name">Sampling Layer</span>
+            <p class="layer-desc fragment fade-up" data-fragment-index="1">Sampling reads equally sized parts of the analog image and assigns each part to a pixel.</p>
+          </div>
+          <span class="layer-connector">↓ built from</span>
+          <div class="layer-card layer-pixel">
+            <span class="layer-name">Pixel Layer</span>
+            <p class="layer-desc fragment fade-up" data-fragment-index="2">Each pixel holds levels of red, green, and blue light that describe its color.</p>
+          </div>
+          <span class="layer-connector">↓ built from</span>
+          <div class="layer-card layer-binary">
+            <span class="layer-name">Binary Layer</span>
+            <p class="layer-desc fragment fade-up" data-fragment-index="3">Those color levels are represented using a sequence of binary numbers, carried as electrical signals.</p>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;bottom:-160px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 16 · VIDEO: HOW COMPUTERS WORK — BINARY & DATA -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:16:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=USCBCmwMCDA"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap);">How Computers Work: Binary &amp; Data</h2>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:700px;height:700px;right:-180px;top:-180px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 68%);"></div>
+      <div class="glow" style="width:500px;height:500px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(77,171,247,0.08),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-1-8-color-images',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
