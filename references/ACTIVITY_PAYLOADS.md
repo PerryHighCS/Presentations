@@ -291,7 +291,7 @@ Postboard reads `embeddedLaunch.selectedOptions.prompt` and `embeddedLaunch.sele
 
 ### Deck launch payload
 
-MobCode can seed starter files for an embedded live coding session.
+MobCode can seed starter files for an embedded live coding session or a student-owned solo workspace.
 
 Example:
 
@@ -299,7 +299,7 @@ Example:
 <section
   data-activity-id="mobcode"
   data-activity-trigger="slide-enter"
-  data-activity-options='{"files":{"main.py":"name = input(\"Name? \")\nprint(f\"Hello, {name}!\")\n","README.md":"Pair on the starter code and explain each change.\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'
+  data-activity-options='{"files":{"main.py":"name = input(\"Name? \")\nprint(f\"Hello, {name}!\")\n","README.md":"Pair on the starter code and explain each change.\n"},"activeFile":"main.py","runnerId":"brython-terminal","startTryItMode":true}'
 >
 ```
 
@@ -308,6 +308,7 @@ Field guidance:
 - `files` is an object map of relative virtual paths to UTF-8 text content
 - `activeFile` is optional and should match one of the `files` keys when provided
 - `runnerId` is optional; use `brython-terminal` to preselect the Python popup runner for Python-focused launches
+- `startTryItMode` is optional and boolean-only. For a live embedded session, `true` enables students' private `My code` workspaces and publishes the initial instructor files as their reset baseline. It does not affect solo launches.
 - paths are normalized as safe relative virtual paths such as `src/Main.java`; traversal segments such as `../`, empty paths, oversized paths, and reserved JavaScript object segments such as `__proto__`, `constructor`, or `prototype` are rejected and will not load
 - MobCode currently keeps up to 250 starter files, truncates individual file content at 1 MB, and stops accepting starter content once the total workspace seed reaches 4 MiB
 - omit `files` to start with an empty MobCode workspace
@@ -315,6 +316,8 @@ Field guidance:
 ### Child embedded launch state
 
 MobCode reads `embeddedLaunch.selectedOptions.files` and `embeddedLaunch.selectedOptions.activeFile` only when the child session is first created without an existing MobCode file tree. After that, the live session state under `groups.default` is authoritative, so later reloads or reconnects do not overwrite instructor edits with the original starter payload.
+
+When SyncDeck is in solo mode, MobCode creates a distinct server-backed self-paced workspace from this same payload for the student who launches it. The student receives an opaque scoped edit token for that workspace; it is not an instructor passcode. The workspace state can therefore be retained for later activity reporting, unlike a browser-only editor.
 
 MobCode also reads `embeddedLaunch.selectedOptions.runnerId` through the child session API so the instructor and students use the instructor-selected runner. The current supported value is `brython-terminal`; unsupported values are ignored and the activity falls back to the default runner. In the student view, available runner options collapse to the instructor-selected runner so students cannot switch to a different implementation.
 
