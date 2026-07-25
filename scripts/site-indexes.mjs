@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import { siteBaseUrl, syncDeckHosting } from '../config/site-map.mjs';
+import { syncDeckHosting } from '../config/site-map.mjs';
 
 const NATURAL_COLLATOR = new Intl.Collator(undefined, {
   numeric: true,
@@ -72,7 +72,7 @@ export const PAGE_STYLE = `
   }
   h1 { margin: 0 0 8px; font-size: 1.7rem; }
   p { margin: 0 0 18px; color: var(--muted); }
-  .generated { margin: 0 0 18px; color: var(--muted); font-size: 0.92rem; }
+  .generated { margin: 18px 0 0; color: var(--muted); font-size: 0.92rem; }
   .back { margin: 0 0 18px; font-size: 0.92rem; }
   .back a { color: var(--muted); }
   ul { margin: 0; }
@@ -83,6 +83,29 @@ export const PAGE_STYLE = `
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
   .folder-name { color: var(--muted); font-weight: 600; }
+  .tree li.folder > details > summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .tree li.folder > details > summary::-webkit-details-marker { display: none; }
+  .tree li.folder > details > summary::marker { content: ""; }
+  .tree li.folder > details > summary:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .tree .disclosure {
+    display: inline-block;
+    width: 0.8em;
+    font-size: 1.15rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--muted);
+  }
+  .tree .disclosure::before { content: "+"; }
+  .tree li.folder > details[open] > summary .disclosure::before { content: "−"; }
   .tree li.file {
     display: flex;
     align-items: baseline;
@@ -109,6 +132,24 @@ export const PAGE_STYLE = `
   .file-actions a { color: inherit; }
   .file-actions a:hover { color: var(--accent); text-decoration: underline; }
   .file-actions .sep { color: #3d537e; }
+  .file-actions button.copy-url {
+    display: inline-flex;
+    align-items: center;
+    color: inherit;
+    background: none;
+    border: none;
+    padding: 2px;
+    margin: 0;
+    line-height: 0;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .file-actions button.copy-url svg { width: 14px; height: 14px; display: block; }
+  .file-actions button.copy-url:hover { color: var(--accent); }
+  .file-actions button.copy-url:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+  .file-actions button.copy-url.copied { color: #7cd992; }
+  .file-actions button.copy-url.failed { color: #ff8a80; }
+  .file-actions button.copy-url:disabled { cursor: default; }
   @media (max-width: 640px) {
     .tree li.file {
       flex-direction: column;
@@ -117,6 +158,11 @@ export const PAGE_STYLE = `
     .file-actions { margin-left: 0; }
   }
 `;
+
+const ICON_COPY =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+const ICON_CHECK =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>';
 
 export const PAGE_SCRIPT = `
   (() => {
@@ -128,6 +174,90 @@ export const PAGE_SCRIPT = `
     if (Number.isNaN(dt.getTime())) return;
     const local = dt.toLocaleString();
     el.textContent += ' (' + local + ' local)';
+  })();
+
+  (() => {
+    // Resolve every presentation URL against the origin that is actually
+    // serving this index page, not a hardcoded production URL. That way
+    // "Copy URL", "Start as instructor", and "Get permalink" all point at
+    // the real deployed site when this page is served from GitHub Pages,
+    // and at the local dev server (or a forwarded dev URL) when it isn't.
+    function resolveUrl(relPath) {
+      return new URL(relPath, window.location.href).toString();
+    }
+
+    const activeBitsOrigin = ${JSON.stringify(syncDeckHosting.activeBitsOrigin)};
+    const launchPath = ${JSON.stringify(syncDeckHosting.launchPath)};
+    const permalinkPath = ${JSON.stringify(syncDeckHosting.permalinkPath)};
+
+    function buildActiveBitsUrl(pathname, presentationUrl, extraParams) {
+      const url = new URL(pathname, activeBitsOrigin);
+      url.searchParams.set('presentationUrl', presentationUrl);
+      for (const key in extraParams || {}) {
+        url.searchParams.set(key, extraParams[key]);
+      }
+      return url.toString();
+    }
+
+    document.querySelectorAll('a[data-launch-path]').forEach((a) => {
+      const presentationUrl = resolveUrl(a.getAttribute('data-launch-path') || '');
+      if (a.getAttribute('data-launch') === 'instructor') {
+        a.href = buildActiveBitsUrl(launchPath, presentationUrl, { mode: 'instructor' });
+      } else {
+        a.href = buildActiveBitsUrl(permalinkPath, presentationUrl);
+      }
+    });
+
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          // fall through to the legacy fallback below
+        }
+      }
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+      } catch {
+        return false;
+      }
+    }
+
+    const checkIcon = ${JSON.stringify(ICON_CHECK)};
+
+    document.querySelectorAll('button[data-copy-path]').forEach((btn) => {
+      const original = btn.innerHTML;
+      let resetTimer = null;
+      btn.addEventListener('click', async () => {
+        const url = resolveUrl(btn.getAttribute('data-copy-path') || '');
+        const ok = await copyText(url);
+        if (resetTimer) clearTimeout(resetTimer);
+        btn.classList.remove('copied', 'failed');
+        if (ok) {
+          btn.classList.add('copied');
+          btn.innerHTML = checkIcon;
+          btn.setAttribute('aria-label', 'Copied!');
+        } else {
+          btn.classList.add('failed');
+          btn.setAttribute('aria-label', 'Copy failed');
+        }
+        resetTimer = setTimeout(() => {
+          btn.classList.remove('copied', 'failed');
+          btn.innerHTML = original;
+          btn.setAttribute('aria-label', 'Copy presentation URL');
+        }, 1500);
+      });
+    });
   })();
 `;
 
@@ -145,29 +275,6 @@ export async function defaultTitleForFile(filePath) {
     // Ignore and fall back to filename.
   }
   return path.basename(filePath, path.extname(filePath)).replace(/[-_]/g, ' ').trim();
-}
-
-function buildAbsolutePresentationUrl(publicRelativePath) {
-  return new URL(publicRelativePath, siteBaseUrl).toString();
-}
-
-function buildActiveBitsUrl(pathname, presentationUrl, extraParams = {}) {
-  const url = new URL(pathname, syncDeckHosting.activeBitsOrigin);
-  url.searchParams.set('presentationUrl', presentationUrl);
-  for (const [key, value] of Object.entries(extraParams)) {
-    url.searchParams.set(key, value);
-  }
-  return url.toString();
-}
-
-function buildInstructorLaunchUrl(publicRelativePath) {
-  const presentationUrl = buildAbsolutePresentationUrl(publicRelativePath);
-  return buildActiveBitsUrl(syncDeckHosting.launchPath, presentationUrl, { mode: 'instructor' });
-}
-
-function buildPermalinkUrl(publicRelativePath) {
-  const presentationUrl = buildAbsolutePresentationUrl(publicRelativePath);
-  return buildActiveBitsUrl(syncDeckHosting.permalinkPath, presentationUrl);
 }
 
 function makePage(titleText, heading, description, listing, generatedAt, generatedAtIso, backLink = null) {
@@ -189,10 +296,10 @@ function makePage(titleText, heading, description, listing, generatedAt, generat
     ${backHtml}
     <h1>${escapeHtml(heading)}</h1>
     <p>${escapeHtml(description)}</p>
-    <p class="generated" id="generated-time" data-generated-utc="${escapeHtml(generatedAtIso)}">Generated: ${escapeHtml(generatedAt)}</p>
     <ul class="tree">
 ${listing}
     </ul>
+    <p class="generated" id="generated-time" data-generated-utc="${escapeHtml(generatedAtIso)}">Generated: ${escapeHtml(generatedAt)}</p>
   </main>
   <script>${PAGE_SCRIPT}</script>
 </body>
@@ -204,25 +311,30 @@ function renderTree(node, indent = '      ', pathPrefix = '') {
   const lines = [];
 
   for (const file of [...node.files].sort((a, b) => NATURAL_COLLATOR.compare(a.title, b.title))) {
-    const instructorUrl = buildInstructorLaunchUrl(file.rel);
-    const permalinkUrl = buildPermalinkUrl(file.rel);
+    const relativeHref = `${pathPrefix}${file.name}`;
     lines.push(
-      `${indent}<li class="file"><a href="${escapeHtml(`${pathPrefix}${file.name}`)}">${escapeHtml(file.title)}</a>` +
+      `${indent}<li class="file"><a href="${escapeHtml(relativeHref)}">${escapeHtml(file.title)}</a>` +
         `<span class="file-actions">` +
-        `<a href="${escapeHtml(instructorUrl)}">Start as instructor</a>` +
+        `<a href="#" data-launch="instructor" data-launch-path="${escapeHtml(relativeHref)}">Start as instructor</a>` +
         `<span class="sep">&middot;</span>` +
-        `<a href="${escapeHtml(permalinkUrl)}">Get permalink</a>` +
+        `<a href="#" data-launch="permalink" data-launch-path="${escapeHtml(relativeHref)}">Get permalink</a>` +
+        `<span class="sep">&middot;</span>` +
+        `<button type="button" class="copy-url" data-copy-path="${escapeHtml(relativeHref)}" aria-label="Copy presentation URL" title="Copy URL">${ICON_COPY}</button>` +
         `</span></li>`
     );
   }
 
   for (const [dirname, child] of [...node.dirs.entries()].sort((a, b) => NATURAL_COLLATOR.compare(a[0], b[0]))) {
+    lines.push(`${indent}<li class="folder">`);
+    lines.push(`${indent}  <details>`);
     lines.push(
-      `${indent}<li class="folder"><a class="folder-name" href="${escapeHtml(`${pathPrefix}${dirname}/index.html`)}">${escapeHtml(dirname)}/</a>`
+      `${indent}    <summary><span class="disclosure" aria-hidden="true"></span>` +
+        `<a class="folder-name" href="${escapeHtml(`${pathPrefix}${dirname}/index.html`)}">${escapeHtml(dirname)}/</a></summary>`
     );
-    lines.push(`${indent}  <ul>`);
-    lines.push(...renderTree(child, indent + '    ', `${pathPrefix}${dirname}/`));
-    lines.push(`${indent}  </ul>`);
+    lines.push(`${indent}    <ul>`);
+    lines.push(...renderTree(child, indent + '      ', `${pathPrefix}${dirname}/`));
+    lines.push(`${indent}    </ul>`);
+    lines.push(`${indent}  </details>`);
     lines.push(`${indent}</li>`);
   }
 
