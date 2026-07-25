@@ -2,7 +2,7 @@
 
 This repository contains HTML slide presentations built with **Reveal.js**, published via GitHub Pages. Shared runtime/plugin code is consumed from the `SyncDeck-Reveal` git submodule at `vendor/SyncDeck-Reveal/`.
 
-Presentation source folders now live under `Decks/`, while deployment remaps
+Presentation source folders live under `Decks/`, while deployment remaps
 their contents to the site root. For example, `Decks/AR1/...` is published as
 `/AR1/...`.
 
@@ -140,6 +140,8 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
    <link rel="stylesheet" href="theme.css">
    ```
    Only add a `<style>` block after that link for styles that are specific to this presentation. If no `theme.css` exists and the new deck needs its own theme, consider extracting it to a `theme.css` so future decks in the same folder can share it.
+   Check the parent folder heirarchy for a `theme.css` and place a new `theme.css` at the highest place
+   in the heirarchy that makes sense (e.g. the course level). 
 3. Load the bundled runtime with a relative path from the deck's published
    location. For the current `Decks/<course>/<unit>/deck.html` layout, use
    `../../runtime/`:
@@ -197,6 +199,7 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
   `vendor/SyncDeck-Reveal -> /runtime/syncdeck-reveal`.
 - Refresh the browser after edits; no separate staging step is needed for
   normal deck work.
+- Do not kill a running dev server unless requested.
 
 ## PDF Image Extraction Helper
 
