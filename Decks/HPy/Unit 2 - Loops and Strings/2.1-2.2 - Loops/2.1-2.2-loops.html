@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.1-2.2 Loops</title>
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../../theme.css">
+<style>
+  /* ─── Deck-specific styles: loop-variable trace panels ───────
+     Reuses .code-card / .code-line / .var-box / .mcq-opts / .frq-box
+     from theme.css. Adds only the layout + loop-trace pieces that
+     don't exist yet: a two-column trace layout, a row of live
+     variable boxes next to the console, and console-input styling
+     for simulated user keystrokes. ─────────────────────────────── */
+
+  .trace-layout {
+    display: grid;
+    grid-template-columns: 700px 1fr;
+    gap: var(--gap-lg);
+    flex: 1;
+    min-height: 0;
+  }
+  .trace-code .code-body { padding: 20px 24px; }
+
+  .trace-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--gap);
+  }
+  .var-row {
+    display: flex;
+    gap: var(--gap-sm);
+    justify-content: center;
+  }
+  .var-box-value .placeholder { color: var(--text-dim); font-style: italic; }
+
+  .console-card { width: 260px; }
+  .console-card .code-body {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    align-items: center;
+    font-family: var(--font-mono);
+    color: var(--text);
+    text-align: center;
+  }
+  .console-in { color: var(--result); }
+  .console-hdr-row { color: var(--text-dim); letter-spacing: 0.08em; }
+
+  /* Compact code card for longer nested-loop snippets */
+  .code-card.compact .code-body { padding: 12px 20px; }
+  .code-card.compact .code-line { font-size: 17px; line-height: 1.5; padding: 1px 0; }
+
+  .step-hint {
+    font-size: var(--small);
+    color: var(--text-dim);
+    margin-top: var(--gap-sm);
+  }
+</style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ============================================================
+         SLIDE 01 · TITLE
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">HPy &middot; Unit 2</span>
+        <h1 class="title-h1">2.1&ndash;2.2 Loops</h1>
+        <p class="subtitle">for loops and range &middot; nested loops &middot; while loops &middot; break and continue</p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 02 · SECTION — 2.1 Getting Started
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">2.1 Getting Started</span>
+        <h2>Running the <span style="color:var(--accent);">same code</span>, again and again</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          A <span style="color:var(--accent);">loop</span> runs the same block of code repeatedly. Python gives you two kinds: <code style="color:var(--text);">for</code> loops and
+          <code style="color:var(--text);">while</code> loops. Loops pair especially well with <span style="color:var(--result);">strings</span>, since a string can be any length, and a loop
+          doesn't care how many times it has to run. Together, loops and strings let you solve far more interesting problems than one-shot, straight-line code ever could.
+        </p>
+        <div class="callout" style="margin-top:var(--gap-lg);max-width:900px;">
+          <strong>Before you run anything in this unit, predict it first.</strong> Every trace in this deck asks you to guess the next line's effect before you reveal it. That habit is what actually builds tracing skill.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 03 · FRQ — warm-up, known vs unknown repetition
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:loops-warmup:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Think of something you repeat in real life. Is it something you repeat a KNOWN number of times (like doing 20 push-ups), or something you repeat UNTIL a condition is met (like shuffling cards until they feel mixed)? Describe one of each.","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-90px;right:6%;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ &middot; Warm-Up</span>
+        <h2>Known count, or <span style="color:var(--accent);">unknown</span> count?</h2>
+        <div class="frq-box" style="max-width:820px;margin-top:var(--gap-lg);">
+          <p>Think of something you repeat in real life. Is it something you repeat a <strong>known</strong> number of times (like doing 20 push-ups), or something you repeat <strong>until</strong> a condition is met (like shuffling cards until they feel mixed)? Describe one of each.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 04 · SECTION — 2.2.1 for loops and range
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">2.2.1 for Loops and range</span>
+        <h2>Looping a <span style="color:var(--accent);">known</span> number of times</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          A <code style="color:var(--text);">for</code> loop is the tool for when you already know how many passes you need, or you know exactly what
+          you're looping over. Python's <code style="color:var(--text);">range</code> is the most common thing to loop over.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 05 · CONCEPT — general for-in-range form + vocabulary
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The General Form</span>
+          <h2>A name for <span style="color:var(--result);">each value</span></h2>
+          <ul class="bullets" style="margin-top:var(--gap);">
+            <li>The name right after <code style="color:var(--text);">for</code>, often something like <code style="color:var(--text);">x</code>, is the <strong style="color:var(--result);">loop variable</strong> (also called the <strong style="color:var(--result);">looping variable</strong>).</li>
+            <li><code style="color:var(--text);">range()</code> is a <strong>function</strong> which generates a sequence of numbers from 0 up to (but not including) the specified number.</li>
+            <li>In other words, <code style="color:var(--text);">range(4)</code> is <strong>exclusive</strong>. It produces the sequence <code style="color:var(--text);">0, 1, 2, 3</code>, up to but not including <code style="color:var(--text);">4</code>.</li>
+            <li>The indented <strong>body</strong> runs once per value. Each trip through the body is a <strong>pass</strong>, or an <strong>iteration</strong>.</li>
+            <li>On every pass, Python assigns the loop variable the next value from the range, <em>then</em> runs the body.</li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">for</span> <span class="tok-nm">LOOPVAR</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-nm">N</span>):
+    <span class="tok-nm">BODY</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 06 · FRQ — predict before tracing the first loop
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:predict-basic-for:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Predict what this code prints, in order, before you see it traced.\n\n```python\nfor x in range(4):\n    print(x)\n```","order":0,"responseTimeLimitMs":90000}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ &middot; Predict First</span>
+        <h2>What does this <span style="color:var(--accent);">print</span>, in order?</h2>
+        <div class="frq-box" style="max-width:700px;margin-top:var(--gap-lg);">
+          <div class="code-card" style="text-align:left;">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">for</span> <span class="tok-nm">x</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">4</span>):
+    <span class="tok-kw">print</span>(<span class="tok-nm">x</span>)</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 07 · TRACE A — for x in range(4): print(x), full pass trace
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="1">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Try This</span>
+          <h2>Watch <span style="color:var(--result);">x</span> update, one pass at a time</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            Line 1 assigns the next value to <code style="color:var(--text);">x</code>, <em>then</em> Python enters the body. <code style="color:var(--text);">x</code>'s new value only becomes visible once the caret has moved past line 1, and <code style="color:var(--text);">print(x)</code>'s output only becomes visible once the caret moves past line 2, back up to check the range again.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">for</span> <span class="tok-nm">x</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">4</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">x</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="trace-panel">
+          <div class="var-row">
+            <div class="var-box" style="min-width:110px;">
+              <div class="var-box-name">x</div>
+              <div class="var-box-value" data-var-display="x"><span class="placeholder">&hellip;</span></div>
+            </div>
+            <div class="var-box" style="min-width:130px;">
+              <div class="var-box-name">pass</div>
+              <div class="var-box-value" data-var-display="pass" style="font-size:16px;"><span class="placeholder">&hellip;</span></div>
+            </div>
+          </div>
+          <div class="code-card console-card">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body">
+              <span class="fragment" data-fragment-index="0" data-trace-current="2" data-var-box="x" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment" data-fragment-index="0" data-trace-current="2" data-var-box="pass" style="display:none;">1 / 4</span>
+              <span class="fragment fade-up" data-fragment-index="1" data-trace-current="1">0</span>
+              <span class="fragment" data-fragment-index="2" data-trace-current="2" data-var-box="x" style="display:none;"><span class="tok-num">1</span></span>
+              <span class="fragment" data-fragment-index="2" data-trace-current="2" data-var-box="pass" style="display:none;">2 / 4</span>
+              <span class="fragment fade-up" data-fragment-index="3" data-trace-current="1">1</span>
+              <span class="fragment" data-fragment-index="4" data-trace-current="2" data-var-box="x" style="display:none;"><span class="tok-num">2</span></span>
+              <span class="fragment" data-fragment-index="4" data-trace-current="2" data-var-box="pass" style="display:none;">3 / 4</span>
+              <span class="fragment fade-up" data-fragment-index="5" data-trace-current="1">2</span>
+              <span class="fragment" data-fragment-index="6" data-trace-current="2" data-var-box="x" style="display:none;"><span class="tok-num">3</span></span>
+              <span class="fragment" data-fragment-index="6" data-trace-current="2" data-var-box="pass" style="display:none;">4 / 4</span>
+              <span class="fragment fade-up" data-fragment-index="7" data-trace-current="3">3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 08 · TRACE B — sumToN(4), running total accumulator
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="7">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">A Real Example</span>
+          <h2>A <span style="color:var(--result);">running total</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            <code style="color:var(--text);">total</code> is a <strong>running total</strong> (also called a <strong>tally</strong>): a variable that carries a value across passes, updated a little more on every one. Watch it grow.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">sumToN</span>(<span class="tok-nm">n</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-nm">total</span> <span class="tok-op">=</span> <span class="tok-num">0</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">for</span> <span class="tok-nm">x</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-nm">n</span><span class="tok-op">+</span><span class="tok-num">1</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-nm">total</span> <span class="tok-op">+=</span> <span class="tok-nm">x</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-nm">total</span></span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">6</span><span>&nbsp;</span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">7</span><span><span class="tok-kw">print</span>(<span class="tok-nm">sumToN</span>(<span class="tok-num">4</span>))</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="trace-panel">
+          <div class="var-box" style="min-width:140px;">
+            <div class="var-box-name">total</div>
+            <div class="var-box-value" data-var-display="total"><span class="placeholder">&hellip;</span></div>
+          </div>
+          <div class="code-card console-card">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body">
+              <span class="fragment" data-fragment-index="0" data-trace-current="2" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="1" data-trace-current="3" data-trace-active-call="7" data-var-box="total" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment" data-fragment-index="2" data-trace-current="4" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="3" data-trace-current="3" data-trace-active-call="7" data-var-box="total" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment" data-fragment-index="4" data-trace-current="4" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="5" data-trace-current="3" data-trace-active-call="7" data-var-box="total" style="display:none;"><span class="tok-num">1</span></span>
+              <span class="fragment" data-fragment-index="6" data-trace-current="4" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="7" data-trace-current="3" data-trace-active-call="7" data-var-box="total" style="display:none;"><span class="tok-num">3</span></span>
+              <span class="fragment" data-fragment-index="8" data-trace-current="4" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="9" data-trace-current="3" data-trace-active-call="7" data-var-box="total" style="display:none;"><span class="tok-num">6</span></span>
+              <span class="fragment" data-fragment-index="10" data-trace-current="4" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="11" data-trace-current="3" data-trace-active-call="7" data-var-box="total" style="display:none;"><span class="tok-num">10</span></span>
+              <span class="fragment" data-fragment-index="12" data-trace-current="5" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="13" data-trace-current="7" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="14" data-trace-current="8">10</span>
+            </div>
+          </div>
+          <p class="step-hint fragment fade-up" data-fragment-index="14">n is 4, so <code>range(n+1)</code> is <code>range(5)</code>: five passes, x = 0, 1, 2, 3, 4.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 09 · FRQ — why range(n+1) and not range(n)?
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:why-n-plus-1:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Why did sumToN use range(n+1) instead of range(n)? What is it trying to include that range(n) alone would leave out?","order":0,"responseTimeLimitMs":90000}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ &middot; Reason It Out</span>
+        <h2>Why <span style="color:var(--accent);">range(n+1)</span>, not range(n)?</h2>
+        <div class="frq-box" style="max-width:800px;margin-top:var(--gap-lg);">
+          <p><code style="color:var(--text);">sumToN(n)</code> uses <code style="color:var(--text);">range(n+1)</code> instead of <code style="color:var(--text);">range(n)</code>. What is it trying to include that <code style="color:var(--text);">range(n)</code> alone would leave out?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 10 · MCQ — what would range(n) print for sumToN(4)?
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:sumton-range-n:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"If sumToN used range(n) instead of range(n+1), what would sumToN(4) return?\n\n```python\ndef sumToN(n):\n    total = 0\n    for x in range(n):\n        total += x\n    return total\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"10, exactly the same","isCorrect":false},{"id":"q1b","text":"6, since it would miss the 4","isCorrect":true},{"id":"q1c","text":"It would crash","isCorrect":false},{"id":"q1d","text":"0","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">MCQ</span>
+        <h2>Swap in <span style="color:var(--warn);">range(n)</span> instead</h2>
+        <div class="code-card" style="max-width:440px;margin:var(--gap) 0;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">sumToN</span>(<span class="tok-nm">n</span>):
+    <span class="tok-nm">total</span> <span class="tok-op">=</span> <span class="tok-num">0</span>
+    <span class="tok-kw">for</span> <span class="tok-nm">x</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-nm">n</span>):
+        <span class="tok-nm">total</span> <span class="tok-op">+=</span> <span class="tok-nm">x</span>
+    <span class="tok-kw">return</span> <span class="tok-nm">total</span></code></pre>
+          </div>
+        </div>
+        <p style="margin-bottom:var(--gap);">With this change, what does <code>sumToN(4)</code> return?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> <code>10</code>, exactly the same</li>
+          <li><span class="opt-key">B</span> <code>6</code>, since it would miss the <code>4</code></li>
+          <li><span class="opt-key">C</span> It would crash</li>
+          <li><span class="opt-key">D</span> <code>0</code></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 11 · CONCEPT — range(start, end)
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Using range(start, end)</span>
+          <h2>Choosing where to <span style="color:var(--result);">start</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            With two arguments, <code style="color:var(--text);">range</code> treats the first as the <strong style="color:var(--result);">start</strong> value (inclusive) and the second as the <strong>end</strong> value (still exclusive).
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">range</span>(<span class="tok-num">1</span>, <span class="tok-num">5</span>)  <span class="tok-cm"># 1, 2, 3, 4</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 12 · MOBCODE — buggy factorial, multiplies by 0
+         ============================================================ -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"files":{"main.py":"def factorial(n):\n    # This version has a couple of bugs!\n    total = 0\n    for x in range(n+1):\n        total *= x\n    return total\n\nprint(factorial(4))  # should be 24 (1 * 2 * 3 * 4)\nprint(factorial(5))  # should be 120 (1 * 2 * 3 * 4 * 5)\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">See For Yourself &middot; Predict First</span>
+        <h2>This <span style="color:var(--warn);">factorial</span> is broken</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:900px;">
+          <code style="color:var(--text);">factorial(n)</code> should multiply the integers from 1 to <code style="color:var(--text);">n</code>. This version copies <code style="color:var(--text);">sumToN</code> and swaps <code style="color:var(--text);">+=</code> for <code style="color:var(--text);">*=</code>. Predict the output, then run it.
+        </p>
+        <div class="code-card" style="margin-top:var(--gap);max-width:900px;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">factorial</span>(<span class="tok-nm">n</span>):
+    <span class="tok-nm">total</span> <span class="tok-op">=</span> <span class="tok-num">0</span>
+    <span class="tok-kw">for</span> <span class="tok-nm">x</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-nm">n</span><span class="tok-op">+</span><span class="tok-num">1</span>):
+        <span class="tok-nm">total</span> <span class="tok-op">*=</span> <span class="tok-nm">x</span>
+    <span class="tok-kw">return</span> <span class="tok-nm">total</span>
+
+<span class="tok-kw">print</span>(<span class="tok-nm">factorial</span>(<span class="tok-num">4</span>))</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 13 · CONCEPT — explain the 0 bug
+         ============================================================ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">What Went Wrong</span>
+        <h2>Anything times <span style="color:var(--warn);">zero</span> is zero</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          <code style="color:var(--text);">range(n+1)</code> starting at the default <code style="color:var(--text);">0</code> includes <code style="color:var(--text);">0</code> itself. That was fine for <code style="color:var(--text);">sumToN</code>, adding <code style="color:var(--text);">0</code> changes nothing, but for a product, multiplying by <code style="color:var(--text);">0</code> even once wipes out the whole running total. The fix: start the range at <code style="color:var(--text);">1</code> instead of <code style="color:var(--text);">0</code>, and start <code style="color:var(--text);">total</code> at <code style="color:var(--text);">1</code> too, since it's the identity value for multiplication.
+        </p>
+        <div class="callout-warn" style="margin-top:var(--gap-lg);max-width:900px;">
+          <strong>The accumulator's starting value depends on the operation.</strong> A running sum starts at <code>0</code> (adding <code>0</code> is a no-op). A running product starts at <code>1</code> (multiplying by <code>1</code> is a no-op).
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 14 · TRACE C — fixed factorial(4), range(1, n+1)
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="7">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The Fix</span>
+          <h2>Start at <span style="color:var(--result);">1</span>, not 0</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            <code style="color:var(--text);">total</code> now starts at <code style="color:var(--text);">1</code>, and <code style="color:var(--text);">range(1, n+1)</code> skips the <code style="color:var(--text);">0</code> entirely.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">def</span> <span class="tok-nm">factorial</span>(<span class="tok-nm">n</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-nm">total</span> <span class="tok-op">=</span> <span class="tok-num">1</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">for</span> <span class="tok-nm">x</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">1</span>, <span class="tok-nm">n</span><span class="tok-op">+</span><span class="tok-num">1</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-nm">total</span> <span class="tok-op">*=</span> <span class="tok-nm">x</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">return</span> <span class="tok-nm">total</span></span></div>
+              <div class="code-line context"><span class="car">&rsaquo;</span><span class="ln">6</span><span>&nbsp;</span></div>
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">7</span><span><span class="tok-kw">print</span>(<span class="tok-nm">factorial</span>(<span class="tok-num">4</span>))</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="trace-panel">
+          <div class="var-box" style="min-width:140px;">
+            <div class="var-box-name">total</div>
+            <div class="var-box-value" data-var-display="total"><span class="placeholder">&hellip;</span></div>
+          </div>
+          <div class="code-card console-card">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body">
+              <span class="fragment" data-fragment-index="0" data-trace-current="2" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="1" data-trace-current="3" data-trace-active-call="7" data-var-box="total" style="display:none;"><span class="tok-num">1</span></span>
+              <span class="fragment" data-fragment-index="2" data-trace-current="4" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="3" data-trace-current="3" data-trace-active-call="7" data-var-box="total" style="display:none;"><span class="tok-num">1</span></span>
+              <span class="fragment" data-fragment-index="4" data-trace-current="4" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="5" data-trace-current="3" data-trace-active-call="7" data-var-box="total" style="display:none;"><span class="tok-num">2</span></span>
+              <span class="fragment" data-fragment-index="6" data-trace-current="4" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="7" data-trace-current="3" data-trace-active-call="7" data-var-box="total" style="display:none;"><span class="tok-num">6</span></span>
+              <span class="fragment" data-fragment-index="8" data-trace-current="4" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="9" data-trace-current="3" data-trace-active-call="7" data-var-box="total" style="display:none;"><span class="tok-num">24</span></span>
+              <span class="fragment" data-fragment-index="10" data-trace-current="5" data-trace-active-call="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="11" data-trace-current="7" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="12" data-trace-current="8">24</span>
+            </div>
+          </div>
+          <p class="step-hint fragment fade-up" data-fragment-index="13" ><code>range(1, 5)</code>: four passes, x = 1, 2, 3, 4.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 15 · MCQ Checkpoint 1 — which range prints 5,6,7,8
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:checkpoint-5678:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which of these produces this output?\n\n5\n6\n7\n8","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"for i in range(2, 9): print(i)","isCorrect":false},{"id":"q1b","text":"for i in range(5, 8): print(i)","isCorrect":false},{"id":"q1c","text":"for i in range(5, 9): print(i)","isCorrect":true},{"id":"q1d","text":"for i in range(2, 8): print(i)","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint 1</span>
+        <h2>Which block produces <span style="color:var(--accent);">this</span> output?</h2>
+        <div class="split split-40" style="margin-top:var(--gap);">
+          <div class="code-card">
+            <div class="code-hdr" style="justify-content:center;">output</div>
+            <div class="code-body" style="text-align:center;font-family:var(--font-mono);color:var(--text);">5<br>6<br>7<br>8</div>
+          </div>
+          <ul class="mcq-opts">
+            <li><span class="opt-key">A</span> <code>for i in range(2, 9): print(i)</code></li>
+            <li><span class="opt-key">B</span> <code>for i in range(5, 8): print(i)</code></li>
+            <li><span class="opt-key">C</span> <code>for i in range(5, 9): print(i)</code></li>
+            <li><span class="opt-key">D</span> <code>for i in range(2, 8): print(i)</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 16 · CONCEPT — range(start, end, step)
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Using range(start, end, step)</span>
+          <h2>Skipping by <span style="color:var(--result);">more than 1</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            A third argument is the <strong style="color:var(--result);">step</strong>: the amount added to the loop variable on every pass. Without it, the step defaults to <code style="color:var(--text);">1</code>.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">range</span>(<span class="tok-num">20</span>, <span class="tok-num">40</span>, <span class="tok-num">5</span>)  <span class="tok-cm"># 20, 25, 30, 35</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 17 · TRACE D — range(20, 40, 5)
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="1">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Try This</span>
+          <h2>The step is the <span style="color:var(--result);">jump size</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            Each pass, <code style="color:var(--text);">x</code> jumps by <code style="color:var(--text);">5</code> instead of the default <code style="color:var(--text);">1</code>.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">for</span> <span class="tok-nm">x</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">20</span>, <span class="tok-num">40</span>, <span class="tok-num">5</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">x</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="trace-panel">
+          <div class="var-box" style="min-width:110px;">
+            <div class="var-box-name">x</div>
+            <div class="var-box-value" data-var-display="x"><span class="placeholder">&hellip;</span></div>
+          </div>
+          <div class="code-card console-card">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body">
+              <span class="fragment" data-fragment-index="0" data-trace-current="2" data-var-box="x" style="display:none;"><span class="tok-num">20</span></span>
+              <span class="fragment fade-up" data-fragment-index="1" data-trace-current="1">20</span>
+              <span class="fragment" data-fragment-index="2" data-trace-current="2" data-var-box="x" style="display:none;"><span class="tok-num">25</span></span>
+              <span class="fragment fade-up" data-fragment-index="3" data-trace-current="1">25</span>
+              <span class="fragment" data-fragment-index="4" data-trace-current="2" data-var-box="x" style="display:none;"><span class="tok-num">30</span></span>
+              <span class="fragment fade-up" data-fragment-index="5" data-trace-current="1">30</span>
+              <span class="fragment" data-fragment-index="6" data-trace-current="2" data-var-box="x" style="display:none;"><span class="tok-num">35</span></span>
+              <span class="fragment fade-up" data-fragment-index="7" data-trace-current="3">35</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 18 · CONCEPT + TRACE — looping backwards
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="1">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Looping Backwards</span>
+          <h2>A step of <span style="color:var(--result);">-1</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            To loop backwards over <code style="color:var(--text);">12, 11, 10</code>, a first attempt, <code style="color:var(--text);">range(12, 10, -1)</code>, almost works: it only prints <code style="color:var(--text);">12</code> and <code style="color:var(--text);">11</code>, because the end is still <strong>exclusive</strong>. The fix drops the end to <code style="color:var(--text);">9</code>, one past the last value we want.
+          </p>
+          <div class="callout" style="margin-top:var(--gap-sm);">
+            In general, to loop backwards from <code>y</code> down to <code>x</code> inclusively: <code>range(y, x-1, -1)</code>.
+          </div>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">for</span> <span class="tok-nm">x</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">12</span>, <span class="tok-num">9</span>, <span class="tok-op">-</span><span class="tok-num">1</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">x</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="trace-panel">
+          <div class="var-box" style="min-width:110px;">
+            <div class="var-box-name">x</div>
+            <div class="var-box-value" data-var-display="x"><span class="placeholder">&hellip;</span></div>
+          </div>
+          <div class="code-card console-card">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body">
+              <span class="fragment" data-fragment-index="0" data-trace-current="2" data-var-box="x" style="display:none;"><span class="tok-num">12</span></span>
+              <span class="fragment fade-up" data-fragment-index="1" data-trace-current="1">12</span>
+              <span class="fragment" data-fragment-index="2" data-trace-current="2" data-var-box="x" style="display:none;"><span class="tok-num">11</span></span>
+              <span class="fragment fade-up" data-fragment-index="3" data-trace-current="1">11</span>
+              <span class="fragment" data-fragment-index="4" data-trace-current="2" data-var-box="x" style="display:none;"><span class="tok-num">10</span></span>
+              <span class="fragment fade-up" data-fragment-index="5" data-trace-current="3">10</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 19 · MCQ Checkpoint 2 — 6,9,12
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:checkpoint-6-9-12:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which of these produces this output?\n\n6\n9\n12","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"for i in range(5, 13, 3): print(i)","isCorrect":false},{"id":"q1b","text":"for i in range(6, 13, 3): print(i)","isCorrect":true},{"id":"q1c","text":"for i in range(3, 6, 15): print(i)","isCorrect":false},{"id":"q1d","text":"for i in range(6, 12, 3): print(i)","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint 2</span>
+        <h2>Which block produces <span style="color:var(--accent);">this</span> output?</h2>
+        <div class="split split-40" style="margin-top:var(--gap);">
+          <div class="code-card">
+            <div class="code-hdr" style="justify-content:center;">output</div>
+            <div class="code-body" style="text-align:center;font-family:var(--font-mono);color:var(--text);">6<br>9<br>12</div>
+          </div>
+          <ul class="mcq-opts">
+            <li><span class="opt-key">A</span> <code>for i in range(5, 13, 3): print(i)</code></li>
+            <li><span class="opt-key">B</span> <code>for i in range(6, 13, 3): print(i)</code></li>
+            <li><span class="opt-key">C</span> <code>for i in range(3, 6, 15): print(i)</code></li>
+            <li><span class="opt-key">D</span> <code>for i in range(6, 12, 3): print(i)</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 20 · MCQ Checkpoint 3 — 15,14,13,12
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:checkpoint-15141312:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which of these produces this output?\n\n15\n14\n13\n12","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"for i in range(15, 12, -1): print(i)","isCorrect":false},{"id":"q1b","text":"for i in range(16, 11, -1): print(i)","isCorrect":false},{"id":"q1c","text":"for i in range(15, 11, -1): print(i)","isCorrect":true},{"id":"q1d","text":"for i in range(16, 12, -1): print(i)","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint 3</span>
+        <h2>Which block produces <span style="color:var(--accent);">this</span> output?</h2>
+        <div class="split split-40" style="margin-top:var(--gap);">
+          <div class="code-card">
+            <div class="code-hdr" style="justify-content:center;">output</div>
+            <div class="code-body" style="text-align:center;font-family:var(--font-mono);color:var(--text);">15<br>14<br>13<br>12</div>
+          </div>
+          <ul class="mcq-opts">
+            <li><span class="opt-key">A</span> <code>for i in range(15, 12, -1): print(i)</code></li>
+            <li><span class="opt-key">B</span> <code>for i in range(16, 11, -1): print(i)</code></li>
+            <li><span class="opt-key">C</span> <code>for i in range(15, 11, -1): print(i)</code></li>
+            <li><span class="opt-key">D</span> <code>for i in range(16, 12, -1): print(i)</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 21 · WRAP-UP — 2.2.1 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>for loops and range</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li><code style="color:var(--text);">for LOOPVAR in range(N):</code> assigns the <strong>loop variable</strong> a new value each <strong>pass</strong>, then runs the body. <code style="color:var(--text);">range(N)</code> is exclusive of <code style="color:var(--text);">N</code>.</li>
+          <li><code style="color:var(--text);">range(start, end)</code> and <code style="color:var(--text);">range(start, end, step)</code> control where the loop begins, ends, and how far it jumps each pass.</li>
+          <li>A running total (or product) needs a starting value that's a no-op for its operation: <code style="color:var(--text);">0</code> for addition, <code style="color:var(--text);">1</code> for multiplication.</li>
+          <li>To loop backwards from <code style="color:var(--text);">y</code> down to <code style="color:var(--text);">x</code> inclusively, use <code style="color:var(--text);">range(y, x-1, -1)</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 22 · SECTION — 2.2.2 Nested for loops
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.09) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">2.2.2 Nested for Loops</span>
+        <h2>A loop <span style="color:var(--accent);">inside</span> a loop</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          Just like an <code style="color:var(--text);">if</code> can nest inside another <code style="color:var(--text);">if</code>, a <code style="color:var(--text);">for</code> loop can nest inside another <code style="color:var(--text);">for</code> loop. The two loop variables
+          update at <span style="color:var(--result);">very different rates</span>, and seeing exactly how is the whole point of this section.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 23 · CONCEPT — outer/inner vocabulary
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Outer and Inner</span>
+          <h2>The <span style="color:var(--result);">inner</span> loop runs to completion</h2>
+          <ul class="bullets" style="margin-top:var(--gap);">
+            <li>The <strong>outer loop</strong> controls the slower-changing variable. Each of its passes is one trip through the whole <strong>inner loop</strong>.</li>
+            <li>The <strong>inner loop</strong> runs <span style="color:var(--result);">completely</span>, start to finish, for every single pass of the outer loop.</li>
+            <li>So if the outer loop has 3 passes and the inner loop has 3 passes each, the inner body runs <code style="color:var(--text);">3 &times; 3 = 9</code> times total.</li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">for</span> <span class="tok-nm">x</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">3</span>):
+    <span class="tok-kw">for</span> <span class="tok-nm">y</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">3</span>):
+        <span class="tok-nm">BODY</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 24 · FRQ — predict the nested loop output
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:predict-nested:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Predict this code&#39;s full output, in order. How many lines total, and what are the first three rows?\n\n```python\nprint(&#39;x&#39;, &#39;y&#39;)\nfor x in range(3):\n    for y in range(3):\n        print(x, y)\n```","order":0,"responseTimeLimitMs":100000}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ &middot; Predict First</span>
+        <h2>How many lines <span style="color:var(--accent);">total</span>?</h2>
+        <div class="frq-box" style="max-width:700px;margin-top:var(--gap-lg);">
+          <p>Predict the full output, in order. How many lines total, and what are the first three rows?</p>
+          <div class="code-card" style="text-align:left;margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">print</span>(<span class="tok-str">'x'</span>, <span class="tok-str">'y'</span>)
+<span class="tok-kw">for</span> <span class="tok-nm">x</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">3</span>):
+    <span class="tok-kw">for</span> <span class="tok-nm">y</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">3</span>):
+        <span class="tok-kw">print</span>(<span class="tok-nm">x</span>, <span class="tok-nm">y</span>)</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 25 · TRACE E — full 9-pass nested trace, x and y boxes
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="1">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The Full Trace</span>
+          <h2><span style="color:var(--result);">x</span> barely moves, <span style="color:var(--result);">y</span> moves constantly</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            Watch how often each box updates. <code style="color:var(--text);">y</code> gets reassigned on nearly every pass. <code style="color:var(--text);">x</code> only changes once the <em>entire</em> inner loop has finished, and its old value keeps showing until then, since Python hasn't reassigned it yet.
+          </p>
+          <div class="code-card trace-code compact" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">print</span>(<span class="tok-str">'x'</span>, <span class="tok-str">'y'</span>)</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span><span class="tok-kw">for</span> <span class="tok-nm">x</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">3</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">for</span> <span class="tok-nm">y</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">3</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">x</span>, <span class="tok-nm">y</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="trace-panel">
+          <div class="var-row">
+            <div class="var-box" style="min-width:110px;">
+              <div class="var-box-name">x</div>
+              <div class="var-box-value" data-var-display="x"><span class="placeholder">&hellip;</span></div>
+            </div>
+            <div class="var-box" style="min-width:110px;">
+              <div class="var-box-name">y</div>
+              <div class="var-box-value" data-var-display="y"><span class="placeholder">&hellip;</span></div>
+            </div>
+          </div>
+          <div class="code-card console-card">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body">
+              <span class="fragment fade-up console-hdr-row" data-fragment-index="0" data-trace-current="2">x&nbsp;&nbsp;y</span>
+              <span class="fragment" data-fragment-index="1" data-trace-current="3" data-var-box="x" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment" data-fragment-index="2" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment fade-up" data-fragment-index="3" data-trace-current="3">0&nbsp;&nbsp;0</span>
+              <span class="fragment" data-fragment-index="4" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">1</span></span>
+              <span class="fragment fade-up" data-fragment-index="5" data-trace-current="3">0&nbsp;&nbsp;1</span>
+              <span class="fragment" data-fragment-index="6" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">2</span></span>
+              <span class="fragment fade-up" data-fragment-index="7" data-trace-current="3">0&nbsp;&nbsp;2</span>
+              <span class="fragment" data-fragment-index="8" data-trace-current="2" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="9" data-trace-current="3" data-var-box="x" style="display:none;"><span class="tok-num">1</span></span>
+              <span class="fragment" data-fragment-index="10" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment fade-up" data-fragment-index="11" data-trace-current="3">1&nbsp;&nbsp;0</span>
+              <span class="fragment" data-fragment-index="12" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">1</span></span>
+              <span class="fragment fade-up" data-fragment-index="13" data-trace-current="3">1&nbsp;&nbsp;1</span>
+              <span class="fragment" data-fragment-index="14" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">2</span></span>
+              <span class="fragment fade-up" data-fragment-index="15" data-trace-current="3">1&nbsp;&nbsp;2</span>
+              <span class="fragment" data-fragment-index="16" data-trace-current="2" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="17" data-trace-current="3" data-var-box="x" style="display:none;"><span class="tok-num">2</span></span>
+              <span class="fragment" data-fragment-index="18" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment fade-up" data-fragment-index="19" data-trace-current="3">2&nbsp;&nbsp;0</span>
+              <span class="fragment" data-fragment-index="20" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">1</span></span>
+              <span class="fragment fade-up" data-fragment-index="21" data-trace-current="3">2&nbsp;&nbsp;1</span>
+              <span class="fragment" data-fragment-index="22" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">2</span></span>
+              <span class="fragment fade-up" data-fragment-index="23" data-trace-current="3">2&nbsp;&nbsp;2</span>
+              <span class="fragment" data-fragment-index="24" data-trace-current="2" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="25" data-trace-current="5" style="display:none;"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 26 · CONCEPT — reflect on the update rate
+         ============================================================ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">What You Just Watched</span>
+        <h2>Two loop variables, <span style="color:var(--accent);">two speeds</span></h2>
+        <div class="split split-50" style="margin-top:var(--gap-lg);">
+          <div class="key-prop"><strong style="color:var(--result);">y</strong> updates on almost every pass through the console: once per inner-loop iteration.</div>
+          <div class="key-prop"><strong style="color:var(--result);">x</strong> updates only <code style="color:var(--text);">3</code> times total: once each time the <em>entire</em> inner loop finishes.</div>
+        </div>
+        <p style="font-size:var(--body);margin-top:var(--gap-lg);max-width:1000px;">
+          This is why nested loops are so useful for grids, tables, and anything with rows and columns: the outer variable tracks the row, the inner variable sweeps across every column before the row advances.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 27 · MCQ Checkpoint 1 — which nested ordering
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:nested-checkpoint-1:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which of these produces this output?\n\n2 30\n2 32\n2 34\n8 30\n8 32\n8 34","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"```python\nfor j in range(2,9,6):\n    for i in range(30,36,2):\n        print(i, j)\n```","isCorrect":false},{"id":"q1b","text":"```python\nfor i in range(30,36,2):\n    for j in range(2,9,6):\n        print(i, j)\n```","isCorrect":false},{"id":"q1c","text":"```python\nfor i in range(2,9,6):\n    for j in range(30,36,2):\n        print(i, j)\n```","isCorrect":true},{"id":"q1d","text":"```python\nfor j in range(30,36,2):\n    for i in range(2,9,6):\n        print(i, j)\n```","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint 1</span>
+        <h2>Which nesting produces <span style="color:var(--accent);">this</span> output?</h2>
+        <div class="split split-40" style="margin-top:var(--gap);">
+          <div class="code-card">
+            <div class="code-hdr" style="justify-content:center;">output</div>
+            <div class="code-body" style="text-align:center;font-family:var(--font-mono);font-size:var(--small);color:var(--text);">2 30<br>2 32<br>2 34<br>8 30<br>8 32<br>8 34</div>
+          </div>
+          <ul class="mcq-opts">
+            <li><span class="opt-key">A</span> <code>for j in range(2,9,6): for i in range(30,36,2): print(i, j)</code></li>
+            <li><span class="opt-key">B</span> <code>for i in range(30,36,2): for j in range(2,9,6): print(i, j)</code></li>
+            <li><span class="opt-key">C</span> <code>for i in range(2,9,6): for j in range(30,36,2): print(i, j)</code></li>
+            <li><span class="opt-key">D</span> <code>for j in range(30,36,2): for i in range(2,9,6): print(i, j)</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 28 · CONCEPT — dependent inner loops
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Dependent Inner Loops</span>
+          <h2>The inner range can <span style="color:var(--result);">depend on x</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            The inner loop's range doesn't have to be fixed. It can use the outer loop variable, so each outer pass gets a differently sized inner loop.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">for</span> <span class="tok-nm">x</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">4</span>):
+    <span class="tok-kw">for</span> <span class="tok-nm">y</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-nm">x</span><span class="tok-op">+</span><span class="tok-num">1</span>):
+        <span class="tok-kw">print</span>(<span class="tok-nm">x</span>, <span class="tok-nm">y</span>)</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 29 · TRACE F — x in range(4): y in range(x+1)
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="1">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Try This</span>
+          <h2><span style="color:var(--result);">y</span> stops earlier each time</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            <code style="color:var(--text);">range(x+1)</code> is re-evaluated fresh at the <em>start</em> of every inner loop, using whatever <code style="color:var(--text);">x</code> is at that moment. When <code style="color:var(--text);">x</code> is <code style="color:var(--text);">0</code>, the inner loop only has one pass.
+          </p>
+          <div class="code-card trace-code compact" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">print</span>(<span class="tok-str">'x'</span>, <span class="tok-str">'y'</span>)</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span><span class="tok-kw">for</span> <span class="tok-nm">x</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">4</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">for</span> <span class="tok-nm">y</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-nm">x</span><span class="tok-op">+</span><span class="tok-num">1</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">x</span>, <span class="tok-nm">y</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="trace-panel">
+          <div class="var-row">
+            <div class="var-box" style="min-width:110px;">
+              <div class="var-box-name">x</div>
+              <div class="var-box-value" data-var-display="x"><span class="placeholder">&hellip;</span></div>
+            </div>
+            <div class="var-box" style="min-width:110px;">
+              <div class="var-box-name">y</div>
+              <div class="var-box-value" data-var-display="y"><span class="placeholder">&hellip;</span></div>
+            </div>
+          </div>
+          <div class="code-card console-card">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="font-size:16px;">
+              <span class="fragment fade-up console-hdr-row" data-fragment-index="0" data-trace-current="2">x&nbsp;&nbsp;y</span>
+              <span class="fragment" data-fragment-index="1" data-trace-current="3" data-var-box="x" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment" data-fragment-index="2" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment fade-up" data-fragment-index="3" data-trace-current="3">0&nbsp;&nbsp;0</span>
+              <span class="fragment" data-fragment-index="4" data-trace-current="2" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="5" data-trace-current="3" data-var-box="x" style="display:none;"><span class="tok-num">1</span></span>
+              <span class="fragment" data-fragment-index="6" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment fade-up" data-fragment-index="7" data-trace-current="3">1&nbsp;&nbsp;0</span>
+              <span class="fragment" data-fragment-index="8" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">1</span></span>
+              <span class="fragment fade-up" data-fragment-index="9" data-trace-current="3">1&nbsp;&nbsp;1</span>
+              <span class="fragment" data-fragment-index="10" data-trace-current="2" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="11" data-trace-current="3" data-var-box="x" style="display:none;"><span class="tok-num">2</span></span>
+              <span class="fragment" data-fragment-index="12" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment fade-up" data-fragment-index="13" data-trace-current="3">2&nbsp;&nbsp;0</span>
+              <span class="fragment" data-fragment-index="14" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">1</span></span>
+              <span class="fragment fade-up" data-fragment-index="15" data-trace-current="3">2&nbsp;&nbsp;1</span>
+              <span class="fragment" data-fragment-index="16" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">2</span></span>
+              <span class="fragment fade-up" data-fragment-index="17" data-trace-current="3">2&nbsp;&nbsp;2</span>
+              <span class="fragment" data-fragment-index="18" data-trace-current="2" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="19" data-trace-current="3" data-var-box="x" style="display:none;"><span class="tok-num">3</span></span>
+              <span class="fragment" data-fragment-index="20" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment fade-up" data-fragment-index="21" data-trace-current="3">3&nbsp;&nbsp;0</span>
+              <span class="fragment" data-fragment-index="22" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">1</span></span>
+              <span class="fragment fade-up" data-fragment-index="23" data-trace-current="3">3&nbsp;&nbsp;1</span>
+              <span class="fragment" data-fragment-index="24" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">2</span></span>
+              <span class="fragment fade-up" data-fragment-index="25" data-trace-current="3">3&nbsp;&nbsp;2</span>
+              <span class="fragment" data-fragment-index="26" data-trace-current="4" data-var-box="y" style="display:none;"><span class="tok-num">3</span></span>
+              <span class="fragment fade-up" data-fragment-index="27" data-trace-current="3">3&nbsp;&nbsp;3</span>
+              <span class="fragment" data-fragment-index="28" data-trace-current="2" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="29" data-trace-current="5" style="display:none;"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 30 · MCQ Checkpoint 2 — why no lines when x is 0
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:nested-checkpoint-2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"With y looping over range(x) instead of range(x+1), the very first outer pass (x = 0) contributes zero rows to the output. What&#39;s the real reason?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"Python skips the inner loop entirely whenever the outer variable is 0.","isCorrect":false},{"id":"q1b","text":"range(0) is a valid range with zero values in it, so the inner loop simply runs zero passes.","isCorrect":true},{"id":"q1c","text":"The print statement is unreachable when x is 0.","isCorrect":false},{"id":"q1d","text":"range(0) raises an error that Python silently ignores.","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint 2</span>
+        <h2>Why does x = 0 contribute <span style="color:var(--accent);">no rows</span>?</h2>
+        <p style="margin:var(--gap) 0;max-width:900px;">With <code>y</code> looping over <code>range(x)</code> instead of <code>range(x+1)</code>, the very first outer pass (<code>x</code> is <code>0</code>) contributes zero rows to the output. What's the real reason?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> Python skips the inner loop entirely whenever the outer variable is <code>0</code>.</li>
+          <li><span class="opt-key">B</span> <code>range(0)</code> is a valid range with zero values in it, so the inner loop simply runs zero passes.</li>
+          <li><span class="opt-key">C</span> The <code>print</code> statement is unreachable when <code>x</code> is <code>0</code>.</li>
+          <li><span class="opt-key">D</span> <code>range(0)</code> raises an error that Python silently ignores.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 31 · WRAP-UP — 2.2.2 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Nested for loops</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li>The inner loop runs to completion for <strong>every single pass</strong> of the outer loop, so the inner variable updates far more often.</li>
+          <li>The inner loop's range can depend on the outer loop variable, letting each outer pass produce a differently sized inner loop.</li>
+          <li>An empty range, like <code style="color:var(--text);">range(0)</code>, simply produces zero passes. Nothing crashes, nothing runs.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 32 · SECTION — 2.2.3 while loops
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">2.2.3 while Loops</span>
+        <h2>Looping until <span style="color:var(--accent);">something changes</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          Sometimes you don't know how many passes you'll need before you start. A <code style="color:var(--text);">while</code> loop keeps running <span style="color:var(--accent);">so long as</span> a condition is
+          <code style="color:var(--text);">True</code>, re-checking it before every pass, closer to how an <code style="color:var(--text);">if</code> statement behaves than a <code style="color:var(--text);">for</code> loop does.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 33 · CONCEPT — for vs while
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">for vs while</span>
+          <h2>Known count, or <span style="color:var(--result);">unknown</span>?</h2>
+          <ul class="bullets" style="margin-top:var(--gap);">
+            <li>Use <code style="color:var(--text);">for</code> when you already know how many passes you need, or exactly what you're looping over.</li>
+            <li>Use <code style="color:var(--text);">while</code> when the number of passes depends on something you can't know in advance, like user input.</li>
+            <li>A <code style="color:var(--text);">while</code> loop re-checks its test <strong>before every single pass</strong>, and stops the moment the test is <code style="color:var(--text);">False</code>.</li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">while</span> <span class="tok-nm">TEST</span>:
+    <span class="tok-nm">BODY</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 34 · TRACE G — while total <= 100, simulated inputs
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="1">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Try This</span>
+          <h2>Add numbers until <span style="color:var(--result);">total</span> exceeds 100</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            We can't know how many passes this needs until we see what the user types. For this trace, imagine the user enters <code style="color:var(--text);">30</code>, then <code style="color:var(--text);">40</code>, then <code style="color:var(--text);">50</code>.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-nm">total</span> <span class="tok-op">=</span> <span class="tok-num">0</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span><span class="tok-kw">while</span> <span class="tok-nm">total</span> <span class="tok-op">&lt;=</span> <span class="tok-num">100</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-str">'Total so far:'</span>, <span class="tok-nm">total</span>)</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-nm">nextNumber</span> <span class="tok-op">=</span> <span class="tok-nm">int</span>(<span class="tok-nm">input</span>(<span class="tok-str">'Enter next number: '</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-nm">total</span> <span class="tok-op">+=</span> <span class="tok-nm">nextNumber</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">6</span><span><span class="tok-kw">print</span>(<span class="tok-str">'Done, final total:'</span>, <span class="tok-nm">total</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="trace-panel">
+          <div class="var-row">
+            <div class="var-box" style="min-width:120px;">
+              <div class="var-box-name">total</div>
+              <div class="var-box-value" data-var-display="total"><span class="placeholder">&hellip;</span></div>
+            </div>
+            <div class="var-box" style="min-width:150px;">
+              <div class="var-box-name">nextNumber</div>
+              <div class="var-box-value" data-var-display="nextNumber" style="font-size:18px;"><span class="placeholder">&hellip;</span></div>
+            </div>
+          </div>
+          <div class="code-card console-card" style="width:290px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="font-size:16px;">
+              <span class="fragment" data-fragment-index="0" data-trace-current="2" data-var-box="total" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment" data-fragment-index="1" data-trace-current="3" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="2" data-trace-current="4">Total so far: 0</span>
+              <span class="fragment fade-up console-in" data-fragment-index="3" data-trace-current="5">Enter next number: 30</span>
+              <span class="fragment" data-fragment-index="3" data-trace-current="5" data-var-box="nextNumber" style="display:none;"><span class="tok-num">30</span></span>
+              <span class="fragment" data-fragment-index="4" data-trace-current="2" data-var-box="total" style="display:none;"><span class="tok-num">30</span></span>
+              <span class="fragment" data-fragment-index="5" data-trace-current="3" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="6" data-trace-current="4">Total so far: 30</span>
+              <span class="fragment fade-up console-in" data-fragment-index="7" data-trace-current="5">Enter next number: 40</span>
+              <span class="fragment" data-fragment-index="7" data-trace-current="5" data-var-box="nextNumber" style="display:none;"><span class="tok-num">40</span></span>
+              <span class="fragment" data-fragment-index="8" data-trace-current="2" data-var-box="total" style="display:none;"><span class="tok-num">70</span></span>
+              <span class="fragment" data-fragment-index="9" data-trace-current="3" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="10" data-trace-current="4">Total so far: 70</span>
+              <span class="fragment fade-up console-in" data-fragment-index="11" data-trace-current="5">Enter next number: 50</span>
+              <span class="fragment" data-fragment-index="11" data-trace-current="5" data-var-box="nextNumber" style="display:none;"><span class="tok-num">50</span></span>
+              <span class="fragment" data-fragment-index="12" data-trace-current="2" data-var-box="total" style="display:none;"><span class="tok-num">120</span></span>
+              <span class="fragment" data-fragment-index="13" data-trace-current="6" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="14" data-trace-current="7">Done, final total: 120</span>
+            </div>
+          </div>
+          <p class="step-hint">120 &gt; 100, so the loop stops before a fourth pass.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 35 · MCQ — when should you use a while loop
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:when-while:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A program needs to keep asking the user to guess a secret number until they finally guess correctly. Which loop is the right tool, and why?","order":0,"responseTimeLimitMs":25000,"options":[{"id":"q1a","text":"A for loop, since you always know range(10) will work for guessing games.","isCorrect":false},{"id":"q1b","text":"A while loop, since the number of guesses needed can&#39;t be known before the program runs.","isCorrect":true},{"id":"q1c","text":"A for loop, since guessing is a kind of counting.","isCorrect":false},{"id":"q1d","text":"It doesn&#39;t matter, both loop types handle this equally well.","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint</span>
+        <h2>Guessing a <span style="color:var(--accent);">secret number</span></h2>
+        <p style="margin:var(--gap) 0;max-width:900px;">A program needs to keep asking the user to guess a secret number until they finally guess correctly. Which loop is the right tool, and why?</p>
+        <ul class="mcq-opts" style="max-width:900px;">
+          <li><span class="opt-key">A</span> A <code>for</code> loop, since you always know <code>range(10)</code> will work for guessing games.</li>
+          <li><span class="opt-key">B</span> A <code>while</code> loop, since the number of guesses needed can't be known before the program runs.</li>
+          <li><span class="opt-key">C</span> A <code>for</code> loop, since guessing is a kind of counting.</li>
+          <li><span class="opt-key">D</span> It doesn't matter, both loop types handle this equally well.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 36 · FRQ — what if the user enters a float?
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:while-float-input:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"In the total <= 100 example, nextNumber = int(input(...)) converts the typed text to an int. What happens if the user types a float, like 3.5, instead of a whole number?","order":0,"responseTimeLimitMs":90000}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ &middot; Predict First</span>
+        <h2>What if the user types a <span style="color:var(--warn);">float</span>?</h2>
+        <div class="frq-box" style="max-width:800px;margin-top:var(--gap-lg);">
+          <p><code style="color:var(--text);">nextNumber = int(input(...))</code> converts the typed text to an <code style="color:var(--text);">int</code>. What happens if the user types a float, like <code style="color:var(--text);">3.5</code>, instead of a whole number?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 37 · MOBCODE — live version of the while total loop
+         ============================================================ -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"files":{"main.py":"total = 0\nwhile total <= 100:\n    print(\"Total so far:\", total)\n    nextNumber = int(input(\"Enter the next number: \"))\n    total += nextNumber\nprint(\"Done, with a final total of:\", total)\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">See For Yourself</span>
+        <h2>Try it with your <span style="color:var(--result);">own</span> numbers</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:900px;">
+          Run it and enter whatever numbers you like. Try entering a float. Try entering a negative number. Try entering text that isn't a number at all, and see what happens.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 38 · WRAP-UP — 2.2.3 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>while loops</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li>A <code style="color:var(--text);">while TEST:</code> loop keeps running as long as <code style="color:var(--text);">TEST</code> is <code style="color:var(--text);">True</code>, re-checking before every pass.</li>
+          <li>Use it when you don't know the number of passes in advance, most often because the loop depends on user input.</li>
+          <li>Forgetting to update whatever the test depends on is the classic <code style="color:var(--text);">while</code>-loop bug: it produces an infinite loop.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 39 · SECTION — 2.2.4 break and continue
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">2.2.4 break and continue</span>
+        <h2>Changing course <span style="color:var(--accent);">mid-loop</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          <code style="color:var(--text);">break</code> and <code style="color:var(--text);">continue</code> both alter a loop's normal flow from inside the body. Used well, they can be very handy. Used too often,
+          they make code harder to follow, so use them <span style="color:var(--warn);">sparingly</span>.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 40 · CONCEPT — break statements
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">break Statements</span>
+          <h2>Exit the loop, <span style="color:var(--accent);">immediately</span></h2>
+          <ul class="bullets" style="margin-top:var(--gap);">
+            <li>A <code style="color:var(--text);">break</code> inside a loop body exits the <strong>entire loop</strong> right away, skipping any remaining lines in that pass and every future pass.</li>
+            <li>It's especially useful inside a <code style="color:var(--text);">while</code> loop, when you can only tell it's time to stop <em>after</em> you're already inside the loop body.</li>
+            <li>The idiom <code style="color:var(--text);">while True:</code> means "loop forever", an <strong>infinite loop</strong>, unless something inside the body eventually <code style="color:var(--text);">break</code>s out of it.</li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">while</span> <span class="tok-bool">True</span>:
+    <span class="tok-nm">BODY</span>
+    <span class="tok-kw">if</span> <span class="tok-nm">TEST</span>:
+        <span class="tok-kw">break</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 41 · TRACE H — while True + break at 0, inputs 30,40,0
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="1">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Try This</span>
+          <h2>Stop when the user enters <span style="color:var(--result);">0</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            Imagine the user enters <code style="color:var(--text);">30</code>, then <code style="color:var(--text);">40</code>, then <code style="color:var(--text);">0</code>. Watch what happens to line 7, <code style="color:var(--text);">total += nextNumber</code>, on the last pass.
+          </p>
+          <div class="code-card trace-code compact" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-nm">total</span> <span class="tok-op">=</span> <span class="tok-num">0</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span><span class="tok-kw">while</span> <span class="tok-bool">True</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-str">'Total so far:'</span>, <span class="tok-nm">total</span>)</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-nm">nextNumber</span> <span class="tok-op">=</span> <span class="tok-nm">int</span>(<span class="tok-nm">input</span>(<span class="tok-str">'Enter next number: '</span>))</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">if</span> <span class="tok-nm">nextNumber</span> <span class="tok-op">==</span> <span class="tok-num">0</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">6</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">break</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">7</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-nm">total</span> <span class="tok-op">+=</span> <span class="tok-nm">nextNumber</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">8</span><span><span class="tok-kw">print</span>(<span class="tok-str">'Done, final total:'</span>, <span class="tok-nm">total</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="trace-panel">
+          <div class="var-row">
+            <div class="var-box" style="min-width:120px;">
+              <div class="var-box-name">total</div>
+              <div class="var-box-value" data-var-display="total"><span class="placeholder">&hellip;</span></div>
+            </div>
+            <div class="var-box" style="min-width:150px;">
+              <div class="var-box-name">nextNumber</div>
+              <div class="var-box-value" data-var-display="nextNumber" style="font-size:18px;"><span class="placeholder">&hellip;</span></div>
+            </div>
+          </div>
+          <div class="code-card console-card" style="width:290px;">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body" style="font-size:16px;">
+              <span class="fragment" data-fragment-index="0" data-trace-current="2" data-var-box="total" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment" data-fragment-index="1" data-trace-current="3" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="2" data-trace-current="4">Total so far: 0</span>
+              <span class="fragment fade-up console-in" data-fragment-index="3" data-trace-current="5">Enter next number: 30</span>
+              <span class="fragment" data-fragment-index="3" data-trace-current="5" data-var-box="nextNumber" style="display:none;"><span class="tok-num">30</span></span>
+              <span class="fragment" data-fragment-index="4" data-trace-current="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="5" data-trace-current="2" data-var-box="total" style="display:none;"><span class="tok-num">30</span></span>
+              <span class="fragment" data-fragment-index="6" data-trace-current="3" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="7" data-trace-current="4">Total so far: 30</span>
+              <span class="fragment fade-up console-in" data-fragment-index="8" data-trace-current="5">Enter next number: 40</span>
+              <span class="fragment" data-fragment-index="8" data-trace-current="5" data-var-box="nextNumber" style="display:none;"><span class="tok-num">40</span></span>
+              <span class="fragment" data-fragment-index="9" data-trace-current="7" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="10" data-trace-current="2" data-var-box="total" style="display:none;"><span class="tok-num">70</span></span>
+              <span class="fragment" data-fragment-index="11" data-trace-current="3" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="12" data-trace-current="4">Total so far: 70</span>
+              <span class="fragment fade-up console-in" data-fragment-index="13" data-trace-current="5">Enter next number: 0</span>
+              <span class="fragment" data-fragment-index="13" data-trace-current="5" data-var-box="nextNumber" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment" data-fragment-index="14" data-trace-current="6" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="15" data-trace-current="8" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="16" data-trace-current="9">Done, final total: 70</span>
+            </div>
+          </div>
+          <p class="step-hint fragment fade-up" data-fragment-index="17">On the last pass, line 7 never runs. <code>break</code> jumps straight to line 8.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 42 · CONCEPT — alternative without break (None sentinel)
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">An Alternative</span>
+          <h2>The <span style="color:var(--result);">same</span> logic, no break</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            You can write this without <code style="color:var(--text);">break</code> by looping on <code style="color:var(--text);">nextNumber != 0</code> directly. That means <code style="color:var(--text);">nextNumber</code> needs a starting value that isn't <code style="color:var(--text);">0</code> before the loop even begins, and <code style="color:var(--text);">None</code> is a natural choice.
+          </p>
+          <p style="font-size:var(--small);color:var(--text-dim);margin-top:var(--gap-sm);">Both versions are common. Understand both.</p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-nm">total</span> <span class="tok-op">=</span> <span class="tok-num">0</span>
+<span class="tok-nm">nextNumber</span> <span class="tok-op">=</span> <span class="tok-kw">None</span>
+<span class="tok-kw">while</span> <span class="tok-nm">nextNumber</span> <span class="tok-op">!=</span> <span class="tok-num">0</span>:
+    <span class="tok-nm">nextNumber</span> <span class="tok-op">=</span> <span class="tok-nm">int</span>(<span class="tok-nm">input</span>(<span class="tok-str">'Enter next number: '</span>))
+    <span class="tok-kw">if</span> <span class="tok-nm">nextNumber</span> <span class="tok-op">!=</span> <span class="tok-num">0</span>:
+        <span class="tok-nm">total</span> <span class="tok-op">+=</span> <span class="tok-nm">nextNumber</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 43 · MCQ Checkpoint — predict total for inputs 5,10,15,20
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:break-checkpoint:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"If a user enters the numbers 5, 10, 15, and 20, what does this program print?\n\n```python\ntotal = 0\nwhile True:\n    nextNumber = int(input(&#39;Enter the next number: &#39;))\n    if nextNumber == 20:\n        break\n    total += nextNumber\nprint(total)\n```","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"It doesn&#39;t print anything","isCorrect":false},{"id":"q1b","text":"0","isCorrect":false},{"id":"q1c","text":"30","isCorrect":true},{"id":"q1d","text":"50","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint</span>
+        <h2>Inputs: 5, 10, 15, then <span style="color:var(--warn);">20</span></h2>
+        <div class="code-card" style="max-width:460px;margin:var(--gap) 0;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-nm">total</span> <span class="tok-op">=</span> <span class="tok-num">0</span>
+<span class="tok-kw">while</span> <span class="tok-bool">True</span>:
+    <span class="tok-nm">nextNumber</span> <span class="tok-op">=</span> <span class="tok-nm">int</span>(<span class="tok-nm">input</span>(<span class="tok-str">'Enter next: '</span>))
+    <span class="tok-kw">if</span> <span class="tok-nm">nextNumber</span> <span class="tok-op">==</span> <span class="tok-num">20</span>:
+        <span class="tok-kw">break</span>
+    <span class="tok-nm">total</span> <span class="tok-op">+=</span> <span class="tok-nm">nextNumber</span>
+<span class="tok-kw">print</span>(<span class="tok-nm">total</span>)</code></pre>
+          </div>
+        </div>
+        <p style="margin-bottom:var(--gap);">If the user enters <code>5</code>, <code>10</code>, <code>15</code>, then <code>20</code>, what does this print?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> It doesn't print anything</li>
+          <li><span class="opt-key">B</span> <code>0</code></li>
+          <li><span class="opt-key">C</span> <code>30</code></li>
+          <li><span class="opt-key">D</span> <code>50</code></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 44 · CONCEPT — continue statements
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">continue Statements</span>
+          <h2>Skip the rest of <span style="color:var(--accent);">this pass</span> only</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            <code style="color:var(--text);">continue</code> is similar to <code style="color:var(--text);">break</code>, but gentler: it exits only the <strong>current pass</strong>, not the whole loop. Python jumps straight back to the top of the loop and carries on with the next pass, as if the rest of that pass's body was skipped.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">for</span> <span class="tok-nm">i</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">12</span>):
+    <span class="tok-kw">if</span> <span class="tok-nm">i</span> <span class="tok-op">%</span> <span class="tok-num">2</span> <span class="tok-op">==</span> <span class="tok-num">0</span>:
+        <span class="tok-kw">continue</span>
+    <span class="tok-kw">print</span>(<span class="tok-nm">i</span>)</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 45 · TRACE I — continue skipping even i, i=0..3 + summary
+         ============================================================ -->
+    <section data-fragment-trace data-trace-start="1">
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Try This</span>
+          <h2>Even <span style="color:var(--result);">i</span> gets skipped</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            When <code style="color:var(--text);">i</code> is even, <code style="color:var(--text);">continue</code> jumps straight back to line 1 and line 4 never runs for that pass. When <code style="color:var(--text);">i</code> is odd, the <code style="color:var(--text);">if</code> body is skipped instead, and line 4 runs normally.
+          </p>
+          <div class="code-card trace-code" style="margin-top:var(--gap);">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body">
+              <div class="code-line current"><span class="car">&rsaquo;</span><span class="ln">1</span><span><span class="tok-kw">for</span> <span class="tok-nm">i</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">12</span>):</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">if</span> <span class="tok-nm">i</span> <span class="tok-op">%</span> <span class="tok-num">2</span> <span class="tok-op">==</span> <span class="tok-num">0</span>:</span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">continue</span></span></div>
+              <div class="code-line pending"><span class="car">&rsaquo;</span><span class="ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">print</span>(<span class="tok-nm">i</span>)</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="trace-panel">
+          <div class="var-box" style="min-width:110px;">
+            <div class="var-box-name">i</div>
+            <div class="var-box-value" data-var-display="i"><span class="placeholder">&hellip;</span></div>
+          </div>
+          <div class="code-card console-card">
+            <div class="code-hdr" style="justify-content:center;">console</div>
+            <div class="code-body">
+              <span class="fragment" data-fragment-index="0" data-trace-current="2" data-var-box="i" style="display:none;"><span class="tok-num">0</span></span>
+              <span class="fragment" data-fragment-index="1" data-trace-current="3" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="2" data-trace-current="1" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="3" data-trace-current="2" data-var-box="i" style="display:none;"><span class="tok-num">1</span></span>
+              <span class="fragment" data-fragment-index="4" data-trace-current="4" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="5" data-trace-current="1">1</span>
+              <span class="fragment" data-fragment-index="6" data-trace-current="2" data-var-box="i" style="display:none;"><span class="tok-num">2</span></span>
+              <span class="fragment" data-fragment-index="7" data-trace-current="3" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="8" data-trace-current="1" style="display:none;"></span>
+              <span class="fragment" data-fragment-index="9" data-trace-current="2" data-var-box="i" style="display:none;"><span class="tok-num">3</span></span>
+              <span class="fragment" data-fragment-index="10" data-trace-current="4" style="display:none;"></span>
+              <span class="fragment fade-up" data-fragment-index="11" data-trace-current="1">3</span>
+            </div>
+          </div>
+          <span class="fragment fade-up" data-fragment-index="12" data-trace-current="6" style="font-size:var(--small);color:var(--text);">&hellip;the pattern continues through i = 11.<br>Full output: 1&nbsp;&nbsp;3&nbsp;&nbsp;5&nbsp;&nbsp;7&nbsp;&nbsp;9&nbsp;&nbsp;11</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 46 · MCQ Checkpoint 2 — break instead of continue
+         ============================================================ -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:continue-vs-break:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"In the previous example, what happens if you use break instead of continue?\n\n```python\nfor i in range(12):\n    if i % 2 == 0:\n        break\n    print(i)\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"The code runs and prints only even numbers.","isCorrect":false},{"id":"q1b","text":"The code crashes.","isCorrect":false},{"id":"q1c","text":"Something else.","isCorrect":false},{"id":"q1d","text":"The code runs but prints nothing.","isCorrect":true},{"id":"q1e","text":"The code runs unchanged, printing only odd numbers.","isCorrect":false},{"id":"q1f","text":"The code runs and prints both even and odd numbers.","isCorrect":false}]}]}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint 2</span>
+        <h2>What if we used <span style="color:var(--warn);">break</span> instead?</h2>
+        <p style="margin:var(--gap) 0;max-width:900px;">In the previous example, what happens if you use <code>break</code> instead of <code>continue</code>?</p>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> The code runs and prints only even numbers.</li>
+          <li><span class="opt-key">B</span> The code crashes.</li>
+          <li><span class="opt-key">C</span> Something else.</li>
+          <li><span class="opt-key">D</span> The code runs but prints nothing.</li>
+          <li><span class="opt-key">E</span> The code runs unchanged, printing only odd numbers.</li>
+          <li><span class="opt-key">F</span> The code runs and prints both even and odd numbers.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 47 · CONCEPT — better versions, style comparison
+         ============================================================ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Use continue Sparingly</span>
+        <h2>Two <span style="color:var(--result);">clearer</span> rewrites</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          The <code style="color:var(--text);">continue</code> version above shows how it works, but it's not the clearest way to write this. Only reach for <code style="color:var(--text);">continue</code> when it genuinely makes code easier to read, which is rare.
+        </p>
+        <div class="split split-50" style="margin-top:var(--gap-lg);">
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">no continue</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">for</span> <span class="tok-nm">i</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">12</span>):
+    <span class="tok-kw">if</span> <span class="tok-nm">i</span> <span class="tok-op">%</span> <span class="tok-num">2</span> <span class="tok-op">==</span> <span class="tok-num">1</span>:
+        <span class="tok-kw">print</span>(<span class="tok-nm">i</span>)</code></pre>
+            </div>
+          </div>
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">step instead</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">for</span> <span class="tok-nm">i</span> <span class="tok-kw">in</span> <span class="tok-nm">range</span>(<span class="tok-num">1</span>, <span class="tok-num">12</span>, <span class="tok-num">2</span>):
+    <span class="tok-kw">print</span>(<span class="tok-nm">i</span>)</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 48 · MOBCODE — write your own stop-at-50 accumulator
+         ============================================================ -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"files":{"main.py":"# Write a program that adds up numbers the user enters,\n# one at a time, stopping as soon as the running total\n# goes over 50. Then print how many numbers it took.\n#\n# This could be written with a while loop, or with a for\n# loop and a break. Pick whichever feels like the right\n# tool for this job.\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);top:-90px;right:6%;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Build It &middot; Your Turn</span>
+        <h2>Stop once the total passes <span style="color:var(--accent);">50</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          Write a program that adds up numbers the user enters, one at a time, stopping as soon as the running total goes over <code style="color:var(--text);">50</code>. Then print how many numbers it took.
+          This could be written with a <code style="color:var(--text);">while</code> loop, or with a <code style="color:var(--text);">for</code> loop and a <code style="color:var(--text);">break</code>. Pick whichever feels like the right tool, you'll need to defend your choice next.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 49 · POSTBOARD — open reflection on your own approach
+         ============================================================ -->
+    <section
+      data-activity-id="postboard"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"prompt":"Did you reach for a while loop, or a for loop with a break? Why did that feel like the right tool for this task, and could the other approach have worked too?","autoApprove":"false"}'>
+      <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);top:-90px;right:6%;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Postboard &middot; Exit Ticket</span>
+        <h2>What did <span style="color:var(--result);">you</span> choose, and why?</h2>
+        <div class="frq-box" style="max-width:820px;margin-top:var(--gap-lg);">
+          <p>Did you reach for a <code style="color:var(--text);">while</code> loop, or a <code style="color:var(--text);">for</code> loop with a <code style="color:var(--text);">break</code>? Why did that feel like the right tool for this task, and could the other approach have worked too?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 50 · WRAP-UP — 2.2.4 recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>break and continue</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li><code style="color:var(--text);">break</code> exits the <strong>entire loop</strong> immediately, often paired with <code style="color:var(--text);">while True:</code> to build a loop that stops from the inside.</li>
+          <li><code style="color:var(--text);">continue</code> skips only the <strong>rest of the current pass</strong> and jumps back to the top of the loop for the next one.</li>
+          <li>Both are optional. A well-chosen loop condition, or a <code style="color:var(--text);">step</code> in <code style="color:var(--text);">range</code>, often reads more clearly than either one.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 51 · WRAP-UP — full unit recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(242,177,52,0.12) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Unit Recap</span>
+        <h2>2.1&ndash;2.2, all together</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li><code style="color:var(--text);">for LOOPVAR in range(...):</code> for a <span style="color:var(--result);">known</span> number of passes</li>
+          <li><code style="color:var(--text);">while TEST:</code> for an <span style="color:var(--result);">unknown</span> number, re-checked every pass.</li>
+          <li>Nested loops run the inner loop to completion on <strong>every single pass</strong> of the outer loop. The inner variable updates far more often than the outer one.</li>
+          <li><code style="color:var(--text);">break</code> exits a loop entirely. <code style="color:var(--text);">continue</code> skips only the current pass. Both are optional, and both are easy to overuse.</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+  /* ─── data-fragment-trace wiring ──────────────────────────────
+     Each fragment names the single line (by its printed .ln number)
+     that becomes the "current" cursor at that step, via
+     data-trace-current. A step can also name the call site the
+     cursor is currently inside via data-trace-active-call, so the
+     call line shows a hollow outlined caret while the cursor is off
+     tracing the function body. Lines are matched by their printed
+     line-number text, so a loop line simply gets re-marked current
+     on every pass it's revisited, no special-casing needed.
+
+     Loop variables and running totals are tracked the same way:
+     a hidden fragment (display:none) carries a value via
+     data-var-box="name", and the most recently visible such
+     fragment (in document order) becomes the innerHTML of every
+     [data-var-display="name"] element on the slide. Both mechanisms
+     recompute from scratch off Reveal's currently-.visible fragments
+     on every shown/hidden event, so back-navigation "just works"
+     without separate bookkeeping. ──────────────────────────────── */
+
+  function initVarDisplayDefaults(root) {
+    var displays = root.querySelectorAll('[data-var-display]');
+    Array.prototype.forEach.call(displays, function (el) {
+      if (el.dataset.varDefault === undefined) {
+        el.dataset.varDefault = el.innerHTML;
+      }
+    });
+  }
+
+  function syncBodyTrace(traceSlide) {
+    var startLine = traceSlide.getAttribute('data-trace-start');
+    var fragments = traceSlide.querySelectorAll('.fragment[data-trace-current]');
+    var visited = startLine ? [startLine] : [];
+    var activeCall = null;
+    Array.prototype.forEach.call(fragments, function (frag) {
+      if (!frag.classList.contains('visible')) return;
+      visited.push(frag.getAttribute('data-trace-current'));
+      activeCall = frag.getAttribute('data-trace-active-call');
+    });
+
+    var varFrags = traceSlide.querySelectorAll('.fragment[data-var-box]');
+    var latestByVar = {};
+    Array.prototype.forEach.call(varFrags, function (frag) {
+      if (!frag.classList.contains('visible')) return;
+      latestByVar[frag.getAttribute('data-var-box')] = frag.innerHTML;
+    });
+    var displays = traceSlide.querySelectorAll('[data-var-display]');
+    Array.prototype.forEach.call(displays, function (displayEl) {
+      var name = displayEl.getAttribute('data-var-display');
+      displayEl.innerHTML = Object.prototype.hasOwnProperty.call(latestByVar, name)
+        ? latestByVar[name]
+        : (displayEl.dataset.varDefault || '');
+    });
+
+    if (!visited.length) return; // nothing shown yet: keep the authored initial state
+
+    var currentLine = visited[visited.length - 1];
+    var doneSet = {};
+    visited.slice(0, -1).forEach(function (ln) { doneSet[ln] = true; });
+
+    var lines = traceSlide.querySelectorAll('.code-line:not(.context)');
+    Array.prototype.forEach.call(lines, function (line) {
+      var lnEl = line.querySelector('.ln');
+      var ln = lnEl ? lnEl.textContent.trim() : null;
+      line.classList.remove('current', 'done', 'pending', 'active-call');
+      if (ln === currentLine) {
+        line.classList.add('current');
+      } else if (activeCall && ln === activeCall) {
+        line.classList.add('active-call');
+      } else if (doneSet[ln]) {
+        line.classList.add('done');
+      } else {
+        line.classList.add('pending');
+      }
+    });
+  }
+
+  initSyncDeckReveal({
+    deckId: 'hpy-2-1-2-2-loops',
+    standaloneHosting: {
+      activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+      hash: true,
+      hashOneBasedIndex: true,
+      transition: 'fade',
+      transitionSpeed: 'fast',
+      backgroundTransition: 'none',
+      center: false,
+      controls: true,
+      controlsLayout: 'edges',
+      progress: true,
+      slideNumber: 'c/t',
+      keyboard: true,
+      touch: true,
+      fragments: true,
+      width: 1600,
+      height: 900,
+      margin: 0.04,
+      minScale: 0.2,
+      maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+      Array.prototype.forEach.call(document.querySelectorAll('section[data-fragment-trace]'), function (slide) {
+        initVarDisplayDefaults(slide);
+      });
+
+      Reveal.on('fragmentshown', function (event) {
+        var traceSlide = event.fragment.closest('section[data-fragment-trace]');
+        if (traceSlide) syncBodyTrace(traceSlide);
+      });
+      Reveal.on('fragmenthidden', function (event) {
+        var traceSlide = event.fragment.closest('section[data-fragment-trace]');
+        if (traceSlide) syncBodyTrace(traceSlide);
+      });
+    }
+  });
+</script>
+</body>
+</html>
