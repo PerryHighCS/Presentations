@@ -2,7 +2,7 @@
 
 This repository contains HTML slide presentations built with **Reveal.js**, published via GitHub Pages. Shared runtime/plugin code is consumed from the `SyncDeck-Reveal` git submodule at `vendor/SyncDeck-Reveal/`.
 
-Presentation source folders live under `Decks/`, while deployment remaps
+Presentation source folders now live under `Decks/`, while deployment remaps
 their contents to the site root. For example, `Decks/AR1/...` is published as
 `/AR1/...`.
 
@@ -141,7 +141,7 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
    ```
    Only add a `<style>` block after that link for styles that are specific to this presentation. If no `theme.css` exists and the new deck needs its own theme, consider extracting it to a `theme.css` so future decks in the same folder can share it.
    Check the parent folder heirarchy for a `theme.css` and place a new `theme.css` at the highest place
-   in the heirarchy that makes sense (e.g. the course level). 
+   in the heirarchy that makes sense (e.g. the course level).
 3. Load the bundled runtime with a relative path from the deck's published
    location. For the current `Decks/<course>/<unit>/deck.html` layout, use
    `../../runtime/`:
@@ -175,6 +175,32 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
    - Use **`px`** for all font sizes and spacing in CSS custom properties (not `em`/`clamp`/`vw`) — Reveal scales the canvas via CSS transform; `em` values double-scale
    - Never set `position` on `.reveal .slides > section` — Reveal needs `position: absolute` there for fade transitions; put padding/centering in a `.slide-inner` div inside each section instead
 5. Check the style tokens for the chosen preset in `.agent/skills/STYLE_PRESETS_EXTENDED.md` (full library) or `.agent/skills/vendor/syncdeck/references/STYLE_PRESETS.md` (short reference).
+6. If the deck needs a custom interactive widget (drag-and-drop, a classification/matching exercise, a code trace, a timed prompt game, a scored scenario, etc.), check `.agent/knowledge/html5-activities-index.md` first for an existing engine to copy and re-skin before building one from scratch. Add a new entry there if you build a substantial, reusable one.
+7. Run `node scripts/generate-permalink.mjs Decks/<path>/<deck>.html` to give the new deck a stable permalink before committing. See "Presentation Permalinks" below.
+
+## Presentation Permalinks
+
+Every deck under `Decks/` carries a `<meta name="syncdeck-permalink" content="<hash>">` tag,
+written once by `scripts/generate-permalink.mjs` and never hand-edited. The hash is derived
+from the deck's filename stem when first generated (with automatic collision resolution) and
+never changes afterward, even if the deck is later moved or renamed, so it's safe to share as
+a stable short link.
+
+- `config/permalinks.json` is the committed manifest (`hash -> { path, title }`) and the single
+  source of truth for collision detection.
+- `node scripts/generate-permalink.mjs Decks/<path>/<deck>.html` assigns a permalink to a new
+  deck, or re-syncs the manifest's cached path if an existing deck was moved.
+- `node scripts/generate-permalink.mjs --all` does the same across every deck; safe to re-run.
+- `node scripts/generate-permalink.mjs --check` (run in CI on every PR and before deploy) fails
+  if any deck is missing the tag, two decks share a hash, or the manifest disagrees with the
+  decks themselves.
+- At build time, `scripts/generate-permalink-redirects.mjs` emits a static redirect stub per
+  manifest entry at `/p/<hash>.html` that immediately `location.replace()`s to the deck's real,
+  current URL — this is what makes the permalink stable across reorganization.
+- The index pages (`scripts/site-indexes.mjs`) surface three links per deck: "Start as
+  instructor" and "Syncdeck link" (both ActiveBits-hosted, built from the deck's real current
+  URL) and "Permalink" (the short `/p/<hash>.html` link, safe to share or feed into the
+  ActiveBits launcher directly).
 
 ---
 
@@ -190,6 +216,24 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
 | Overview → storyboard | `overview: true` in any synced state is intercepted and routed to `reveal-storyboard-set` rather than `deck.setState()`, so students see the custom strip, not Reveal's grid. |
 | No `chalkboard.storage` | The vendored chalkboard plugin does not write to `sessionStorage`. The host page is the source of truth (snapshot + delta buffer). Setting `storage` would cause divergence on reload. |
 | Role starts as `standalone` | `reveal-iframe-sync.js` always initialises in `standalone` mode. The host must send `setRole` to promote to `instructor` or `student`. Never rely on the `role` config field. |
+| Never hand-edit `syncdeck-permalink` meta tag or `config/permalinks.json` | The hash is generated once by `scripts/generate-permalink.mjs` and must stay stable across moves/renames. CI (`--check`) fails if a deck's tag and the manifest disagree. |
+
+## Code Tracing Convention
+
+Decks that trace code execution line-by-line (`data-fragment-trace` sections driving `.code-line.current`/`.done`/`.pending`/`.active-call` highlighting) must follow this rule:
+
+**The highlighted "current" line always indicates the next line about to execute, not the line that just ran.** A line's effects (a `print()` writing to the console, an assignment populating a var-box, a function call returning to its call site) must not be revealed on the fragment that arrives at that line. They are revealed only on the fragment where the caret moves past it, i.e. one step later, when the following line becomes current.
+
+A line that raises an exception never completes, so the caret never advances past it. Its effect (the traceback) is revealed on a later fragment that keeps `data-trace-current` pointing at that same crashing line rather than a following one, since there is no line the program reached afterward.
+
+This applies uniformly to console output, variable assignment, and function-return-to-call-site reveals. When authoring or editing a `data-fragment-trace` section, structure fragments so that any line producing an observable effect fires a hidden fragment on arrival (`data-trace-current="N"` with no visible content) followed by the visible reveal on the fragment that advances `data-trace-current` to `N+1` (using a virtual line number past the end of the snippet if there is no real next line, or reusing `N` if the line crashes instead of completing).
+
+## Writing Style
+
+- **No em dashes (—).** Always substitute context-appropriate punctuation: colon for introductory/defining clauses, comma for parenthetical asides or conjunctions, semicolon for contrasting independent clauses, period for abrupt follow-up sentences.
+- **Sentences not fragments.** Avoid telegraphic style; write in full sentences for clarity and professionalism. Students may miss class and need to read the slides independently, so they should be as self-contained and clear as possible. Sentences and short paragraphs  improve readability and break up large blocks of text.
+- **Inline color emphasis over bullets.** Prefer prose sentences with key terms highlighted via a theme color span (e.g. `<span style="color:var(--phosphor);">`) over bullet lists. Check the deck's theme for available color tokens before writing spans. Color-pop the term or phrase that carries the weight of the sentence, not the whole sentence. Use `.bullets` lists only when the items are genuinely enumerable and parallel; otherwise, fold the ideas into sentences and let inline emphasis do the work of drawing the eye. Keep color usage semantically consistent within a deck: if one color is used for a concept (e.g. a keyword, a class name, an action), use that same color for the same concept throughout the presentation.
+- **Interactivity**: use Reveal's built-in interactivity features (fragments, nested sections, etc.) to pace the information flow and keep students engaged. Avoid overwhelming slides with too much information at once. Use syncdeck's embedded activities to encourage active learning and exploration.
 
 ## Local Preview
 
