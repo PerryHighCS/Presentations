@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import { syncDeckHosting } from '../config/site-map.mjs';
+import { extractPermalinkHash } from './permalink-utils.mjs';
 
 const NATURAL_COLLATOR = new Intl.Collator(undefined, {
   numeric: true,
@@ -132,10 +133,10 @@ export const PAGE_STYLE = `
   .file-actions a { color: inherit; }
   .file-actions a:hover { color: var(--accent); text-decoration: underline; }
   .file-actions .sep { color: #3d537e; }
-  .file-actions button.copy-url {
+  .tree button.copy-url {
     display: inline-flex;
     align-items: center;
-    color: inherit;
+    color: var(--muted);
     background: none;
     border: none;
     padding: 2px;
@@ -144,12 +145,13 @@ export const PAGE_STYLE = `
     border-radius: 4px;
     cursor: pointer;
   }
-  .file-actions button.copy-url svg { width: 14px; height: 14px; display: block; }
-  .file-actions button.copy-url:hover { color: var(--accent); }
-  .file-actions button.copy-url:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
-  .file-actions button.copy-url.copied { color: #7cd992; }
-  .file-actions button.copy-url.failed { color: #ff8a80; }
-  .file-actions button.copy-url:disabled { cursor: default; }
+  .tree button.copy-url svg { width: 14px; height: 14px; display: block; }
+  .tree button.copy-url:hover { color: var(--accent); }
+  .tree button.copy-url:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+  .tree button.copy-url.copied { color: #7cd992; }
+  .tree button.copy-url.failed { color: #ff8a80; }
+  .tree button.copy-url:disabled { cursor: default; }
+  .tree button.copy-url-labeled { gap: 4px; }
   @media (max-width: 640px) {
     .tree li.file {
       flex-direction: column;
@@ -201,9 +203,10 @@ export const PAGE_SCRIPT = `
 
     document.querySelectorAll('a[data-launch-path]').forEach((a) => {
       const presentationUrl = resolveUrl(a.getAttribute('data-launch-path') || '');
-      if (a.getAttribute('data-launch') === 'instructor') {
+      const launchMode = a.getAttribute('data-launch');
+      if (launchMode === 'instructor') {
         a.href = buildActiveBitsUrl(launchPath, presentationUrl, { mode: 'instructor' });
-      } else {
+      } else if (launchMode === 'syncdeck') {
         a.href = buildActiveBitsUrl(permalinkPath, presentationUrl);
       }
     });
@@ -277,6 +280,15 @@ export async function defaultTitleForFile(filePath) {
   return path.basename(filePath, path.extname(filePath)).replace(/[-_]/g, ' ').trim();
 }
 
+export async function permalinkHashForFile(filePath) {
+  try {
+    const text = await fs.readFile(filePath, 'utf8');
+    return extractPermalinkHash(text);
+  } catch {
+    return null;
+  }
+}
+
 function makePage(titleText, heading, description, listing, generatedAt, generatedAtIso, backLink = null) {
   const backHtml = backLink
     ? `<p class="back"><a href="${escapeHtml(backLink)}">&larr; Back</a></p>`
@@ -307,19 +319,31 @@ ${listing}
 `;
 }
 
-function renderTree(node, indent = '      ', pathPrefix = '') {
+function renderTree(node, indent = '      ', pathPrefix = '', pageDepth = 0) {
   const lines = [];
+  // pageDepth is how many directories the *page being rendered* sits below
+  // the site root (constant across this recursion), not how deep `pathPrefix`
+  // has nested within that single page's listing — those are different axes.
+  const rootPrefix = '../'.repeat(pageDepth);
 
   for (const file of [...node.files].sort((a, b) => NATURAL_COLLATOR.compare(a.title, b.title))) {
     const relativeHref = `${pathPrefix}${file.name}`;
+    const permalinkHref = file.permalinkHash ? `${rootPrefix}p/${file.permalinkHash}.html` : null;
+    // The syncdeck link is fed to ActiveBits as presentationUrl, so route it
+    // through our own stable permalink when one exists rather than the raw
+    // (reorg-fragile) path.
+    const syncdeckLaunchPath = permalinkHref || relativeHref;
     lines.push(
       `${indent}<li class="file"><a href="${escapeHtml(relativeHref)}">${escapeHtml(file.title)}</a>` +
+        `<button type="button" class="copy-url" data-copy-path="${escapeHtml(relativeHref)}" aria-label="Copy presentation URL" title="Copy URL">${ICON_COPY}</button>` +
         `<span class="file-actions">` +
         `<a href="#" data-launch="instructor" data-launch-path="${escapeHtml(relativeHref)}">Start as instructor</a>` +
         `<span class="sep">&middot;</span>` +
-        `<a href="#" data-launch="permalink" data-launch-path="${escapeHtml(relativeHref)}">Get permalink</a>` +
-        `<span class="sep">&middot;</span>` +
-        `<button type="button" class="copy-url" data-copy-path="${escapeHtml(relativeHref)}" aria-label="Copy presentation URL" title="Copy URL">${ICON_COPY}</button>` +
+        `<a href="#" data-launch="syncdeck" data-launch-path="${escapeHtml(syncdeckLaunchPath)}">Syncdeck link</a>` +
+        (permalinkHref
+          ? `<span class="sep">&middot;</span>` +
+            `<button type="button" class="copy-url copy-url-labeled" data-copy-path="${escapeHtml(permalinkHref)}" aria-label="Copy permalink URL" title="Copy permalink URL">Permalink ${ICON_COPY}</button>`
+          : '') +
         `</span></li>`
     );
   }
@@ -332,7 +356,7 @@ function renderTree(node, indent = '      ', pathPrefix = '') {
         `<a class="folder-name" href="${escapeHtml(`${pathPrefix}${dirname}/index.html`)}">${escapeHtml(dirname)}/</a></summary>`
     );
     lines.push(`${indent}    <ul>`);
-    lines.push(...renderTree(child, indent + '      ', `${pathPrefix}${dirname}/`));
+    lines.push(...renderTree(child, indent + '      ', `${pathPrefix}${dirname}/`, pageDepth));
     lines.push(`${indent}    </ul>`);
     lines.push(`${indent}  </details>`);
     lines.push(`${indent}</li>`);
@@ -341,7 +365,7 @@ function renderTree(node, indent = '      ', pathPrefix = '') {
   return lines;
 }
 
-export async function buildIndexPages(htmlFiles, getTitleForPublicPath) {
+export async function buildIndexPages(htmlFiles, getTitleForPublicPath, getPermalinkForPublicPath) {
   const generatedAtDt = new Date();
   const generatedAt = generatedAtDt.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, ' UTC');
   const generatedAtIso = generatedAtDt.toISOString();
@@ -356,6 +380,7 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath) {
     titledEntries.push({
       rel,
       title: await getTitleForPublicPath(rel),
+      permalinkHash: getPermalinkForPublicPath ? await getPermalinkForPublicPath(rel) : null,
     });
   }
 
@@ -376,6 +401,7 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath) {
       name: parsed.base,
       rel: relPath,
       title: entry.title,
+      permalinkHash: entry.permalinkHash,
     });
   }
 
@@ -401,7 +427,8 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath) {
   function addFolderPages(node, folder = '.') {
     for (const [dirname, child] of [...node.dirs.entries()].sort((a, b) => NATURAL_COLLATOR.compare(a[0], b[0]))) {
       const childFolder = folder === '.' ? dirname : `${folder}/${dirname}`;
-      const listingLines = renderTree(child);
+      const pageDepth = childFolder.split('/').filter(Boolean).length;
+      const listingLines = renderTree(child, '      ', '', pageDepth);
       const listing = listingLines.length
         ? listingLines.join('\n')
         : '      <li>No presentations found.</li>';

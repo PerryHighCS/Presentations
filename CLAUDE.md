@@ -173,6 +173,31 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
    - Use **`px`** for all font sizes and spacing in CSS custom properties (not `em`/`clamp`/`vw`) — Reveal scales the canvas via CSS transform; `em` values double-scale
    - Never set `position` on `.reveal .slides > section` — Reveal needs `position: absolute` there for fade transitions; put padding/centering in a `.slide-inner` div inside each section instead
 5. Check the style tokens for the chosen preset in `.agent/skills/STYLE_PRESETS_EXTENDED.md` (full library) or `.agent/skills/vendor/syncdeck/references/STYLE_PRESETS.md` (short reference).
+6. Run `node scripts/generate-permalink.mjs Decks/<path>/<deck>.html` to give the new deck a stable permalink before committing. See "Presentation Permalinks" below.
+
+## Presentation Permalinks
+
+Every deck under `Decks/` carries a `<meta name="syncdeck-permalink" content="<hash>">` tag,
+written once by `scripts/generate-permalink.mjs` and never hand-edited. The hash is derived
+from the deck's filename stem when first generated (with automatic collision resolution) and
+never changes afterward, even if the deck is later moved or renamed, so it's safe to share as
+a stable short link.
+
+- `config/permalinks.json` is the committed manifest (`hash -> { path, title }`) and the single
+  source of truth for collision detection.
+- `node scripts/generate-permalink.mjs Decks/<path>/<deck>.html` assigns a permalink to a new
+  deck, or re-syncs the manifest's cached path if an existing deck was moved.
+- `node scripts/generate-permalink.mjs --all` does the same across every deck; safe to re-run.
+- `node scripts/generate-permalink.mjs --check` (run in CI on every PR and before deploy) fails
+  if any deck is missing the tag, two decks share a hash, or the manifest disagrees with the
+  decks themselves.
+- At build time, `scripts/generate-permalink-redirects.mjs` emits a static redirect stub per
+  manifest entry at `/p/<hash>.html` that immediately `location.replace()`s to the deck's real,
+  current URL — this is what makes the permalink stable across reorganization.
+- The index pages (`scripts/site-indexes.mjs`) surface three links per deck: "Start as
+  instructor" and "Syncdeck link" (both ActiveBits-hosted, built from the deck's real current
+  URL) and "Permalink" (the short `/p/<hash>.html` link, safe to share or feed into the
+  ActiveBits launcher directly).
 
 ---
 
@@ -188,6 +213,7 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
 | Overview → storyboard | `overview: true` in any synced state is intercepted and routed to `reveal-storyboard-set` rather than `deck.setState()`, so students see the custom strip, not Reveal's grid. |
 | No `chalkboard.storage` | The vendored chalkboard plugin does not write to `sessionStorage`. The host page is the source of truth (snapshot + delta buffer). Setting `storage` would cause divergence on reload. |
 | Role starts as `standalone` | `reveal-iframe-sync.js` always initialises in `standalone` mode. The host must send `setRole` to promote to `instructor` or `student`. Never rely on the `role` config field. |
+| Never hand-edit `syncdeck-permalink` meta tag or `config/permalinks.json` | The hash is generated once by `scripts/generate-permalink.mjs` and must stay stable across moves/renames. CI (`--check`) fails if a deck's tag and the manifest disagree. |
 
 ## Code Tracing Convention
 
