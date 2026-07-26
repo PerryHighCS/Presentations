@@ -53,6 +53,8 @@ jobs:
           cache: npm
       - name: Install workspace dependencies
         run: npm ci
+      - name: Check permalinks
+        run: node scripts/generate-permalink.mjs --check
       - name: Build SyncDeck runtime
         run: npm run build --workspace vendor/SyncDeck-Reveal
       - name: Stage publishable site
@@ -68,6 +70,8 @@ jobs:
             echo ".build/site directory was not created."
             exit 1
           fi
+      - name: Generate permalink redirects
+        run: node scripts/generate-permalink-redirects.mjs .build/site
       - name: Generate index.html
         run: node scripts/generate-site-indexes.mjs .build/site
       - name: Setup Pages
