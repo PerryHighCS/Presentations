@@ -4,7 +4,8 @@ import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 
-import { buildIndexPages, defaultTitleForFile } from './site-indexes.mjs';
+import { buildIndexPages, defaultTitleForFile, permalinkHashForFile } from './site-indexes.mjs';
+import { loadManifest, redirectHtml, toRedirectTarget } from './permalink-utils.mjs';
 import {
   collectHtmlFiles,
   createExclusionChecker,
@@ -256,14 +257,41 @@ async function main() {
       return;
     }
 
-    const htmlFiles = await collectHtmlFiles(rootDir, manifestRules);
-    const indexPages = await buildIndexPages(htmlFiles, async (publicPath) => {
-      const sourcePath = resolvePublicPathToSource(publicPath, mounts);
-      if (!sourcePath) {
-        return publicPath;
+    const permalinkMatch = pathname.match(/^\/p\/([0-9a-z]+)\.html$/i);
+    if (permalinkMatch) {
+      const manifest = await loadManifest(rootDir);
+      const entry = manifest[permalinkMatch[1]];
+      if (entry) {
+        res.writeHead(200, {
+          'cache-control': 'no-store',
+          'content-type': 'text/html; charset=utf-8',
+        });
+        res.end(injectLiveReload(redirectHtml(toRedirectTarget(entry.path))));
+      } else {
+        res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+        res.end(`Not found: ${pathname}`);
       }
-      return defaultTitleForFile(sourcePath);
-    });
+      return;
+    }
+
+    const htmlFiles = await collectHtmlFiles(rootDir, manifestRules);
+    const indexPages = await buildIndexPages(
+      htmlFiles,
+      async (publicPath) => {
+        const sourcePath = resolvePublicPathToSource(publicPath, mounts);
+        if (!sourcePath) {
+          return publicPath;
+        }
+        return defaultTitleForFile(sourcePath);
+      },
+      async (publicPath) => {
+        const sourcePath = resolvePublicPathToSource(publicPath, mounts);
+        if (!sourcePath) {
+          return null;
+        }
+        return permalinkHashForFile(sourcePath);
+      }
+    );
 
     const indexKey =
       pathname === '/'

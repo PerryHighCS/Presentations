@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildIndexPages, defaultTitleForFile } from './site-indexes.mjs';
+import { buildIndexPages, defaultTitleForFile, permalinkHashForFile } from './site-indexes.mjs';
 import { createExclusionChecker, loadManifestRules } from './site-utils.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -41,9 +41,11 @@ async function main() {
   const isExcludedFromIndex = createExclusionChecker(rootDir, manifestRules);
   const htmlFiles = (await collectHtmlFiles(siteDir))
     .filter((relPath) => !isExcludedFromIndex(relPath, false));
-  const pages = await buildIndexPages(htmlFiles, async (publicPath) => {
-    return defaultTitleForFile(path.join(siteDir, publicPath));
-  });
+  const pages = await buildIndexPages(
+    htmlFiles,
+    async (publicPath) => defaultTitleForFile(path.join(siteDir, publicPath)),
+    async (publicPath) => permalinkHashForFile(path.join(siteDir, publicPath))
+  );
 
   for (const [relativePath, html] of pages) {
     const outputPath = path.join(siteDir, relativePath);
