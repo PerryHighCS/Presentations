@@ -175,8 +175,17 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
    - Use **`px`** for all font sizes and spacing in CSS custom properties (not `em`/`clamp`/`vw`) — Reveal scales the canvas via CSS transform; `em` values double-scale
    - Never set `position` on `.reveal .slides > section` — Reveal needs `position: absolute` there for fade transitions; put padding/centering in a `.slide-inner` div inside each section instead
 5. Check the style tokens for the chosen preset in `.agent/skills/STYLE_PRESETS_EXTENDED.md` (full library) or `.agent/skills/vendor/syncdeck/references/STYLE_PRESETS.md` (short reference).
-6. If the deck needs a custom interactive widget (drag-and-drop, a classification/matching exercise, a code trace, a timed prompt game, a scored scenario, etc.), check `.agent/knowledge/html5-activities-index.md` first for an existing engine to copy and re-skin before building one from scratch. Add a new entry there if you build a substantial, reusable one.
+6. If the deck needs a custom interactive widget (drag-and-drop, a classification/matching exercise, a code trace, a timed prompt game, a scored scenario, etc.), check `.agent/knowledge/html5-activities-index.md` first for an existing engine to copy and re-skin before building one from scratch.
 7. Run `node scripts/generate-permalink.mjs Decks/<path>/<deck>.html` to give the new deck a stable permalink before committing. See "Presentation Permalinks" below.
+
+## Reusable Activity Index
+
+`.agent/knowledge/html5-activities-index.md` (symlinked from `.claude/knowledge/`) catalogs the
+substantial, reusable custom HTML5 activities/widgets already built inline into decks. This
+index must stay current: whenever you add a new substantial interactive widget, or materially
+redesign an existing one's mechanism, update the index in the same change, whether that work
+happens on a brand-new deck or an edit to an existing one. Don't wait to be asked. A one-off
+trivial fragment reveal doesn't need an entry; a distinct, reusable interaction mechanism does.
 
 ## Presentation Permalinks
 
