@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="4ymrcp">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1.5 Overflow and Rounding</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Overflow and Rounding
+   ============================================================ */
+
+/* ─── Decimal / Binary counting table (shared component pattern) ──── */
+.dec-bin-table {
+  border-collapse: collapse;
+  margin: var(--gap-lg) auto 0;
+}
+.dec-bin-table th {
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  padding: 10px 28px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+.dec-bin-table td {
+  border: 1px solid var(--teal-border);
+  background: var(--bg-card);
+  padding: 12px 28px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--h3);
+  color: var(--text);
+}
+.dec-bin-table td.dim { color: var(--text-dim); }
+.bin-input {
+  width: 8ch;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--teal-border);
+  font-family: var(--font-mono);
+  font-size: var(--h3);
+  color: var(--amber);
+  letter-spacing: 0.15em;
+  text-align: center;
+  outline: none;
+}
+.bin-input:focus { border-bottom-color: var(--teal); }
+.bin-input::placeholder { color: var(--text-dim); opacity: 0.6; }
+
+/* ─── Worked-example fraction table ─────────────────────────────── */
+.frac-table {
+  display: grid;
+  grid-template-columns: repeat(4, 110px);
+  gap: 3px;
+  margin-top: var(--gap);
+}
+.ft-cell {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  padding: 14px 0;
+}
+.ft-label { color: var(--teal); font-size: 22px; }
+.ft-val { color: var(--text-dim); font-size: 20px; }
+.ft-bit { color: var(--text); font-size: 32px; font-weight: 700; }
+.ft-bit.bit-on { color: var(--amber); }
+
+/* ─── Fraction-conversion work row: table+formula beside a scratch pad ── */
+.frac-work-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap-lg);
+  margin-top: var(--gap);
+}
+.frac-work-col { flex: 0 0 auto; }
+.scratch-pad {
+  flex: 0 0 auto;
+  min-width: 340px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 16px 22px;
+  font-family: var(--font-mono);
+}
+.scratch-header {
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+.scratch-line {
+  padding: 6px 0;
+  border-top: 1px solid var(--teal-border);
+  font-size: 18px;
+}
+.scratch-line:first-of-type { border-top: none; }
+.scratch-line .cmp { display: block; color: var(--text-muted); }
+.scratch-line .cmp.yes { color: var(--amber); }
+.scratch-line .sub { display: block; color: var(--text); margin-top: 2px; }
+
+/* ─── Algorithm / formula steps ─────────────────────────────────── */
+.algo-steps {
+  list-style: none;
+  counter-reset: algo;
+  margin-top: var(--gap-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.algo-steps li {
+  counter-increment: algo;
+  position: relative;
+  padding-left: 2.5em;
+  font-size: var(--h3);
+  color: var(--text);
+  line-height: 1.4;
+}
+.algo-steps li::before {
+  content: counter(algo);
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  width: 1.4em;
+  height: 1.4em;
+  border-radius: 50%;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-size: 0.6em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Flippy-Do photo card ───────────────────────────────────────── */
+.flippy-photo-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 10px;
+  padding: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.flippy-photo-card img {
+  max-height: 380px;
+  border-radius: 4px;
+  display: block;
+  box-shadow: 0 10px 34px rgba(0,0,0,0.4);
+}
+
+/* ─── Binary / decimal odometer widget ──────────────────────────── */
+.odometer {
+  margin-top: var(--gap);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 960px;
+}
+.odo-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.odo-row-label {
+  flex: 0 0 90px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.odo-cells {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+.odo-place {
+  flex: 0 0 80px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.odo-bit,
+.odo-digit {
+  flex: 0 0 80px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 34px;
+  font-weight: 700;
+  padding: 10px 0;
+  color: var(--text-muted);
+  transition: color 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.odo-bit.bit-on {
+  color: var(--amber);
+  background: rgba(255,212,59,0.08);
+  border-color: var(--amber-border);
+}
+.odo-digit {
+  color: var(--teal);
+}
+.odo-digit-empty {
+  border: 1px dashed var(--text-dim);
+  background: transparent;
+  color: transparent;
+}
+/* Overlay stack for the step-through intro text: every step occupies the
+   same grid cell, stretched full width and pinned to the top, so swapping
+   steps reads as a replace rather than a jump. (Not reusing Reveal's
+   built-in .r-stack — it defaults stacked children to place-self: center,
+   which is wrong for left-aligned paragraphs of very different lengths.) */
+.odo-intro-stack {
+  position: relative;
+  display: grid;
+  margin-top: var(--gap);
+  max-width: 1250px;
+}
+.odo-intro-stack > * {
+  grid-area: 1 / 1;
+  justify-self: stretch;
+  align-self: start;
+  width: 100%;
+}
+/* Step-through: once a later fragment in the group is revealed, hide any
+   earlier one that's still marked visible, so only the latest step shows. */
+.reveal .step-through .fragment.visible:has(~ .fragment.visible) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+/* Custom fragment type: visible by default, fades out on activation
+   (theme.css's blanket .fragment rule hides fragments by default, so this
+   needs its own opacity override, same technique as .shape-out elsewhere). */
+.reveal .fragment.instr-out {
+  opacity: 1 !important;
+  visibility: inherit !important;
+  transition: opacity 0.5s var(--ease) !important;
+}
+.reveal .fragment.instr-out.visible {
+  opacity: 0 !important;
+}
+.odo-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-lg);
+  margin-top: var(--gap);
+  flex-wrap: wrap;
+}
+.odo-btn-group { display: flex; gap: 10px; }
+.odo-btn {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  padding: 0.55em 1.3em;
+  cursor: pointer;
+}
+.odo-btn:hover { background: rgba(0,201,177,0.2); }
+.odo-btn:active { transform: translateY(1px); }
+.odo-slider-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--small);
+  color: var(--text-muted);
+}
+.odo-slider-group input[type="range"] {
+  accent-color: var(--teal);
+  width: 200px;
+}
+.odo-overflow-flag {
+  margin-top: var(--gap-sm);
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--body);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--red);
+  border: 1px solid rgba(255,107,107,0.4);
+  background: rgba(255,107,107,0.08);
+  border-radius: 4px;
+  padding: 0.4em 0.9em;
+  opacity: 0;
+}
+.odo-overflow-flag.show {
+  animation: odo-flash 1.8s var(--ease);
+}
+@keyframes odo-flash {
+  0%   { opacity: 0; transform: scale(0.9); }
+  12%  { opacity: 1; transform: scale(1.04); }
+  20%  { opacity: 1; transform: scale(1); }
+  82%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ─── Rounding scales ────────────────────────────────────────────── */
+.scale-caption {
+  font-size: var(--body);
+  color: var(--text-muted);
+  margin-top: var(--gap);
+}
+.scale-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+  margin-top: var(--gap);
+  max-width: 1100px;
+}
+.scale-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 1.1em 1.3em;
+  text-align: center;
+}
+.scale-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 0.5em;
+}
+.scale-readout {
+  font-family: var(--font-mono);
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--amber);
+}
+.scale-unit {
+  font-size: 0.32em;
+  margin-left: 0.25em;
+  color: var(--text-dim);
+}
+.scale-card p {
+  margin-top: 0.6em;
+  font-size: var(--small);
+}
+
+/* ─── Number line (representable values) ────────────────────────── */
+.number-line {
+  position: relative;
+  margin-top: var(--gap-lg);
+  padding-top: 8px;
+}
+.nl-track {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 20px;
+  height: 2px;
+  background: var(--text-dim);
+}
+.nl-ticks {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  z-index: 1;
+}
+.nl-tick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 28px;
+}
+.nl-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 10px rgba(0,201,177,0.35);
+}
+.nl-dot.nl-dot-empty {
+  background: transparent;
+  border: 2px dashed var(--text-dim);
+  box-shadow: none;
+}
+.nl-val {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  color: var(--text);
+}
+.nl-tick.nl-unrep .nl-val { color: var(--text-dim); }
+.nl-bin {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.nl-callouts {
+  display: flex;
+  gap: var(--gap);
+  margin-top: var(--gap-lg);
+}
+.nl-callouts .callout { flex: 1; }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 1 · Lesson 5</span>
+        <h1 class="title-h1">Overflow and Rounding</h1>
+      </div>
+      <div class="glow" style="width:600px;height:600px;left:-150px;top:-150px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 02 · WARM-UP: CASH REGISTER (resonance FRQ) -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"A cash register has nine $10 bills, nine $1 bills, and nine dimes.\n\n- What is the largest amount of change you could give someone?\n- What is the smallest amount you could give, other than zero?\n- What would you do if someone needed exactly 7 cents in change?","order":0,"responseTimeLimitMs":90000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ</span>
+        <h2 style="margin-bottom:var(--gap-lg);">Only So Much Change in the Drawer</h2>
+        <div class="frq-box" style="max-width:900px;">
+          <p>A cash register has <strong style="color:var(--text);">nine $10 bills</strong>, <strong style="color:var(--text);">nine $1 bills</strong>, and <strong style="color:var(--text);">nine dimes</strong>.</p>
+          <p style="margin-top:var(--gap-sm);">What is the <strong>largest</strong> amount of change you could give someone? The <strong>smallest</strong> amount, other than zero?</p>
+          <p style="margin-top:var(--gap-sm);">What would you do if someone needed exactly <strong>seven cents</strong> in change?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 03 · EXPLORATION: FROM MONEY TO BITS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Exploration</span>
+        <h2>From Money to Bits</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap);max-width:1250px;">Even though money is theoretically infinite, a register drawer can only make certain amounts, depending on which denominations happen to be sitting in it. Computers store numbers the exact same way.</p>
+        <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap);max-width:1250px;">If we swap dollars and cents for <span style="color:var(--teal);">bits</span>, zeros and ones, which numbers will a computer run out of room for? Which numbers will it not be able to make <em>exactly</em>?</p>
+        <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-dim);margin-top:var(--gap);">That's what we're looking at today: two problems computers hit when they store numbers in a fixed number of bits.</p>
+      </div>
+      <div class="glow" style="width:500px;height:500px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 04 · EXPLORATION: BINARY/DECIMAL ODOMETER (interactive) -->
+    <section id="binary-odometer">
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Exploration</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Binary / Decimal Odometer</h2>
+
+        <div class="step-through odo-intro-stack">
+          <p class="fragment instr-out" data-fragment-index="0" style="font-size:var(--body);color:var(--text-muted);">Press <strong style="color:var(--text);">Start</strong> to watch this 8-bit odometer count up in binary and decimal at the same time. Drag the <strong style="color:var(--text);">speed</strong> slider to speed it up, and drag the <strong style="color:var(--text);">value</strong> slider to jump straight to any 8-bit value instead of counting up to it.</p>
+          <p class="fragment fade-up" data-fragment-index="0" style="font-size:var(--body);color:var(--text-muted);">Now press <strong style="color:var(--text);">Stop</strong>. Set the <strong style="color:var(--text);">value</strong>s just below the highest possible number, press <strong style="color:var(--text);">Start</strong>, and watch closely as it counts past the top: the decimal count keeps going, but watch what happens to the bits.</p>
+          <p class="fragment fade-up" data-fragment-index="1" style="font-size:var(--h3);color:var(--text-muted);">What happens to the reading once it passes <strong>255</strong>?</p>
+          <p class="fragment fade-up" data-fragment-index="2" style="font-size:var(--h3);color:var(--text-muted);">Does the number still represent how many times the odometer has actually ticked?</p>
+        </div>
+
+        <div class="odometer">
+          <div class="odo-row">
+            <span class="odo-row-label"></span>
+            <div class="odo-cells">
+              <div class="odo-place">128</div><div class="odo-place">64</div><div class="odo-place">32</div><div class="odo-place">16</div><div class="odo-place">8</div><div class="odo-place">4</div><div class="odo-place">2</div><div class="odo-place">1</div>
+            </div>
+          </div>
+          <div class="odo-row">
+            <span class="odo-row-label">Binary</span>
+            <div class="odo-cells" id="odo-bits">
+              <div class="odo-bit" data-bit="7">0</div><div class="odo-bit" data-bit="6">0</div><div class="odo-bit" data-bit="5">0</div><div class="odo-bit" data-bit="4">0</div><div class="odo-bit" data-bit="3">0</div><div class="odo-bit" data-bit="2">0</div><div class="odo-bit" data-bit="1">0</div><div class="odo-bit" data-bit="0">0</div>
+            </div>
+          </div>
+          <div class="odo-row">
+            <span class="odo-row-label">Decimal</span>
+            <div class="odo-cells" id="odo-decimal-cells"></div>
+          </div>
+        </div>
+
+        <div class="odo-controls">
+          <div class="odo-btn-group">
+            <button class="odo-btn" id="odo-start" type="button">Start</button>
+            <button class="odo-btn" id="odo-stop" type="button">Stop</button>
+          </div>
+          <div class="odo-slider-group">
+            <span>Slow</span>
+            <input type="range" id="odo-speed" min="1" max="10" value="4" step="1">
+            <span>Fast</span>
+          </div>
+          <div class="odo-slider-group">
+            <span>Value:</span>
+            <input type="range" id="odo-value" min="0" max="255" value="0" step="1">
+          </div>
+        </div>
+        <div class="odo-overflow-flag" id="odo-overflow">Binary overflow!</div>
+      </div>
+    </section>
+
+    <!-- SLIDE 05 · GET OUT YOUR FLIPPY-DO -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Flippy-Do</span>
+        <h2 style="margin-bottom:var(--gap);">Get Out Your Flippy-Do</h2>
+        <div class="flippy-photo-card">
+          <img src="media/flippy-intro.jpg" alt="A Flippy-Do binary place-value tool">
+        </div>
+        <p style="font-size:var(--body);color:var(--text-dim);margin-top:var(--gap);">We'll use it to answer a few quick questions about limits.</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 06 · WARM-UP: FLIPPY-DO LIMITS, STAGED (resonance FRQ) -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:flippy-limits:0"
+      data-activity-options='{"presentationMode":"staged","questions":[{"id":"q1","type":"free-response","text":"What value would cause your Flippy-Do to overflow, the same way the odometer did?","order":0,"responseTimeLimitMs":45000},{"id":"q2","type":"free-response","text":"What is the highest number we can represent with our Flippy-Do?","order":1,"responseTimeLimitMs":45000},{"id":"q3","type":"free-response","text":"What adaptation could you make to the Flippy-Do to represent a higher value?","order":2,"responseTimeLimitMs":45000},{"id":"q4","type":"free-response","text":"Using your newly adapted Flippy-Do, how many total numbers could it represent?","order":3,"responseTimeLimitMs":45000},{"id":"q5","type":"free-response","text":"If your Flippy-Do had only 4 flaps, 4 bits, what would the highest number it could show be?","order":4,"responseTimeLimitMs":45000},{"id":"q6","type":"free-response","text":"How many numbers total could a 4-bit Flippy-Do represent?","order":5,"responseTimeLimitMs":45000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ</span>
+        <h2 style="margin-bottom:var(--gap-lg);">Pushing the Limits of the Flippy-Do</h2>
+        <div class="frq-box" style="max-width:1000px;">
+          <p><strong style="color:var(--text);">Overflow and max:</strong> What value would cause your Flippy-Do to overflow, the same way the odometer did? What is the highest number we can represent with it?</p>
+          <p style="margin-top:var(--gap-sm);"><strong style="color:var(--text);">Making room for more:</strong> What adaptation could you make to represent a higher value? Using that adapted Flippy-Do, how many total numbers could it represent?</p>
+          <p style="margin-top:var(--gap-sm);"><strong style="color:var(--text);">Shrinking it down:</strong> If it had only 4 flaps, 4 bits, what would the highest number it could show be? How many numbers total could a 4-bit Flippy-Do represent?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 07 · NUMBERS IN COMPUTERS (DATA TYPES) -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Data Types</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Numbers in Computers</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">Computers store everything, numbers, text, images, as binary: a series of 1s and 0s. How many bits a number is given in memory decides how big or small it's allowed to be. We call that fixed allotment a <span style="color:var(--amber);">data type</span>.</p>
+        <table class="dec-bin-table" style="margin-top:var(--gap);">
+          <tr><th>Data Type</th><th>Bits</th><th>Minimum</th><th>Maximum</th></tr>
+          <tr><td>byte</td><td>8</td><td>0 (unsigned)</td><td>255</td></tr>
+          <tr><td>short</td><td>16</td><td>&minus;32,768</td><td>32,767</td></tr>
+          <tr><td>int</td><td>32</td><td>&minus;2,147,483,648</td><td>2,147,483,647</td></tr>
+          <tr><td>long</td><td>64</td><td class="dim">HUGE!</td><td class="dim">Even huger!</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- SLIDE 08 · WHY BIT SIZE MATTERS: GAME CONSOLES -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Why It Matters</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Game Consoles</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">Game consoles used to advertise their processor's bit size for a reason: it set a hard ceiling on the numbers the hardware could work with directly.</p>
+        <table class="dec-bin-table" style="margin-top:var(--gap);">
+          <tr><th>Console</th><th>"Bitness"</th><th>What It Meant</th></tr>
+          <tr><td>NES</td><td>8-bit</td><td style="font-family:var(--font-body);font-size:var(--body);text-align:left;">Could only work with 8-bit numbers at a time.</td></tr>
+          <tr><td>SNES</td><td>16-bit</td><td style="font-family:var(--font-body);font-size:var(--body);text-align:left;">Could store bigger numbers, do faster math, and drive better graphics.</td></tr>
+          <tr><td>Nintendo 64</td><td>64-bit</td><td style="font-family:var(--font-body);font-size:var(--body);text-align:left;">Could handle bigger numbers, wider color palettes, and more memory per object.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- SLIDE 09 · THINK ABOUT IT: PAC-MAN KILL SCREEN -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Think About It</span>
+        <div class="step-through odo-intro-stack" style="max-width:1100px;text-align:left;">
+          <h2 class="fragment instr-out" data-fragment-index="0" style="margin:0;">The original Pac-Man would break with a "kill screen" once a player reached level 256. Why do you think that happened?</h2>
+          <p class="fragment fade-up" data-fragment-index="0" style="color:var(--text-muted);margin:0;">Pac-Man stores the current level in a single <strong style="color:var(--text);">8-bit byte</strong>, 0 to 255. Level 256 overflows that byte back to <strong style="color:var(--text);">0</strong>. The code meant to draw the bottom fruit counter then malfunctions and tries to draw 256 separate fruit items at once, causing the screen to fill with random characters.</p>
+        </div>
+        <div class="flippy-photo-card" style="margin-top:var(--gap-sm);">
+          <img src="media/Pacman_round256.webp" alt="The Pac-Man &quot;kill screen&quot; glitch that appears on level 256" style="max-height:480px;">
+        </div>
+      </div>
+      <div class="glow" style="width:500px;height:500px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · THINK ABOUT IT: BIG PICTURE REFLECTION -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Think About It</span>
+        <h2>Room to Grow?</h2>
+        <ul class="bullets" style="margin-top:var(--gap-lg);">
+          <li class="fragment fade-up" style="font-size:var(--h3);">What does the binary odometer show us about representing large numbers?</li>
+          <li class="fragment fade-up" style="font-size:var(--h3);">If we had a big enough odometer, or a big enough Flippy-Do, could we eventually represent <em>every</em> possible number?</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SLIDE 11 · MAXIMUMS IN DECIMAL -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">The Math of Maximums</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Maximums in Decimal</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">In a base-10 (decimal) number, the largest value you can store in a fixed number of digits is 10<sup>digits</sup> &minus; 1.</p>
+        <ul class="bullets" style="margin-top:var(--gap-lg);">
+          <li class="fragment fade-up" style="font-size:var(--body);">With <strong>3 digits</strong>, the maximum is 10<sup>3</sup> &minus; 1, that is 1000 &minus; 1, or <span style="color:var(--amber);">999</span>.</li>
+          <li class="fragment fade-up" style="font-size:var(--body);">The count of numbers you can represent is one more than that maximum, since <strong>0</strong> counts too.</li>
+          <li class="fragment fade-up" style="font-size:var(--body);">So 3 digits can represent 10<sup>3</sup>, or <span style="color:var(--teal);">1000</span> numbers: everything from 0 to 999.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SLIDE 12 · MAXIMUMS IN BINARY -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">The Math of Maximums</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Maximums in Binary</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">In a base-2 (binary) number, the largest value you can store in a fixed number of bits is 2<sup>bits</sup> &minus; 1.</p>
+        <ul class="bullets" style="margin-top:var(--gap-lg);">
+          <li class="fragment fade-up">With <strong>3 bits</strong>, the maximum is 2<sup>3</sup> &minus; 1, that is 8 &minus; 1, or <span style="color:var(--amber);">7</span>.</li>
+          <li class="fragment fade-up">3 bits can represent 2<sup>3</sup>, or <span style="color:var(--teal);">8</span> numbers: everything from 0 to 7.</li>
+          <li class="fragment fade-up">That's exactly why our 8-bit odometer and Flippy-Do top out at 255: 2<sup>8</sup> &minus; 1 = 255, out of 2<sup>8</sup> = 256 possible values.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SLIDE 13 · REPRESENTATIONS: MONEY TO FRACTIONS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Representations</span>
+        <h2>Amounts Smaller Than One</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap);max-width:1250px;">Thinking back to how we represented whole numbers with our Flippy-Do, the 1s, 2s, 4s, and 8s stood in for dollar bills, tens, and twenties. So far, we've only talked about <em>whole</em> numbers in binary.</p>
+        <p class="fragment fade-up" style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap);max-width:1250px;">In a cash register, how would you deal with an amount smaller than a dollar, say <strong>seven cents</strong>?</p>
+        <p class="fragment fade-up" style="font-size:var(--h3);margin-top:var(--gap);max-width:1250px;">In binary, we don't get pennies, nickels, or dimes. But we do get <span style="color:var(--teal);">halves</span>, <span style="color:var(--teal);">fourths</span>, <span style="color:var(--teal);">eighths</span>, and so on.</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 14 · BINARY PLACE VALUES BELOW THE POINT -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Representations</span>
+        <h2>Binary Places Below the Point</h2>
+        <table class="dec-bin-table">
+          <tr><th>Binary Place</th><th>Value</th></tr>
+          <tr><td>2<sup>0</sup></td><td>1</td></tr>
+          <tr><td>2<sup>&minus;1</sup></td><td>0.5</td></tr>
+          <tr><td>2<sup>&minus;2</sup></td><td>0.25</td></tr>
+          <tr><td>2<sup>&minus;3</sup></td><td>0.125</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- SLIDE 15 · REPRESENTING FRACTIONS: WORKED EXAMPLE -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Representing Fractions</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Decoding 0.101</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">Let's say we have the binary number <strong>0.101</strong>. What does each bit represent, and what decimal number does it add up to?</p>
+        <div class="frac-table">
+          <div class="ft-cell ft-label">2<sup>0</sup></div><div class="ft-cell ft-label">2<sup>&minus;1</sup></div><div class="ft-cell ft-label">2<sup>&minus;2</sup></div><div class="ft-cell ft-label">2<sup>&minus;3</sup></div>
+          <div class="ft-cell ft-val">1</div><div class="ft-cell ft-val">0.5</div><div class="ft-cell ft-val">0.25</div><div class="ft-cell ft-val">0.125</div>
+          <div class="ft-cell ft-bit fragment fade-up" data-fragment-index="1">0</div><div class="ft-cell ft-bit bit-on fragment fade-up" data-fragment-index="1">1</div><div class="ft-cell ft-bit fragment fade-up" data-fragment-index="1">0</div><div class="ft-cell ft-bit bit-on fragment fade-up" data-fragment-index="1">1</div>
+        </div>
+        <p class="fragment fade-up" data-fragment-index="2" style="font-size:var(--h3);margin-top:var(--gap-lg);color:var(--amber);font-family:var(--font-mono);">0.5 + 0.125 = 0.625 = &frac58;</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 16 · PRACTICE: 0.11 -> DECIMAL -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Think About It</span>
+        <h2 style="margin-bottom:var(--gap-sm);max-width:1000px;">What is the equivalent of the binary number 0.11 in decimal?</h2>
+        <div class="frac-table" style="margin-top:var(--gap-lg);">
+          <div class="ft-cell ft-label">2<sup>0</sup></div><div class="ft-cell ft-label">2<sup>&minus;1</sup></div><div class="ft-cell ft-label">2<sup>&minus;2</sup></div><div class="ft-cell ft-label">2<sup>&minus;3</sup></div>
+          <div class="ft-cell ft-val">1</div><div class="ft-cell ft-val">0.5</div><div class="ft-cell ft-val">0.25</div><div class="ft-cell ft-val">0.125</div>
+          <div class="ft-cell ft-bit fragment fade-up" data-fragment-index="1">0</div><div class="ft-cell ft-bit bit-on fragment fade-up" data-fragment-index="1">1</div><div class="ft-cell ft-bit bit-on fragment fade-up" data-fragment-index="1">1</div><div class="ft-cell ft-bit fragment fade-up" data-fragment-index="1">0</div>
+        </div>
+        <p class="fragment fade-up" data-fragment-index="2" style="font-size:var(--h3);margin-top:var(--gap-lg);color:var(--amber);font-family:var(--font-mono);">0.5 + 0.25 = 0.75 = &frac34;</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 17 · PRACTICE: 0.375 -> BINARY -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Think About It</span>
+        <h2 style="margin-bottom:var(--gap-sm);max-width:1000px;">What is the equivalent of 0.375 in binary?</h2>
+        <div class="frac-work-row">
+          <div class="frac-work-col">
+            <div class="frac-table">
+              <div class="ft-cell ft-label">2<sup>0</sup></div><div class="ft-cell ft-label">2<sup>&minus;1</sup></div><div class="ft-cell ft-label">2<sup>&minus;2</sup></div><div class="ft-cell ft-label">2<sup>&minus;3</sup></div>
+              <div class="ft-cell ft-val">1</div><div class="ft-cell ft-val">0.5</div><div class="ft-cell ft-val">0.25</div><div class="ft-cell ft-val">0.125</div>
+              <div class="ft-cell ft-bit fragment fade-up" data-fragment-index="1">0</div><div class="ft-cell ft-bit fragment fade-up" data-fragment-index="2">0</div><div class="ft-cell ft-bit bit-on fragment fade-up" data-fragment-index="3">1</div><div class="ft-cell ft-bit bit-on fragment fade-up" data-fragment-index="4">1</div>
+            </div>
+            <p style="font-size:var(--h3);margin-top:var(--gap-lg);color:var(--amber);font-family:var(--font-mono);"><span class="fragment fade-up" data-fragment-index="3">0.25</span><span class="fragment fade-up" data-fragment-index="4"> + 0.125 = 0.375 = 0.011</span></p>
+          </div>
+          <div class="scratch-pad">
+            <div class="scratch-header">Scratch: what's left to convert?</div>
+            <div class="scratch-line fragment fade-up" data-fragment-index="1"><span class="cmp no">1 &gt; 0.375 &rarr; bit 0</span></div>
+            <div class="scratch-line fragment fade-up" data-fragment-index="2"><span class="cmp no">0.5 &gt; 0.375 &rarr; bit 0</span></div>
+            <div class="scratch-line fragment fade-up" data-fragment-index="3"><span class="cmp yes">0.25 &le; 0.375 &rarr; bit 1</span><span class="sub">0.375 &minus; 0.25 = 0.125</span></div>
+            <div class="scratch-line fragment fade-up" data-fragment-index="4"><span class="cmp yes">0.125 &le; 0.125 &rarr; bit 1</span><span class="sub">0.125 &minus; 0.125 = 0</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 18 · CANDY SHOP CHALLENGE -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Do This</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Candy Shop Challenge</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">You and a partner are opening a candy shop. Here are the prices of four candies you'll be selling. Your shop's computer system takes input in <strong>4-bit binary</strong> numbers, so you need to represent each price that way. Work out your representation for each value using your Flippy-Do and a white board.</p>
+        <table class="dec-bin-table" style="margin-top:var(--gap);">
+          <tr><th>Candy</th><th>Decimal Price</th><th>Binary Price</th></tr>
+          <tr><td>Gummy Bears</td><td>$1.76/lb</td><td><input type="text" class="bin-input" inputmode="numeric" maxlength="4" placeholder="0000" aria-label="Binary price for Gummy Bears" oninput="this.value=this.value.replace(/[^01]/g,'').slice(0,4)"></td></tr>
+          <tr><td>Chocolate</td><td>$4.16/lb</td><td><input type="text" class="bin-input" inputmode="numeric" maxlength="4" placeholder="0000" aria-label="Binary price for Chocolate" oninput="this.value=this.value.replace(/[^01]/g,'').slice(0,4)"></td></tr>
+          <tr><td>Licorice</td><td>$7.52/lb</td><td><input type="text" class="bin-input" inputmode="numeric" maxlength="4" placeholder="0000" aria-label="Binary price for Licorice" oninput="this.value=this.value.replace(/[^01]/g,'').slice(0,4)"></td></tr>
+          <tr><td>Mints</td><td>$0.48/lb</td><td><input type="text" class="bin-input" inputmode="numeric" maxlength="4" placeholder="0000" aria-label="Binary price for Mints" oninput="this.value=this.value.replace(/[^01]/g,'').slice(0,4)"></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- SLIDE 19 · THINK ABOUT IT: CANDY SHOP REFLECTION -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Discuss</span>
+        <h2 style="max-width:1000px;">How did you decide which binary number to use for each price?</h2>
+      </div>
+    </section>
+
+    <!-- SLIDE 20 · ROUNDING SCALES -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Rounding</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Two Scales, Two Answers</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">There are scales from two different manufacturers in your shop. Both use 4-bit binary numbers to store and display the weight of candy.</p>
+        <p class="scale-caption">Both scales are weighing the exact same bowl of gummy bears: <strong>3.3 pounds</strong>.</p>
+        <div class="scale-row">
+          <div class="scale-card">
+            <div class="scale-name">Scale A · Rounds Down</div>
+            <div class="scale-readout">0011<span class="scale-unit">lb</span></div>
+            <p>Always rounds the weight <strong>down</strong> to the next whole number.</p>
+          </div>
+          <div class="scale-card">
+            <div class="scale-name">Scale B · Rounds Up</div>
+            <div class="scale-readout">0100<span class="scale-unit">lb</span></div>
+            <p>Always rounds the weight <strong>up</strong> to the next whole number.</p>
+          </div>
+        </div>
+        <p class="fragment fade-up" style="font-size:var(--h3);margin-top:var(--gap-lg);">What problems could come from having both types of scales in a single one of your stores?</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 21 · THINK ABOUT IT: WHO PAYS -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Think About It · Discuss</span>
+        <h2 style="max-width:1100px;">With the two scales, who pays the difference between the true price and what the scale shows: the shop owner or the customer?</h2>
+        <div class="scale-row" style="margin-top:var(--gap-lg);">
+          <div class="scale-card">
+            <div class="scale-name">Scale A · Rounds Down</div>
+            <div class="scale-readout">0011<span class="scale-unit">lb</span></div>
+            <p>Always rounds the weight <strong>down</strong> to the next whole number.</p>
+          </div>
+          <div class="scale-card">
+            <div class="scale-name">Scale B · Rounds Up</div>
+            <div class="scale-readout">0100<span class="scale-unit">lb</span></div>
+            <p>Always rounds the weight <strong>up</strong> to the next whole number.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 22 · WRAP-UP: FRACTIONS -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Wrap-Up</span>
+        <h2 style="margin-bottom:var(--gap);">Binary Fractions</h2>
+        <ul class="bullets">
+          <li>Binary can precisely represent <strong>some</strong> fractional amounts from the decimal number system.<br/><span style="color:var(--text-dim);">Ex: 4.75 in decimal &rarr; 0100.110 in binary</span></li>
+          <li>Binary <strong>cannot</strong> precisely represent other fractional values from the decimal number system.<br/><span style="color:var(--text-dim);">Ex: 0.39</span></li>
+        </ul>
+        <table class="dec-bin-table" style="margin-top:var(--gap-lg);">
+          <tr><th>2<sup>3</sup></th><th>2<sup>2</sup></th><th>2<sup>1</sup></th><th>2<sup>0</sup></th><th>2<sup>&minus;1</sup></th><th>2<sup>&minus;2</sup></th><th>2<sup>&minus;3</sup></th></tr>
+          <tr><td class="dim">8</td><td class="dim">4</td><td class="dim">2</td><td class="dim">1</td><td class="dim">0.5</td><td class="dim">0.25</td><td class="dim">0.125</td></tr>
+          <tr><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- SLIDE 23 · OVERFLOW & ROUND-OFF DEFINITIONS -->
+    <section>
+      <div class="slide-inner" style="padding-top:56px;">
+        <span class="slide-tag">Wrap-Up</span>
+        <h2 style="margin-bottom:var(--gap);">Two Kinds of Error</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">With a fixed number of bits, a computer can only represent a fixed set of numbers.</p>
+        <div class="two-col" style="margin-top:var(--gap);max-width:1300px;">
+          <div class="callout accent-red">
+            <h3>Overflow Error</h3>
+            <p>The error from attempting to represent a number that is <strong>too large</strong>.</p>
+          </div>
+          <div class="callout accent-amber">
+            <h3>Round-off Error</h3>
+            <p>The error from attempting to represent a number that is <strong>too precise</strong>. The value gets rounded instead.</p>
+          </div>
+        </div>
+
+        <div class="number-line">
+          <div class="nl-track"></div>
+          <div class="nl-ticks">
+            <div class="nl-tick"><div class="nl-dot"></div><span class="nl-val">0</span><span class="nl-bin">000</span></div>
+            <div class="nl-tick"><div class="nl-dot"></div><span class="nl-val">1</span><span class="nl-bin">001</span></div>
+            <div class="nl-tick"><div class="nl-dot"></div><span class="nl-val">2</span><span class="nl-bin">010</span></div>
+            <div class="nl-tick"><div class="nl-dot"></div><span class="nl-val">3</span><span class="nl-bin">011</span></div>
+            <div class="nl-tick"><div class="nl-dot"></div><span class="nl-val">4</span><span class="nl-bin">100</span></div>
+            <div class="nl-tick"><div class="nl-dot"></div><span class="nl-val">5</span><span class="nl-bin">101</span></div>
+            <div class="nl-tick"><div class="nl-dot"></div><span class="nl-val">6</span><span class="nl-bin">110</span></div>
+            <div class="nl-tick"><div class="nl-dot"></div><span class="nl-val">7</span><span class="nl-bin">111</span></div>
+            <div class="nl-tick nl-unrep"><div class="nl-dot nl-dot-empty"></div><span class="nl-val">8</span><span class="nl-bin">??</span></div>
+            <div class="nl-tick nl-unrep"><div class="nl-dot nl-dot-empty"></div><span class="nl-val">9</span><span class="nl-bin">??</span></div>
+            <div class="nl-tick nl-unrep"><div class="nl-dot nl-dot-empty"></div><span class="nl-val">10</span><span class="nl-bin">??</span></div>
+            <div class="nl-tick nl-unrep"><div class="nl-dot nl-dot-empty"></div><span class="nl-val">11</span><span class="nl-bin">??</span></div>
+            <div class="nl-tick nl-unrep"><div class="nl-dot nl-dot-empty"></div><span class="nl-val">12</span><span class="nl-bin">??</span></div>
+            <div class="nl-tick nl-unrep"><div class="nl-dot nl-dot-empty"></div><span class="nl-val">13</span><span class="nl-bin">??</span></div>
+          </div>
+        </div>
+        <div class="nl-callouts">
+          <div class="callout accent-amber"><p><strong>1.48</strong> is closest to the 3-bit value <strong>1</strong> (binary <code>001</code>), so storing it is a round-off error.</p></div>
+          <div class="callout accent-red"><p><strong>9</strong> can't be represented in 3 bits at all, so storing it is an overflow error.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 24 · ASSIGNMENT -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Assignment</span>
+        <h2>Complete the Questions on code.org</h2>
+        <p style="font-size:var(--h3);margin-top:var(--gap);"><a href="https://learn.mycode.run/link/lmfgs" target="_blank" rel="noopener">Click here to complete the last two dots on code.org.</a></p>
+      </div>
+      <div class="glow" style="width:500px;height:500px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-1-5-overflow-and-rounding',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function (Reveal) {
+    initBinaryOdometer(Reveal);
+  },
+});
+
+function initBinaryOdometer(Reveal) {
+  var liveSlide = Array.prototype.find.call(
+    document.querySelectorAll('#binary-odometer'),
+    function (slide) { return !slide.closest('#storyboard'); }
+  );
+  if (!liveSlide) return;
+
+  var MIN_DECIMAL_DIGITS = 8;
+
+  var bitEls = liveSlide.querySelectorAll('#odo-bits .odo-bit');
+  var decimalCellsEl = liveSlide.querySelector('#odo-decimal-cells');
+  var startBtn = liveSlide.querySelector('#odo-start');
+  var stopBtn = liveSlide.querySelector('#odo-stop');
+  var speedInput = liveSlide.querySelector('#odo-speed');
+  var valueInput = liveSlide.querySelector('#odo-value');
+  var overflowFlag = liveSlide.querySelector('#odo-overflow');
+
+  var value = 0;
+  var timerId = null;
+
+  function render() {
+    var bits = (value % 256).toString(2).padStart(8, '0');
+    bitEls.forEach(function (el, i) {
+      var bit = bits[i];
+      el.textContent = bit;
+      el.classList.toggle('bit-on', bit === '1');
+    });
+
+    var digits = String(value);
+    while (digits.length < MIN_DECIMAL_DIGITS) digits = ' ' + digits;
+    decimalCellsEl.innerHTML = '';
+    for (var i = 0; i < digits.length; i++) {
+      var ch = digits[i];
+      var cell = document.createElement('div');
+      cell.className = 'odo-digit' + (ch === ' ' ? ' odo-digit-empty' : '');
+      cell.textContent = ch === ' ' ? '' : ch;
+      decimalCellsEl.appendChild(cell);
+    }
+
+    valueInput.value = value;
+  }
+
+  function flashOverflow() {
+    overflowFlag.classList.remove('show');
+    void overflowFlag.offsetWidth;
+    overflowFlag.classList.add('show');
+  }
+
+  function tick() {
+    value += 1;
+    if (value % 256 === 0) flashOverflow();
+    render();
+  }
+
+  function speedToMs() {
+    var s = Number(speedInput.value);
+    return 900 - (s - 1) * 80;
+  }
+
+  function stop() {
+    if (timerId) {
+      clearInterval(timerId);
+      timerId = null;
+    }
+  }
+
+  function start() {
+    stop();
+    timerId = setInterval(tick, speedToMs());
+  }
+
+  startBtn.addEventListener('click', start);
+  stopBtn.addEventListener('click', stop);
+
+  speedInput.addEventListener('input', function () {
+    if (timerId) start();
+  });
+
+  valueInput.addEventListener('input', function () {
+    value = Number(valueInput.value);
+    overflowFlag.classList.remove('show');
+    render();
+  });
+
+  Reveal.on('slidechanged', function (event) {
+    if (event.currentSlide !== liveSlide) stop();
+  });
+
+  render();
+}
+</script>
+</body>
+</html>

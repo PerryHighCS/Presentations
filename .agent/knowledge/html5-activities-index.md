@@ -54,6 +54,12 @@ mechanism.
 - **Mechanism:** simple click handler toggling a revealed state; no drag/drop or scoring.
 - **Reuse:** lightweight, generic flashcard-style reveal pattern.
 
+### Multi-base binary/decimal odometer
+- **Where:** `Decks/CSP/Unit 1 - Digital Information/1.5 - Overflow and Rounding/1.5-overflow-and-rounding.html` (`#binary-odometer` section, `initBinaryOdometer`)
+- **Concept:** an 8-bit value is displayed simultaneously as a row of binary bit tiles and a 3-digit decimal readout. Start/Stop buttons drive a `setInterval` counter, a speed slider controls the tick interval, and a value slider (0-255) jumps straight to any 8-bit value. Crossing 255 wraps to 0 and fires a flashing "Overflow!" banner.
+- **Mechanism:** plain `setInterval`/`clearInterval` counter loop (same slidechanged-cleanup pattern as the Disruptus timer), a `render()` function that derives both the bit tiles and the decimal digits from one shared integer so the two bases never drift out of sync, and a CSS keyframe animation retriggered via an `offsetWidth` reflow trick for the overflow flash.
+- **Reuse:** generalizes to any "watch a fixed-width counter wrap around" demonstration, swap the bit width/base pair (e.g. hex/decimal, a 4-bit nibble) by changing the `padStart` width and the number of bit tiles.
+
 ### Algorithm growth-rate race
 - **Where:** `Decks/CSP/Algorithms/unreasonable-time.html` (HTML ~856-920, JS ~1140-1270)
 - **Concept:** simulates multiple algorithms (log n, n, n², 2ⁿ) racing to complete n "steps" on a shared clock, driven by a slider for n; bars fill proportionally with live counts/percentages.
