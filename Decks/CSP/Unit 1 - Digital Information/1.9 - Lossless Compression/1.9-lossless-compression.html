@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1.9 Lossless Compression</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Lossless Compression
+   ============================================================ */
+
+.instruction-icon {
+  font-size: 64px;
+  margin-bottom: var(--gap);
+  display: block;
+}
+
+/* ─── Decode reveal: encoded/decoded comparison ─────────────────────── */
+.decode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+  width: 100%;
+  align-items: start;
+}
+.decode-grid > div { min-width: 0; }
+.decode-col-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: var(--gap-sm);
+  display: block;
+}
+.decode-text {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  padding: 0.8em 1em;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  line-height: 1.6;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.decode-shot-label {
+  font-size: var(--small);
+  color: var(--text-dim);
+  margin: var(--gap-sm) 0 6px;
+}
+.decode-shot {
+  background: #fff;
+  border-radius: 4px;
+  padding: 6px;
+  display: inline-block;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+}
+.decode-shot img {
+  display: block;
+  border-radius: 2px;
+}
+
+/* ─── Roles: driver / navigator ─────────────────────────────────────── */
+.role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  width: 100%;
+  margin-top: var(--gap);
+}
+.role-grid .callout h3 { margin-bottom: 4px; }
+
+/* ─── Full-width screenshot card (compression stats) ────────────────── */
+.shot-card {
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.4);
+  margin: 0 auto;
+}
+.shot-card img { display: block; width: 100%; border-radius: 3px; }
+
+/* ─── Wrap-up: binary "lossless" decorative panel ───────────────────── */
+.wrap-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: var(--gap-lg);
+  width: 100%;
+  align-items: center;
+}
+.binary-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+.binary-chip {
+  font-family: var(--font-mono);
+  font-size: 19px;
+  letter-spacing: 0.04em;
+  color: var(--teal);
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  padding: 0.7em 1em;
+  text-align: center;
+}
+.binary-chip-compressed {
+  font-size: 16px;
+  color: var(--amber);
+  border: 1px solid var(--amber-border);
+  padding: 0.5em 1.4em;
+  position: relative;
+}
+.binary-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.binary-arrow {
+  font-size: 20px;
+  color: var(--text-dim);
+  line-height: 1;
+}
+.binary-step-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 1 · Lesson 9</span>
+        <h1 class="title-h1">Lossless Compression</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 02 · FRQ: WHY ABBREVIATE? -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"This list represents several common abbreviations used in text messages: lol, ty, c u soon. Why might we use abbreviations when sending messages? What are the advantages?","order":0}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ · Warm-Up</span>
+        <h2 style="margin-bottom:var(--gap);">Why Abbreviate?</h2>
+        <div class="frq-box" style="max-width:1200px;">
+          <p>This list represents several common abbreviations used in text messages: <span style="color:var(--amber);">lol, ty, c u soon</span>. Why might we use abbreviations when sending messages? What are the advantages?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 03 · FRQ: DECODE THIS MESSAGE -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:3:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What does the message say?","order":0}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ · Activity Guide</span>
+        <h2 style="margin-bottom:var(--gap);">Decode This Message</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1200px;">Work with your partner on the <span style="color:var(--teal);">&ldquo;Decode This Message&rdquo;</span> activity guide.</p>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1200px;">
+          <p>What does the message say?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 04 · DECODE REVEAL (key screenshots) -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:4:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"How were you able to decode the message? What information did you need?","order":0}]}'>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Decoded</span>
+        <h2 style="margin-bottom:var(--gap);">How Did You Decode It?</h2>
+
+        <div class="decode-grid">
+          <div>
+            <span class="decode-col-label">Decoded</span>
+            <div class="decode-text">Pitter_Patter_Pitter_Patter_listen_to_the_rain_Pitter_Patter_Pitter_Patter_on_the_window_pane</div>
+          </div>
+          <div>
+            <span class="decode-col-label">Encoded</span>
+            <p class="decode-shot-label">Message:</p>
+            <div class="decode-shot">
+              <img class="img-zoomable" src="media/encoded-message.png" alt="Encoded message reading: black star icon, listen_to, sun burst icon (highlighted), rain_, black star icon, on, sun burst icon (highlighted), window_pane" style="width:340px;image-rendering:pixelated;">
+            </div>
+            <p class="decode-shot-label">Key:</p>
+            <div class="decode-shot">
+              <img class="img-zoomable" src="media/encoded-message-key.png" alt="Dictionary key: sun burst icon maps to _the_, umbrella icon maps to tter_, snowman icon maps to Pi followed by the umbrella icon, snow icon maps to Pa followed by the umbrella icon, and black star icon maps to snowman icon, snow icon, snowman icon, snow icon in sequence" style="width:140px;image-rendering:pixelated;">
+            </div>
+          </div>
+        </div>
+
+        <div class="frq-box" style="margin-top:var(--gap-lg);max-width:1300px;">
+          <p>How were you able to decode the message? What information did you <span style="color:var(--amber);">need</span>?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 05 · TEXT COMPRESSION WIDGET: STEP 1 PRACTICE -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Text Compression Widget</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Step 1: Practice</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1200px;">Navigate to <a href="https://learn.mycode.run/link/lwdzj" target="_blank" rel="noopener" style="color:var(--teal);">Code Studio Lesson 9 Level 1</a>. Open up the <span style="color:var(--amber);">1.9 Digital Activity Guide</span>. Work with your partner to try to compress the text.</p>
+
+        <div class="role-grid">
+          <div class="callout">
+            <h3>Driver</h3>
+            <p>Runs the activity and uses the computer.</p>
+          </div>
+          <div class="callout accent-amber">
+            <h3>Navigator</h3>
+            <p>Keeps track of the big picture and helps guide the driver to the goal.</p>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 06 · COMPRESSION RATING (screenshot) -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Text Compression Widget</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Make Note of Your Compression Rating</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1200px;">The black box has statistics. <span style="color:var(--teal);">Higher compression</span> is better. <span style="color:var(--amber);">Smaller total</span> is better.</p>
+
+        <div class="shot-card" style="max-width:1000px;margin-top:var(--gap);">
+          <img class="img-zoomable" src="media/text-compression-widget-stats.png" alt="Text Compression Widget showing a Compressed panel with highlighted repeated substrings, a Dictionary panel listing the substring being replaced, and a black statistics box reading Compressed text size 156 bytes, Dictionary size 23 bytes, Total 179 bytes, Original text size 240 bytes, Compression 25.42 percent">
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 07 · FRQ: COMPRESSION RATIO CHECK-IN -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:7:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What was your compression ratio? What strategies are you using to compress your sample text? Which ones seem most successful?","order":0}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ · Check-In</span>
+        <h2 style="margin-bottom:var(--gap);">How'd It Go?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>What was your compression ratio? What strategies are you using to compress your sample text? Which ones seem most successful?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 08 · TRANSITION: LET'S GET SOME HELP -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="instruction-icon">🎧</span>
+        <span class="slide-tag">A Little Help</span>
+        <h2>Let's Get Some Help</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-sm);max-width:900px;">Up next is a video that will help us out a bit.</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-150px;bottom:-150px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 09 · VIDEO: ALOE BLACC ON TEXT COMPRESSION -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:9:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=LCGkcn1f-ms"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap);">Aloe Blacc on Text Compression</h2>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · BACK AT IT -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Text Compression Widget</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Back At It</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">Click the <span style="color:var(--amber);">drop-down menu</span> to explore other texts to compress. Look for texts you predict will be &ldquo;easy&rdquo; to compress and texts you predict will be &ldquo;difficult&rdquo;. Work with your partner to compress the easy and then the difficult texts.</p>
+        <div class="tip-box" style="margin-top:var(--gap-sm);max-width:1250px;">
+          <p>You should swap &ldquo;driver&rdquo; and &ldquo;navigator&rdquo; roles for each text.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · WRAP UP -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:64px;">
+        <span class="slide-tag">Wrap Up</span>
+        <h2 style="margin-bottom:var(--gap);">Lossless Compression</h2>
+
+        <div class="wrap-grid">
+          <p style="font-size:var(--h3);color:var(--text-muted);line-height:1.55;">
+            <span style="color:var(--teal);">Lossless compression</span>: a process for reducing the number of bits needed to represent something without losing any information. This process is <span style="color:var(--amber);">reversible</span>, and all data is preserved exactly as it started.
+          </p>
+          <div class="binary-panel">
+            <div class="binary-chip">01101100 01101111<br>01110011 01110011<br>01101100 01100101<br>01110011 01110011</div>
+            <div class="binary-step">
+              <span class="binary-arrow">↓</span>
+              <span class="binary-step-label">compress</span>
+            </div>
+            <div class="binary-chip binary-chip-compressed">01101100 1 &hellip; 0111</div>
+            <div class="binary-step">
+              <span class="binary-arrow">↓</span>
+              <span class="binary-step-label">decompress</span>
+            </div>
+            <div class="binary-chip">01101100 01101111<br>01110011 01110011<br>01101100 01100101<br>01110011 01110011</div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:700px;height:700px;right:-180px;top:-180px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 68%);"></div>
+      <div class="glow" style="width:500px;height:500px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-1-9-lossless-compression',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
