@@ -177,6 +177,15 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
 5. Check the style tokens for the chosen preset in `.agent/skills/STYLE_PRESETS_EXTENDED.md` (full library) or `.agent/skills/vendor/syncdeck/references/STYLE_PRESETS.md` (short reference).
 6. If the deck needs a custom interactive widget (drag-and-drop, a classification/matching exercise, a code trace, a timed prompt game, a scored scenario, etc.), check `.agent/knowledge/html5-activities-index.md` first for an existing engine to copy and re-skin before building one from scratch.
 7. Run `node scripts/generate-permalink.mjs Decks/<path>/<deck>.html` to give the new deck a stable permalink before committing. See "Presentation Permalinks" below.
+8. If the deck has any `data-activity-options` blocks (resonance, mobcode, postboard, etc.), run
+   `python3 .agent/skills/vendor/syncdeck/scripts/validate-deck.py Decks/<path>/<deck>.html`
+   before considering the deck done. It checks that every activity's JSON actually parses,
+   catching the single-quote/apostrophe escaping bug: a raw `'` inside Python source or FRQ/MCQ
+   text will silently break the `data-activity-options='...'` HTML attribute unless it's written as
+   the HTML entity `&#39;` (both mobcode Python source and resonance question/option text must use
+   `&#39;` for any apostrophe or single-quote character; mobcode Python string literals should
+   otherwise prefer double quotes to sidestep the issue entirely). Re-run this validator after any
+   edit that touches activity JSON, not just on first creation.
 
 ## Reusable Activity Index
 
