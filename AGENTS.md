@@ -186,6 +186,8 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
    `&#39;` for any apostrophe or single-quote character; mobcode Python string literals should
    otherwise prefer double quotes to sidestep the issue entirely). Re-run this validator after any
    edit that touches activity JSON, not just on first creation.
+9. Give every Resonance question a `responseTimeLimitMs` unless the user explicitly asks for an
+   untimed question.
 
 ## Reusable Activity Index
 
