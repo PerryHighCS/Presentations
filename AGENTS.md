@@ -186,6 +186,15 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
    `&#39;` for any apostrophe or single-quote character; mobcode Python string literals should
    otherwise prefer double quotes to sidestep the issue entirely). Re-run this validator after any
    edit that touches activity JSON, not just on first creation.
+
+   If a deck uses `<!-- SLIDE NN · ... -->` comments (this is how you look up a slide by number),
+   the same validator also checks that every comment's number matches the flattened document-order
+   position of the `<section>` it precedes, which is what Reveal's `slideNumber: 'c/t'` actually
+   displays (nested vertical-stack children just count as later slides in that same flattened
+   order, so no separate h/v notation is needed). Inserting or deleting a slide shifts every
+   comment after it; don't renumber those by hand, run
+   `python3 .agent/skills/vendor/syncdeck/scripts/validate-deck.py Decks/<path>/<deck>.html --renumber`
+   instead.
 9. Give every Resonance question a `responseTimeLimitMs` unless the user explicitly asks for an
    untimed question.
 
