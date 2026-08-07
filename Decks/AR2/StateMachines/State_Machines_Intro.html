@@ -364,6 +364,90 @@
   </div>
 </section>
 
+<!-- SLIDE 11 · Holding a State - RS Latch -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Holding a State</span>
+    <h2 style="margin-bottom:10px;">Something Has to Remember</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      We knew we were "in State 4" because we could see the circle light up. A real circuit has no screen to look at. A wire is just a voltage that is happening right now. It doesn't remember what happened a second ago and can't predict what happens a second from now.
+    </p>
+
+    <p class="fragment fade-up" data-fragment-index="0" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      So if a machine needs to know it is currently in <span style="color:var(--accent);">State 4</span>, something in the circuit has to actively hold onto that fact.
+    </p>
+
+    <div class="callout fragment fade-up" data-fragment-index="1" style="max-width:1150px;margin-bottom:var(--gap);">
+      <p><strong>Set-Reset Latch (RS):</strong> a small memory element with one output and two inputs. A pulse on <span style="color:var(--accent);">Set</span> turns the output on, and the latch remembers it, holding the output on until a pulse on <span style="color:var(--warn);">Reset</span> turns it back off.</p>
+    </div>
+
+    <div class="fragment fade-up" data-fragment-index="2" style="display:flex;justify-content:center;margin-bottom:var(--gap);">
+      <svg width="900" height="280" viewBox="0 0 900 280" style="overflow:visible;">
+        <line x1="180" y1="20" x2="180" y2="250" stroke="rgba(230,247,234,0.18)" stroke-width="1.5" stroke-dasharray="4 5"></line>
+        <line x1="620" y1="20" x2="620" y2="250" stroke="rgba(230,247,234,0.18)" stroke-width="1.5" stroke-dasharray="4 5"></line>
+
+        <text x="14" y="46" font-family="JetBrains Mono, monospace" font-size="20" font-weight="700" fill="#39d353">S</text>
+        <text x="14" y="64" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="rgba(230,247,234,0.45)">Set</text>
+        <path d="M60,70 L180,70 L180,34 L260,34 L260,70 L860,70" fill="none" stroke="#39d353" stroke-width="3"></path>
+
+        <text x="14" y="126" font-family="JetBrains Mono, monospace" font-size="20" font-weight="700" fill="#ffd166">R</text>
+        <text x="14" y="144" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="rgba(230,247,234,0.45)">Reset</text>
+        <path d="M60,150 L620,150 L620,114 L700,114 L700,150 L860,150" fill="none" stroke="#ffd166" stroke-width="3"></path>
+
+        <text x="14" y="206" font-family="JetBrains Mono, monospace" font-size="20" font-weight="700" fill="#5eead4">Q</text>
+        <text x="14" y="224" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="rgba(230,247,234,0.45)">Output</text>
+        <path d="M60,230 L180,230 L180,194 L620,194 L620,230 L860,230" fill="none" stroke="#5eead4" stroke-width="3"></path>
+
+        <text x="180" y="266" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="13" fill="rgba(230,247,234,0.45)">Set fires &#8594; Q turns on</text>
+        <text x="620" y="266" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="13" fill="rgba(230,247,234,0.45)">Reset fires &#8594; Q turns off</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 12 · Mapping It Back -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Mapping It Back</span>
+    <h2 style="margin-bottom:10px;">One Latch per State</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap-lg);">
+      Every wire on an RS latch already has a name in our vocabulary: <span style="color:var(--accent);">Set</span> and <span style="color:var(--warn);">Reset</span> are triggers, and <span style="color:var(--result);">Q</span> is simply whether the state is active right now.
+    </p>
+
+    <div class="split split-40 split-top">
+      <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+        <div class="key-prop fragment fade-up"><strong style="color:var(--accent);">Set:</strong> the trigger that starts a state.</div>
+        <div class="key-prop fragment fade-up"><strong style="color:var(--warn);">Reset:</strong> the trigger that ends a state.</div>
+        <div class="key-prop fragment fade-up"><strong style="color:var(--result);">Output (Q):</strong> whether the state is currently active.</div>
+        <div class="key-prop fragment fade-up"><strong>Latch:</strong> the piece of hardware that remembers.</div>
+      </div>
+
+      <div class="fragment fade-up" style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+        <div id="rs-latch-demo" style="position:relative;width:680px;height:345px;">
+          <img src="media/rs_latch.png" alt="FluidSim RS latch schematic symbol: a block labeled RS with a Set input and a Reset input on the left and a Q output on the right." style="position:absolute;left:110px;top:0;width:420px;height:345px;display:block;">
+
+          <div style="position:absolute;left:90px;top:120.8px;width:65px;height:3px;background:var(--accent);"></div>
+          <button type="button" class="sm-btn sm-btn-push sm-btn-sm" id="rs-set-btn" style="position:absolute;left:0;top:121.8px;transform:translateY(-50%);">Set</button>
+
+          <div style="position:absolute;left:90px;top:203.3px;width:65px;height:3px;background:var(--warn);"></div>
+          <button type="button" class="sm-btn sm-btn-warn sm-btn-sm" id="rs-reset-btn" style="position:absolute;left:0;top:204.3px;transform:translateY(-50%);">Reset</button>
+
+          <div style="position:absolute;left:489.6px;top:161.8px;width:110px;height:3px;background:var(--result);"></div>
+          <div style="position:absolute;left:600px;top:163.3px;transform:translateY(-50%);display:flex;align-items:center;gap:8px;">
+            <div id="rs-q-light" class="rs-light"></div>
+            <span style="font-family:var(--font-mono);font-size:var(--small);color:var(--result);">Q</span>
+          </div>
+        </div>
+        <span style="font-family:var(--font-mono);font-size:var(--label);color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;">FluidSim RS Latch Block</span>
+      </div>
+    </div>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-top:var(--gap-lg);">
+      In FluidSim, we will wire one RS latch for every state in our sequence: while its output is on, that state is active, no matter how briefly its trigger actually fired. That is where we pick up next lesson.
+    </p>
+  </div>
+</section>
+
 </div></div><!-- end .slides / .reveal -->
 
 <script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
@@ -395,8 +479,40 @@ initSyncDeckReveal({
   },
   afterInit: function (Reveal) {
     initStateMachineDemo(Reveal);
+    initRsLatchDemo(Reveal);
   },
 });
+
+function initRsLatchDemo(Reveal) {
+  var demo = Array.prototype.find.call(
+    document.querySelectorAll('#rs-latch-demo'),
+    function (el) { return !el.closest('#storyboard'); }
+  );
+  if (!demo) return;
+
+  var slideSection = demo.closest('section');
+  var setBtn = slideSection.querySelector('#rs-set-btn');
+  var resetBtn = slideSection.querySelector('#rs-reset-btn');
+  var light = slideSection.querySelector('#rs-q-light');
+
+  function setQ(on) {
+    light.classList.toggle('on', on);
+  }
+
+  function flashPress(btn) {
+    btn.classList.add('is-pressed');
+    window.setTimeout(function () { btn.classList.remove('is-pressed'); }, 180);
+  }
+
+  if (setBtn) setBtn.addEventListener('click', function () { flashPress(setBtn); setQ(true); });
+  if (resetBtn) resetBtn.addEventListener('click', function () { flashPress(resetBtn); setQ(false); });
+
+  Reveal.on('slidechanged', function () {
+    setQ(false);
+    if (setBtn) setBtn.classList.remove('is-pressed');
+    if (resetBtn) resetBtn.classList.remove('is-pressed');
+  });
+}
 
 function initStateMachineDemo(Reveal) {
   var diagram = Array.prototype.find.call(

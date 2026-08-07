@@ -72,6 +72,12 @@ mechanism.
 - **Mechanism:** `path.getTotalLength()` + `stroke-dasharray`/`stroke-dashoffset` animated via a forced-reflow + CSS transition (the classic SVG "line draw" technique), with the arrowhead `<marker>` opacity held at 0 until the draw finishes so it doesn't appear to float ahead of the line; a `currentArc`/`DEST[]` lookup table drives a `chain-dimmed` container class plus `.active`/`.highlight` toggles on nodes and arcs. Demo state activates/deactivates via `Reveal.on('fragmentshown'/'fragmenthidden', ...)` scoped to the specific buttons fragment (not just `slidechanged`), so stepping backward past that fragment cleanly un-dims everything.
 - **Reuse:** the dasharray/dashoffset draw-in plus marker-delay trick generalizes to "animate any SVG path drawing itself" (wiring diagrams, flowcharts, causal chains); the dim-all-but-the-next-highlighted-element pattern generalizes to any guided step-through of a diagram.
 
+### Interactive hotspots on a static schematic image
+- **Where:** `Decks/AR2/StateMachines/State_Machines_Intro.html` (`#rs-latch-demo` ~line 429, `initRsLatchDemo` JS in the trailing `<script>`)
+- **Concept:** a real (non-vector) schematic image — here, FluidSim's RS latch block symbol — gets small live controls (Set/Reset buttons, a Q output light) positioned exactly on top of its input/output wire endpoints, plus short colored connector lines bridging each control to the drawing. Pressing Set lights the output; pressing Reset clears it.
+- **Mechanism:** the image's pixel geometry (wire endpoint coordinates, box edges) is measured once with a throwaway PIL script against the source PNG, converted to fractions of the image's width/height, then reapplied as fixed-px `position:absolute` offsets inside a wrapper sized to the image's displayed px dimensions — so overlay elements land precisely on the artwork regardless of what the artwork itself contains. No fragment-gating or animation; just click handlers toggling a `.on` class on a small indicator, reset on `Reveal.on('slidechanged', ...)`.
+- **Reuse:** generalizes to labeling/annotating *any* raster diagram (a real photo of a part, a scanned datasheet symbol, a screenshot of other software's schematic) with interactive callouts, without needing to redraw the diagram as SVG.
+
 ## Topic-coupled but reusable *mechanism*
 
 ### Drag-to-correct-target credential/tool matching
