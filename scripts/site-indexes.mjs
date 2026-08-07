@@ -74,7 +74,7 @@ export const PAGE_STYLE = `
   h1 { margin: 0 0 8px; font-size: 1.7rem; }
   p { margin: 0 0 18px; color: var(--muted); }
   .generated { margin: 18px 0 0; color: var(--muted); font-size: 0.92rem; }
-  .back { margin: 0 0 18px; font-size: 0.92rem; }
+  .back { display: block; margin: 0 0 18px; font-size: 0.92rem; }
   .back a { color: var(--muted); }
   ul { margin: 0; }
   .tree, .tree ul { list-style: none; padding-left: 18px; }
@@ -84,6 +84,13 @@ export const PAGE_STYLE = `
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
   .folder-name { color: var(--muted); font-weight: 600; }
+  .folder-count {
+    display: inline-block;
+    min-width: 5ch;
+    font-variant-numeric: tabular-nums;
+    font-weight: 300;
+    text-align: center;
+  }
   .tree li.folder > details > summary {
     display: flex;
     align-items: center;
@@ -291,7 +298,7 @@ export async function permalinkHashForFile(filePath) {
 
 function makePage(titleText, heading, description, listing, generatedAt, generatedAtIso, backLink = null) {
   const backHtml = backLink
-    ? `<p class="back"><a href="${escapeHtml(backLink)}">&larr; Back</a></p>`
+    ? `<span class="back"><a href="${escapeHtml(backLink)}">&larr; Back</a></span>`
     : '';
 
   return `<!DOCTYPE html>
@@ -305,9 +312,9 @@ function makePage(titleText, heading, description, listing, generatedAt, generat
 </head>
 <body>
   <main class="wrap">
-    ${backHtml}
     <h1>${escapeHtml(heading)}</h1>
     <p>${escapeHtml(description)}</p>
+    ${backHtml}
     <ul class="tree">
 ${listing}
     </ul>
@@ -349,11 +356,12 @@ function renderTree(node, indent = '      ', pathPrefix = '', pageDepth = 0) {
   }
 
   for (const [dirname, child] of [...node.dirs.entries()].sort((a, b) => NATURAL_COLLATOR.compare(a[0], b[0]))) {
+    const count = presentationCount(child);
     lines.push(`${indent}<li class="folder">`);
     lines.push(`${indent}  <details>`);
     lines.push(
       `${indent}    <summary><span class="disclosure" aria-hidden="true"></span>` +
-        `<a class="folder-name" href="${escapeHtml(`${pathPrefix}${dirname}/index.html`)}">${escapeHtml(dirname)}/</a></summary>`
+        `<a class="folder-name" href="${escapeHtml(`${pathPrefix}${dirname}/index.html`)}"><span class="folder-count">(${count})</span> ${escapeHtml(dirname)}/</a></summary>`
     );
     lines.push(`${indent}    <ul>`);
     lines.push(...renderTree(child, indent + '      ', `${pathPrefix}${dirname}/`, pageDepth));
@@ -363,6 +371,14 @@ function renderTree(node, indent = '      ', pathPrefix = '', pageDepth = 0) {
   }
 
   return lines;
+}
+
+function presentationCount(node) {
+  let count = node.files.length;
+  for (const child of node.dirs.values()) {
+    count += presentationCount(child);
+  }
+  return count;
 }
 
 export async function buildIndexPages(htmlFiles, getTitleForPublicPath, getPermalinkForPublicPath) {
@@ -428,6 +444,7 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath, getPerma
     for (const [dirname, child] of [...node.dirs.entries()].sort((a, b) => NATURAL_COLLATOR.compare(a[0], b[0]))) {
       const childFolder = folder === '.' ? dirname : `${folder}/${dirname}`;
       const pageDepth = childFolder.split('/').filter(Boolean).length;
+      const count = presentationCount(child);
       const listingLines = renderTree(child, '      ', '', pageDepth);
       const listing = listingLines.length
         ? listingLines.join('\n')
@@ -438,7 +455,7 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath, getPerma
         makePage(
           `${childFolder} — Presentations`,
           childFolder,
-          `HTML presentations in ${childFolder}/`,
+          `${count} HTML presentation${count === 1 ? '' : 's'} in ${childFolder}/`,
           listing,
           generatedAt,
           generatedAtIso,
