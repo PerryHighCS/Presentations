@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="bzas44">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>State Machines: One Step at a Time</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal"><div class="slides">
+
+<!-- SLIDE 1 · Title -->
+<section>
+  <div class="slide-inner slide-center">
+    <div class="glow" style="width:640px;height:640px;top:-160px;right:-120px;background:radial-gradient(circle,rgba(57,211,83,0.10),transparent 70%);"></div>
+    <span class="slide-tag">New Unit</span>
+    <h1 class="title-h1">One Step at a Time</h1>
+    <p class="subtitle">How machines follow a procedure</p>
+  </div>
+</section>
+
+<!-- SLIDE 2 · Describe a Procedure - Toaster -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:2:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Think about making a piece of toast, from getting the bread out of the bag to it popping up ready to eat. Write out the procedure as an ordered list of steps.","order":0,"responseTimeLimitMs":90000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Warm-Up</span>
+    <h2 style="margin-bottom:10px;">Describe a Procedure: Making Toast</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1100px;line-height:1.6;">
+      Think about making a piece of toast, from getting the bread out of the bag to it popping up ready to eat.
+    </p>
+    <div class="callout" style="margin-top:var(--gap);max-width:1100px;">
+      <p><strong>Write out the procedure as an ordered list of steps.</strong> Do not worry about being exact, just get the steps down in order.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3 · Focus - Toaster -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Zooming In</span>
+    <h2 style="margin-bottom:10px;">Let's Think Specifically About the Toaster</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1100px;line-height:1.6;margin-bottom:var(--gap-lg);">
+      Let's simplify the toaster's procedure into three broad steps. You can think of each step as a distinct part of the process. The toaster is doing something, until that something is complete and the next step can begin.
+    </p>
+
+    <div class="step-block fragment fade-up">
+      <div class="step-head"><span class="step-num">1</span><span class="step-label">Ready</span></div>
+      <p style="margin-left:48px;font-size:var(--small);color:var(--text-muted);">The toaster is waiting to do its job.</p>
+    </div>
+    <div class="step-block fragment fade-up">
+      <div class="step-head"><span class="step-num">2</span><span class="step-label">Toasting</span></div>
+      <p style="margin-left:48px;font-size:var(--small);color:var(--text-muted);">The toaster is doing its job.</p>
+    </div>
+    <div class="step-block fragment fade-up">
+      <div class="step-head"><span class="step-num">3</span><span class="step-label">Finish</span></div>
+      <p style="margin-left:48px;font-size:var(--small);color:var(--text-muted);">The toaster's job is done.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4 · Breakdown - Toaster -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:4:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Step 1, Ready: how does the toaster know when to start toasting?","order":0,"responseTimeLimitMs":30000},{"id":"q2","type":"free-response","text":"Step 2, Toasting: what is going on inside the toaster during this step, even though you cannot see it?","order":1,"responseTimeLimitMs":30000},{"id":"q3","type":"free-response","text":"Step 2, Toasting: how does the toaster know when to stop heating and move to the next step?","order":2,"responseTimeLimitMs":30000},{"id":"q4","type":"free-response","text":"Step 3, Finish: what happens during this step?","order":3,"responseTimeLimitMs":30000},{"id":"q5","type":"free-response","text":"Step 3, Finish: how do you know the whole procedure is complete?","order":4,"responseTimeLimitMs":30000}]}'>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Breaking It Down</span>
+    <h2 style="margin-bottom:8px;">What Happens During Each Step?</h2>
+    <p style="font-size:var(--small);color:var(--text-dim);margin-bottom:var(--gap);max-width:1100px;">
+      For every step, we are going to ask two questions: what actually happens, and how do you know it is over.
+    </p>
+
+    <div class="step-block">
+      <div class="step-head"><span class="step-num">1</span><span class="step-label">Ready</span></div>
+      <div class="at-pair"><span class="at-tag trigger">Trigger</span><span class="at-text">How does the toaster know when to start toasting?</span></div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-head"><span class="step-num">2</span><span class="step-label">Toasting</span></div>
+      <div class="at-pair"><span class="at-tag action">Action</span><span class="at-text">What is going on inside the toaster during this step, even though you cannot see it?</span></div>
+      <div class="at-pair"><span class="at-tag trigger">Trigger</span><span class="at-text">How does the toaster know when to stop heating and move on?</span></div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-head"><span class="step-num">3</span><span class="step-label">Finish</span></div>
+      <div class="at-pair"><span class="at-tag action">Action</span><span class="at-text">What happens during this step?</span></div>
+      <div class="at-pair"><span class="at-tag trigger">Trigger</span><span class="at-text">How do you know the whole procedure is complete?</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5 · Transition - Try It Again -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Try It Again</span>
+    <h2 style="margin-bottom:14px;">Let's Try It With Another Procedure</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1000px;line-height:1.6;">
+      We just broke the toaster down into steps, and for each one we asked how it knows to start and what actually happens in between. Let's use that same thinking on a different everyday machine: a washing machine.
+    </p>
+  </div>
+</section>
+
+<!-- SLIDE 6 · Describe a Procedure - Washing Machine -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:6:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Think about running one load of laundry in a washing machine, from loading the clothes in to taking them out clean. Write out the procedure as an ordered list of steps.","order":0,"responseTimeLimitMs":90000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Warm-Up</span>
+    <h2 style="margin-bottom:10px;">Describe a Procedure: Doing a Load of Laundry</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1100px;line-height:1.6;">
+      Think about running one load of laundry in a washing machine, from loading the clothes in to taking them out clean.
+    </p>
+    <div class="callout" style="margin-top:var(--gap);max-width:1100px;">
+      <p><strong>Write out the procedure as an ordered list of steps.</strong> Do not worry about being exact, just get the steps down in order.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7 · Focus - Washing Machine -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Another Machine</span>
+    <h2 style="margin-bottom:10px;">Let's Think Specifically About the Washing Machine</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1100px;line-height:1.6;margin-bottom:var(--gap-lg);">
+      Let's simplify the washing machine's procedure into five broad steps. You can think of each step as a distinct part of the process. The machine is doing something, until that something is complete and the next step can begin.
+    </p>
+
+    <div class="split split-60 split-top">
+      <div>
+        <div class="step-block fragment fade-up">
+          <div class="step-head"><span class="step-num">1</span><span class="step-label">Ready</span></div>
+          <p style="margin-left:48px;font-size:var(--small);color:var(--text-muted);">The machine is waiting to do its job.</p>
+        </div>
+        <div class="step-block fragment fade-up">
+          <div class="step-head"><span class="step-num">2</span><span class="step-label">Wash</span></div>
+          <p style="margin-left:48px;font-size:var(--small);color:var(--text-muted);">The machine is washing the clothes.</p>
+        </div>
+        <div class="step-block fragment fade-up">
+          <div class="step-head"><span class="step-num">3</span><span class="step-label">Drain</span></div>
+          <p style="margin-left:48px;font-size:var(--small);color:var(--text-muted);">The machine is draining the dirty water.</p>
+        </div>
+        <div class="step-block fragment fade-up">
+          <div class="step-head"><span class="step-num">4</span><span class="step-label">Rinse</span></div>
+          <p style="margin-left:48px;font-size:var(--small);color:var(--text-muted);">The machine is rinsing the clothes.</p>
+        </div>
+        <div class="step-block fragment fade-up">
+          <div class="step-head"><span class="step-num">5</span><span class="step-label">Spin</span></div>
+          <p style="margin-left:48px;font-size:var(--small);color:var(--text-muted);">The machine is spinning the water out.</p>
+        </div>
+      </div>
+
+      <div class="callout fragment fade-up">
+        <p><strong>A note on Wash and Rinse:</strong> both of those steps actually start with the fill valve opening, and the valve closes on its own once the tub is full. We are treating that as part of the bigger step rather than splitting it into its own step.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 8 · Breakdown - Washing Machine -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:8:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Step 1, Ready: how does the machine know when to start filling?","order":0,"responseTimeLimitMs":45000},{"id":"q2","type":"free-response","text":"Step 2, Wash: what is the machine doing during this step?","order":1,"responseTimeLimitMs":45000},{"id":"q3","type":"free-response","text":"Step 2, Wash: how does the machine know when to stop washing and move to the next step?","order":2,"responseTimeLimitMs":45000},{"id":"q4","type":"free-response","text":"Step 3, Drain: what is the machine doing during this step?","order":3,"responseTimeLimitMs":45000},{"id":"q5","type":"free-response","text":"Step 3, Drain: how does the machine know when to stop draining and move to the next step?","order":4,"responseTimeLimitMs":45000},{"id":"q6","type":"free-response","text":"Step 4, Rinse: what is the machine doing during this step?","order":5,"responseTimeLimitMs":45000},{"id":"q7","type":"free-response","text":"Step 4, Rinse: how does the machine know when to stop rinsing and move to the next step?","order":6,"responseTimeLimitMs":45000},{"id":"q8","type":"free-response","text":"Step 5, Spin: what is the machine doing during this step?","order":7,"responseTimeLimitMs":45000},{"id":"q9","type":"free-response","text":"Step 5, Spin: how do you know the whole procedure is complete?","order":8,"responseTimeLimitMs":45000}]}'>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Breaking It Down</span>
+    <h2 style="margin-bottom:8px;">What Happens During Each Step?</h2>
+    <p style="font-size:var(--small);color:var(--text-dim);margin-bottom:var(--gap-sm);max-width:1100px;">
+      For every step, we are going to ask two questions: what actually happens, and how do you know it is over.
+    </p>
+
+    <div class="step-block">
+      <div class="step-head"><span class="step-num">1</span><span class="step-label">Ready</span></div>
+      <div class="at-pair"><span class="at-tag trigger">Trigger</span><span class="at-text">How does the machine know when to start filling?</span></div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-head"><span class="step-num">2</span><span class="step-label">Wash</span></div>
+      <div class="at-pair"><span class="at-tag action">Action</span><span class="at-text">What is the machine doing during this step?</span></div>
+      <div class="at-pair"><span class="at-tag trigger">Trigger</span><span class="at-text">How does the machine know when to stop washing and move on?</span></div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-head"><span class="step-num">3</span><span class="step-label">Drain</span></div>
+      <div class="at-pair"><span class="at-tag action">Action</span><span class="at-text">What is the machine doing during this step?</span></div>
+      <div class="at-pair"><span class="at-tag trigger">Trigger</span><span class="at-text">How does the machine know when to stop draining and move on?</span></div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-head"><span class="step-num">4</span><span class="step-label">Rinse</span></div>
+      <div class="at-pair"><span class="at-tag action">Action</span><span class="at-text">What is the machine doing during this step?</span></div>
+      <div class="at-pair"><span class="at-tag trigger">Trigger</span><span class="at-text">How does the machine know when to stop rinsing and move on?</span></div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-head"><span class="step-num">5</span><span class="step-label">Spin</span></div>
+      <div class="at-pair"><span class="at-tag action">Action</span><span class="at-text">What is the machine doing during this step?</span></div>
+      <div class="at-pair"><span class="at-tag trigger">Trigger</span><span class="at-text">How do you know the whole procedure is complete?</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9 · The State Machine Model -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Naming It</span>
+    <h2 style="margin-bottom:10px;">This Is a State Machine</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1100px;line-height:1.6;margin-bottom:var(--gap-lg);">
+      The toaster and the washing machine both followed the same pattern: a series of steps, each one asking what happens and what tells it to move on. That pattern has a name, and so does each piece of it.
+    </p>
+
+    <div class="fragment fade-up" style="display:flex;justify-content:center;margin-bottom:var(--gap-lg);">
+      <div style="position:relative;display:flex;align-items:flex-end;gap:160px;padding-top:60px;">
+        <div class="key-prop" style="text-align:center;width:170px;color:var(--text);">
+          State 1
+          <div style="font-size:var(--small);color:var(--text-dim);margin-top:4px;">Action 1</div>
+        </div>
+        <div class="key-prop" style="text-align:center;width:170px;color:var(--text);">
+          State 2
+          <div style="font-size:var(--small);color:var(--text-dim);margin-top:4px;">Action 2</div>
+        </div>
+        <div class="key-prop" style="text-align:center;width:170px;color:var(--text);">
+          State 3
+          <div style="font-size:var(--small);color:var(--text-dim);margin-top:4px;">Action 3</div>
+        </div>
+
+        <span style="position:absolute;left:170px;top:74px;width:160px;text-align:center;font-family:var(--font-mono);font-size:var(--label);color:var(--result);text-transform:uppercase;letter-spacing:0.08em;">Transition on Trigger</span>
+        <span style="position:absolute;left:500px;top:74px;width:160px;text-align:center;font-family:var(--font-mono);font-size:var(--label);color:var(--result);text-transform:uppercase;letter-spacing:0.08em;">Transition on Trigger</span>
+
+        <svg width="160" height="50" viewBox="0 0 160 50" style="position:absolute;left:170px;top:14px;overflow:visible;">
+          <defs>
+            <marker id="arcArrowHead1" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto">
+              <path class="chain-arrowhead" d="M0,0 L8,4 L0,8 Z" fill="#39d353"></path>
+            </marker>
+          </defs>
+          <path d="M0,46 Q80,2 160,46" fill="none" stroke="#39d353" stroke-width="2.5" marker-end="url(#arcArrowHead1)"></path>
+        </svg>
+        <svg width="160" height="50" viewBox="0 0 160 50" style="position:absolute;left:500px;top:14px;overflow:visible;">
+          <defs>
+            <marker id="arcArrowHead2" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto">
+              <path class="chain-arrowhead" d="M0,0 L8,4 L0,8 Z" fill="#39d353"></path>
+            </marker>
+          </defs>
+          <path d="M0,46 Q80,2 160,46" fill="none" stroke="#39d353" stroke-width="2.5" marker-end="url(#arcArrowHead2)"></path>
+        </svg>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);max-width:1200px;">
+      <div class="key-prop fragment fade-up"><strong>State:</strong> one of the steps. Ready, Toasting, and Finish are each a state.</div>
+      <div class="key-prop fragment fade-up"><strong>Action:</strong> what the machine does while it is in a state.</div>
+      <div class="key-prop fragment fade-up"><strong>Trigger:</strong> the event that says a state is over.</div>
+      <div class="key-prop fragment fade-up"><strong>Transition:</strong> the move from one state to the next, caused by a trigger.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 10 · Building a State Machine -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Building It</span>
+    <h2 style="margin-bottom:10px;">Eight States, Two Buttons</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1200px;line-height:1.6;margin-bottom:var(--gap-lg);">
+      Let's build a state machine of our own: an eight-step procedure controlled by two buttons. Pressing <span style="color:var(--accent);">Start</span> moves us into State 1. From there, we advance one state at a time by toggling a <span style="color:var(--result);">Step</span> button: every press and every release is its own trigger, so we step forward on <span style="color:var(--result);">STEP</span> and again on <span style="color:var(--result);">~STEP</span>. We will leave the actions blank for now and fill them in later.
+    </p>
+
+    <p class="fragment fade-up" data-fragment-index="1" style="font-size:var(--body);color:var(--text-muted);max-width:1100px;line-height:1.6;margin-bottom:var(--gap);">
+      Once Step 8 finishes, <span style="color:var(--result);">~STEP</span> sends us right back to S1. A real machine rarely runs a sequence once: it loops back to the start so it is ready to run the whole procedure again.
+    </p>
+
+    <div class="fragment fade-up" data-fragment-index="0" style="display:flex;justify-content:center;">
+      <div id="sm-diagram" style="position:relative;display:flex;align-items:flex-end;gap:100px;padding-top:50px;padding-left:90px;padding-bottom:140px;">
+        <div class="chain-node" data-idx="1">S1</div>
+        <div class="chain-node" data-idx="2">S2</div>
+        <div class="chain-node" data-idx="3">S3</div>
+        <div class="chain-node" data-idx="4">S4</div>
+        <div class="chain-node" data-idx="5">S5</div>
+        <div class="chain-node" data-idx="6">S6</div>
+        <div class="chain-node" data-idx="7">S7</div>
+        <div class="chain-node" data-idx="8">S8</div>
+
+        <svg data-arc="0" width="90" height="50" viewBox="0 0 90 50" style="position:absolute;left:0;top:4px;overflow:visible;">
+          <path class="chain-path" d="M0,46 Q45,2 90,46" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+          <path class="chain-arrowhead" d="M0,0 L8,4 L0,8 Z" fill="#39d353" transform="translate(90,46) rotate(44.4) scale(2.5) translate(-8,-4)"></path>
+        </svg>
+        <span class="chain-label" data-arc="0" style="position:absolute;left:0;top:64px;width:90px;text-align:center;">Start</span>
+
+        <svg data-arc="1" width="100" height="50" viewBox="0 0 100 50" style="position:absolute;left:136px;top:4px;overflow:visible;">
+          <path class="chain-path" d="M0,46 Q50,2 100,46" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+          <path class="chain-arrowhead" d="M0,0 L8,4 L0,8 Z" fill="#39d353" transform="translate(100,46) rotate(41.35) scale(2.5) translate(-8,-4)"></path>
+        </svg>
+        <span class="chain-label" data-arc="1" style="position:absolute;left:136px;top:64px;width:100px;text-align:center;">Step</span>
+
+        <svg data-arc="2" width="100" height="50" viewBox="0 0 100 50" style="position:absolute;left:282px;top:4px;overflow:visible;">
+          <path class="chain-path" d="M0,46 Q50,2 100,46" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+          <path class="chain-arrowhead" d="M0,0 L8,4 L0,8 Z" fill="#39d353" transform="translate(100,46) rotate(41.35) scale(2.5) translate(-8,-4)"></path>
+        </svg>
+        <span class="chain-label" data-arc="2" style="position:absolute;left:282px;top:64px;width:100px;text-align:center;">~Step</span>
+
+        <svg data-arc="3" width="100" height="50" viewBox="0 0 100 50" style="position:absolute;left:428px;top:4px;overflow:visible;">
+          <path class="chain-path" d="M0,46 Q50,2 100,46" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+          <path class="chain-arrowhead" d="M0,0 L8,4 L0,8 Z" fill="#39d353" transform="translate(100,46) rotate(41.35) scale(2.5) translate(-8,-4)"></path>
+        </svg>
+        <span class="chain-label" data-arc="3" style="position:absolute;left:428px;top:64px;width:100px;text-align:center;">Step</span>
+
+        <svg data-arc="4" width="100" height="50" viewBox="0 0 100 50" style="position:absolute;left:574px;top:4px;overflow:visible;">
+          <path class="chain-path" d="M0,46 Q50,2 100,46" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+          <path class="chain-arrowhead" d="M0,0 L8,4 L0,8 Z" fill="#39d353" transform="translate(100,46) rotate(41.35) scale(2.5) translate(-8,-4)"></path>
+        </svg>
+        <span class="chain-label" data-arc="4" style="position:absolute;left:574px;top:64px;width:100px;text-align:center;">~Step</span>
+
+        <svg data-arc="5" width="100" height="50" viewBox="0 0 100 50" style="position:absolute;left:720px;top:4px;overflow:visible;">
+          <path class="chain-path" d="M0,46 Q50,2 100,46" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+          <path class="chain-arrowhead" d="M0,0 L8,4 L0,8 Z" fill="#39d353" transform="translate(100,46) rotate(41.35) scale(2.5) translate(-8,-4)"></path>
+        </svg>
+        <span class="chain-label" data-arc="5" style="position:absolute;left:720px;top:64px;width:100px;text-align:center;">Step</span>
+
+        <svg data-arc="6" width="100" height="50" viewBox="0 0 100 50" style="position:absolute;left:866px;top:4px;overflow:visible;">
+          <path class="chain-path" d="M0,46 Q50,2 100,46" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+          <path class="chain-arrowhead" d="M0,0 L8,4 L0,8 Z" fill="#39d353" transform="translate(100,46) rotate(41.35) scale(2.5) translate(-8,-4)"></path>
+        </svg>
+        <span class="chain-label" data-arc="6" style="position:absolute;left:866px;top:64px;width:100px;text-align:center;">~Step</span>
+
+        <svg data-arc="7" width="100" height="50" viewBox="0 0 100 50" style="position:absolute;left:1012px;top:4px;overflow:visible;">
+          <path class="chain-path" d="M0,46 Q50,2 100,46" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+          <path class="chain-arrowhead" d="M0,0 L8,4 L0,8 Z" fill="#39d353" transform="translate(100,46) rotate(41.35) scale(2.5) translate(-8,-4)"></path>
+        </svg>
+        <span class="chain-label" data-arc="7" style="position:absolute;left:1012px;top:64px;width:100px;text-align:center;">Step</span>
+
+        <svg class="fragment fade-up" data-fragment-index="1" data-arc="8" width="1068" height="130" viewBox="0 0 1068 130" style="position:absolute;left:90px;top:96px;overflow:visible;">
+          <path class="chain-path" d="M1022,6 C930,98 138,98 46,6" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+          <path class="chain-arrowhead" d="M0,0 L8,4 L0,8 Z" fill="#39d353" transform="translate(46,6) rotate(-135) scale(2.5) translate(-8,-4)"></path>
+        </svg>
+        <span class="chain-label fragment fade-up" data-fragment-index="1" data-arc="8" style="position:absolute;left:574px;top:181px;width:100px;text-align:center;">~Step</span>
+      </div>
+    </div>
+
+    <div class="fragment fade-up" data-fragment-index="2" style="display:flex;justify-content:center;gap:24px;">
+      <button type="button" class="sm-btn sm-btn-push" id="sm-start-btn">Start</button>
+      <button type="button" class="sm-btn sm-btn-toggle" id="sm-step-btn">Step</button>
+    </div>
+
+    <div id="sm-insight" class="callout" style="max-width:1100px;margin-top:var(--gap);display:none;">
+      <p>Notice that the same trigger can move us into different states. How does the machine know to move you to <strong id="sm-insight-next">S2</strong> the next time you press <span style="color:var(--result);">STEP</span> rather than <strong id="sm-insight-prev">S2</strong>?</p>
+    </div>
+  </div>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'state-machines-intro',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function (Reveal) {
+    initStateMachineDemo(Reveal);
+  },
+});
+
+function initStateMachineDemo(Reveal) {
+  var diagram = Array.prototype.find.call(
+    document.querySelectorAll('#sm-diagram'),
+    function (el) { return !el.closest('#storyboard'); }
+  );
+  if (!diagram) return;
+
+  var slideSection = diagram.closest('section');
+  var nodes = slideSection.querySelectorAll('.chain-node');
+  var startBtn = slideSection.querySelector('#sm-start-btn');
+  var stepBtn = slideSection.querySelector('#sm-step-btn');
+  var buttonsWrap = startBtn ? startBtn.closest('.fragment') : null;
+
+  // arc 0 = Start -> S1, arcs 1-7 = S1..S8 chain, arc 8 = loop back S8 -> S1
+  var DEST = [1, 2, 3, 4, 5, 6, 7, 8, 1];
+  var currentArc = 0;
+  var animating = false;
+  // Separate histories per edge, since only destinations reached by
+  // the same edge (Off->On "Step" vs On->Off "~Step") as the one
+  // about to fire next are valid "rather than" comparisons: pressing
+  // the button from S8 can only ever land on S1 (its edge is ~Step),
+  // so S8 itself (only ever reached via a Step edge) can never be a
+  // real alternative to "the next time you press [the button]".
+  var stepEdgeHistory = [];
+  var tildeEdgeHistory = [];
+
+  var insightEl = slideSection.querySelector('#sm-insight');
+  var insightNextEl = slideSection.querySelector('#sm-insight-next');
+  var insightPrevEl = slideSection.querySelector('#sm-insight-prev');
+
+  // The Step button is a real toggle: whether a given press fires
+  // "Step" or "~Step" depends on whether it is currently on or off,
+  // not on a fixed per-arc table (a static table can drift out of
+  // sync with the actual button, e.g. if a press gets ignored while
+  // an animation is playing). Off -> On is "Step"; On -> Off is "~Step".
+  function isStepOn() {
+    return !!(stepBtn && stepBtn.classList.contains('is-on'));
+  }
+
+  function formatStateList(arr) {
+    var labeled = arr.map(function (i) { return 'S' + i; });
+    if (labeled.length === 1) return labeled[0];
+    if (labeled.length === 2) return labeled[0] + ' or ' + labeled[1];
+    return labeled.slice(0, -1).join(', ') + ', or ' + labeled[labeled.length - 1];
+  }
+
+  function updateInsight() {
+    // Whichever edge is about to fire on the next press is the one
+    // whose history is a fair comparison; the other edge's history
+    // is irrelevant (those destinations can't happen next anyway).
+    var relevantHistory = isStepOn() ? tildeEdgeHistory : stepEdgeHistory;
+    if (!insightEl || relevantHistory.length < 2) return;
+    insightEl.style.display = '';
+    insightNextEl.textContent = 'S' + DEST[currentArc];
+    insightPrevEl.textContent = formatStateList(relevantHistory);
+  }
+
+  function hideInsight() {
+    if (!insightEl) return;
+    insightEl.style.display = 'none';
+    stepEdgeHistory = [];
+    tildeEdgeHistory = [];
+  }
+
+  function getArc(n) {
+    return {
+      svg: slideSection.querySelector('svg[data-arc="' + n + '"]'),
+      label: slideSection.querySelector('.chain-label[data-arc="' + n + '"]'),
+    };
+  }
+
+  function setActiveNode(idx) {
+    nodes.forEach(function (n) {
+      n.classList.toggle('active', Number(n.getAttribute('data-idx')) === idx);
+    });
+  }
+
+  function setHighlightArc(n) {
+    for (var i = 0; i <= 8; i++) {
+      var a = getArc(i);
+      if (a.svg) a.svg.classList.toggle('highlight', i === n);
+      if (a.label) a.label.classList.toggle('highlight', i === n);
+    }
+  }
+
+  function resetArcDrawing() {
+    for (var i = 0; i <= 8; i++) {
+      var a = getArc(i);
+      if (!a.svg) continue;
+      var path = a.svg.querySelector('.chain-path');
+      var arrow = a.svg.querySelector('.chain-arrowhead');
+      path.style.transition = 'none';
+      path.style.strokeDasharray = '';
+      path.style.strokeDashoffset = '';
+      if (arrow) arrow.classList.remove('arrow-visible', 'arrow-fade-slow');
+    }
+  }
+
+  // Undraws every arc (tail to head hidden) so nothing shows a shaft
+  // until its own press animates it in. Used when the demo activates,
+  // since chain-dimmed only dims opacity, it does not undraw lines.
+  function hideAllArcs() {
+    for (var i = 0; i <= 8; i++) {
+      var a = getArc(i);
+      if (!a.svg) continue;
+      var path = a.svg.querySelector('.chain-path');
+      var len = path.getTotalLength();
+      path.style.transition = 'none';
+      path.style.strokeDasharray = len;
+      path.style.strokeDashoffset = len;
+    }
+  }
+
+  // Draws the arc in from tail to head, briefly shows the arrowhead
+  // at the destination, then erases the arc in the same direction
+  // (tail to head) so it has fully vanished before the state lights up.
+  function playArc(n, callback) {
+    var a = getArc(n);
+    if (!a.svg) { callback(); return; }
+    var path = a.svg.querySelector('.chain-path');
+    var arrow = a.svg.querySelector('.chain-arrowhead');
+    var len = path.getTotalLength();
+    var drawMs = 380;
+    var holdMs = 120;
+    var eraseMs = 380;
+
+    path.style.transition = 'none';
+    path.style.strokeDasharray = len;
+    path.style.strokeDashoffset = len;
+    if (arrow) arrow.classList.remove('arrow-visible', 'arrow-fade-slow');
+    path.getBoundingClientRect(); // force reflow so the transition below actually animates
+
+    path.style.transition = 'stroke-dashoffset ' + drawMs + 'ms ease';
+    path.style.strokeDashoffset = '0';
+
+    window.setTimeout(function () {
+      if (arrow) arrow.classList.add('arrow-visible');
+      window.setTimeout(function () {
+        // Fade the arrowhead out over the exact same duration as the
+        // line's erase, so both finish vanishing together.
+        if (arrow) {
+          arrow.classList.add('arrow-fade-slow');
+          arrow.classList.remove('arrow-visible');
+        }
+        path.style.transition = 'stroke-dashoffset ' + eraseMs + 'ms ease';
+        path.style.strokeDashoffset = String(-len);
+        window.setTimeout(callback, eraseMs + 20);
+      }, holdMs);
+    }, drawMs + 20);
+  }
+
+  function activateDemo() {
+    diagram.classList.add('chain-dimmed');
+    currentArc = 0;
+    animating = false;
+    setActiveNode(0);
+    setHighlightArc(0);
+    hideAllArcs();
+    hideInsight();
+    if (stepBtn) stepBtn.classList.remove('is-on');
+  }
+
+  function deactivateDemo() {
+    diagram.classList.remove('chain-dimmed');
+    currentArc = 0;
+    animating = false;
+    setActiveNode(0);
+    setHighlightArc(-1);
+    resetArcDrawing();
+    hideInsight();
+    if (stepBtn) stepBtn.classList.remove('is-on');
+  }
+
+  function advance(source) {
+    if (!diagram.classList.contains('chain-dimmed') || animating) return;
+    if (source === 'start' && currentArc !== 0) return;
+    if (source === 'step' && currentArc === 0) return;
+
+    var n = currentArc;
+    var dest = DEST[n];
+    // Off -> On is a "Step" press; only flip (and only decide this)
+    // once we know the press is actually going to be processed, so
+    // the visible toggle state never drifts from the logical one.
+    var firedStep = source === 'step' && !isStepOn();
+    if (source === 'step' && stepBtn) stepBtn.classList.toggle('is-on');
+
+    animating = true;
+    playArc(n, function () {
+      setActiveNode(dest);
+      if (source === 'step') {
+        var hist = firedStep ? stepEdgeHistory : tildeEdgeHistory;
+        hist.push(dest);
+        if (hist.length > 2) hist.shift();
+      }
+      currentArc = n === 8 ? 1 : n + 1;
+      setHighlightArc(currentArc);
+      updateInsight();
+      animating = false;
+    });
+  }
+
+  if (startBtn) startBtn.addEventListener('click', function () { advance('start'); });
+  if (stepBtn) stepBtn.addEventListener('click', function () { advance('step'); });
+
+  Reveal.on('fragmentshown', function (event) {
+    if (buttonsWrap && event.fragment === buttonsWrap) activateDemo();
+  });
+  Reveal.on('fragmenthidden', function (event) {
+    if (buttonsWrap && event.fragment === buttonsWrap) deactivateDemo();
+  });
+  Reveal.on('slidechanged', deactivateDemo);
+}
+</script>
+
+</body>
+</html>

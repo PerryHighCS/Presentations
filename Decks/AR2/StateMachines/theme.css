@@ -1,0 +1,219 @@
+/* ============================================================
+   STATE MACHINES UNIT THEME
+   Shared by all presentations under Decks/AR2/StateMachines/.
+   Layers on top of the AR2 course theme (../theme.css); load
+   that first, then this file.
+
+   Adds the "step breakdown" visual pattern used throughout the
+   unit: a numbered step paired with an ACTION prompt and a
+   TRIGGER prompt, mirroring the steps -> actions -> triggers
+   arc the unit builds toward formal state machines.
+   ============================================================ */
+
+.step-block {
+  margin-bottom: 26px;
+}
+.step-block:last-child {
+  margin-bottom: 0;
+}
+
+.step-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.step-num {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--small);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-label {
+  font-size: var(--body);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.at-pair {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-left: 48px;
+  margin-bottom: 8px;
+}
+.at-pair:last-child {
+  margin-bottom: 0;
+}
+
+.at-tag {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 4px;
+  margin-top: 2px;
+}
+.at-tag.action {
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+}
+.at-tag.trigger {
+  color: var(--result);
+  border: 1px solid rgba(94, 234, 212, 0.3);
+  background: rgba(94, 234, 212, 0.08);
+}
+
+.at-text {
+  font-size: var(--small);
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding-top: 3px;
+}
+
+/* Compact node-chain diagram: numbered state circles connected by
+   labeled arrows, for laying out longer sequences of states than
+   the step-block pattern above can reasonably show at once. */
+
+.chain-node {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--small);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Dims every state except the one currently marked .active, for the
+   Start/Step demo that highlights a single "current" state at a time. */
+#sm-diagram.chain-dimmed .chain-node {
+  opacity: 0.3;
+}
+#sm-diagram.chain-dimmed .chain-node.active {
+  opacity: 1;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #04140a;
+  box-shadow: 0 0 0 4px var(--accent-dim);
+}
+
+/* Same treatment for the transition arcs/labels: once the demo is
+   running, only the arc that is next up (or mid-animation) stays
+   at full strength. */
+#sm-diagram.chain-dimmed svg,
+#sm-diagram.chain-dimmed .chain-label {
+  opacity: 0.2;
+  transition: opacity 0.2s ease;
+}
+#sm-diagram.chain-dimmed svg.highlight,
+#sm-diagram.chain-dimmed .chain-label.highlight {
+  opacity: 1;
+}
+/* The arrowhead only appears mid-animation. It is now a plain sibling
+   <path> (positioned/rotated via `transform`) rather than <marker>
+   content, since marker-rendered instances do not reliably respond to
+   opacity changes on their source element. */
+.chain-arrowhead {
+  transition: opacity 150ms ease;
+}
+#sm-diagram.chain-dimmed .chain-arrowhead {
+  opacity: 0;
+}
+#sm-diagram.chain-dimmed .chain-arrowhead.arrow-visible {
+  opacity: 1;
+}
+#sm-diagram.chain-dimmed .chain-arrowhead.arrow-fade-slow {
+  transition-duration: 380ms;
+}
+#sm-diagram.chain-dimmed .chain-label.highlight {
+  color: var(--result);
+  text-shadow: 0 0 10px rgba(94, 234, 212, 0.6);
+}
+#sm-diagram.chain-dimmed svg.highlight path {
+  stroke-width: 3.5;
+}
+
+/* Start / Step demo buttons */
+.sm-btn {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--small);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 10px 26px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--bg-card);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.sm-btn:active {
+  transform: scale(0.95);
+}
+.sm-btn-push {
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+}
+.sm-btn-push:hover {
+  background: var(--accent-dim);
+}
+.sm-btn-toggle {
+  border: 1px solid rgba(94, 234, 212, 0.3);
+  background: var(--bg-card);
+  color: var(--result);
+}
+.sm-btn-toggle:hover {
+  background: rgba(94, 234, 212, 0.08);
+}
+.sm-btn-toggle.is-on {
+  background: var(--result);
+  color: #04140a;
+  border-color: var(--result);
+}
+.sm-btn-toggle.is-on:hover {
+  background: var(--result);
+}
+
+.chain-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.chain-label {
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  color: var(--result);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.chain-arrow {
+  font-size: 22px;
+  color: var(--accent);
+  line-height: 1;
+}

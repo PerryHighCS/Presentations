@@ -66,6 +66,12 @@ mechanism.
 - **Mechanism:** `requestAnimationFrame` timing loop, no canvas, pure DOM/CSS bars.
 - **Reuse:** generic "race N processes against a shared clock" pattern, reusable for any compare-growth-curves topic beyond Big-O.
 
+### Pushbutton/toggle state-chain stepper with animated transitions
+- **Where:** `Decks/AR2/StateMachines/State_Machines_Intro.html` (`#sm-diagram` chain of `.chain-node` circles and `data-arc="0"`..`"8"` SVG transitions ~line 286, buttons ~line 355, `initStateMachineDemo` JS in the trailing `<script>`)
+- **Concept:** a horizontal chain of numbered state circles connected by curved SVG arcs (plus a wide return arc looping the last node back to the first), driven by a Start button and a Step button. When the buttons appear, the whole diagram dims except the next relevant trigger arc/label. Pressing the right button "draws" that arc's path from tail to arrowhead, then lights up the destination state and shifts the highlight to the following trigger, so exactly one state and one upcoming trigger are ever highlighted at a time.
+- **Mechanism:** `path.getTotalLength()` + `stroke-dasharray`/`stroke-dashoffset` animated via a forced-reflow + CSS transition (the classic SVG "line draw" technique), with the arrowhead `<marker>` opacity held at 0 until the draw finishes so it doesn't appear to float ahead of the line; a `currentArc`/`DEST[]` lookup table drives a `chain-dimmed` container class plus `.active`/`.highlight` toggles on nodes and arcs. Demo state activates/deactivates via `Reveal.on('fragmentshown'/'fragmenthidden', ...)` scoped to the specific buttons fragment (not just `slidechanged`), so stepping backward past that fragment cleanly un-dims everything.
+- **Reuse:** the dasharray/dashoffset draw-in plus marker-delay trick generalizes to "animate any SVG path drawing itself" (wiring diagrams, flowcharts, causal chains); the dim-all-but-the-next-highlighted-element pattern generalizes to any guided step-through of a diagram.
+
 ## Topic-coupled but reusable *mechanism*
 
 ### Drag-to-correct-target credential/tool matching
