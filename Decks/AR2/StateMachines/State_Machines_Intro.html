@@ -635,6 +635,62 @@
   </div>
 </section>
 
+<!-- SLIDE 17 · Breaking the Loop -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">A FluidSim Rule</span>
+    <h2 style="margin-bottom:10px;">An M Block on Every Reset</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      Every <span style="color:var(--warn);">Reset</span> in our sequence loops backward. <span style="color:var(--accent);">S2</span>'s Reset comes from <span style="color:var(--accent);">S3</span>, but S3's own Set depends on S2 being active in the first place. That is a loop at every single stage, not only where the chain wraps from <span style="color:var(--accent);">S8</span> back around to <span style="color:var(--accent);">S1</span>. FluidSim checks the whole logic network in a single pass, and it cannot resolve any of these on its own: wire a Reset straight from the next state's output and it throws a <strong style="color:red;">Digital Loop Detected</strong> error.
+    </p>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      The fix for the loop is to drop an <strong style="color:var(--text)">M block</strong> (a <span style="color:var(--accent);">buffer</span> which mirrors its one input to its one output) into every Reset wire. It breaks the loop FluidSim is complaining about without changing what the circuit actually does.
+    </p>
+
+    <div class="fragment fade-up" style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:var(--gap);">
+      <div id="s2m-latch-demo" style="position:relative;width:760px;height:420px;">
+        <svg width="760" height="420" viewBox="0 0 760 420" style="position:absolute;left:0;top:0;overflow:visible;">
+          <rect x="195" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+          <text x="285" y="65" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="50" fill="var(--text)">&amp;</text>
+
+          <line x1="90" y1="72" x2="195" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+          <line x1="165" y1="72" x2="165" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+          <circle cx="165" cy="72" r="4.5" fill="var(--accent)"></circle>
+          <line x1="165" y1="110" x2="195" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+
+          <line x1="90" y1="148" x2="195" y2="148" stroke="var(--result)" stroke-width="3"></line>
+
+          <line x1="305" y1="110" x2="370" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+          <line x1="370" y1="110" x2="370" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+          <line x1="370" y1="72" x2="430" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+
+          <rect x="430" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+          <text x="485" y="65" text-anchor="middle" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="36" fill="var(--text)">RS</text>
+
+          <line x1="90" y1="300" x2="195" y2="300" stroke="var(--accent)" stroke-width="3"></line>
+
+          <rect id="s2m-m-block" class="m-block-flash" x="195" y="225" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+          <text x="250" y="255" text-anchor="middle" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="44" fill="var(--text)">M</text>
+
+          <line x1="305" y1="300" x2="410" y2="300" stroke="var(--accent)" stroke-width="3"></line>
+          <line x1="410" y1="300" x2="410" y2="148" stroke="var(--accent)" stroke-width="3"></line>
+          <line x1="410" y1="148" x2="430" y2="148" stroke="var(--accent)" stroke-width="3"></line>
+
+          <line x1="540" y1="110" x2="650" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+          <circle id="s2m-active-dot" class="rs-light-dot" cx="650" cy="110" r="8"></circle>
+          <text x="666" y="110" text-anchor="start" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S2 ACTIVE</text>
+        </svg>
+
+        <button type="button" class="sm-btn sm-btn-push sm-btn-sm" id="s2m-s1active-btn" style="position:absolute;left:0;top:72px;transform:translateY(-50%);">S1 Active</button>
+        <button type="button" class="sm-btn sm-btn-toggle sm-btn-sm" id="s2m-step-btn" style="position:absolute;left:0;top:148px;transform:translateY(-50%);">Step</button>
+        <button type="button" class="sm-btn sm-btn-push sm-btn-sm" id="s2m-s3active-btn" style="position:absolute;left:0;top:300px;transform:translateY(-50%);">S3 Active</button>
+      </div>
+      <span style="font-family:var(--font-mono);font-size:var(--label);color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;">S2's Latch, With Its Reset Passed Through M</span>
+    </div>
+  </div>
+</section>
+
 </div></div><!-- end .slides / .reveal -->
 
 <script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
@@ -668,8 +724,70 @@ initSyncDeckReveal({
     initStateMachineDemo(Reveal);
     initRsLatchDemo(Reveal);
     initS2LatchDemo(Reveal);
+    initS2MLatchDemo(Reveal);
   },
 });
+
+function initS2MLatchDemo(Reveal) {
+  var demo = Array.prototype.find.call(
+    document.querySelectorAll('#s2m-latch-demo'),
+    function (el) { return !el.closest('#storyboard'); }
+  );
+  if (!demo) return;
+
+  var slideSection = demo.closest('section');
+  var s1Btn = slideSection.querySelector('#s2m-s1active-btn');
+  var stepBtn = slideSection.querySelector('#s2m-step-btn');
+  var s3Btn = slideSection.querySelector('#s2m-s3active-btn');
+  var activeDot = slideSection.querySelector('#s2m-active-dot');
+  var mBlock = slideSection.querySelector('#s2m-m-block');
+
+  function setActive(on) {
+    activeDot.classList.toggle('active', on);
+    if (on && s1Btn) s1Btn.classList.remove('is-on');
+  }
+
+  function flashPress(btn) {
+    btn.classList.add('is-pressed');
+    window.setTimeout(function () { btn.classList.remove('is-pressed'); }, 180);
+  }
+
+  function flashM() {
+    if (!mBlock) return;
+    mBlock.classList.add('flash');
+    window.setTimeout(function () { mBlock.classList.remove('flash'); }, 220);
+  }
+
+  function isOn(btn) {
+    return !!(btn && btn.classList.contains('is-on'));
+  }
+
+  function updateAnd() {
+    if (isOn(s1Btn) && isOn(stepBtn)) setActive(true);
+  }
+
+  if (s1Btn) s1Btn.addEventListener('click', function () {
+    s1Btn.classList.toggle('is-on');
+    updateAnd();
+  });
+  if (stepBtn) stepBtn.addEventListener('click', function () {
+    stepBtn.classList.toggle('is-on');
+    updateAnd();
+  });
+  if (s3Btn) s3Btn.addEventListener('click', function () {
+    flashPress(s3Btn);
+    flashM();
+    setActive(false);
+  });
+
+  Reveal.on('slidechanged', function () {
+    setActive(false);
+    if (mBlock) mBlock.classList.remove('flash');
+    if (s1Btn) s1Btn.classList.remove('is-on');
+    if (stepBtn) stepBtn.classList.remove('is-on');
+    if (s3Btn) s3Btn.classList.remove('is-pressed');
+  });
+}
 
 function initS2LatchDemo(Reveal) {
   var demo = Array.prototype.find.call(
