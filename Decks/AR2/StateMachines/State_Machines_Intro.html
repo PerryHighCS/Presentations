@@ -277,7 +277,7 @@
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Building It</span>
-    <h2 style="margin-bottom:10px;">Eight States, Two Buttons</h2>
+    <h2 style="margin-bottom:10px;">Stepping Through the States</h2>
     <p style="font-size:var(--body);color:var(--text-muted);max-width:1200px;line-height:1.6;margin-bottom:var(--gap-lg);">
       Let's build a state machine of our own: an eight-step procedure controlled by two buttons. Pressing <span style="color:var(--accent);">Start</span> moves us into State 1. From there, we advance one state at a time by toggling a <span style="color:var(--result);">Step</span> button: every press and every release is its own trigger, so we step forward on <span style="color:var(--result);">STEP</span> and again on <span style="color:var(--result);">~STEP</span>. We will leave the actions blank for now and fill them in later.
     </p>
@@ -454,6 +454,187 @@
   </div>
 </section>
 
+<!-- SLIDE 13 · Reading a Trigger -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Reading a Trigger</span>
+    <h2 style="margin-bottom:10px;">Which State Are We Leaving?</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      Back on our eight-state demo, we asked a hard question: if we are in <span style="color:var(--accent);">S1</span> and we press <span style="color:var(--result);">STEP</span>, how does the machine know to move to <span style="color:var(--accent);">S2</span>, and not S4, or S6, or S8? Every press of <span style="color:var(--result);">STEP</span> looks exactly the same to the button. It has no idea which state we are currently in.
+    </p>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      The trigger alone can never be enough. The machine also has to check which latch is currently on. It only makes sense to turn <span style="color:var(--accent);">S2</span> on when <span style="color:var(--accent);">S1's output is on</span> <strong>and</strong> <span style="color:var(--result);">STEP fires</span>.
+    </p>
+
+    <div class="fragment fade-up" style="display:flex;justify-content:center;margin-bottom:var(--gap);">
+      <svg width="500" height="220" viewBox="0 0 500 220" style="overflow:visible;">
+        <rect x="195" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="285" y="65" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="50" fill="var(--text)">&amp;</text>
+
+        <line x1="70" y1="75" x2="195" y2="75" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="65" y="75" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S1 ACTIVE</text>
+
+        <line x1="70" y1="145" x2="195" y2="145" stroke="var(--result)" stroke-width="3"></line>
+        <text x="65" y="145" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--result)">STEP</text>
+
+        <line x1="305" y1="110" x2="430" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="435" y="110" text-anchor="start" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">SET S2</text>
+      </svg>
+    </div>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;">
+      Every transition in our sequence works the same way. A trigger only counts while we are standing in the state it is meant to end. In FluidSim, each state's <span style="color:var(--accent);">Set</span> input will come from exactly this: an AND between the state before it and the trigger that ends it.
+    </p>
+  </div>
+</section>
+
+<!-- SLIDE 14 · Interlude - Three-Input AND -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">A Quick Interlude</span>
+    <h2 style="margin-bottom:10px;">Three Inputs from Two Signals</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      FluidSim's AND block always has three inputs, but we often only have two signals to combine. (In this case, <span style="color:var(--accent);">S1 Active</span> and <span style="color:var(--result);">STEP</span>). What do we connect to the third input?
+    </p>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      Wire the same signal into two of the three inputs instead of leaving one empty. It does not matter which signal gets duplicated, as long as both copies come from the same wire.
+    </p>
+
+    <div class="fragment fade-up" style="display:flex;justify-content:center;margin-bottom:var(--gap);">
+      <svg width="500" height="220" viewBox="0 0 500 220" style="overflow:visible;">
+        <rect x="195" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="285" y="65" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="50" fill="var(--text)">&amp;</text>
+
+        <line x1="20" y1="72" x2="195" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="165" y1="72" x2="165" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <circle cx="165" cy="72" r="4.5" fill="var(--accent)"></circle>
+        <line x1="165" y1="110" x2="195" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="15" y="72" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S1 ACTIVE</text>
+
+        <line x1="20" y1="148" x2="195" y2="148" stroke="var(--result)" stroke-width="3"></line>
+        <text x="15" y="148" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--result)">STEP</text>
+
+        <line x1="305" y1="110" x2="430" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="435" y="110" text-anchor="start" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">SET S2</text>
+      </svg>
+    </div>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;">
+      This works because ANDing a signal with itself changes nothing: if a wire is on, it is on, checking it twice does not make it more on. So a three-input AND fed <span style="color:var(--accent);">S1 Active</span>, <span style="color:var(--accent);">S1 Active</span>, and <span style="color:var(--result);">STEP</span> behaves exactly like the two-input AND we actually wanted.
+    </p>
+  </div>
+</section>
+
+<!-- SLIDE 15 · Wiring the AND Into a Latch -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Wiring It Together</span>
+    <h2 style="margin-bottom:10px;">Set Is Covered. What About Reset?</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      We already built the AND that decides when a state should turn on. Now let's connect it where it belongs: the <span style="color:var(--accent);">S</span> input of an RS latch. The instant <span style="color:var(--accent);">S1 Active</span> and <span style="color:var(--result);">STEP</span> are both true, even for a moment, this latch remembers it, and its output becomes <span style="color:var(--accent);">S2 Active</span>.
+    </p>
+
+    <div class="fragment fade-up" style="display:flex;justify-content:center;margin-bottom:var(--gap);">
+      <svg width="760" height="220" viewBox="0 0 760 220" style="overflow:visible;">
+        <rect x="195" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="285" y="65" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="50" fill="var(--text)">&amp;</text>
+
+        <line x1="20" y1="72" x2="195" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="165" y1="72" x2="165" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <circle cx="165" cy="72" r="4.5" fill="var(--accent)"></circle>
+        <line x1="165" y1="110" x2="195" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="15" y="72" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S1 ACTIVE</text>
+
+        <line x1="20" y1="148" x2="195" y2="148" stroke="var(--result)" stroke-width="3"></line>
+        <text x="15" y="148" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--result)">STEP</text>
+
+        <line x1="305" y1="110" x2="370" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="370" y1="110" x2="370" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="370" y1="72" x2="430" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+
+        <rect x="430" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="485" y="65" text-anchor="middle" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="36" fill="var(--text)">RS</text>
+        <text x="438" y="72" font-family="var(--font-mono)" font-size="14" font-weight="700" fill="var(--accent)">S</text>
+
+        <line x1="395" y1="148" x2="430" y2="148" stroke="var(--warn)" stroke-width="3" stroke-dasharray="4 5"></line>
+        <text x="438" y="148" font-family="var(--font-mono)" font-size="14" font-weight="700" fill="var(--warn)">R</text>
+        <text x="385" y="148" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="26" font-weight="700" fill="var(--warn)">?</text>
+
+        <line x1="540" y1="110" x2="620" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="628" y="110" text-anchor="start" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S2 ACTIVE</text>
+      </svg>
+    </div>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;">
+      Set is covered: the moment the AND fires, the latch turns on and stays on. But nothing is wired to <span style="color:var(--warn);">R</span> yet, and without a Reset, this state would turn on and simply stay on forever, long after we have moved on to later states. What should we connect there?
+    </p>
+  </div>
+</section>
+
+<!-- SLIDE 16 · Closing the Loop -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Closing the Loop</span>
+    <h2 style="margin-bottom:10px;">Passing the Baton</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      Let's finish the latch we started on the last slide. The same rule tells us what to wire into <span style="color:var(--warn);">R</span>: the state that comes after it. <span style="color:var(--accent);">S3 Active</span> is what tells <span style="color:var(--accent);">S2</span> to stop, so that is what we connect there.
+    </p>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      Notice this latch's output does double duty. <span style="color:var(--accent);">S2 Active</span> is not only this state's own signal, it is also exactly the signal that would feed <span style="color:var(--warn);">R</span> on the S1 latch from two slides ago: the same wire that turns S2 on is the wire that turns S1 off.
+    </p>
+
+    <div class="fragment fade-up" style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:var(--gap);">
+      <div id="s2-latch-demo" style="position:relative;width:760px;height:260px;">
+        <svg width="760" height="260" viewBox="0 0 760 260" style="position:absolute;left:0;top:0;overflow:visible;">
+          <rect x="195" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+          <text x="285" y="65" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="50" fill="var(--text)">&amp;</text>
+
+          <line x1="90" y1="72" x2="195" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+          <line x1="165" y1="72" x2="165" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+          <circle cx="165" cy="72" r="4.5" fill="var(--accent)"></circle>
+          <line x1="165" y1="110" x2="195" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+
+          <line x1="90" y1="148" x2="195" y2="148" stroke="var(--result)" stroke-width="3"></line>
+
+          <line x1="305" y1="110" x2="370" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+          <line x1="370" y1="110" x2="370" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+          <line x1="370" y1="72" x2="430" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+
+          <rect x="430" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+          <text x="485" y="65" text-anchor="middle" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="36" fill="var(--text)">RS</text>
+
+          <line x1="90" y1="210" x2="410" y2="210" stroke="var(--accent)" stroke-width="3"></line>
+          <line x1="410" y1="210" x2="410" y2="148" stroke="var(--accent)" stroke-width="3"></line>
+          <line x1="410" y1="148" x2="430" y2="148" stroke="var(--accent)" stroke-width="3"></line>
+
+          <line x1="540" y1="110" x2="580" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+          <circle cx="580" cy="110" r="4.5" fill="var(--accent)"></circle>
+          <line x1="580" y1="110" x2="650" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+          <line x1="580" y1="110" x2="580" y2="30" stroke="var(--accent)" stroke-width="3"></line>
+
+          <circle id="s2-active-dot" class="rs-light-dot" cx="650" cy="110" r="8"></circle>
+          <text x="666" y="110" text-anchor="start" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S2 ACTIVE</text>
+
+          <circle id="s1-reset-dot" class="rs-light-dot" cx="580" cy="20" r="8"></circle>
+          <text x="596" y="20" text-anchor="start" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--warn)">TO S1 RESET</text>
+        </svg>
+
+        <button type="button" class="sm-btn sm-btn-push sm-btn-sm" id="s2-s1active-btn" style="position:absolute;left:0;top:72px;transform:translateY(-50%);">S1 Active</button>
+        <button type="button" class="sm-btn sm-btn-toggle sm-btn-sm" id="s2-step-btn" style="position:absolute;left:0;top:148px;transform:translateY(-50%);">Step</button>
+        <button type="button" class="sm-btn sm-btn-push sm-btn-sm" id="s2-s3active-btn" style="position:absolute;left:0;top:210px;transform:translateY(-50%);">S3 Active</button>
+      </div>
+      <span style="font-family:var(--font-mono);font-size:var(--label);color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;">S2's Latch</span>
+    </div>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;">
+      Turn on <strong>S1 Active</strong> and <strong>Step</strong> together to set the latch, then press <strong>S3 Active</strong> to reset it. Watch the two indicators: <span style="color:var(--accent);">S2 Active</span> and <span style="color:var(--warn);">S1 Reset</span> always agree, because they are the same wire, just labeled for what it does in two different places.
+    </p>
+  </div>
+</section>
+
 </div></div><!-- end .slides / .reveal -->
 
 <script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
@@ -486,8 +667,65 @@ initSyncDeckReveal({
   afterInit: function (Reveal) {
     initStateMachineDemo(Reveal);
     initRsLatchDemo(Reveal);
+    initS2LatchDemo(Reveal);
   },
 });
+
+function initS2LatchDemo(Reveal) {
+  var demo = Array.prototype.find.call(
+    document.querySelectorAll('#s2-latch-demo'),
+    function (el) { return !el.closest('#storyboard'); }
+  );
+  if (!demo) return;
+
+  var slideSection = demo.closest('section');
+  var s1Btn = slideSection.querySelector('#s2-s1active-btn');
+  var stepBtn = slideSection.querySelector('#s2-step-btn');
+  var s3Btn = slideSection.querySelector('#s2-s3active-btn');
+  var activeDot = slideSection.querySelector('#s2-active-dot');
+  var resetDot = slideSection.querySelector('#s1-reset-dot');
+
+  function setActive(on) {
+    activeDot.classList.toggle('active', on);
+    resetDot.classList.toggle('active', on);
+    // S1 Reset going live is exactly S1 losing power: S1 Active can't
+    // stay on once the state after it has taken over.
+    if (on && s1Btn) s1Btn.classList.remove('is-on');
+  }
+
+  function flashPress(btn) {
+    btn.classList.add('is-pressed');
+    window.setTimeout(function () { btn.classList.remove('is-pressed'); }, 180);
+  }
+
+  function isOn(btn) {
+    return !!(btn && btn.classList.contains('is-on'));
+  }
+
+  function updateAnd() {
+    if (isOn(s1Btn) && isOn(stepBtn)) setActive(true);
+  }
+
+  if (s1Btn) s1Btn.addEventListener('click', function () {
+    s1Btn.classList.toggle('is-on');
+    updateAnd();
+  });
+  if (stepBtn) stepBtn.addEventListener('click', function () {
+    stepBtn.classList.toggle('is-on');
+    updateAnd();
+  });
+  if (s3Btn) s3Btn.addEventListener('click', function () {
+    flashPress(s3Btn);
+    setActive(false);
+  });
+
+  Reveal.on('slidechanged', function () {
+    setActive(false);
+    if (s1Btn) s1Btn.classList.remove('is-on');
+    if (stepBtn) stepBtn.classList.remove('is-on');
+    if (s3Btn) s3Btn.classList.remove('is-pressed');
+  });
+}
 
 function initRsLatchDemo(Reveal) {
   var demo = Array.prototype.find.call(
