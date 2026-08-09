@@ -468,7 +468,7 @@
     </div>
 
     <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;">
-      That leaves the Reset line still not connected. What turns S1 back off? We will answer that in a second.
+      That leaves the Reset line still not connected. What turns S1 back off? We will leave it open for now: once we have built S2, we will have exactly what we need to close the loop.
     </p>
   </div>
 </section>
@@ -523,7 +523,7 @@
     </p>
 
     <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
-      The trigger alone is almost never be enough. The machine also has to check which latch is currently on. It only makes sense to turn <span style="color:var(--accent);">S2</span> on when <span style="color:var(--accent);">S1's output is on</span> <strong style="color:var(--text);">and</strong> <span style="color:var(--result);">STEP fires</span>.
+      The trigger alone is almost never enough. The machine also has to check which latch is currently on. It only makes sense to turn <span style="color:var(--accent);">S2</span> on when <span style="color:var(--accent);">S1's output is on</span> <strong style="color:var(--text);">and</strong> <span style="color:var(--result);">STEP fires</span>.
     </p>
 
     <div class="fragment fade-up" style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:var(--gap);">
@@ -700,7 +700,7 @@
     </div>
 
     <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;">
-      Set is covered: the moment the AND fires, the latch turns on and stays on. But nothing is wired to <span style="color:var(--warn);">R</span> yet, and without a Reset, this state would turn on and simply stay on forever, long after we have moved on to later states. What should we connect there?
+      Set is covered: the moment the AND fires, the latch turns on and stays on. But nothing is wired to <span style="color:var(--warn);">R</span> yet, and without a Reset, this state would turn on and simply stay on forever, long after we have moved on to later states. Sound familiar? <span style="color:var(--accent);">S1</span> has the exact same gap. Every latch we build needs an answer to the same question: what turns a state back off?
     </p>
   </div>
 </section>
@@ -736,7 +736,7 @@
     </div>
 
     <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
-      This wire is not new. It is the exact same <span style="color:var(--accent);">S2 Active</span> output we finished wiring on the last slide: the same wire that turns S2 on is the wire that turns S1 off. One signnal serves two purposes at once, that is what passing the baton means here.
+      <span style="color:var(--accent);">S2 Active</span> already tells the rest of the circuit that S2 is now the current state. That is exactly the signal S1 needs to hear that it is done: the same wire that turns S2 on is the wire that turns S1 off. One signal serves two purposes at once, that is what passing the baton means here.
     </p>
 
     <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;">
@@ -751,7 +751,10 @@
     <span class="slide-tag">A FluidSim Rule</span>
     <h2 style="margin-bottom:10px;">An M Block on Every Reset</h2>
     <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
-      Every <span style="color:var(--warn);">Reset</span> in our sequence loops backward. <span style="color:var(--accent);">S1</span>'s Reset comes from <span style="color:var(--accent);">S2</span>, but S2's own Set depends on S1 being active in the first place. That is a loop at every single stage, not only where the chain wraps from <span style="color:var(--accent);">S4</span> back around to <span style="color:var(--accent);">S1</span>. FluidSim checks the whole logic network in a single pass, and it cannot resolve any of these on its own: wire a Reset straight from the next state's output and it throws a <strong style="color:red;">Digital Loop Detected</strong> error.
+      Every <span style="color:var(--warn);">Reset</span> in our sequence loops backward. <span style="color:var(--accent);">S1</span>'s Reset comes from <span style="color:var(--accent);">S2</span>, but S2's own Set depends on S1 being active in the first place. That is a loop you'll find at every single stage in this circuit.
+    </p>
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      When you press <span style="color:var(--accent);">run</span>, FluidSim checks the whole logic network in a single pass, and it cannot resolve any of these on its own: wire a Reset straight from the next state's output and it throws a <strong style="color:red;">Digital Loop Detected</strong> error.
     </p>
 
     <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
@@ -759,7 +762,7 @@
     </p>
 
     <div class="fragment fade-up" style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:var(--gap);">
-      <div id="s1m-latch-demo" style="position:relative;width:650px;height:420px;">
+      <div id="s1m-latch-demo" style="position:relative;width:650px;height:420px;transform:scale(0.55);transform-origin:top center;margin-bottom:-189px;">
         <svg width="650" height="420" viewBox="0 0 650 420" style="position:absolute;left:0;top:0;overflow:visible;">
           <rect x="310" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
           <text x="365" y="65" text-anchor="middle" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="36" fill="var(--text)">RS</text>
@@ -784,6 +787,10 @@
       </div>
       <span style="font-family:var(--font-mono);font-size:var(--label);color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;">S1's Latch, With Its Reset Passed Through M</span>
     </div>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;">
+      <span style="color:var(--accent);">S2</span>'s Reset is still an open question, exactly like S1's was a few slides ago. Once <span style="color:var(--accent);">S3</span> exists, the same M block pattern closes that loop too, and the same will be true for every state after it.
+    </p>
   </div>
 </section>
 
@@ -1062,7 +1069,306 @@
   </div>
 </section>
 
-<!-- SLIDE 23 · Scaling Up -->
+<!-- SLIDE 23 · Building S4 -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">One More Link</span>
+    <h2 style="margin-bottom:10px;">Building S4</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      One more link before the chain wraps back around. <span style="color:var(--accent);">S4</span> follows the exact same pattern as every state before it: <span style="color:var(--accent);">S3 Active</span> and <span style="color:var(--result);">STEP</span> set it.
+    </p>
+
+    <div class="fragment fade-up" style="display:flex;justify-content:center;margin-bottom:var(--gap);">
+      <svg width="820" height="420" viewBox="0 0 820 420" style="overflow:visible;">
+        <rect x="195" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="285" y="65" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="50" fill="var(--text)">&amp;</text>
+
+        <line x1="20" y1="72" x2="195" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="165" y1="72" x2="165" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <circle cx="165" cy="72" r="4.5" fill="var(--accent)"></circle>
+        <line x1="165" y1="110" x2="195" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="15" y="72" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S3 ACTIVE</text>
+
+        <line x1="20" y1="148" x2="195" y2="148" stroke="var(--result)" stroke-width="3"></line>
+        <text x="15" y="148" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--result)">STEP</text>
+
+        <line x1="305" y1="110" x2="370" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="370" y1="110" x2="370" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="370" y1="72" x2="430" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+
+        <rect x="430" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="485" y="65" text-anchor="middle" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="36" fill="var(--text)">RS</text>
+        <text x="438" y="72" font-family="var(--font-mono)" font-size="14" font-weight="700" fill="var(--accent)">S</text>
+        <text x="438" y="148" font-family="var(--font-mono)" font-size="14" font-weight="700" fill="var(--accent)">R</text>
+
+        <line x1="540" y1="110" x2="620" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="628" y="110" text-anchor="start" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S4 ACTIVE</text>
+
+        <rect x="195" y="225" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="250" y="255" text-anchor="middle" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="44" fill="var(--text)">M</text>
+
+        <line x1="305" y1="300" x2="370" y2="300" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="370" y1="300" x2="370" y2="148" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="370" y1="148" x2="430" y2="148" stroke="var(--accent)" stroke-width="3"></line>
+      </svg>
+    </div>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;">
+      Also just like every state before it, S4's <span style="color:var(--warn);">Reset</span> routes through an M block. What feeds that M block is where the loop gets interesting.
+    </p>
+  </div>
+</section>
+
+<!-- SLIDE 24 · Two Ways Into S1 -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Closing the Loop</span>
+    <h2 style="margin-bottom:10px;">Two Ways Into S1</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      Look at the full loop again. <span style="color:var(--accent);">S1</span> has two separate arrows pointing into it: <span style="color:var(--accent);">Start</span> fires once, right at the beginning, and the loop-back arrow fires every time <span style="color:var(--accent);">S4</span> finishes, forever after.
+    </p>
+
+    <div style="display:flex;justify-content:center;margin-bottom:var(--gap);">
+      <div class="sm-diagram chain-dimmed" style="position:relative;display:flex;align-items:flex-end;gap:100px;padding-top:50px;padding-left:90px;padding-bottom:140px;transform:scale(0.6);transform-origin:top center;margin-bottom:-94px;">
+        <div class="chain-node active" data-idx="1">S1</div>
+        <div class="chain-node" data-idx="2">S2</div>
+        <div class="chain-node" data-idx="3">S3</div>
+        <div class="chain-node" data-idx="4">S4</div>
+
+        <svg class="highlight" data-arc="0" width="90" height="50" viewBox="0 0 90 50" style="position:absolute;left:0;top:4px;overflow:visible;">
+          <path class="chain-path" d="M0,46 Q45,2 90,46" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+          <path class="chain-arrowhead arrow-visible" d="M0,0 L8,4 L0,8 Z" fill="#39d353" transform="translate(90,46) rotate(44.4) scale(2.5) translate(-8,-4)"></path>
+        </svg>
+        <span class="chain-label highlight" data-arc="0" style="position:absolute;left:0;top:64px;width:90px;text-align:center;">Start</span>
+
+        <svg data-arc="1" width="100" height="50" viewBox="0 0 100 50" style="position:absolute;left:136px;top:4px;overflow:visible;">
+          <path class="chain-path" d="M0,46 Q50,2 100,46" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+        </svg>
+        <span class="chain-label" data-arc="1" style="position:absolute;left:136px;top:64px;width:100px;text-align:center;">Step</span>
+
+        <svg data-arc="2" width="100" height="50" viewBox="0 0 100 50" style="position:absolute;left:282px;top:4px;overflow:visible;">
+          <path class="chain-path" d="M0,46 Q50,2 100,46" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+        </svg>
+        <span class="chain-label" data-arc="2" style="position:absolute;left:282px;top:64px;width:100px;text-align:center;">~Step</span>
+
+        <svg data-arc="3" width="100" height="50" viewBox="0 0 100 50" style="position:absolute;left:428px;top:4px;overflow:visible;">
+          <path class="chain-path" d="M0,46 Q50,2 100,46" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+        </svg>
+        <span class="chain-label" data-arc="3" style="position:absolute;left:428px;top:64px;width:100px;text-align:center;">Step</span>
+
+        <svg class="highlight" data-arc="4" width="484" height="130" viewBox="0 0 484 130" style="position:absolute;left:90px;top:96px;overflow:visible;">
+          <path class="chain-path" d="M438,6 C346,98 138,98 46,6" fill="none" stroke="#39d353" stroke-width="2.5"></path>
+          <path class="chain-arrowhead arrow-visible" d="M0,0 L8,4 L0,8 Z" fill="#39d353" transform="translate(46,6) rotate(-135) scale(2.5) translate(-8,-4)"></path>
+        </svg>
+        <span class="chain-label highlight" data-arc="4" style="position:absolute;left:282px;top:181px;width:100px;text-align:center;">~Step</span>
+      </div>
+    </div>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      S1 needs to turn on for either reason: <span style="color:var(--accent);">Start</span> is pressed, or both <span style="color:var(--accent);">S4 Active</span> and <span style="color:var(--result);">~STEP</span>. Either one can move us into S1, but we need another block to combine these inputs. AND cannot do that: it needs every input true.
+    </p>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      The loop-back arrow from S4 to S1 is also the clue we need to understand the reset for S4. S4 ends when S1 starts, so <span style="color:var(--accent);">S1 Active</span> is the signal S4's M block was waiting for. Let's make that connection now:
+    </p>
+
+    <div class="fragment fade-up" style="display:flex;justify-content:center;">
+      <svg width="820" height="420" viewBox="0 0 820 420" style="overflow:visible;transform:scale(0.5);transform-origin:top center;margin-bottom:-210px;">
+        <rect x="195" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="285" y="65" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="50" fill="var(--text)">&amp;</text>
+
+        <line x1="20" y1="72" x2="195" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="165" y1="72" x2="165" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <circle cx="165" cy="72" r="4.5" fill="var(--accent)"></circle>
+        <line x1="165" y1="110" x2="195" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="15" y="72" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S3 ACTIVE</text>
+
+        <line x1="20" y1="148" x2="195" y2="148" stroke="var(--result)" stroke-width="3"></line>
+        <text x="15" y="148" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--result)">STEP</text>
+
+        <line x1="305" y1="110" x2="370" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="370" y1="110" x2="370" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="370" y1="72" x2="430" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+
+        <rect x="430" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="485" y="65" text-anchor="middle" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="36" fill="var(--text)">RS</text>
+        <text x="438" y="72" font-family="var(--font-mono)" font-size="14" font-weight="700" fill="var(--accent)">S</text>
+        <text x="438" y="148" font-family="var(--font-mono)" font-size="14" font-weight="700" fill="var(--accent)">R</text>
+
+        <line x1="540" y1="110" x2="620" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="628" y="110" text-anchor="start" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S4 ACTIVE</text>
+
+        <rect id="s4b-m-block" class="m-block-flash" x="195" y="225" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="250" y="255" text-anchor="middle" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="44" fill="var(--text)">M</text>
+
+        <line x1="20" y1="300" x2="195" y2="300" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="15" y="300" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S1 ACTIVE</text>
+
+        <line x1="305" y1="300" x2="370" y2="300" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="370" y1="300" x2="370" y2="148" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="370" y1="148" x2="430" y2="148" stroke="var(--accent)" stroke-width="3"></line>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 25 · Interlude - The OR Block -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">A Quick Interlude</span>
+    <h2 style="margin-bottom:10px;">One or More Inputs</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      FluidSim's OR block always has three inputs like the AND block, but we only have two signals to combine: <span style="color:var(--accent);">Start</span> and <span style="color:var(--accent);">S4 Active AND ~STEP</span>. What do we connect to the third input?
+    </p>
+
+    <div style="display:flex;justify-content:center;margin-bottom:var(--gap);">
+      <svg width="500" height="220" viewBox="0 0 500 220" style="overflow:visible;">
+        <rect x="195" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="290" y="60" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="30" fill="var(--text)">&gt;=1</text>
+
+        <line x1="150" y1="72" x2="195" y2="72" stroke="var(--text-dim)" stroke-width="3"></line>
+        <line x1="150" y1="110" x2="195" y2="110" stroke="var(--text-dim)" stroke-width="3"></line>
+        <line x1="150" y1="148" x2="195" y2="148" stroke="var(--text-dim)" stroke-width="3"></line>
+
+        <line x1="305" y1="110" x2="350" y2="110" stroke="var(--text-dim)" stroke-width="3"></line>
+
+        <g class="fragment fade-up" data-fragment-index="2">
+          <line x1="20" y1="72" x2="195" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+          <line x1="165" y1="72" x2="165" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+          <circle cx="165" cy="72" r="4.5" fill="var(--accent)"></circle>
+          <line x1="165" y1="110" x2="195" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+          <text x="15" y="72" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">START</text>
+
+          <line x1="20" y1="148" x2="195" y2="148" stroke="var(--accent)" stroke-width="3"></line>
+          <text x="15" y="148" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S4 ACTIVE AND ~STEP</text>
+
+          <line x1="305" y1="110" x2="430" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+          <text x="435" y="110" text-anchor="start" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">SET S1</text>
+        </g>
+      </svg>
+    </div>
+
+    <p class="fragment fade-up" data-fragment-index="1" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      Same trick as AND: wire one of the two signals into two of the three inputs instead of leaving one empty.
+    </p>
+
+    <p class="fragment fade-up" data-fragment-index="3" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;">
+      An OR block fires the moment one or more of its inputs are true. Duplicating a signal does not change that: true counted once or twice is still just true. So a three-input OR fed <span style="color:var(--accent);">Start</span>, <span style="color:var(--accent);">Start</span>, and <span style="color:var(--accent);">S4 Active AND ~STEP</span> behaves exactly like the two-input OR we actually wanted.
+    </p>
+  </div>
+</section>
+
+<!-- SLIDE 26 · S1's Real Circuit -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Closing the Loop</span>
+    <h2 style="margin-bottom:10px;">S1's Real Circuit</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      Now S1's Set input can finally be complete. <span style="color:var(--accent);">Start</span> feeds one side of an OR. <span style="color:var(--accent);">S4 Active</span> and <span style="color:var(--result);">~STEP</span> feed the other side, through the exact same AND pattern we have used everywhere else.
+    </p>
+
+    <div class="fragment fade-up" style="display:flex;justify-content:center;margin-bottom:var(--gap);">
+      <svg width="900" height="440" viewBox="0 0 900 440" style="overflow:visible;">
+        <rect x="195" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="285" y="65" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="36" fill="var(--text)">&amp;</text>
+
+        <line x1="20" y1="72" x2="195" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="15" y="72" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S4 ACTIVE</text>
+
+        <line x1="20" y1="148" x2="195" y2="148" stroke="var(--result)" stroke-width="3"></line>
+        <text x="15" y="148" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--result)">~STEP</text>
+
+        <line x1="305" y1="110" x2="345" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="345" y1="110" x2="345" y2="148" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="345" y1="148" x2="390" y2="148" stroke="var(--accent)" stroke-width="3"></line>
+
+        <rect x="390" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="480" y="55" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="26" fill="var(--text)">&gt;=1</text>
+
+        <line x1="20" y1="15" x2="355" y2="15" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="355" y1="15" x2="355" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="355" y1="72" x2="390" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="15" y="15" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">START</text>
+
+        <line x1="500" y1="110" x2="530" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="530" y1="110" x2="530" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="530" y1="72" x2="560" y2="72" stroke="var(--accent)" stroke-width="3"></line>
+
+        <rect x="560" y="35" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="615" y="65" text-anchor="middle" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="36" fill="var(--text)">RS</text>
+        <text x="568" y="72" font-family="var(--font-mono)" font-size="14" font-weight="700" fill="var(--accent)">S</text>
+        <text x="568" y="148" font-family="var(--font-mono)" font-size="14" font-weight="700" fill="var(--accent)">R</text>
+
+        <line x1="670" y1="110" x2="750" y2="110" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="758" y="110" text-anchor="start" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S1 ACTIVE</text>
+
+        <rect x="390" y="225" width="110" height="150" fill="none" stroke="var(--text)" stroke-width="3"></rect>
+        <text x="445" y="255" text-anchor="middle" dominant-baseline="central" font-family="var(--font-mono)" font-weight="700" font-size="44" fill="var(--text)">M</text>
+
+        <line x1="20" y1="300" x2="390" y2="300" stroke="var(--accent)" stroke-width="3"></line>
+        <text x="15" y="300" text-anchor="end" dominant-baseline="central" font-family="var(--font-mono)" font-size="16" font-weight="700" fill="var(--accent)">S2 ACTIVE</text>
+
+        <line x1="500" y1="300" x2="545" y2="300" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="545" y1="300" x2="545" y2="148" stroke="var(--accent)" stroke-width="3"></line>
+        <line x1="545" y1="148" x2="560" y2="148" stroke="var(--accent)" stroke-width="3"></line>
+      </svg>
+    </div>
+
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;">
+      The loop is complete. Every state has a Set, a Reset, and now S1 knows how to fire twice: once to start the whole procedure, and again every time it wraps back around.
+    </p>
+  </div>
+</section>
+
+<!-- SLIDE 27 · Placeholder - Testing the Sequence -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Coming Up</span>
+    <h2 style="margin-bottom:14px;">Testing the Sequence</h2>
+    <div style="max-width:900px;border:2px dashed var(--warn);border-radius:8px;padding:24px 28px;background:rgba(255,209,102,0.05);">
+      <span style="font-family:var(--font-mono);font-size:var(--label);color:var(--warn);text-transform:uppercase;letter-spacing:0.08em;">Placeholder</span>
+      <p style="margin:10px 0 0;font-size:var(--body);color:var(--text-muted);line-height:1.6;">Step through the four-state controller in FluidSim: press Start, then Step, and confirm each state activates in the right order before moving on.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 28 · Placeholder - The Physical Machine -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Coming Up</span>
+    <h2 style="margin-bottom:14px;">The Physical Machine</h2>
+    <div style="max-width:900px;border:2px dashed var(--warn);border-radius:8px;padding:24px 28px;background:rgba(255,209,102,0.05);">
+      <span style="font-family:var(--font-mono);font-size:var(--label);color:var(--warn);text-transform:uppercase;letter-spacing:0.08em;">Placeholder</span>
+      <p style="margin:10px 0 0;font-size:var(--body);color:var(--text-muted);line-height:1.6;">Introduce the physical machine this controller will actually operate, and connect its role back to the four states we just built.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 29 · Placeholder - Adding Outputs -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Coming Up</span>
+    <h2 style="margin-bottom:14px;">Giving Each State a Job</h2>
+    <div style="max-width:900px;border:2px dashed var(--warn);border-radius:8px;padding:24px 28px;background:rgba(255,209,102,0.05);">
+      <span style="font-family:var(--font-mono);font-size:var(--label);color:var(--warn);text-transform:uppercase;letter-spacing:0.08em;">Placeholder</span>
+      <p style="margin:10px 0 0;font-size:var(--body);color:var(--text-muted);line-height:1.6;">Wire real Q outputs to each of the four states, so the controller actually does something while it is active, not just lights up.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 30 · Placeholder - Wiring Triggers -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Coming Up</span>
+    <h2 style="margin-bottom:14px;">Real Inputs, Real Triggers</h2>
+    <div style="max-width:900px;border:2px dashed var(--warn);border-radius:8px;padding:24px 28px;background:rgba(255,209,102,0.05);">
+      <span style="font-family:var(--font-mono);font-size:var(--label);color:var(--warn);text-transform:uppercase;letter-spacing:0.08em;">Placeholder</span>
+      <p style="margin:10px 0 0;font-size:var(--body);color:var(--text-muted);line-height:1.6;">Replace the Start and Step buttons with real physical inputs from the machine, and wire them into the sequence's triggers.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 31 · Scaling Up -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Scaling Up</span>
@@ -1333,6 +1639,12 @@ function initStateMachineDemo(Reveal, idSuffix, numStates) {
   // the button from S8 can only ever land on S1 (its edge is ~Step),
   // so S8 itself (only ever reached via a Step edge) can never be a
   // real alternative to "the next time you press [the button]".
+  // Each edge only ever lands on numStates/2 distinct destinations, so
+  // the history window has to stay small enough that it never grows to
+  // include the upcoming (correct) destination alongside the wrong
+  // ones: with only 2 options total (numStates 4), showing 2 "rather
+  // than" entries would always include the answer itself.
+  var historyWindow = Math.min(2, Math.floor(numStates / 2) - 1);
   var stepEdgeHistory = [];
   var tildeEdgeHistory = [];
 
@@ -1361,7 +1673,7 @@ function initStateMachineDemo(Reveal, idSuffix, numStates) {
     // whose history is a fair comparison; the other edge's history
     // is irrelevant (those destinations can't happen next anyway).
     var relevantHistory = isStepOn() ? tildeEdgeHistory : stepEdgeHistory;
-    if (!insightEl || relevantHistory.length < 2) return;
+    if (!insightEl || relevantHistory.length < historyWindow) return;
     insightEl.style.display = '';
     insightNextEl.textContent = 'S' + DEST[currentArc];
     insightPrevEl.textContent = formatStateList(relevantHistory);
@@ -1502,7 +1814,7 @@ function initStateMachineDemo(Reveal, idSuffix, numStates) {
       if (source === 'step') {
         var hist = firedStep ? stepEdgeHistory : tildeEdgeHistory;
         hist.push(dest);
-        if (hist.length > 2) hist.shift();
+        if (hist.length > historyWindow) hist.shift();
       }
       currentArc = n === lastArc ? 1 : n + 1;
       setHighlightArc(currentArc);
