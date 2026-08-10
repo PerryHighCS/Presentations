@@ -268,13 +268,13 @@
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:2:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What problems would we run into if we tried to include everyone in the class using only single, one-to-one wires?","order":0,"responseTimeLimitMs":120000}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"In the last lesson, the Internet Simulator connected you to just one other person using a single wire. What problems would we run into if we tried to connect everyone in the class that same way, with one direct wire strung between every pair of people?","order":0,"responseTimeLimitMs":120000}]}'>
       <div class="slide-inner">
         <span class="slide-tag">Warm-Up · Discussion</span>
         <h2 style="margin-bottom:var(--gap);">One Wire Isn&rsquo;t Enough</h2>
         <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">In the last lesson, the <span style="color:var(--teal);">Internet Simulator</span> connected you to just one other person by a single wire. Think about what would happen if we tried to connect <span style="color:var(--amber);">everyone in the class</span> that same way.</p>
         <div class="frq-box" style="margin-top:var(--gap);max-width:1250px;">
-          <p>What problems would we run into if we tried to include everyone in the class using only single, one-to-one wires?</p>
+          <p>In the last lesson, the Internet Simulator connected you to just one other person using a single wire. What problems would we run into if we tried to connect everyone in the class that same way, with one direct wire strung between every pair of people?</p>
         </div>
       </div>
       <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
@@ -297,12 +297,12 @@
         <h2 style="margin-bottom:var(--gap);">Rules for Every Challenge</h2>
         <div class="two-col">
           <div class="callout">
-            <h3>One Line, Two People</h3>
-            <p>A single connection (line) can only join exactly two people together.</p>
+            <h3>Lines Connect Pairs</h3>
+            <p>A single connection (line) can only join exactly two people together, never three or more.</p>
           </div>
           <div class="callout accent-amber">
             <h3>Multiple Connections Allowed</h3>
-            <p>You can be connected to more than one person at the same time by drawing multiple lines.</p>
+            <p>You can connect to as many people as you like, and you can even draw more than one line to the same person as a backup connection.</p>
           </div>
         </div>
       </div>
@@ -317,7 +317,7 @@
         <div class="split split-top">
           <div>
             <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">Nodes <span style="color:var(--teal);">A</span> through <span style="color:var(--teal);">E</span> represent five people who want to talk to each other.</p>
-            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">Drag between two nodes to draw a connection. Drag the same pair again, or click a line, to erase it.</p>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">Drag between two nodes to draw a connection. Drag the same pair again to add a backup line between them, or click a line to remove it.</p>
             <p style="font-size:var(--body);color:var(--amber);line-height:1.6;margin-top:var(--gap-sm);">Connect the network however you&rsquo;d like &mdash; there are no guidelines yet.</p>
           </div>
           <div class="netbuild" id="netbuild-1" data-mode="build">
@@ -415,7 +415,7 @@
         <h2 style="margin-bottom:var(--gap);">Build In Some Redundancy</h2>
         <div class="split split-top">
           <div>
-            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">Try to keep your network cheap, but this time also protect against a single cut isolating someone.</p>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">Try to keep your network cheap, but this time also protect against a single cut isolating someone. Drawing a second, backup line between the same two nodes is one way to do that.</p>
             <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">Switch to <span style="color:var(--amber);">Test a Cut</span> and click a line to simulate cutting it. Any node that goes offline will be marked in red.</p>
           </div>
           <div class="netbuild" id="netbuild-3" data-mode="build">
@@ -655,12 +655,16 @@ initSyncDeckReveal({
   afterInit: function(Reveal) {
 
     /* ── Network Builder ─────────────────────────────────────────────
-       Drag between two SVG nodes to connect/disconnect them. Tapping a
-       node arms it as a fallback for keyboard/touch users: tap once to
-       arm, tap a second node to connect (or the same node to release).
-       Optional tools: "cut" mode simulates cutting a connection and
-       flags any node that becomes unreachable; "path" mode highlights
-       the shortest path (fewest hops) between two chosen nodes.
+       Drag between two SVG nodes to add a connection between them.
+       Dragging the same pair again adds another, redundant line (parallel
+       lines fan out so they stay visually distinct); click an existing
+       line to remove just that one. Tapping a node arms it as a fallback
+       for keyboard/touch users: tap once to arm, tap a second node to
+       connect (or the same node to release).
+       Optional tools: "cut" mode simulates cutting one strand of a
+       connection and flags any node that becomes unreachable; "path"
+       mode highlights the shortest path (fewest hops) between two
+       chosen nodes.
        ─────────────────────────────────────────────────────────────── */
     function initNetworkBuilder(id, opts) {
       opts = opts || {};
@@ -712,9 +716,9 @@ initSyncDeckReveal({
         nodesG.appendChild(g);
       });
 
-      var edges = {};       // "A-B" -> true
-      var cuts = {};        // subset of edges marked cut
-      var highlighted = {}; // subset of edges on the highlighted path
+      var edges = {};       // "A-B" -> count of parallel lines between that pair
+      var cuts = {};        // "A-B" -> how many of those parallel lines are cut
+      var highlighted = {}; // subset of pairs on the highlighted path
       var selectedNode = null;
       var pathSel = [];
       var mode = 'build';
@@ -727,7 +731,8 @@ initSyncDeckReveal({
         var adj = {};
         nodeLabels.forEach(function(l) { adj[l] = []; });
         Object.keys(edges).forEach(function(k) {
-          if (respectCuts && cuts[k]) return;
+          var usable = edges[k] - (respectCuts ? (cuts[k] || 0) : 0);
+          if (usable <= 0) return;
           var p = k.split('-');
           adj[p[0]].push(p[1]);
           adj[p[1]].push(p[0]);
@@ -769,13 +774,21 @@ initSyncDeckReveal({
         return path;
       }
 
-      function edgeControlPoint(a, b) {
+      /* Parallel lines between the same pair (redundant backup connections) are
+         fanned out sideways around a shared outward bow so they stay visually
+         distinct instead of stacking exactly on top of each other. */
+      function edgeControlPoint(a, b, index, count) {
         var pa = positions[a], pb = positions[b];
         var mx = (pa.x + pb.x) / 2, my = (pa.y + pb.y) / 2;
         var dx = mx - cx, dy = my - cy;
         var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        var ux = dx / dist, uy = dy / dist;
+        var pdx = pa.y - pb.y, pdy = pb.x - pa.x;
+        var pdist = Math.sqrt(pdx * pdx + pdy * pdy) || 1;
+        var perpx = pdx / pdist, perpy = pdy / pdist;
         var bow = 24;
-        return { x: mx + (dx / dist) * bow, y: my + (dy / dist) * bow };
+        var spread = (index - (count - 1) / 2) * 16;
+        return { x: mx + ux * bow + perpx * spread, y: my + uy * bow + perpy * spread };
       }
 
       function clearResult() { if (resultEl) resultEl.textContent = ''; }
@@ -783,13 +796,19 @@ initSyncDeckReveal({
       function armOrConnect(label) {
         if (selectedNode === null) selectedNode = label;
         else if (selectedNode === label) selectedNode = null;
-        else { toggleEdge(selectedNode, label); selectedNode = null; }
+        else { addEdge(selectedNode, label); selectedNode = null; }
       }
 
-      function toggleEdge(a, b) {
+      function addEdge(a, b) {
         var k = edgeKey(a, b);
-        if (edges[k]) { delete edges[k]; delete cuts[k]; }
-        else { edges[k] = true; }
+        edges[k] = (edges[k] || 0) + 1;
+      }
+
+      function removeOneEdge(k) {
+        if (!edges[k]) return;
+        edges[k] -= 1;
+        if (cuts[k] && cuts[k] > edges[k]) cuts[k] = edges[k];
+        if (edges[k] <= 0) { delete edges[k]; delete cuts[k]; }
       }
 
       function handlePathTap(label) {
@@ -813,8 +832,16 @@ initSyncDeckReveal({
         }
       }
 
-      function handleCutTap(k) {
-        if (cuts[k]) delete cuts[k]; else cuts[k] = true;
+      /* Each pair can have several parallel strands (redundant backup lines).
+         instanceIndex identifies which rendered strand was clicked; its own
+         current cut/active state (rather than the pair as a whole) decides
+         whether this click cuts one more strand or restores one. */
+      function handleCutTap(k, instanceIndex) {
+        var count = edges[k] || 0;
+        var cutCount = cuts[k] || 0;
+        if (instanceIndex < cutCount) cutCount -= 1;
+        else cutCount = Math.min(cutCount + 1, count);
+        if (cutCount > 0) cuts[k] = cutCount; else delete cuts[k];
         clearResult();
         if (Object.keys(cuts).length) {
           var reach = reachableFrom(nodeLabels[0], true);
@@ -830,20 +857,28 @@ initSyncDeckReveal({
         Object.keys(edges).forEach(function(k) {
           var parts = k.split('-');
           var pa = positions[parts[0]], pb = positions[parts[1]];
-          var c = edgeControlPoint(parts[0], parts[1]);
-          var path = document.createElementNS(NS, 'path');
-          path.setAttribute('d', 'M ' + pa.x + ' ' + pa.y + ' Q ' + c.x + ' ' + c.y + ' ' + pb.x + ' ' + pb.y);
-          var cls = 'nb-edge';
-          if (cuts[k]) cls += ' nb-edge-cut';
-          if (highlighted[k]) cls += ' nb-edge-path';
-          path.setAttribute('class', cls);
-          path.setAttribute('data-edge', k);
-          edgesG.appendChild(path);
+          var count = edges[k];
+          var cutCount = cuts[k] || 0;
+          for (var i = 0; i < count; i++) {
+            var c = edgeControlPoint(parts[0], parts[1], i, count);
+            var path = document.createElementNS(NS, 'path');
+            path.setAttribute('d', 'M ' + pa.x + ' ' + pa.y + ' Q ' + c.x + ' ' + c.y + ' ' + pb.x + ' ' + pb.y);
+            var cls = 'nb-edge';
+            if (i < cutCount) cls += ' nb-edge-cut';
+            if (highlighted[k] && i === 0) cls += ' nb-edge-path';
+            path.setAttribute('class', cls);
+            path.setAttribute('data-edge', k);
+            path.setAttribute('data-instance', i);
+            edgesG.appendChild(path);
+          }
         });
 
         var full = reachableFrom(nodeLabels[0], false);
         var allConnected = nodeLabels.every(function(l) { return full[l]; });
-        if (countEl) countEl.textContent = Object.keys(edges).length;
+        if (countEl) {
+          var total = Object.keys(edges).reduce(function(sum, k) { return sum + edges[k]; }, 0);
+          countEl.textContent = total;
+        }
         if (statusEl) {
           statusEl.textContent = allConnected ? 'Connected' : 'Not Connected';
           statusEl.className = 'nb-status ' + (allConnected ? 'nb-status-ok' : 'nb-status-bad');
@@ -909,7 +944,7 @@ initSyncDeckReveal({
         var target = nodeAtPoint(pt);
         if (tempLine) { tempLine.remove(); tempLine = null; }
         if (target && target !== dragFrom) {
-          toggleEdge(dragFrom, target);
+          addEdge(dragFrom, target);
           selectedNode = null;
         } else if (target === dragFrom) {
           armOrConnect(dragFrom);
@@ -945,8 +980,9 @@ initSyncDeckReveal({
         var p = evt.target.closest('.nb-edge');
         if (!p) return;
         var k = p.getAttribute('data-edge');
-        if (mode === 'cut') handleCutTap(k);
-        else if (mode === 'build') { delete edges[k]; delete cuts[k]; }
+        var idx = parseInt(p.getAttribute('data-instance'), 10);
+        if (mode === 'cut') handleCutTap(k, idx);
+        else if (mode === 'build') removeOneEdge(k);
         render();
       });
 
