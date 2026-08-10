@@ -147,7 +147,11 @@
   height: auto;
   display: block;
   touch-action: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
+.netbuild-svg * { -webkit-user-drag: none; }
 .nb-edge {
   fill: none;
   stroke: var(--teal);
@@ -321,7 +325,7 @@
             <p style="font-size:var(--body);color:var(--amber);line-height:1.6;margin-top:var(--gap-sm);">Connect the network however you&rsquo;d like &mdash; there are no guidelines yet.</p>
           </div>
           <div class="netbuild" id="netbuild-1" data-mode="build">
-            <svg class="netbuild-svg" viewBox="0 0 600 520" role="img" aria-label="Five network nodes labeled A through E arranged in a circle">
+            <svg class="netbuild-svg" viewBox="0 0 600 520" draggable="false" role="img" aria-label="Five network nodes labeled A through E arranged in a circle">
               <g class="nb-edges"></g>
               <g class="nb-nodes"></g>
             </svg>
@@ -368,7 +372,7 @@
             <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">Remember: people can relay a message from one connection to another, so you don&rsquo;t need a direct line to everyone.</p>
           </div>
           <div class="netbuild" id="netbuild-2" data-mode="build">
-            <svg class="netbuild-svg" viewBox="0 0 600 520" role="img" aria-label="Five network nodes labeled A through E arranged in a circle">
+            <svg class="netbuild-svg" viewBox="0 0 600 520" draggable="false" role="img" aria-label="Five network nodes labeled A through E arranged in a circle">
               <g class="nb-edges"></g>
               <g class="nb-nodes"></g>
             </svg>
@@ -419,7 +423,7 @@
             <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">Switch to <span style="color:var(--amber);">Test a Cut</span> and click a line to simulate cutting it. Any node that goes offline will be marked in red.</p>
           </div>
           <div class="netbuild" id="netbuild-3" data-mode="build">
-            <svg class="netbuild-svg" viewBox="0 0 600 520" role="img" aria-label="Five network nodes labeled A through E arranged in a circle">
+            <svg class="netbuild-svg" viewBox="0 0 600 520" draggable="false" role="img" aria-label="Five network nodes labeled A through E arranged in a circle">
               <g class="nb-edges"></g>
               <g class="nb-nodes"></g>
             </svg>
@@ -480,7 +484,7 @@
             <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">Use <span style="color:var(--amber);">Find a Path</span> and click two nodes to check the hop count between them.</p>
           </div>
           <div class="netbuild" id="netbuild-4" data-mode="build">
-            <svg class="netbuild-svg" viewBox="0 0 600 520" role="img" aria-label="Five network nodes labeled A through E arranged in a circle">
+            <svg class="netbuild-svg" viewBox="0 0 600 520" draggable="false" role="img" aria-label="Five network nodes labeled A through E arranged in a circle">
               <g class="nb-edges"></g>
               <g class="nb-nodes"></g>
             </svg>
@@ -918,10 +922,18 @@ initSyncDeckReveal({
          pointercancel right after a fresh pointerdown when a new drag started
          from the node that ended the previous drag. Listening on window for
          move/up instead sidesteps that capture-lifecycle quirk entirely. */
+      /* preventDefault on both dragstart and pointerdown: without it, the
+         browser's native "drag this graphic out of the page" gesture can
+         win the race against our own drag tracking, especially on a fast
+         swipe, leaving students dragging a ghost image instead of drawing
+         a connection. */
+      svg.addEventListener('dragstart', function(evt) { evt.preventDefault(); });
+
       svg.addEventListener('pointerdown', function(evt) {
         if (mode !== 'build') return;
         var g = evt.target.closest('.nb-node');
         if (!g) return;
+        evt.preventDefault();
         dragFrom = g.getAttribute('data-node');
         tempLine = document.createElementNS(NS, 'line');
         tempLine.setAttribute('class', 'nb-temp-edge');
