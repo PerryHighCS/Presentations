@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="bg6b35">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.2 Building a Network</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Building a Network
+   ============================================================ */
+
+/* ─── Tip callout (single paragraph, amber accent) ───────────────────── */
+.tip-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,212,59,0.4);
+  border-left: 3px solid var(--yellow);
+  border-radius: 3px;
+  padding: 0.7em 1.2em;
+}
+.tip-box p {
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ─── White image card (historical diagrams need a light backdrop) ──── */
+.shot-card {
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.4);
+}
+.shot-card img { display: block; width: 100%; border-radius: 3px; }
+.shot-caption {
+  margin-top: var(--gap-sm);
+  font-size: var(--small);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+}
+
+/* ─── Guideline list (numbered, newest highlighted) ──────────────────── */
+.guideline-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  width: 100%;
+}
+.guideline-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 16px 20px;
+}
+.guideline-card.is-new {
+  border-color: rgba(255,212,59,0.5);
+  background: rgba(255,212,59,0.06);
+}
+.guideline-num {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 18px;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+}
+.guideline-card.is-new .guideline-num {
+  background: rgba(255,212,59,0.15);
+  border-color: rgba(255,212,59,0.5);
+  color: var(--amber);
+}
+.guideline-body h3 {
+  font-size: 24px;
+  color: var(--text);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.guideline-body p {
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ─── Vocabulary grid ─────────────────────────────────────────────────── */
+.vocab-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+.vocab-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 16px 20px;
+}
+.vocab-term {
+  font-family: var(--font-mono);
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 6px;
+}
+.vocab-def {
+  font-size: 19px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ─── Network Builder widget ──────────────────────────────────────────
+   Reusable "draw it" node-graph activity: drag between nodes to connect
+   or disconnect them, with optional cut-test / shortest-path tools.
+   See .agent/knowledge/html5-activities-index.md for reuse notes.
+   ─────────────────────────────────────────────────────────────────── */
+.netbuild {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+.netbuild-svg {
+  width: 100%;
+  max-width: 440px;
+  height: auto;
+  display: block;
+  touch-action: none;
+}
+.nb-edge {
+  fill: none;
+  stroke: var(--teal);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  cursor: pointer;
+}
+.netbuild[data-mode="cut"] .nb-edge { stroke: rgba(0,201,177,0.6); }
+.nb-edge-cut {
+  stroke: var(--red);
+  stroke-dasharray: 7 6;
+}
+.nb-edge-path {
+  stroke: var(--amber);
+  stroke-width: 5.5;
+}
+.nb-temp-edge {
+  stroke: var(--amber);
+  stroke-width: 3;
+  stroke-dasharray: 6 5;
+  pointer-events: none;
+}
+.nb-node circle {
+  fill: var(--bg);
+  stroke: var(--teal);
+  stroke-width: 2.5;
+  cursor: grab;
+  transition: fill 0.15s, stroke 0.15s;
+}
+.netbuild[data-mode="path"] .nb-node circle,
+.netbuild[data-mode="cut"] .nb-node circle { cursor: pointer; }
+.nb-node text {
+  fill: var(--text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 24px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+.nb-node-selected circle {
+  fill: var(--teal-glow);
+  stroke: var(--amber);
+  stroke-width: 3.5;
+}
+.nb-node-offline circle { stroke: var(--red); opacity: 0.5; }
+.nb-node-offline text { opacity: 0.5; }
+.nb-node:focus { outline: none; }
+.nb-node:focus circle { stroke: var(--amber); stroke-width: 3.5; }
+
+.nb-hint {
+  font-size: var(--small);
+  color: var(--text-dim);
+  text-align: center;
+  max-width: 400px;
+}
+.netbuild-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+.nb-stat {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--text-muted);
+}
+.nb-stat strong { color: var(--text); }
+.nb-status-ok { color: var(--green) !important; }
+.nb-status-bad { color: var(--red) !important; }
+.nb-mode-btn, .nb-reset {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  background: transparent;
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+  border-radius: 4px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.nb-mode-btn.active {
+  background: var(--teal-glow);
+  border-color: var(--teal);
+  color: var(--text);
+}
+.nb-reset {
+  border-color: rgba(255,107,107,0.35);
+  color: var(--red);
+}
+.nb-tool-result {
+  font-size: var(--small);
+  color: var(--amber);
+  font-family: var(--font-mono);
+  text-align: center;
+  min-height: 1.2em;
+  width: 100%;
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 2 · Lesson 2</span>
+        <h1 class="title-h1">Building a Network</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 02 · WARM-UP DISCUSSION -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What problems would we run into if we tried to include everyone in the class using only single, one-to-one wires?","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Warm-Up · Discussion</span>
+        <h2 style="margin-bottom:var(--gap);">One Wire Isn&rsquo;t Enough</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">In the last lesson, the <span style="color:var(--teal);">Internet Simulator</span> connected you to just one other person by a single wire. Think about what would happen if we tried to connect <span style="color:var(--amber);">everyone in the class</span> that same way.</p>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>What problems would we run into if we tried to include everyone in the class using only single, one-to-one wires?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 03 · INTRO -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Activity</span>
+        <h2 style="margin-bottom:var(--gap);">Building a Network</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1250px;line-height:1.55;">Today we&rsquo;re going to build a computer network that lets us communicate with multiple people. We&rsquo;ll draw lines to represent our connections: if two people are joined by a line, they&rsquo;re allowed to talk to each other. A single line can only join <span style="color:var(--teal);">two people</span>, but you can be connected to <span style="color:var(--amber);">multiple people</span> at once through multiple lines.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 04 · RULES FOR ALL CHALLENGES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:64px;">
+        <span class="slide-tag">Rules</span>
+        <h2 style="margin-bottom:var(--gap);">Rules for Every Challenge</h2>
+        <div class="two-col">
+          <div class="callout">
+            <h3>One Line, Two People</h3>
+            <p>A single connection (line) can only join exactly two people together.</p>
+          </div>
+          <div class="callout accent-amber">
+            <h3>Multiple Connections Allowed</h3>
+            <p>You can be connected to more than one person at the same time by drawing multiple lines.</p>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 05 · DRAW IT · CHALLENGE 1 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Draw It · Challenge 1</span>
+        <h2 style="margin-bottom:var(--gap);">Connect the Network</h2>
+        <div class="split split-top">
+          <div>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">Nodes <span style="color:var(--teal);">A</span> through <span style="color:var(--teal);">E</span> represent five people who want to talk to each other.</p>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">Drag between two nodes to draw a connection. Drag the same pair again, or click a line, to erase it.</p>
+            <p style="font-size:var(--body);color:var(--amber);line-height:1.6;margin-top:var(--gap-sm);">Connect the network however you&rsquo;d like &mdash; there are no guidelines yet.</p>
+          </div>
+          <div class="netbuild" id="netbuild-1" data-mode="build">
+            <svg class="netbuild-svg" viewBox="0 0 600 520" role="img" aria-label="Five network nodes labeled A through E arranged in a circle">
+              <g class="nb-edges"></g>
+              <g class="nb-nodes"></g>
+            </svg>
+            <div class="netbuild-toolbar">
+              <span class="nb-stat">Connections: <strong class="nb-count">0</strong></span>
+              <span class="nb-stat">Status: <strong class="nb-status">Not Connected</strong></span>
+              <button class="nb-reset" type="button">Reset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 06 · GUIDELINE #1 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:64px;">
+        <span class="slide-tag">Network Guidelines</span>
+        <h2 style="margin-bottom:var(--gap);">Guideline #1: Keep It Cheap</h2>
+        <div class="guideline-list" style="max-width:1250px;">
+          <div class="guideline-card is-new">
+            <div class="guideline-num">1</div>
+            <div class="guideline-body">
+              <h3>Minimize Connections <span class="badge badge-amber">New</span></h3>
+              <p>Connections cost money, so try to use the least number of connections possible.</p>
+            </div>
+          </div>
+        </div>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p><strong style="color:var(--text);">Note:</strong> individuals can pass on information if it comes in on one connection and needs to go out another.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 07 · DRAW IT · CHALLENGE 2 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Draw It · Challenge 2</span>
+        <h2 style="margin-bottom:var(--gap);">Minimize the Connections</h2>
+        <div class="split split-top">
+          <div>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">Redraw your network so everyone can still reach everyone else, but try to use as <span style="color:var(--amber);">few lines as possible</span>.</p>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">Remember: people can relay a message from one connection to another, so you don&rsquo;t need a direct line to everyone.</p>
+          </div>
+          <div class="netbuild" id="netbuild-2" data-mode="build">
+            <svg class="netbuild-svg" viewBox="0 0 600 520" role="img" aria-label="Five network nodes labeled A through E arranged in a circle">
+              <g class="nb-edges"></g>
+              <g class="nb-nodes"></g>
+            </svg>
+            <div class="netbuild-toolbar">
+              <span class="nb-stat">Connections: <strong class="nb-count">0</strong></span>
+              <span class="nb-stat">Status: <strong class="nb-status">Not Connected</strong></span>
+              <button class="nb-reset" type="button">Reset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 08 · GUIDELINES #1 + #2 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:64px;">
+        <span class="slide-tag">Network Guidelines</span>
+        <h2 style="margin-bottom:var(--gap);">Guideline #2: Expect Cuts</h2>
+        <div class="guideline-list" style="max-width:1250px;">
+          <div class="guideline-card">
+            <div class="guideline-num">1</div>
+            <div class="guideline-body">
+              <h3>Minimize Connections</h3>
+              <p>Connections cost money, so try to use the least number of connections possible.</p>
+            </div>
+          </div>
+          <div class="guideline-card is-new">
+            <div class="guideline-num">2</div>
+            <div class="guideline-body">
+              <h3>Plan for Redundancy <span class="badge badge-amber">New</span></h3>
+              <p>Connections can be cut, which might disconnect people from the network.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 09 · DRAW IT · CHALLENGE 3 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Draw It · Challenge 3</span>
+        <h2 style="margin-bottom:var(--gap);">Build In Some Redundancy</h2>
+        <div class="split split-top">
+          <div>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">Try to keep your network cheap, but this time also protect against a single cut isolating someone.</p>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">Switch to <span style="color:var(--amber);">Test a Cut</span> and click a line to simulate cutting it. Any node that goes offline will be marked in red.</p>
+          </div>
+          <div class="netbuild" id="netbuild-3" data-mode="build">
+            <svg class="netbuild-svg" viewBox="0 0 600 520" role="img" aria-label="Five network nodes labeled A through E arranged in a circle">
+              <g class="nb-edges"></g>
+              <g class="nb-nodes"></g>
+            </svg>
+            <div class="netbuild-toolbar">
+              <span class="nb-stat">Connections: <strong class="nb-count">0</strong></span>
+              <span class="nb-stat">Status: <strong class="nb-status">Not Connected</strong></span>
+              <button class="nb-mode-btn active" type="button" data-mode="build">Build</button>
+              <button class="nb-mode-btn" type="button" data-mode="cut">Test a Cut</button>
+              <button class="nb-reset" type="button">Reset</button>
+            </div>
+            <p class="nb-tool-result" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · GUIDELINES #1 + #2 + #3 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Network Guidelines</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Guideline #3: Go Direct</h2>
+        <div class="guideline-list" style="max-width:1250px;">
+          <div class="guideline-card">
+            <div class="guideline-num">1</div>
+            <div class="guideline-body">
+              <h3>Minimize Connections</h3>
+              <p>Connections cost money, so try to use the least number of connections possible.</p>
+            </div>
+          </div>
+          <div class="guideline-card">
+            <div class="guideline-num">2</div>
+            <div class="guideline-body">
+              <h3>Plan for Redundancy</h3>
+              <p>Connections can be cut, which might disconnect people from the network.</p>
+            </div>
+          </div>
+          <div class="guideline-card is-new">
+            <div class="guideline-num">3</div>
+            <div class="guideline-body">
+              <h3>Prefer Direct Paths <span class="badge badge-amber">New</span></h3>
+              <p>Direct connections are faster than long paths made of several indirect connections.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · DRAW IT · CHALLENGE 4 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Draw It · Challenge 4</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Put It All Together</h2>
+        <div class="split split-top">
+          <div>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">Balance all three guidelines: keep it <span style="color:var(--teal);">cheap</span>, build in <span style="color:var(--teal);">redundancy</span>, and keep important paths <span style="color:var(--teal);">direct</span>.</p>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">Use <span style="color:var(--amber);">Find a Path</span> and click two nodes to check the hop count between them.</p>
+          </div>
+          <div class="netbuild" id="netbuild-4" data-mode="build">
+            <svg class="netbuild-svg" viewBox="0 0 600 520" role="img" aria-label="Five network nodes labeled A through E arranged in a circle">
+              <g class="nb-edges"></g>
+              <g class="nb-nodes"></g>
+            </svg>
+            <div class="netbuild-toolbar">
+              <span class="nb-stat">Connections: <strong class="nb-count">0</strong></span>
+              <span class="nb-stat">Status: <strong class="nb-status">Not Connected</strong></span>
+              <button class="nb-mode-btn active" type="button" data-mode="build">Build</button>
+              <button class="nb-mode-btn" type="button" data-mode="cut">Test a Cut</button>
+              <button class="nb-mode-btn" type="button" data-mode="path">Find a Path</button>
+              <button class="nb-reset" type="button">Reset</button>
+            </div>
+            <p class="nb-tool-result" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 12 · REFLECTION: STRENGTHS & WEAKNESSES -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:12:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Thinking about our three guidelines, what is a strength of the network you created?","order":0,"responseTimeLimitMs":90000},{"id":"q2","type":"free-response","text":"What is a weakness of the network you created?","order":1,"responseTimeLimitMs":90000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Reflect</span>
+        <h2 style="margin-bottom:var(--gap);">Strengths &amp; Weaknesses</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>Thinking about our three guidelines, what is a <span style="color:var(--green);">strength</span> of the network you created? What is a <span style="color:var(--red);">weakness</span> of the network you created?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 13 · ARPANET HISTORY, PART 1 -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">History · ARPANET</span>
+        <h2 style="margin-bottom:var(--gap);">The Original Internet</h2>
+        <div class="split">
+          <p style="font-size:var(--body);color:var(--text-muted);line-height:1.65;">Back in 1969, the first version of the Internet was created as the <span style="color:var(--teal);">Advanced Research Projects Agency Network</span> (ARPANET) by the Defense Department. The initial configuration linked <span style="color:var(--text);">UCLA</span>, the Augmentation Research Center at <span style="color:var(--text);">Stanford Research Institute</span> (SRI), <span style="color:var(--text);">UC Santa Barbara</span>, and the <span style="color:var(--text);">University of Utah</span>. Each school connected one computer to the network through an <span style="color:var(--amber);">IMP</span>, an Interface Message Processor and an early router.</p>
+          <div class="shot-card">
+            <img class="img-zoomable" src="media/arpanet-1969-diagram.png" alt="Diagram of the four-node 1969 ARPANET, showing IMPs at UCLA, SRI, UC Santa Barbara, and the University of Utah connecting an XDS 940, XDS X-7, IBM 360/75, and DEC PDP-10">
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 14 · ARPANET HISTORY, PART 2 -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">History · ARPANET</span>
+        <h2 style="margin-bottom:var(--gap);">The First Message: &ldquo;lo&rdquo;</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1250px;line-height:1.55;">The first successful host-to-host connection on the ARPANET happened between SRI and UCLA at <span style="color:var(--text);">10:30&nbsp;pm PST on October&nbsp;29, 1969</span>. UCLA student programmer Charley Kline typed the command <code>login</code>, but the SDS&nbsp;940 crashed after just two characters.</p>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1250px;line-height:1.55;margin-top:var(--gap);">So the first message ever sent over the Internet was simply <span style="color:var(--amber);font-family:var(--font-mono);font-size:1.3em;">&ldquo;lo&rdquo;</span>.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(255,212,59,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 15 · ARPANET 1977 MAP -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">History · ARPANET</span>
+        <h2 style="margin-bottom:var(--gap-sm);">The ARPANET in 1977</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;margin-bottom:var(--gap-sm);">By 1977, the ARPANET had grown to link universities, research labs, and military sites across the country.</p>
+        <div class="shot-card" style="max-width:1100px;align-self:center;">
+          <img class="img-zoomable" src="media/arpanet-1977-map.png" alt="ARPANET logical map from March 1977, showing dozens of interconnected nodes across the United States and to London and Norway">
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 16 · VOCABULARY -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding:42px 72px;">
+        <span class="slide-tag">Wrap-Up · Vocabulary</span>
+        <h2 style="margin-bottom:var(--gap);">Key Terms</h2>
+        <div class="vocab-grid">
+          <div class="vocab-card">
+            <div class="vocab-term">Computing Device</div>
+            <div class="vocab-def">A machine that can run a program, including computers, tablets, servers, routers, and smart sensors.</div>
+          </div>
+          <div class="vocab-card">
+            <div class="vocab-term">Computing System</div>
+            <div class="vocab-def">A group of computing devices and programs working together for a common purpose.</div>
+          </div>
+          <div class="vocab-card">
+            <div class="vocab-term">Computing Network</div>
+            <div class="vocab-def">A group of interconnected computing devices capable of sending or receiving data.</div>
+          </div>
+          <div class="vocab-card">
+            <div class="vocab-term">Path</div>
+            <div class="vocab-def">The series of connections between computing devices on a network, starting with a sender and ending with a receiver.</div>
+          </div>
+          <div class="vocab-card">
+            <div class="vocab-term">Bandwidth</div>
+            <div class="vocab-def">The maximum amount of data that can be sent in a fixed amount of time, usually measured in bits per second.</div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 17 · REFLECTION: DESCRIBE TODAY'S ACTIVITY -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:17:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"How would you use the words Computing Device, Computing System, Computing Network, and Path to describe today&#39;s network-building activity?","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Reflect</span>
+        <h2 style="margin-bottom:var(--gap);">Describe Today&rsquo;s Activity</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;margin-bottom:var(--gap-sm);">How would you use these words to describe today&rsquo;s activity?</p>
+        <ul class="bullets" style="margin-bottom:var(--gap);">
+          <li>Computing Device</li>
+          <li>Computing System</li>
+          <li>Computing Network</li>
+          <li>Path</li>
+        </ul>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>How would you use these words to describe today&rsquo;s network-building activity?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 18 · QUICK CHECK -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Check-In</span>
+        <h2>Quick Check</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);margin-top:var(--gap-sm);max-width:900px;">Go to <a href="https://learn.mycode.run/link/lwcyh" target="_blank" rel="noopener" style="color:var(--teal);">code.org</a> and answer the one question.</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-150px;bottom:-150px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-2-2-building-a-network',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+    /* ── Network Builder ─────────────────────────────────────────────
+       Drag between two SVG nodes to connect/disconnect them. Tapping a
+       node arms it as a fallback for keyboard/touch users: tap once to
+       arm, tap a second node to connect (or the same node to release).
+       Optional tools: "cut" mode simulates cutting a connection and
+       flags any node that becomes unreachable; "path" mode highlights
+       the shortest path (fewest hops) between two chosen nodes.
+       ─────────────────────────────────────────────────────────────── */
+    function initNetworkBuilder(id, opts) {
+      opts = opts || {};
+      var tools = opts.tools || {};
+
+      function getLiveElementById(elementId) {
+        return Array.prototype.find.call(
+          document.querySelectorAll('#' + elementId),
+          function(element) { return !element.closest('#storyboard'); }
+        );
+      }
+
+      var root = getLiveElementById(id);
+      if (!root) return;
+
+      var NS = 'http://www.w3.org/2000/svg';
+      var nodeLabels = ['A', 'B', 'C', 'D', 'E'];
+      var svg = root.querySelector('.netbuild-svg');
+      var edgesG = svg.querySelector('.nb-edges');
+      var nodesG = svg.querySelector('.nb-nodes');
+      var countEl = root.querySelector('.nb-count');
+      var statusEl = root.querySelector('.nb-status');
+      var resultEl = root.querySelector('.nb-tool-result');
+      var resetBtn = root.querySelector('.nb-reset');
+
+      var cx = 300, cy = 260, rad = 190, nodeR = 32;
+      var positions = {};
+      nodeLabels.forEach(function(label, i) {
+        var angle = (-90 + i * (360 / nodeLabels.length)) * Math.PI / 180;
+        positions[label] = { x: cx + rad * Math.cos(angle), y: cy + rad * Math.sin(angle) };
+      });
+
+      nodeLabels.forEach(function(label) {
+        var pos = positions[label];
+        var g = document.createElementNS(NS, 'g');
+        g.setAttribute('class', 'nb-node');
+        g.setAttribute('data-node', label);
+        g.setAttribute('transform', 'translate(' + pos.x + ',' + pos.y + ')');
+        g.setAttribute('tabindex', '0');
+        g.setAttribute('role', 'button');
+        g.setAttribute('aria-label', 'Node ' + label);
+        var circle = document.createElementNS(NS, 'circle');
+        circle.setAttribute('r', nodeR);
+        var text = document.createElementNS(NS, 'text');
+        text.setAttribute('dy', '0.35em');
+        text.textContent = label;
+        g.appendChild(circle);
+        g.appendChild(text);
+        nodesG.appendChild(g);
+      });
+
+      var edges = {};       // "A-B" -> true
+      var cuts = {};        // subset of edges marked cut
+      var highlighted = {}; // subset of edges on the highlighted path
+      var selectedNode = null;
+      var pathSel = [];
+      var mode = 'build';
+      var dragFrom = null;
+      var tempLine = null;
+
+      function edgeKey(a, b) { return [a, b].sort().join('-'); }
+
+      function neighborsAdj(respectCuts) {
+        var adj = {};
+        nodeLabels.forEach(function(l) { adj[l] = []; });
+        Object.keys(edges).forEach(function(k) {
+          if (respectCuts && cuts[k]) return;
+          var p = k.split('-');
+          adj[p[0]].push(p[1]);
+          adj[p[1]].push(p[0]);
+        });
+        return adj;
+      }
+
+      function reachableFrom(start, respectCuts) {
+        var adj = neighborsAdj(respectCuts);
+        var visited = {};
+        visited[start] = true;
+        var queue = [start];
+        while (queue.length) {
+          var cur = queue.shift();
+          adj[cur].forEach(function(n) {
+            if (!visited[n]) { visited[n] = true; queue.push(n); }
+          });
+        }
+        return visited;
+      }
+
+      function shortestPath(a, b) {
+        var adj = neighborsAdj(true);
+        var prev = {};
+        var visited = {};
+        visited[a] = true;
+        var queue = [a];
+        while (queue.length) {
+          var cur = queue.shift();
+          if (cur === b) break;
+          adj[cur].forEach(function(n) {
+            if (!visited[n]) { visited[n] = true; prev[n] = cur; queue.push(n); }
+          });
+        }
+        if (!visited[b]) return null;
+        var path = [b];
+        while (path[path.length - 1] !== a) path.push(prev[path[path.length - 1]]);
+        path.reverse();
+        return path;
+      }
+
+      function edgeControlPoint(a, b) {
+        var pa = positions[a], pb = positions[b];
+        var mx = (pa.x + pb.x) / 2, my = (pa.y + pb.y) / 2;
+        var dx = mx - cx, dy = my - cy;
+        var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        var bow = 24;
+        return { x: mx + (dx / dist) * bow, y: my + (dy / dist) * bow };
+      }
+
+      function clearResult() { if (resultEl) resultEl.textContent = ''; }
+
+      function armOrConnect(label) {
+        if (selectedNode === null) selectedNode = label;
+        else if (selectedNode === label) selectedNode = null;
+        else { toggleEdge(selectedNode, label); selectedNode = null; }
+      }
+
+      function toggleEdge(a, b) {
+        var k = edgeKey(a, b);
+        if (edges[k]) { delete edges[k]; delete cuts[k]; }
+        else { edges[k] = true; }
+      }
+
+      function handlePathTap(label) {
+        var idx = pathSel.indexOf(label);
+        if (idx !== -1) pathSel.splice(idx, 1);
+        else {
+          pathSel.push(label);
+          if (pathSel.length > 2) pathSel.shift();
+        }
+        highlighted = {};
+        clearResult();
+        if (pathSel.length === 2) {
+          var p = shortestPath(pathSel[0], pathSel[1]);
+          if (p) {
+            for (var i = 0; i < p.length - 1; i++) highlighted[edgeKey(p[i], p[i + 1])] = true;
+            var hops = p.length - 1;
+            resultEl.textContent = p.join(' → ') + '  ·  ' + hops + (hops === 1 ? ' hop' : ' hops');
+          } else {
+            resultEl.textContent = pathSel[0] + ' and ' + pathSel[1] + ' are not connected right now.';
+          }
+        }
+      }
+
+      function handleCutTap(k) {
+        if (cuts[k]) delete cuts[k]; else cuts[k] = true;
+        clearResult();
+        if (Object.keys(cuts).length) {
+          var reach = reachableFrom(nodeLabels[0], true);
+          var offline = nodeLabels.filter(function(l) { return !reach[l]; });
+          resultEl.textContent = offline.length
+            ? 'Disconnected: ' + offline.join(', ')
+            : 'Still fully connected after this cut.';
+        }
+      }
+
+      function render() {
+        edgesG.innerHTML = '';
+        Object.keys(edges).forEach(function(k) {
+          var parts = k.split('-');
+          var pa = positions[parts[0]], pb = positions[parts[1]];
+          var c = edgeControlPoint(parts[0], parts[1]);
+          var path = document.createElementNS(NS, 'path');
+          path.setAttribute('d', 'M ' + pa.x + ' ' + pa.y + ' Q ' + c.x + ' ' + c.y + ' ' + pb.x + ' ' + pb.y);
+          var cls = 'nb-edge';
+          if (cuts[k]) cls += ' nb-edge-cut';
+          if (highlighted[k]) cls += ' nb-edge-path';
+          path.setAttribute('class', cls);
+          path.setAttribute('data-edge', k);
+          edgesG.appendChild(path);
+        });
+
+        var full = reachableFrom(nodeLabels[0], false);
+        var allConnected = nodeLabels.every(function(l) { return full[l]; });
+        if (countEl) countEl.textContent = Object.keys(edges).length;
+        if (statusEl) {
+          statusEl.textContent = allConnected ? 'Connected' : 'Not Connected';
+          statusEl.className = 'nb-status ' + (allConnected ? 'nb-status-ok' : 'nb-status-bad');
+        }
+
+        var cutReachable = tools.cutTest ? reachableFrom(nodeLabels[0], true) : null;
+        nodesG.querySelectorAll('.nb-node').forEach(function(g) {
+          var label = g.getAttribute('data-node');
+          var offline = !!(tools.cutTest && Object.keys(cuts).length > 0 && !cutReachable[label]);
+          g.classList.toggle('nb-node-offline', offline);
+          g.classList.toggle('nb-node-selected', label === selectedNode || pathSel.indexOf(label) !== -1);
+        });
+      }
+
+      function toSvgPoint(evt) {
+        var pt = svg.createSVGPoint();
+        pt.x = evt.clientX;
+        pt.y = evt.clientY;
+        var ctm = svg.getScreenCTM();
+        if (!ctm) return { x: 0, y: 0 };
+        var loc = pt.matrixTransform(ctm.inverse());
+        return { x: loc.x, y: loc.y };
+      }
+
+      function nodeAtPoint(pt) {
+        var found = null;
+        nodeLabels.forEach(function(label) {
+          var pos = positions[label];
+          var dx = pt.x - pos.x, dy = pt.y - pos.y;
+          if (Math.sqrt(dx * dx + dy * dy) <= nodeR + 8) found = label;
+        });
+        return found;
+      }
+
+      /* Drag tracking is deliberately NOT done via setPointerCapture: capturing
+         the pointer on the SVG caused Chromium to occasionally fire a stray
+         pointercancel right after a fresh pointerdown when a new drag started
+         from the node that ended the previous drag. Listening on window for
+         move/up instead sidesteps that capture-lifecycle quirk entirely. */
+      svg.addEventListener('pointerdown', function(evt) {
+        if (mode !== 'build') return;
+        var g = evt.target.closest('.nb-node');
+        if (!g) return;
+        dragFrom = g.getAttribute('data-node');
+        tempLine = document.createElementNS(NS, 'line');
+        tempLine.setAttribute('class', 'nb-temp-edge');
+        var pos = positions[dragFrom];
+        tempLine.setAttribute('x1', pos.x); tempLine.setAttribute('y1', pos.y);
+        tempLine.setAttribute('x2', pos.x); tempLine.setAttribute('y2', pos.y);
+        edgesG.appendChild(tempLine);
+      });
+
+      window.addEventListener('pointermove', function(evt) {
+        if (!dragFrom || !tempLine) return;
+        var pt = toSvgPoint(evt);
+        tempLine.setAttribute('x2', pt.x);
+        tempLine.setAttribute('y2', pt.y);
+      });
+
+      function endDrag(evt) {
+        if (!dragFrom) return;
+        var pt = toSvgPoint(evt);
+        var target = nodeAtPoint(pt);
+        if (tempLine) { tempLine.remove(); tempLine = null; }
+        if (target && target !== dragFrom) {
+          toggleEdge(dragFrom, target);
+          selectedNode = null;
+        } else if (target === dragFrom) {
+          armOrConnect(dragFrom);
+        }
+        dragFrom = null;
+        render();
+      }
+
+      window.addEventListener('pointerup', endDrag);
+      window.addEventListener('pointercancel', function() {
+        if (tempLine) { tempLine.remove(); tempLine = null; }
+        dragFrom = null;
+      });
+
+      nodesG.addEventListener('click', function(evt) {
+        if (mode !== 'path') return;
+        var g = evt.target.closest('.nb-node');
+        if (g) { handlePathTap(g.getAttribute('data-node')); render(); }
+      });
+
+      nodesG.addEventListener('keydown', function(evt) {
+        if (evt.key !== 'Enter' && evt.key !== ' ') return;
+        var g = evt.target.closest('.nb-node');
+        if (!g) return;
+        evt.preventDefault();
+        var label = g.getAttribute('data-node');
+        if (mode === 'path') handlePathTap(label);
+        else if (mode === 'build') armOrConnect(label);
+        render();
+      });
+
+      edgesG.addEventListener('click', function(evt) {
+        var p = evt.target.closest('.nb-edge');
+        if (!p) return;
+        var k = p.getAttribute('data-edge');
+        if (mode === 'cut') handleCutTap(k);
+        else if (mode === 'build') { delete edges[k]; delete cuts[k]; }
+        render();
+      });
+
+      root.querySelectorAll('.nb-mode-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          mode = btn.getAttribute('data-mode');
+          selectedNode = null; pathSel = []; highlighted = {};
+          clearResult();
+          root.querySelectorAll('.nb-mode-btn').forEach(function(b) { b.classList.toggle('active', b === btn); });
+          root.setAttribute('data-mode', mode);
+          render();
+        });
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+          edges = {}; cuts = {}; highlighted = {}; selectedNode = null; pathSel = [];
+          clearResult();
+          render();
+        });
+      }
+
+      Reveal.on('slidechanged', function() {
+        selectedNode = null; pathSel = []; highlighted = {};
+        render();
+      });
+
+      render();
+    }
+
+    initNetworkBuilder('netbuild-1', {});
+    initNetworkBuilder('netbuild-2', {});
+    initNetworkBuilder('netbuild-3', { tools: { cutTest: true } });
+    initNetworkBuilder('netbuild-4', { tools: { cutTest: true, pathFinder: true } });
+
+  }
+});
+</script>
+</body>
+</html>
