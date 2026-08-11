@@ -1566,47 +1566,184 @@
   </div>
 </section>
 
-<!-- SLIDE 30 · Placeholder - The Physical Machine -->
+<!-- SLIDE 30 · The Physical Machine -->
 <section>
-  <div class="slide-inner slide-center">
-    <span class="slide-tag">Coming Up</span>
-    <h2 style="margin-bottom:14px;">The Physical Machine</h2>
-    <div style="max-width:900px;border:2px dashed var(--warn);border-radius:8px;padding:24px 28px;background:rgba(255,209,102,0.05);">
-      <span style="font-family:var(--font-mono);font-size:var(--label);color:var(--warn);text-transform:uppercase;letter-spacing:0.08em;">Placeholder</span>
-      <p style="margin:10px 0 0;font-size:var(--body);color:var(--text-muted);line-height:1.6;">Introduce the physical machine this controller will actually operate, and connect its role back to the four states we just built.</p>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">The Physical Machine</span>
+    <h2 style="margin-bottom:10px;">What Is Our Controller Actually Running?</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      Here is the real machine behind S1 through S4: a pneumatic arm with a vacuum gripper. Press <span style="color:var(--accent);">Start</span>, then keep pressing to watch it cycle through four states like we just built.
+    </p>
+
+    <div class="split split-50" style="align-items:center;">
+      <div style="display:flex;justify-content:center;">
+        <div id="machine-carousel-intro" style="position:relative;width:420px;height:404px;">
+          <img id="machine-carousel-img-intro" src="media/state4.jpeg" alt="The pick-and-place arm with its gripper retracted, waiting for a workpiece to be loaded." style="width:100%;height:100%;object-fit:cover;border-radius:10px;border:1px solid var(--accent-border);display:block;">
+          <div id="machine-carousel-badge-intro" style="position:absolute;top:14px;left:14px;width:44px;height:44px;border-radius:50%;background:rgba(15,20,20,0.85);border:2px solid var(--text-dim);color:var(--text);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:700;font-size:14px;box-shadow:0 0 0 3px rgba(0,0,0,0.35);">Ready</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap);align-items:flex-start;">
+        <span id="machine-carousel-statename-intro" style="font-family:var(--font-mono);font-size:var(--label);font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;">Ready</span>
+        <p id="machine-carousel-caption-intro" style="font-size:var(--body);color:var(--text-muted);line-height:1.6;min-height:96px;">The gripper is retracted, waiting for a workpiece to be loaded.</p>
+        <button type="button" class="sm-btn sm-btn-push" id="machine-carousel-btn-intro">Start</button>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- SLIDE 31 · Placeholder - Adding Outputs -->
+<!-- SLIDE 31 · The Pneumatic Circuit -->
 <section>
-  <div class="slide-inner slide-center">
-    <span class="slide-tag">Coming Up</span>
-    <h2 style="margin-bottom:14px;">Giving Each State a Job</h2>
-    <div style="max-width:900px;border:2px dashed var(--warn);border-radius:8px;padding:24px 28px;background:rgba(255,209,102,0.05);">
-      <span style="font-family:var(--font-mono);font-size:var(--label);color:var(--warn);text-transform:uppercase;letter-spacing:0.08em;">Placeholder</span>
-      <p style="margin:10px 0 0;font-size:var(--body);color:var(--text-muted);line-height:1.6;">Wire real Q outputs to each of the four states, so the controller actually does something while it is active, not just lights up.</p>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Giving Each State a Job</span>
+    <h2 style="margin-bottom:10px;">The Pneumatic Circuit</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1200px;line-height:1.6;margin-bottom:var(--gap);">
+      This pick and place machine uses this pneumatic circuit: three <span style="color:var(--accent);">directional control valves</span>, each operated by one or two solenoid coils, routing compressed air to a cylinder or the vacuum generator.
+    </p>
+    <div style="display:flex;justify-content:center;margin-bottom:var(--gap);">
+      <img class="img-zoomable" src="media/Pneumatic_Circuit.png" alt="Pneumatic circuit: two double-acting cylinders, 1V1 driven by solenoids 1M1 and 1M2, and 2V1 driven by solenoids 2M1 and 2M2, plus a vacuum generator and suction cup driven by 3V1, a single spring-return solenoid 3M1, all fed from a shared compressed-air supply." style="max-height:400px;width:auto;border-radius:6px;border:1px solid var(--accent-border);background:#fff;padding:10px 16px;cursor:zoom-in;">
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap-sm);max-width:1300px;">
+      <div class="key-prop" style="font-size:var(--small);opacity:0.55;">
+        <strong style="color:var(--text);">1V1</strong> &middot; solenoids <strong>1M1</strong> / <strong>1M2</strong><br>
+        Cylinder 1: OUT / BACK. Not part of our four state cycle, we will need it when we scale up.
+      </div>
+      <div class="key-prop" style="font-size:var(--small);">
+        <strong style="color:var(--accent);">2V1</strong> &middot; solenoids <strong>2M1</strong> / <strong>2M2</strong><br>
+        Cylinder 2: DOWN / UP. The vertical motion in every photo we've seen.
+      </div>
+      <div class="key-prop" style="font-size:var(--small);">
+        <strong style="color:var(--accent);">3V1</strong> &middot; solenoid <strong>3M1</strong><br>
+        Vacuum generator: GRIP. Only one solenoid, with a spring return, so the vacuum is on only while 3M1 is energized.
+      </div>
     </div>
   </div>
 </section>
 
-<!-- SLIDE 32 · Placeholder - Wiring Triggers -->
+<!-- SLIDE 32 · The Control Circuit -->
 <section>
-  <div class="slide-inner slide-center">
-    <span class="slide-tag">Coming Up</span>
-    <h2 style="margin-bottom:14px;">Real Inputs, Real Triggers</h2>
-    <div style="max-width:900px;border:2px dashed var(--warn);border-radius:8px;padding:24px 28px;background:rgba(255,209,102,0.05);">
-      <span style="font-family:var(--font-mono);font-size:var(--label);color:var(--warn);text-transform:uppercase;letter-spacing:0.08em;">Placeholder</span>
-      <p style="margin:10px 0 0;font-size:var(--body);color:var(--text-muted);line-height:1.6;">Replace the Start and Step buttons with real physical inputs from the machine, and wire them into the sequence's triggers.</p>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Giving Each State a Job</span>
+    <h2 style="margin-bottom:10px;">The Control Circuit</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1200px;line-height:1.6;margin-bottom:var(--gap);">
+      The logic network we built lives inside a <span style="color:var(--accent);">Logic Module</span>. This is how it is wired, with buttons on the inputs and solenoid coils on the outputs.
+    </p>
+    <div style="display:flex;justify-content:center;margin-bottom:var(--gap);">
+      <img class="img-zoomable" src="media/Control_Circuit.png" alt="Control circuit: 24V and 0V power rails feed a Start pushbutton and a Step detent switch into inputs I0 and I1 of the Logic Module. Outputs Q0 through Q4 wire down through solenoid coils 1M1, 1M2, 2M1, 2M2, and 3M1 back to the 0V rail. A separate diagram shows the physical Module 1 connector pinout for those same coils." style="max-height:400px;width:auto;border-radius:6px;border:1px solid var(--accent-border);background:#fff;padding:10px 16px;cursor:zoom-in;">
+    </div>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1200px;line-height:1.6;">
+      <span style="color:var(--result);">Start</span> is wired as a <strong style="color:var(--text);">pushbutton</strong>: a make contact that closes only while you are pressing it. <span style="color:var(--result);">Step</span> is wired as a <strong style="color:var(--text);">detent switch</strong>: also a make contact, but it stays latched closed once pressed, and only opens again on the next press. That latching is exactly the signal our <span style="color:var(--accent);">Step</span> / <span style="color:var(--accent);">~Step</span> pairs have been reading all along.
+    </p>
+  </div>
+</section>
+
+<!-- SLIDE 33 · Label the Outputs -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Giving Each State a Job</span>
+    <h2 style="margin-bottom:10px;">Label the Outputs</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1200px;line-height:1.6;margin-bottom:var(--gap);">
+      Open the Logic Module you built S1 through S4 inside of. Just like you relabeled I0 and I1 to Start and Step, drag a text box next to each output and name it for the solenoid it will energize.
+    </p>
+    <div class="split split-50" style="align-items:center;">
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <div class="key-prop" style="display:flex;flex-direction:column;gap:8px;">
+          <div class="step-head" style="margin-bottom:0;gap:10px;"><span class="step-num">1</span><span class="step-label" style="font-size:var(--small);">Double-Click the Module</span></div>
+          <p style="margin-left:44px;font-size:14px;color:var(--text-muted);line-height:1.45;">Open it for editing, the same way you did to label the inputs.</p>
+        </div>
+        <div class="key-prop" style="display:flex;flex-direction:column;gap:8px;">
+          <div class="step-head" style="margin-bottom:0;gap:10px;"><span class="step-num">2</span><span class="step-label" style="font-size:var(--small);">Label Every Output</span></div>
+          <p style="margin-left:44px;font-size:14px;color:var(--text-muted);line-height:1.45;">Drag a text box next to Q0 through Q4 and type in the solenoid it drives and what that solenoid does: 1M1&#8209;OUT, 1M2&#8209;BACK, 2M1&#8209;DOWN, 2M2&#8209;UP, 3M1&#8209;GRIP.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <img class="img-zoomable" src="media/Output_Labels.png" alt="Logic Module outputs relabeled: Q0 to 1M1-OUT, Q1 to 1M2-BACK, Q2 to 2M1-DOWN, Q3 to 2M2-UP, Q4 to 3M1-GRIP, and Q5 left unused." style="max-height:440px;width:auto;border-radius:6px;border:1px solid var(--accent-border);background:#fff;padding:10px 16px;cursor:zoom-in;">
+        <span style="font-family:var(--font-mono);font-size:var(--label);color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;">Outputs, Labeled</span>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- SLIDE 33 · Scaling Up -->
+<!-- SLIDE 34 · Combining Signals -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Giving Each State a Job</span>
+    <h2 style="margin-bottom:10px;">Combining Signals</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1200px;line-height:1.6;margin-bottom:var(--gap);">
+      More than one state can involve the same action. <span style="color:var(--accent);">S1</span> and <span style="color:var(--accent);">S3</span> both move the gripper <strong style="color:var(--text);">DOWN</strong>. <span style="color:var(--accent);">S2</span> and <span style="color:var(--accent);">S4</span> both move it <strong style="color:var(--text);">UP</strong>. <span style="color:var(--accent);">S2</span> and <span style="color:var(--accent);">S3</span> both need the vacuum to <strong style="color:var(--text);">GRIP</strong>. Each output needs to fire when <em style="color:var(--text);">any</em> state that uses it is active, so drop <strong style="color:var(--text);">OR</strong> blocks in front of each output.
+    </p>
+    <div class="split split-60" style="align-items:center;">
+      <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+        <div class="key-prop" style="font-size:var(--small);opacity:0.55;">
+          <strong style="color:var(--text);">Q0 / Q1</strong><br>
+          Not part of our four states, leave these OR blocks empty for now.
+        </div>
+        <div class="key-prop" style="font-size:var(--small);">
+          <strong style="color:var(--accent);">Q2</strong> 2M1 &middot; DOWN<br>
+          S1 Active <strong>OR</strong> S3 Active.
+        </div>
+        <div class="key-prop" style="font-size:var(--small);">
+          <strong style="color:var(--accent);">Q3</strong> 2M2 &middot; UP<br>
+          S2 Active <strong>OR</strong> S4 Active.
+        </div>
+        <div class="key-prop" style="font-size:var(--small);">
+          <strong style="color:var(--accent);">Q4</strong> 3M1 &middot; GRIP<br>
+          S2 Active <strong>OR</strong> S3 Active.
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;">
+        <img class="img-zoomable" src="media/Output_Ors.png" alt="An OR block dropped in front of every output on the Logic Module, each with three unconnected inputs, ready to be wired to whichever states' Active signals need to drive that output." style="max-height:420px;width:auto;border-radius:6px;border:1px solid var(--accent-border);background:#fff;padding:10px 16px;cursor:zoom-in;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 35 · Testing the Outputs -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Giving Each State a Job</span>
+    <h2 style="margin-bottom:10px;">Testing the Outputs</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1150px;line-height:1.6;margin-bottom:var(--gap);">
+      With the outputs wired up, every state actually does something now. Press <span style="color:var(--accent);">Start</span>, then keep pressing, and watch which outputs turn on as the machine moves.
+    </p>
+
+    <div class="split split-50" style="align-items:center;">
+      <div style="display:flex;justify-content:center;">
+        <div id="machine-carousel-test" style="position:relative;width:420px;height:404px;">
+          <img id="machine-carousel-img-test" src="media/state4.jpeg" alt="The pick-and-place arm with its gripper retracted, waiting for a workpiece to be loaded." style="width:100%;height:100%;object-fit:cover;border-radius:10px;border:1px solid var(--accent-border);display:block;">
+          <div id="machine-carousel-badge-test" style="position:absolute;top:14px;left:14px;width:44px;height:44px;border-radius:50%;background:rgba(15,20,20,0.85);border:2px solid var(--text-dim);color:var(--text);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:700;font-size:14px;box-shadow:0 0 0 3px rgba(0,0,0,0.35);">Ready</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap);align-items:flex-start;">
+        <span id="machine-carousel-statename-test" style="font-family:var(--font-mono);font-size:var(--label);font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;">Ready</span>
+        <p id="machine-carousel-caption-test" style="font-size:var(--body);color:var(--text-muted);line-height:1.6;min-height:72px;">The gripper is retracted, waiting for a workpiece to be loaded.</p>
+        <div id="machine-carousel-outputs-test" style="display:flex;flex-wrap:wrap;gap:8px;min-height:36px;align-items:center;">
+          <span style="font-family:var(--font-mono);font-size:var(--small);color:var(--text-dim);">No outputs active</span>
+        </div>
+        <button type="button" class="sm-btn sm-btn-push" id="machine-carousel-btn-test">Start</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 36 · Placeholder - Wiring Triggers -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">Coming Up</span>
+    <h2 style="margin-bottom:14px;">Automating with Triggers</h2>
+    <div style="max-width:900px;border:2px dashed var(--warn);border-radius:8px;padding:24px 28px;background:rgba(255,209,102,0.05);">
+      <span style="font-family:var(--font-mono);font-size:var(--label);color:var(--warn);text-transform:uppercase;letter-spacing:0.08em;">Placeholder</span>
+      <p style="margin:10px 0 0;font-size:var(--body);color:var(--text-muted);line-height:1.6;">Replace the Step button with real physical inputs from the machine, and wire them as the sequence's triggers.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 37 · Scaling Up -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Scaling Up</span>
-    <h2 style="margin-bottom:10px;">Same Idea, Eight States Long</h2>
+    <h2 style="margin-bottom:10px;">The Full Cycle, Eight States Long</h2>
     <p style="font-size:var(--body);color:var(--text-muted);max-width:1200px;line-height:1.6;margin-bottom:var(--gap-lg);">
       We built a four-step version, and every state in it follows the shape we just wired: an AND for Set, an RS latch to remember it, an M block to break the Reset loop. Real procedures often need more than four steps. Let's watch the exact same idea play out over an eight-step version, controlled the same way: pressing <span style="color:var(--accent);">Start</span> moves us into State 1, and toggling <span style="color:var(--result);">Step</span> advances one state at a time on every press and every release.
     </p>
@@ -1728,8 +1865,124 @@ initSyncDeckReveal({
     initRsLatchDemo(Reveal);
     initS1LatchDemo(Reveal);
     initS1MLatchDemo(Reveal);
+    initMachineCarousel(Reveal, 'intro');
+    initMachineCarousel(Reveal, 'test');
   },
 });
+
+function initMachineCarousel(Reveal, idSuffix) {
+  // The physical arm returns to the same visual pose it starts from, so
+  // "Ready" and S4 share a photo. Ready only ever appears once, before the
+  // first Step; every Step after that cycles S1 -> S2 -> S3 -> S4 -> S1 and
+  // never comes back around to Ready.
+  var READY = {
+    src: 'media/state4.jpeg', label: 'Ready',
+    alt: 'The pick-and-place arm with its gripper retracted, waiting for a workpiece to be loaded.',
+    caption: 'The gripper is retracted, waiting for a workpiece to be loaded.',
+    outputs: [],
+  };
+  var STATES = [
+    {
+      src: 'media/state1.jpeg', label: 'S1',
+      alt: 'The pick-and-place arm with its gripper lowered onto the workpiece.',
+      caption: 'The gripper moves down to the workpiece.',
+      outputs: [{ q: 'Q2', name: '2M1 · DOWN' }],
+    },
+    {
+      src: 'media/state2.jpeg', label: 'S2',
+      alt: 'The pick-and-place arm with its gripper raised, holding the workpiece with the vacuum engaged.',
+      caption: 'The vacuum activates and the gripper lifts, picking up the workpiece.',
+      outputs: [{ q: 'Q3', name: '2M2 · UP' }, { q: 'Q4', name: '3M1 · GRIP' }],
+    },
+    {
+      src: 'media/state3.jpeg', label: 'S3',
+      alt: 'The pick-and-place arm with its gripper lowered again, vacuum still engaged, setting the workpiece back down.',
+      caption: 'The vacuum stays on as the gripper lowers, setting the workpiece back down.',
+      outputs: [{ q: 'Q2', name: '2M1 · DOWN' }, { q: 'Q4', name: '3M1 · GRIP' }],
+    },
+    {
+      src: 'media/state4.jpeg', label: 'S4',
+      alt: 'The pick-and-place arm with its gripper retracted after releasing the workpiece.',
+      caption: 'The vacuum deactivates and the gripper retracts, letting go of the workpiece.',
+      outputs: [{ q: 'Q3', name: '2M2 · UP' }],
+    },
+  ];
+
+  var carousel = Array.prototype.find.call(
+    document.querySelectorAll('#machine-carousel-' + idSuffix),
+    function (el) { return !el.closest('#storyboard'); }
+  );
+  if (!carousel) return;
+
+  var slideSection = carousel.closest('section');
+  var img = slideSection.querySelector('#machine-carousel-img-' + idSuffix);
+  var badge = slideSection.querySelector('#machine-carousel-badge-' + idSuffix);
+  var stateName = slideSection.querySelector('#machine-carousel-statename-' + idSuffix);
+  var caption = slideSection.querySelector('#machine-carousel-caption-' + idSuffix);
+  var btn = slideSection.querySelector('#machine-carousel-btn-' + idSuffix);
+  var outputsEl = slideSection.querySelector('#machine-carousel-outputs-' + idSuffix);
+
+  var index = -1; // -1 = Ready, not yet started
+
+  function render() {
+    var state = index === -1 ? READY : STATES[index];
+    img.src = state.src;
+    img.alt = state.alt;
+    badge.textContent = state.label;
+    if (index === -1) {
+      badge.style.background = 'rgba(15,20,20,0.85)';
+      badge.style.borderColor = 'var(--text-dim)';
+      badge.style.color = 'var(--text)';
+      badge.style.fontSize = '14px';
+    } else {
+      badge.style.color = '#04140a';
+      badge.style.background = 'var(--accent)';
+      badge.style.borderColor = 'var(--accent)';
+      badge.style.fontSize = '18px';
+    }
+    if (stateName) {
+      stateName.textContent = state.label;
+      stateName.style.fontSize = '24px';
+      stateName.style.color = index === -1 ? 'var(--text-dim)' : 'var(--accent)';
+    }
+    caption.textContent = state.caption;
+
+    // The button always shows whichever trigger is about to fire next:
+    // Start moves Ready -> S1, then Step/~Step alternate forever after,
+    // matching the arc labels on the abstract state diagrams.
+    if (btn) {
+      if (index === -1) {
+        btn.textContent = 'Start';
+        btn.className = 'sm-btn sm-btn-push';
+      } else {
+        btn.textContent = index % 2 === 0 ? 'Step' : '~Step';
+        btn.className = 'sm-btn sm-btn-toggle';
+      }
+    }
+
+    if (outputsEl) {
+      if (state.outputs.length === 0) {
+        outputsEl.innerHTML = '<span style="font-family:var(--font-mono);font-size:var(--small);color:var(--text-dim);">No outputs active</span>';
+      } else {
+        outputsEl.innerHTML = state.outputs.map(function (o) {
+          return '<span style="display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:var(--small);font-weight:700;color:#04140a;background:var(--accent);border-radius:6px;padding:6px 12px;">' + o.q + ': ' + o.name + '</span>';
+        }).join('');
+      }
+    }
+  }
+
+  if (btn) btn.addEventListener('click', function () {
+    index = (index + 1) % STATES.length;
+    render();
+  });
+
+  Reveal.on('slidechanged', function () {
+    index = -1;
+    render();
+  });
+
+  render();
+}
 
 function initS1MLatchDemo(Reveal) {
   var demo = Array.prototype.find.call(
