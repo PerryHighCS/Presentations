@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1leaxtg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.4 Routers and Redundancy</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Routers and Redundancy
+   ============================================================ */
+
+/* ─── Tip callout (single paragraph, amber accent) ───────────────────── */
+.tip-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,212,59,0.4);
+  border-left: 3px solid var(--yellow);
+  border-radius: 3px;
+  padding: 0.7em 1.2em;
+}
+.tip-box p {
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ─── White image card (screenshots need a light backdrop) ──────────── */
+.shot-card {
+  position: relative;
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.4);
+}
+.shot-card img { display: block; width: 100%; border-radius: 3px; }
+.shot-card + .shot-card { margin-top: var(--gap-sm); }
+
+/* ─── Callout arrow overlay on a shot-card ───────────────────────────
+   A percentage-based SVG sits on top of the padded image area and draws
+   a single arrow from a start point to a target point. Coordinates are
+   fractions (0–1) of the *image*, not the card (hence the inset matching
+   the card's own padding). ───────────────────────────────────────── */
+.shot-card .callout-arrow {
+  position: absolute;
+  inset: 10px; /* matches .shot-card padding so 0–1 maps to the image */
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  overflow: visible;
+  pointer-events: none;
+}
+.shot-card .callout-arrow line {
+  stroke: var(--red);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+.shot-card .callout-arrow circle {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ─── Step-by-step flow (instruction + its own screenshot) ──────────── */
+.step-flow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap-lg);
+  width: 100%;
+  align-items: start;
+}
+.step-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.step-text {
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.step-text strong { color: var(--text); }
+
+/* ─── Vocabulary term cards ───────────────────────────────────────── */
+.vocab-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+.vocab-item .vocab-term {
+  font-family: var(--font-mono);
+  font-size: var(--h3);
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 4px;
+}
+.vocab-item .vocab-def {
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.diagram-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.diagram-card img { width: 100%; max-width: 340px; }
+.diagram-card .diagram-label {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* ─── Matching Pairs activity ─────────────────────────────────────── */
+.match-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: 100%;
+}
+.match-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.match-status .badge { font-size: var(--small); }
+.match-hint {
+  font-size: var(--small);
+  color: var(--text-dim);
+}
+.match-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap-sm) var(--gap);
+  width: 100%;
+}
+.match-card {
+  all: unset;
+  position: relative;
+  cursor: pointer;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 104px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: var(--small);
+  line-height: 1.4;
+  color: var(--text-muted);
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.15s var(--ease);
+}
+.match-card.match-card-term { font-family: var(--font-mono); font-weight: 700; color: var(--text); font-size: var(--body); }
+.match-card:hover:not(.mc-matched) {
+  border-color: rgba(0,201,177,0.5);
+}
+.match-card.mc-selected {
+  border-color: var(--teal);
+  background: var(--teal-glow);
+  box-shadow: 0 0 0 1px rgba(0,201,177,0.35) inset;
+}
+.match-card.mc-matched {
+  cursor: default;
+  border: 2px solid var(--green);
+  background: rgba(105,219,124,0.16);
+  color: var(--text);
+  box-shadow: 0 0 0 1px rgba(105,219,124,0.3) inset, 0 10px 24px rgba(0,0,0,0.3);
+}
+.match-card.match-card-term.mc-matched { color: var(--green); }
+.match-card.mc-matched .mc-badge {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #04150f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+  animation: mc-badge-pop 0.6s var(--ease) both;
+}
+@keyframes mc-badge-pop {
+  0%   { transform: scale(0.2) rotate(-12deg); opacity: 0; }
+  40%  { transform: scale(1.3) rotate(10deg);  opacity: 1; }
+  58%  { transform: scale(0.88) rotate(-6deg);             }
+  72%  { transform: scale(1.12) rotate(4deg);              }
+  86%  { transform: scale(0.96) rotate(-1deg);             }
+  100% { transform: scale(1) rotate(0deg);     opacity: 1; }
+}
+.match-card.mc-wrong {
+  border-color: var(--red);
+  background: rgba(255,107,107,0.08);
+  animation: mc-shake 0.4s var(--ease);
+}
+@keyframes mc-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.match-complete {
+  font-size: var(--body);
+  color: var(--green);
+  font-weight: 600;
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 2 · Lesson 4</span>
+        <h1 class="title-h1">Routers and Redundancy</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 02 · WARM-UP: MAIL VS. IP -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"At the end of lesson 2.3, we saw that the Internet uses the Internet Protocol and IP Addresses to communicate across the shared Internet. How is this system similar to how we send letters in the mail? How is it different?","order":0,"responseTimeLimitMs":90000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Warm-Up · Discussion</span>
+        <h2 style="margin-bottom:var(--gap);">Letters vs. IP Addresses</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">At the end of lesson 2.3, we saw that the Internet uses the <span style="color:var(--teal);">Internet Protocol</span> and <span style="color:var(--teal);">IP Addresses</span> to communicate across the shared Internet. How is this system similar to how we send <span style="color:var(--amber);">letters in the mail</span>? How is it different?</p>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>At the end of lesson 2.3, we saw that the Internet uses the Internet Protocol and IP Addresses to communicate across the shared Internet. How is this system similar to how we send letters in the mail? How is it different?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 03 · JUMP TO CODE.ORG -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Get Started</span>
+        <h2 style="margin-bottom:var(--gap);">Jump to Code.org</h2>
+        <ul class="bullets" style="max-width:1250px;">
+          <li><strong>Step 1:</strong> Join a group of <span style="color:var(--teal);">3 or 4</span> under the direction of your teacher.</li>
+          <li><strong>Step 2:</strong> Open code.org Unit 2 Lesson 4. Join the <span style="color:var(--teal);">same router</span> as the other members of your group.</li>
+          <li><strong>Step 3:</strong> Use the updated version of the Internet Simulator to send a message saying hello to everyone in your group.</li>
+        </ul>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p><a href="https://learn.mycode.run/link/lwcys" target="_blank" rel="noopener" style="color:var(--teal);">Click here</a> to jump to today&rsquo;s code.org lesson.</p>
+        </div>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-top:var(--gap);">Note: everyone now has an <span style="color:var(--amber);">IP address</span>. This will be important in today&rsquo;s simulation.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 04 · OPEN THE ROUTER LOGS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Explore</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Open the Router Logs</h2>
+        <div class="step-flow">
+          <div class="step-block">
+            <p class="step-text"><strong>Step 1:</strong> Open the Log Browser.</p>
+            <div class="shot-card">
+              <img class="img-zoomable" src="media/router-panel.png" alt="Router panel with Stats and a Log Browser button below">
+              <svg class="callout-arrow" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                  <marker id="arrowhead-4b" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                    <path d="M0,0 L8,4 L0,8 Z" fill="var(--red)"></path>
+                  </marker>
+                </defs>
+                <line x1="38" y1="62" x2="12" y2="85" marker-end="url(#arrowhead-4b)" vector-effect="non-scaling-stroke" preserveAspectRatio="none"></line>
+              </svg>
+            </div>
+          </div>
+          <div class="step-block">
+            <p class="step-text"><strong>Step 2:</strong> Look at the messages.</p>
+            <div class="shot-card">
+              <img class="img-zoomable" src="media/router-log-popup.png" alt="My Router Logs popup showing one message: Router 2 sent Hello! from address 2.9 to 2.14, marked Success">
+            </div>
+          </div>
+          <div class="step-block">
+            <p class="step-text"><strong>Step 3:</strong> View <span style="color:var(--teal);">all messages</span>, including other routers.</p>
+            <div class="shot-card">
+              <img class="img-zoomable" src="media/router-log-dropdown.png" alt="My Router Logs dropdown menus, with the show all routers option highlighted">
+              <svg class="callout-arrow" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                  <marker id="arrowhead-4a" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                    <path d="M0,0 L8,4 L0,8 Z" fill="var(--red)"></path>
+                  </marker>
+                </defs>
+                <line x1="97" y1="20" x2="84" y2="45" marker-end="url(#arrowhead-4a)" vector-effect="non-scaling-stroke" preserveAspectRatio="none"></line>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 05 · CLASS SURVEY -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Activity</span>
+        <h2 style="margin-bottom:var(--gap);">Class Survey</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">Use the router logs to choose an <span style="color:var(--teal);">IP address</span> from each of the other routers. Send each of those people a message asking who they are and one of the following questions.</p>
+        <ul class="bullets" style="margin-top:var(--gap);max-width:1250px;">
+          <li>What is your favorite food?</li>
+          <li>What is your favorite type of animal?</li>
+          <li>What is your favorite color?</li>
+        </ul>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Be sure to also <span style="color:var(--amber);">respond</span> to questions you get from people on other routers.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 06 · OPEN THE ROUTER LOGS AGAIN -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Explore, Continued</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Open the Router Logs Again</h2>
+        <div class="split split-top">
+          <div>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;"><strong>Step 1:</strong> Open the Log Browser again.</p>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">You should see <span style="color:var(--teal);">a lot more messages</span> now. Examine them carefully.</p>
+          </div>
+          <div class="shot-card" style="max-width:420px;justify-self:end;">
+            <img class="img-zoomable" src="media/router-panel.png" alt="Router panel with Stats and a Log Browser button below">
+            <svg class="callout-arrow" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <defs>
+                <marker id="arrowhead-6" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M0,0 L8,4 L0,8 Z" fill="var(--red)"></path>
+                </marker>
+              </defs>
+              <line x1="38" y1="62" x2="12" y2="85" marker-end="url(#arrowhead-6)" vector-effect="non-scaling-stroke" preserveAspectRatio="none"></line>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 07 · REFLECTION: REPEATED MESSAGES -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:7:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Can you predict why some messages are appearing multiple times?","order":0,"responseTimeLimitMs":60000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Reflect</span>
+        <h2 style="margin-bottom:var(--gap);">Why So Many Messages?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>Can you predict why some messages are appearing multiple times?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 08 · MORE MESSAGES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Activity</span>
+        <h2 style="margin-bottom:var(--gap);">More Messages</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">Pick someone on a <span style="color:var(--teal);">different router</span> and send three separate messages with your <span style="color:var(--text);">top three favorite movies or TV shows</span>.</p>
+        <ul class="bullets" style="margin-top:var(--gap);max-width:1250px;">
+          <li>After you send the messages, open the router logs and find these same messages. Notice how they traveled through the network.</li>
+          <li>Did they always take the <span style="color:var(--amber);">same path</span> from your router to the other router?</li>
+          <li>Look at other messages that are being sent. Are there any <span style="color:var(--amber);">patterns</span> in the paths they take?</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 09 · REFLECTION: MESSAGE PATHS -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:9:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What did you notice about the messages you sent in the router logs? Did they always take the same path from your router to the other router?","order":0,"responseTimeLimitMs":90000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Reflect</span>
+        <h2 style="margin-bottom:var(--gap);">Same Path Every Time?</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">What did you notice about the messages you sent in the router logs? Did they always take the <span style="color:var(--teal);">same path</span> from your router to the other router?</p>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>What did you notice about the messages you sent in the router logs? Did they always take the same path from your router to the other router?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · KEY VOCABULARY -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Key Vocabulary</span>
+        <h2 style="margin-bottom:var(--gap);">Routers and Redundancy</h2>
+        <div class="split split-top">
+          <div class="vocab-list">
+            <div class="vocab-item">
+              <div class="vocab-term">Router</div>
+              <div class="vocab-def">A type of computer that forwards data across a network.</div>
+            </div>
+            <div class="vocab-item">
+              <div class="vocab-term">Redundancy</div>
+              <div class="vocab-def">The inclusion of extra components so that a system can continue to work even if individual components fail, for example by having more than one path between any two connected devices in a network.</div>
+            </div>
+            <div class="vocab-item">
+              <div class="vocab-term">Fault Tolerant</div>
+              <div class="vocab-def">Can continue to function even in the event of individual component failures. This is important because elements of complex systems like a computer network fail at unexpected times, often in groups.</div>
+            </div>
+          </div>
+          <div class="diagram-card">
+            <img src="media/network-diagram-plain.png" alt="A network of routers connected by lines, with one highlighted path from an incoming message to an outgoing message">
+            <div class="diagram-label">One Path Through the Network</div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · REFLECTION: TERMS IN CONTEXT -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:11:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Thinking about these terms (router, redundancy, and fault tolerant), how can we describe what we&#39;ve observed in the router logs at the end of this activity?","order":0,"responseTimeLimitMs":90000},{"id":"q2","type":"free-response","text":"What are some practical reasons that you think messages might take different paths from one router to the other?","order":1,"responseTimeLimitMs":90000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Reflect</span>
+        <h2 style="margin-bottom:var(--gap);">Putting the Terms to Use</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">Thinking about these terms, <span style="color:var(--teal);">router</span>, <span style="color:var(--teal);">redundancy</span>, and <span style="color:var(--teal);">fault tolerant</span>, how can we describe what we&rsquo;ve observed in the router logs at the end of this activity?</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;margin-top:var(--gap-sm);">What are some <span style="color:var(--amber);">practical reasons</span> that you think messages might take different paths from one router to the other?</p>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Thinking about these terms (router, redundancy, and fault tolerant), how can we describe what we've observed in the router logs at the end of this activity? What are some practical reasons that you think messages might take different paths from one router to the other?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 12 · MATCHING PAIRS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Check Your Understanding</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Match the Term to Its Definition</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">Click two cards to test whether they match. Each term has one definition somewhere on the board.</p>
+        <div class="match-wrap" id="match-vocab">
+          <div class="match-status">
+            <span class="badge" data-match-score>0 of 6 matched</span>
+            <span class="badge badge-amber" data-match-attempts>0 attempts</span>
+            <span class="match-complete" data-match-complete style="display:none;">Nicely done! You matched every pair.</span>
+          </div>
+          <div class="match-grid" data-match-grid></div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 13 · WRAP-UP -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Wrap-Up</span>
+        <h2 style="margin-bottom:var(--gap);">Finish Up</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1100px;line-height:1.55;">Finish up by answering the <span style="color:var(--teal);">two questions</span> on code.org.</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:700px;">
+          <p><a href="https://learn.mycode.run/link/lwcyn" target="_blank" rel="noopener" style="color:var(--teal);">Click here</a> to jump to today&rsquo;s wrap-up questions.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-2-4-routers-and-redundancy',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+    /* ── Matching Pairs ────────────────────────────────────────────
+       Six vocabulary terms and their six definitions are dealt onto a
+       single shuffled 4-column board, mirroring the original mixed-card
+       layout rather than sorting terms and definitions into separate
+       lists. Clicking any two cards attempts a match; correct pairs
+       lock in place, incorrect attempts shake and clear the selection.
+       The whole board reshuffles every time the slide is (re)entered.
+       ─────────────────────────────────────────────────────────────── */
+    var MATCH_PAIRS = [
+      { id: 'router', term: 'Router', def: 'A type of computer that forwards data across a network.' },
+      { id: 'redundancy', term: 'Redundancy', def: 'The inclusion of extra components so that a system can continue to work even if individual components fail.' },
+      { id: 'faulttolerant', term: 'Fault Tolerant', def: 'Can continue to function even in the event of individual component failures.' },
+      { id: 'ipaddress', term: 'IP Address', def: 'The unique number assigned to each device on the Internet.' },
+      { id: 'protocol', term: 'Protocol', def: 'An agreed-upon set of rules that specify the behavior of some system.' },
+      { id: 'internetprotocol', term: 'Internet Protocol (IP)', def: 'A protocol for sending data across the Internet that assigns unique numbers to each connected device.' },
+    ];
+
+    function getLiveElementById(id) {
+      return Array.prototype.find.call(
+        document.querySelectorAll('#' + id),
+        function(element) { return !element.closest('#storyboard'); }
+      );
+    }
+
+    function shuffled(array) {
+      var copy = array.slice();
+      for (var i = copy.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
+      }
+      return copy;
+    }
+
+    /* Attempts and matched progress survive a browser reload via
+       sessionStorage, keyed per-tab so a fresh tab (or a genuine
+       revisit of the slide via Reveal navigation) still starts clean. */
+    var MATCH_STORAGE_KEY = 'csp-2-4-routers-and-redundancy:match-vocab';
+
+    function loadMatchState() {
+      try {
+        var raw = sessionStorage.getItem(MATCH_STORAGE_KEY);
+        if (!raw) return null;
+        var parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.tiles) || parsed.tiles.length !== MATCH_PAIRS.length * 2) return null;
+        return parsed;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function saveMatchState(tiles, attempts) {
+      try {
+        sessionStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify({
+          tiles: tiles.map(function(t) { return { id: t.id, isTerm: t.isTerm, matched: t.matched }; }),
+          attempts: attempts,
+        }));
+      } catch (e) {
+        /* storage unavailable (private mode, quota) — activity still works, just won't persist */
+      }
+    }
+
+    function getMatchLabel(id, isTerm) {
+      var pair = MATCH_PAIRS.filter(function(p) { return p.id === id; })[0];
+      return pair ? (isTerm ? pair.term : pair.def) : '';
+    }
+
+    function buildFreshTiles() {
+      var tiles = [];
+      MATCH_PAIRS.forEach(function(pair) {
+        tiles.push({ id: pair.id, isTerm: true, matched: false });
+        tiles.push({ id: pair.id, isTerm: false, matched: false });
+      });
+      return shuffled(tiles);
+    }
+
+    function initMatchingPairs() {
+      var root = getLiveElementById('match-vocab');
+      if (!root) return;
+
+      var gridHost = root.querySelector('[data-match-grid]');
+      var scoreEl = root.querySelector('[data-match-score]');
+      var attemptsEl = root.querySelector('[data-match-attempts]');
+      var completeEl = root.querySelector('[data-match-complete]');
+
+      var tiles = [];
+      var matched = 0;
+      var attempts = 0;
+      var selected = null;
+
+      function updateStatus() {
+        scoreEl.textContent = matched + ' of ' + MATCH_PAIRS.length + ' matched';
+        attemptsEl.textContent = attempts + (attempts === 1 ? ' attempt' : ' attempts');
+        completeEl.style.display = matched === MATCH_PAIRS.length ? 'inline' : 'none';
+      }
+
+      function persist() {
+        saveMatchState(tiles, attempts);
+      }
+
+      function markMatched(card, tile) {
+        tile.matched = true;
+        card.classList.remove('mc-selected');
+        card.classList.add('mc-matched');
+        card.setAttribute('aria-disabled', 'true');
+        var badge = document.createElement('span');
+        badge.className = 'mc-badge';
+        badge.setAttribute('aria-hidden', 'true');
+        badge.textContent = '✓';
+        card.appendChild(badge);
+      }
+
+      function attemptMatch(a, b) {
+        attempts++;
+        var tileA = tiles[a.dataset.idx];
+        var tileB = tiles[b.dataset.idx];
+        if (a.dataset.matchId === b.dataset.matchId) {
+          markMatched(a, tileA);
+          markMatched(b, tileB);
+          matched++;
+        } else {
+          a.classList.add('mc-wrong');
+          b.classList.add('mc-wrong');
+          setTimeout(function() {
+            a.classList.remove('mc-wrong', 'mc-selected');
+            b.classList.remove('mc-wrong', 'mc-selected');
+          }, 400);
+        }
+        selected = null;
+        updateStatus();
+        persist();
+      }
+
+      function makeCard(tile, idx) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'match-card' + (tile.isTerm ? ' match-card-term' : '');
+        btn.dataset.matchId = tile.id;
+        btn.dataset.idx = idx;
+        btn.textContent = getMatchLabel(tile.id, tile.isTerm);
+        if (tile.matched) markMatched(btn, tile);
+        btn.addEventListener('click', function() {
+          if (btn.classList.contains('mc-matched')) return;
+          if (selected === btn) {
+            btn.classList.remove('mc-selected');
+            selected = null;
+            return;
+          }
+          if (selected) {
+            btn.classList.add('mc-selected');
+            attemptMatch(selected, btn);
+          } else {
+            selected = btn;
+            btn.classList.add('mc-selected');
+          }
+        });
+        return btn;
+      }
+
+      function paint() {
+        gridHost.innerHTML = '';
+        selected = null;
+        matched = 0;
+        tiles.forEach(function(tile, idx) {
+          if (tile.matched) matched++;
+          gridHost.appendChild(makeCard(tile, idx));
+        });
+        matched = matched / 2;
+        updateStatus();
+      }
+
+      function renderFresh() {
+        tiles = buildFreshTiles();
+        attempts = 0;
+        paint();
+        persist();
+      }
+
+      function renderFromStorageOrFresh() {
+        var saved = loadMatchState();
+        if (saved) {
+          tiles = saved.tiles;
+          attempts = saved.attempts || 0;
+          paint();
+        } else {
+          renderFresh();
+        }
+      }
+
+      renderFromStorageOrFresh();
+
+      Reveal.on('slidechanged', function(event) {
+        if (event.currentSlide === root.closest('section')) renderFresh();
+      });
+    }
+
+    initMatchingPairs();
+
+  },
+});
+</script>
+</body>
+</html>
