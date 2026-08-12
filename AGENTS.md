@@ -282,3 +282,29 @@ This applies uniformly to console output, variable assignment, and function-retu
 - Optional custom folder usage:
   `scripts/extract-pdf-images.sh Decks/AR1/LockTronics`
 - Dependency: `pdfimages` from `poppler-utils`.
+
+## Photos Added to a Deck
+
+Any photo added under a deck's `media/` folder (phone camera photos especially)
+**must** have EXIF metadata stripped before it is committed, and should be
+downscaled to a reasonable display size at the same time. Camera photos
+routinely embed GPS coordinates, device identifiers, and timestamps; this
+repo publishes to a public GitHub Pages site, so leaving that metadata in
+place leaks real-world location and device data. Re-saving through Pillow
+without passing an `exif` argument strips it:
+
+```python
+from PIL import Image, ImageOps
+
+im = Image.open(path)
+im = ImageOps.exif_transpose(im)  # bake in orientation before stripping EXIF
+w, h = im.size
+MAX_EDGE = 1600
+scale = MAX_EDGE / max(w, h)
+if scale < 1:
+    im = im.resize((round(w * scale), round(h * scale)), Image.LANCZOS)
+im.save(path, format='JPEG', quality=85, optimize=True)
+```
+
+Verify the strip worked with `Image.open(path).getexif()` (should be empty)
+before considering the photo done.
