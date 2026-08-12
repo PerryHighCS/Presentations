@@ -94,6 +94,12 @@ mechanism.
 - **Reuse:** the node-on-a-circle + drag-to-add/click-to-remove mechanism generalizes to any "build a graph" activity (network topology, state-machine wiring, relationship mapping); the count-per-pair model generalizes to any activity that wants to teach redundancy through literal parallel/backup connections rather than just presence-or-absence edges; the cut-simulation and shortest-path tools generalize to any lesson that wants students to reason about redundancy or path length over a graph they built themselves, not a pre-made one.
 - **Also worth remembering:** resonance/postboard question `text` is the *only* thing students see once the activity overlay launches — the surrounding slide's prose (background context, setup) is hidden behind it. Any context the question depends on (e.g. "recall X from last lesson...") has to be restated inline in the question `text` itself, not left to the slide's own paragraph.
 
+### Click-to-select mixed-grid matching pairs
+- **Where:** `Decks/CSP/Unit 2 - The Internet/2.4 - Routers and Redundancy/2.4-routers-and-redundancy.html` (`#match-vocab` section ~slide 12, `initMatchingPairs` JS in `afterInit`)
+- **Concept:** six vocabulary terms and their six definitions (12 cards total) are dealt onto a single shuffled 4-column board — terms and definitions sit side by side in no particular order, mirroring a physical "mixed card" matching exercise rather than two separate label/definition lists. Clicking any two cards attempts a match; a correct pair locks both cards into a disabled "matched" state (green) and increments a "N of M matched" counter, while an incorrect pair shakes both cards red for 400ms and clears the selection. An attempts counter tracks every pairing try (right or wrong), and a "Nicely done!" message appears once every pair is matched.
+- **Mechanism:** each `{id, term, def}` pair is exploded into two flat `{id, label, isTerm}` tiles, then the full 12-tile array is shuffled together with a Fisher-Yates `shuffled()` helper and rendered from scratch (fresh shuffle, fresh state) every time `Reveal.on('slidechanged', ...)` reports the student has (re)entered that specific section — so replaying the activity always produces a new board layout rather than the solved one. Matching itself is pure click state (a single `selected` variable, not two column-scoped ones), not drag-and-drop, so it needs no dragstart/dragover wiring and works identically with mouse, touch, or switch-access. Term tiles get a bold monospace treatment (`.match-card-term`) purely as a subtle visual hint; nothing about the click logic depends on that distinction, since two same-`id` tiles are guaranteed to be one term and one definition. Follows the repo's `getLiveElementById` convention (filtering out the SyncDeck storyboard's cloned copy of the slide) before wiring listeners, same as `initGroupToggle` in the 2.3 deck.
+- **Reuse:** the most generic "N terms vs. N definitions/images/examples, presented as one shuffled board" matching mechanism in the repo — swap the `{id, term, def}` array for any two-sided pairing exercise (vocabulary, formula-to-name, cause-to-effect, code-snippet-to-output) without touching the click/shuffle/scoring logic. If a two-column (all-terms-on-the-left, all-definitions-on-the-right) layout is wanted instead, split the render step back into two `shuffled()` calls against separate host elements — the click/match/score logic underneath doesn't care which DOM layout the tiles land in. Prefer this over the drag-based credential matcher below when the pairing itself (not physical placement) is the point, and ActiveBits has no native "matching pairs" activity type to reach for instead.
+
 ## Topic-coupled but reusable *mechanism*
 
 ### Drag-to-correct-target credential/tool matching
@@ -110,7 +116,7 @@ mechanism.
 
 ---
 
-*Last surveyed 2026-08-10 across Decks/HPy, Decks/CSP, Decks/AR1, Decks/AR2.
+*Last surveyed 2026-08-12 across Decks/HPy, Decks/CSP, Decks/AR1, Decks/AR2.
 Line numbers are approximate — re-check with the file itself before copying.
 When you build a new substantial, reusable deck-local activity, add an entry
 here.*
