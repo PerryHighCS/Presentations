@@ -2045,23 +2045,38 @@
     <span class="slide-tag">Recap</span>
     <h2 style="margin-bottom:10px;">The Build Process</h2>
     <p style="font-size:var(--body);color:var(--text-muted);max-width:1200px;line-height:1.6;margin-bottom:var(--gap);">
-      Every stage of this build followed the same rhythm: wire it, then prove it works before moving on.
+      Every stage of this build follows the same rhythm: wire it, then prove it works before moving on.
     </p>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);">
-      <div class="key-prop" style="display:flex;flex-direction:column;gap:8px;">
-        <div class="step-head" style="margin-bottom:0;gap:10px;"><span class="step-num">1</span><span class="step-label" style="font-size:var(--small);">Build the State Machine</span></div>
-        <p style="margin-left:44px;font-size:14px;color:var(--text-muted);line-height:1.45;">Wire the AND, RS, and M blocks for each state, chained together in order.</p>
-        <p style="margin-left:44px;font-size:14px;color:var(--text-muted);line-height:1.45;"><strong style="color:var(--text);">Test as you go:</strong> press Start, then Step through, and confirm each state activates in order.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);margin-bottom:var(--gap-sm);">
+      <div class="key-prop step-head" style="margin-bottom:0;gap:10px;"><span class="step-num">1</span><span class="step-label" style="font-size:var(--small);">Build the State Machine</span></div>
+      <div class="key-prop step-head" style="margin-bottom:0;gap:10px;"><span class="step-num">2</span><span class="step-label" style="font-size:var(--small);">Connect the Outputs</span></div>
+      <div class="key-prop step-head" style="margin-bottom:0;gap:10px;"><span class="step-num">3</span><span class="step-label" style="font-size:var(--small);">Connect the Triggers</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);margin-bottom:var(--gap-sm);">
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.45;">Wire the AND, RS, and M blocks for each state, chained together in order.</p>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.45;">Label each output and drop an OR block in front of it, so every state that needs it can turn it on.</p>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.45;">Replace Step and ~Step, one state at a time, with the sensors that actually confirm each move finished.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);margin-bottom:var(--gap-sm);">
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.45;"><strong style="color:var(--text);">Test as you go:</strong> press Start, then Step through, and confirm each state activates in order.</p>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.45;"><strong style="color:var(--text);">Test as you go:</strong> step through again and watch the right outputs light up for each state.</p>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.45;"><strong style="color:var(--text);">Test as you go:</strong> press Start once, and confirm the whole cycle runs itself.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);margin-bottom:var(--gap);">
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.45;"><strong style="color:var(--warn);">For eight states:</strong> S1 still kicks things off with Start, and the cycle should not automatically repeat. Make sure all eight states run through every time you press Start.</p>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.45;"><strong style="color:var(--warn);">For eight states:</strong> many states will have multiple outputs, driving one or both cylinders and/or the gripper at once.</p>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.45;"><strong style="color:var(--warn);">For eight states:</strong> since the cylinders move at different rates, S2 through S8 should be triggered by the positions of <strong style="color:var(--text);">both</strong> cylinders. That keeps the motion predictable, with no incomplete movements.</p>
+    </div>
+    <span style="font-family:var(--font-mono);color:var(--text);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--gap-sm);display:block;">Troubleshooting</span>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap-sm);">
+      <div class="key-prop" style="font-size:14px;">
+        <strong style="color:var(--warn);">A state fires twice in a row:</strong> the old ~Step / S4&#8209;Active path into S1 is still wired. Remove it entirely, S1 should only have one way in now.
       </div>
-      <div class="key-prop" style="display:flex;flex-direction:column;gap:8px;">
-        <div class="step-head" style="margin-bottom:0;gap:10px;"><span class="step-num">2</span><span class="step-label" style="font-size:var(--small);">Connect the Outputs</span></div>
-        <p style="margin-left:44px;font-size:14px;color:var(--text-muted);line-height:1.45;">Label each output and drop an OR block in front of it, so every state that needs it can turn it on.</p>
-        <p style="margin-left:44px;font-size:14px;color:var(--text-muted);line-height:1.45;"><strong style="color:var(--text);">Test as you go:</strong> step through again and watch the right outputs light up for each state.</p>
+      <div class="key-prop" style="font-size:14px;">
+        <strong style="color:var(--warn);">Only one cylinder moves:</strong> this state's Active signal is only OR'd into one of the two outputs it needs. Check both.
       </div>
-      <div class="key-prop" style="display:flex;flex-direction:column;gap:8px;">
-        <div class="step-head" style="margin-bottom:0;gap:10px;"><span class="step-num">3</span><span class="step-label" style="font-size:var(--small);">Connect the Triggers</span></div>
-        <p style="margin-left:44px;font-size:14px;color:var(--text-muted);line-height:1.45;">Replace Step and ~Step, one state at a time, with the sensors that actually confirm each move finished.</p>
-        <p style="margin-left:44px;font-size:14px;color:var(--text-muted);line-height:1.45;"><strong style="color:var(--text);">Test as you go:</strong> press Start once, and confirm the whole cycle runs itself.</p>
+      <div class="key-prop" style="font-size:14px;">
+        <strong style="color:var(--warn);">A state fires early or the machine hangs:</strong> it's triggered off just one cylinder's sensor. AND both position sensors together instead.
       </div>
     </div>
   </div>
