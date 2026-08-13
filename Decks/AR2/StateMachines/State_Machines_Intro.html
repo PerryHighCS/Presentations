@@ -2019,7 +2019,7 @@
     <span class="slide-tag">Scaling Up</span>
     <h2 style="margin-bottom:10px;">The Full Cycle</h2>
     <p style="font-size:var(--body);color:var(--text-muted);max-width:1200px;line-height:1.6;margin-bottom:var(--gap);">
-      The full cycle of the pick and place machine has 8 steps, picking up a workpiece at one location and setting it down at another.
+      The full cycle of the pick and place machine has 8 steps, picking up a workpiece at one location and setting it down at another. Once it returns home, it cannot load a new workpiece by itself: press <strong style="color:var(--warn);">Reset Workpiece</strong> to confirm one is loaded before starting again.
     </p>
 
     <div class="split split-50" style="align-items:center;">
@@ -2119,22 +2119,82 @@ initSyncDeckReveal({
     initS1MLatchDemo(Reveal);
     initMachineCarousel(Reveal, 'intro');
     initMachineCarousel(Reveal, 'test');
-    initMachineCarousel(Reveal, 'cycle');
+    initMachineCarousel(Reveal, 'cycle', {
+      manualReset: true,
+      ready: {
+        src: 'media/Full_S0.jpeg', label: 'Ready',
+        alt: 'The pick-and-place arm with its gripper retracted, waiting for a workpiece to be loaded at the pickup station.',
+        caption: 'The gripper is retracted, waiting for a workpiece to be loaded at the pickup station.',
+        outputs: [],
+      },
+      states: [
+        {
+          src: 'media/Full_S1.jpeg', label: 'S1',
+          alt: 'The gripper lowers onto the workpiece at the pickup station.',
+          caption: 'The gripper moves down to the workpiece at the pickup station.',
+          outputs: [],
+        },
+        {
+          src: 'media/Full_S2.jpeg', label: 'S2',
+          alt: 'The gripper is still down at the pickup station, now with the vacuum engaged.',
+          caption: 'The vacuum activates, gripping the workpiece.',
+          outputs: [],
+        },
+        {
+          src: 'media/Full_S3.jpeg', label: 'S3',
+          alt: 'The gripper lifts at the pickup station, carrying the workpiece.',
+          caption: 'The gripper lifts, carrying the workpiece up.',
+          outputs: [],
+        },
+        {
+          src: 'media/Full_S4.jpeg', label: 'S4',
+          alt: 'The arm swings over to the drop-off station, still holding the workpiece up.',
+          caption: 'The arm swings over to the drop-off station, still holding the workpiece.',
+          outputs: [],
+        },
+        {
+          src: 'media/Full_S5.jpeg', label: 'S5',
+          alt: 'The gripper lowers the workpiece into place at the drop-off station.',
+          caption: 'The gripper lowers the workpiece into place at the drop-off station.',
+          outputs: [],
+        },
+        {
+          src: 'media/Full_S6.jpeg', label: 'S6',
+          alt: 'The gripper is still down at the drop-off station, now with the vacuum released.',
+          caption: 'The vacuum releases, letting go of the workpiece.',
+          outputs: [],
+        },
+        {
+          src: 'media/Full_S7.jpeg', label: 'S7',
+          alt: 'The gripper lifts back up at the drop-off station, empty.',
+          caption: 'The gripper lifts back up, empty.',
+          outputs: [],
+        },
+        {
+          src: 'media/Full_S8.jpeg', label: 'S8',
+          alt: 'The arm swings back to the pickup station, empty, ready for the next workpiece.',
+          caption: 'The arm swings back to the pickup station, ready for the next workpiece.',
+          outputs: [],
+        },
+      ],
+    });
   },
 });
 
-function initMachineCarousel(Reveal, idSuffix) {
+function initMachineCarousel(Reveal, idSuffix, options) {
+  options = options || {};
+
   // The physical arm returns to the same visual pose it starts from, so
   // "Ready" and S4 share a photo. Ready only ever appears once, before the
   // first Step; every Step after that cycles S1 -> S2 -> S3 -> S4 -> S1 and
   // never comes back around to Ready.
-  var READY = {
+  var READY = options.ready || {
     src: 'media/state4.jpeg', label: 'Ready',
     alt: 'The pick-and-place arm with its gripper retracted, waiting for a workpiece to be loaded.',
     caption: 'The gripper is retracted, waiting for a workpiece to be loaded.',
     outputs: [],
   };
-  var STATES = [
+  var STATES = options.states || [
     {
       src: 'media/state1.jpeg', label: 'S1',
       alt: 'The pick-and-place arm with its gripper lowered onto the workpiece.',
@@ -2160,6 +2220,11 @@ function initMachineCarousel(Reveal, idSuffix) {
       outputs: [{ q: 'Q3', name: '2M2 · UP' }],
     },
   ];
+  // Some carousels (the full eight-state cycle) end on a pose the arm cannot
+  // recover from by itself: a person has to load a new workpiece before the
+  // next cycle can start. Those pass manualReset so the last Step is replaced
+  // with a distinct "Reset Workpiece" action instead of looping back around.
+  var manualReset = !!options.manualReset;
 
   var carousel = Array.prototype.find.call(
     document.querySelectorAll('#machine-carousel-' + idSuffix),
@@ -2201,12 +2266,16 @@ function initMachineCarousel(Reveal, idSuffix) {
     caption.textContent = state.caption;
 
     // The button always shows whichever trigger is about to fire next:
-    // Start moves Ready -> S1, then Step/~Step alternate forever after,
-    // matching the arc labels on the abstract state diagrams.
+    // Start moves Ready -> S1, then Step/~Step alternate after that. A
+    // manualReset carousel swaps the button on the final state for a
+    // distinct "Reset Workpiece" action instead of looping back around.
     if (btn) {
       if (index === -1) {
         btn.textContent = 'Start';
         btn.className = 'sm-btn sm-btn-push';
+      } else if (manualReset && index === STATES.length - 1) {
+        btn.textContent = 'Reset Workpiece';
+        btn.className = 'sm-btn sm-btn-warn';
       } else {
         btn.textContent = index % 2 === 0 ? 'Step' : '~Step';
         btn.className = 'sm-btn sm-btn-toggle';
@@ -2225,7 +2294,11 @@ function initMachineCarousel(Reveal, idSuffix) {
   }
 
   if (btn) btn.addEventListener('click', function () {
-    index = (index + 1) % STATES.length;
+    if (manualReset && index === STATES.length - 1) {
+      index = -1;
+    } else {
+      index = (index + 1) % STATES.length;
+    }
     render();
   });
 
