@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="18m54wq">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.6 HTTP and DNS</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — HTTP and DNS
+   ============================================================ */
+
+/* ─── Tip callout (single paragraph, amber accent) ───────────────────── */
+.tip-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,212,59,0.4);
+  border-left: 3px solid var(--yellow);
+  border-radius: 3px;
+  padding: 0.7em 1.2em;
+}
+.tip-box p {
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ─── White image card (screenshots need a light backdrop) ──────────── */
+.shot-card {
+  position: relative;
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.4);
+}
+.shot-card img { display: block; width: 100%; border-radius: 3px; }
+.shot-card + .shot-card { margin-top: var(--gap-sm); }
+
+.shot-card .callout-arrow {
+  position: absolute;
+  inset: 10px;
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  overflow: visible;
+  pointer-events: none;
+}
+.shot-card .callout-arrow line {
+  stroke: var(--red);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Highlight box — outlines a region of a screenshot rather than pointing
+   at a single spot. Coordinates are percentages of the padded image area. */
+.shot-card .shot-highlight-layer {
+  position: absolute;
+  inset: 10px;
+  pointer-events: none;
+}
+.shot-highlight {
+  position: absolute;
+  border: 3px solid var(--amber);
+  border-radius: 6px;
+  background: rgba(255,212,59,0.06);
+  box-shadow: 0 0 0 4px rgba(255,212,59,0.12), 0 0 26px rgba(255,212,59,0.45);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+}
+.shot-highlight.frame-active { opacity: 1; }
+.shot-highlight-label {
+  position: absolute;
+  top: -14px;
+  left: 12px;
+  transform: translateY(-100%);
+  background: var(--amber);
+  color: #241d02;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Generic frame-swap stage — shared by the callout tour and the flip-book.
+   Frames stack via position:absolute and only the .frame-active one shows;
+   swapping is driven by JS listening for fragment show/hide, not raw
+   Reveal fragment opacity (see initFrameSwap in the trailing script). */
+.frame-trigger {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0 !important;
+}
+.swap-frame {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+}
+.swap-frame.frame-active { opacity: 1; }
+
+/* ─── Step-by-step flow (instruction + its own screenshot) ──────────── */
+.step-flow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--gap-lg);
+  width: 100%;
+  align-items: start;
+}
+.step-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.step-text {
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.step-text strong { color: var(--text); }
+
+/* ─── Vocabulary / anatomy term cards ─────────────────────────────── */
+.vocab-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+.vocab-item .vocab-term {
+  font-family: var(--font-mono);
+  font-size: var(--h3);
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 4px;
+}
+.vocab-item .vocab-def {
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+/* ─── send / rcv packet strip ─────────────────────────────────────── */
+.packet-flow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: 100%;
+}
+.packet-step {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: var(--gap);
+  align-items: center;
+}
+.packet-dir {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 0;
+  text-align: center;
+  border-radius: 4px;
+}
+.packet-dir.dir-send { color: var(--teal); border: 1px solid var(--teal-border); background: var(--teal-glow); }
+.packet-dir.dir-rcv  { color: var(--amber); border: 1px solid rgba(255,212,59,0.35); background: rgba(255,212,59,0.08); }
+.packet-step .shot-card { padding: 6px; }
+
+/* ─── Fill-in-the-blank drag-and-drop activity ────────────────────── */
+.fillblank-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  width: 100%;
+}
+.fillblank-sentence {
+  font-size: var(--h3);
+  line-height: 2.1;
+  color: var(--text-muted);
+  max-width: 1300px;
+}
+.blank {
+  display: inline-block;
+  min-width: 160px;
+  min-height: 44px;
+  line-height: 44px;
+  padding: 0 12px;
+  margin: 0 3px;
+  border-bottom: 3px solid var(--teal-border);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.85em;
+  color: transparent;
+  text-align: center;
+  border-radius: 3px 3px 0 0;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), color 0.2s var(--ease), transform 0.15s var(--ease);
+  vertical-align: middle;
+}
+.blank.blank-dragover {
+  border-color: var(--teal);
+  background: var(--teal-glow);
+}
+.blank.blank-filled {
+  color: var(--green);
+  border-bottom-color: var(--green);
+  background: rgba(105,219,124,0.1);
+}
+.blank.blank-wrong {
+  border-bottom-color: var(--red);
+  background: rgba(255,107,107,0.1);
+  animation: mc-shake 0.4s var(--ease);
+}
+.fillblank-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.fillblank-status .badge { font-size: var(--small); }
+.word-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+}
+.word-chip {
+  all: unset;
+  display: inline-block;
+  cursor: grab;
+  box-sizing: border-box;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--body);
+  padding: 10px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 999px;
+  color: var(--text);
+  -webkit-user-drag: element;
+  user-select: none;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), opacity 0.2s var(--ease), transform 0.15s var(--ease);
+}
+.word-chip:hover { border-color: rgba(0,201,177,0.5); }
+.word-chip:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+.word-chip.chip-selected {
+  border-color: var(--teal);
+  background: var(--teal-glow);
+  box-shadow: 0 0 0 1px rgba(0,201,177,0.35) inset;
+}
+.word-chip.chip-used {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.7);
+}
+.word-chip:active { cursor: grabbing; }
+
+/* ─── Matching / fill-in perfect-score plumbing (shared look) ────────
+   Same mechanism as the matching-pairs activity in 2.4 / 2.5: an inline
+   completion note plus a full-slide overlay and a pulsing attempts badge
+   reserved for a genuinely mistake-free run. ───────────────────────── */
+.match-complete {
+  font-size: var(--body);
+  color: var(--green);
+  font-weight: 600;
+}
+.match-perfect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4,12,11,0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease);
+}
+.match-perfect-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.match-perfect-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+}
+.match-perfect-overlay.visible .match-perfect-badge {
+  animation: match-perfect-pop 0.7s var(--ease) both;
+}
+.match-perfect-check {
+  font-size: 220px;
+  line-height: 1;
+  color: var(--green);
+  filter: drop-shadow(0 0 46px rgba(105,219,124,0.55));
+}
+.match-perfect-text {
+  font-family: var(--font-display);
+  font-size: 84px;
+  font-weight: 700;
+  color: var(--text);
+  text-shadow: 0 0 34px rgba(0,201,177,0.45);
+}
+.match-perfect-hint {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+@keyframes match-perfect-pop {
+  0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  75%  { transform: scale(0.96) rotate(-1deg);             }
+  100% { transform: scale(1) rotate(0deg);    opacity: 1; }
+}
+@keyframes mc-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.badge-pulse-complete {
+  background: rgba(105,219,124,0.18);
+  border-color: rgba(105,219,124,0.6);
+  color: var(--green);
+  animation: badge-pulse-glow 1.6s ease-in-out infinite;
+}
+@keyframes badge-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(105,219,124,0.5); }
+  50%      { box-shadow: 0 0 16px 5px rgba(105,219,124,0.45); }
+}
+
+/* ─── Flip-book (message through the layers) ──────────────────────── */
+.flipbook-stage {
+  position: relative;
+  width: 100%;
+  max-width: 1160px;
+  aspect-ratio: 555 / 245;
+  margin: 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+  border: 1px solid var(--teal-border);
+}
+.flipbook-stage .swap-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Protocol-name labels — mirrors the original slides' text boxes sitting
+   above the comic, one per character, naming the protocol that character's
+   generic "___ layer" role corresponds to (Application layer = Email,
+   Transport layer = TCP, and so on). Positioned over each half of the
+   frame rather than baked into the image so the text stays crisp. */
+.flipbook-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto var(--gap-sm);
+  padding: 0 8%;
+  min-height: 1.3em;
+  box-sizing: border-box;
+}
+.flipbook-label {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--h3);
+  color: var(--amber);
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 2 · Lesson 6</span>
+        <h1 class="title-h1">HTTP and DNS</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 02 · WARM-UP: A NEW NUMBER EVERY TIME -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Imagine that every time your phone was turned off or ran out of power, when you turned it back on it got a new number. How would anyone be able to call you?","order":0,"responseTimeLimitMs":180000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Warm-Up · Discussion</span>
+        <h2 style="margin-bottom:var(--gap);">A New Number Every Time</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">Imagine that every time your phone was turned off or ran out of power, when you turned it back on it got a <span style="color:var(--amber);">new number</span>.</p>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>How would anyone be able to call you?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 03 · IP ADDRESSES CHANGE -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">The Problem</span>
+        <h2 style="margin-bottom:var(--gap);">IP Addresses Change</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Devices are joining and leaving the Internet all the time. IP addresses don&rsquo;t stay constant. If you go to a coffee shop or restart your browser, your device might be assigned a <span style="color:var(--amber);">new IP address</span>.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">If IP addresses are switching, it&rsquo;s very hard for each computer to keep an accurate list. It would make more sense if there were <span style="color:var(--teal);">one system</span> that kept track of all that information.</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>If we want the Internet to scale up to billions of devices, then we need a better way to figure out one another&rsquo;s IP addresses!</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 04 · VIDEO GUIDE: DNS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Video Guide</span>
+        <h2 style="margin-bottom:var(--gap);">What to Watch For</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">As we watch the following video, use the Video Guide to take note of:</p>
+        <ul class="bullets" style="margin-top:var(--gap);max-width:1250px;">
+          <li>How the DNS solved the problem of translating domain names like <span style="color:var(--teal);">example.com</span> into IP addresses</li>
+          <li>How the DNS helps the Internet <span style="color:var(--amber);">scale</span></li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 05 · VIDEO: IP ADDRESSES & DNS -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:5:0"
+      data-activity-options='{"sourceUrl":"https://www.youtubeeducation.com/watch?v=5o8CwafCxnU&start=251&end=405"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video · 4:11&ndash;6:45</span>
+        <h2 style="margin-bottom:var(--gap-sm);">The Internet: IP Addresses &amp; DNS</h2>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 06 · FILL IN THE BLANK: WHAT IS DNS? -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Check Your Understanding</span>
+        <h2 style="margin-bottom:var(--gap-sm);">What Is the DNS?</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">Drag each word from the word bank onto the blank where it belongs.</p>
+        <div class="fillblank-wrap" id="fillblank-dns">
+          <p class="fillblank-sentence">
+            The
+            <span class="blank" data-blank-answer="Domain" data-blank-index="0"></span>
+            <span class="blank" data-blank-answer="Name" data-blank-index="1"></span>
+            <span class="blank" data-blank-answer="System" data-blank-index="2"></span>
+            , or DNS, is a network of
+            <span class="blank" data-blank-answer="Servers" data-blank-index="3"></span>
+            that track the
+            <span class="blank" data-blank-answer="IP Address" data-blank-index="4"></span>
+            of different domain names like
+            <span class="blank" data-blank-answer="example.com" data-blank-index="5"></span>.
+          </p>
+          <div class="fillblank-status">
+            <span class="badge" data-fillblank-score>0 of 6 filled</span>
+            <span class="badge badge-amber" data-fillblank-attempts>0 attempts</span>
+            <span class="match-complete" data-fillblank-complete style="display:none;">Nicely done! Every blank is filled.</span>
+          </div>
+          <div class="word-bank" data-word-bank></div>
+        </div>
+      </div>
+      <div class="match-perfect-overlay" data-fillblank-overlay aria-hidden="true">
+        <div class="match-perfect-badge">
+          <span class="match-perfect-check">&#10003;</span>
+          <span class="match-perfect-text">Perfect!</span>
+          <span class="match-perfect-hint">Click to keep browsing the sentence</span>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 07 · CHECK YOUR UNDERSTANDING -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:7:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"When you visit a website you first ask the DNS for the IP address of the domain you want to visit. Which of the following is true?","order":0,"responseTimeLimitMs":25000,"options":[{"id":"q1a","text":"Each DNS server has a list of all domain names and can provide the IP address for the domain name you want to visit.","isCorrect":false},{"id":"q1b","text":"The first server you ask may have to ask other servers for the IP address for the domain name you want to visit.","isCorrect":true},{"id":"q1c","text":"Every DNS request goes to the canonical or root server, which maintains the authoritative domain-to-IP mapping table and provides the IP address for the domain you want to visit.","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"True or false: the DNS system allows billions of devices to get added to the network without putting pressure on any one computer or server to know all the IP addresses in the world.","order":1,"responseTimeLimitMs":20000,"options":[{"id":"q2a","text":"True","isCorrect":true},{"id":"q2b","text":"False","isCorrect":false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Quick Check</span>
+        <h2 style="margin-bottom:var(--gap);">Asking the DNS</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">When you visit a website you first ask the DNS for the IP address of the domain you want to visit.</p>
+        <ul class="mcq-opts" style="max-width:1250px;">
+          <li><span class="opt-key">A</span><span>Each DNS server has a list of all domain names and can provide the IP address you want.</span></li>
+          <li><span class="opt-key">B</span><span>The first server you ask may have to ask other servers for the IP address.</span></li>
+          <li><span class="opt-key">C</span><span>Every request goes to one canonical root server that maintains the full mapping table.</span></li>
+        </ul>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>True or false: the DNS system allows billions of devices to join the network without putting pressure on any one computer or server to know all the IP addresses in the world.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 08 · CHOOSE A THEME -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:8:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Before we begin the next activity, let&#39;s choose a theme:","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"Abstraction — Understanding Abstraction in Networking","isCorrect":false},{"id":"q1b","text":"Fantasy — The Spellbook of Cybershire","isCorrect":false},{"id":"q1c","text":"Historical Fiction — Signals Across the Alps","isCorrect":false},{"id":"q1d","text":"Psychological Drama — The Fragmented Mind","isCorrect":false},{"id":"q1e","text":"Science Fiction — Encrypted Ambassadors of the Stars","isCorrect":false},{"id":"q1f","text":"Spy Thriller — The Abstraction Shield and the Hidden Path","isCorrect":false},{"id":"q1g","text":"Western — Messages on the Wire","isCorrect":false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Class Vote</span>
+        <h2 style="margin-bottom:var(--gap);">Choose a Theme</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">Before we begin the next activity, let&rsquo;s choose a theme for the files you&rsquo;ll be fetching.</p>
+        <ul class="bullets" style="margin-top:var(--gap);max-width:1250px;columns:2;">
+          <li>Abstraction &mdash; Understanding Abstraction in Networking</li>
+          <li>Fantasy &mdash; The Spellbook of Cybershire</li>
+          <li>Historical Fiction &mdash; Signals Across the Alps</li>
+          <li>Psychological Drama &mdash; The Fragmented Mind</li>
+          <li>Science Fiction &mdash; Encrypted Ambassadors of the Stars</li>
+          <li>Spy Thriller &mdash; The Abstraction Shield and the Hidden Path</li>
+          <li>Western &mdash; Messages on the Wire</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 09 · ANATOMY OF A URL -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Vocabulary</span>
+        <h2 style="margin-bottom:var(--gap);">Anatomy of a URL</h2>
+        <div class="code-card" style="max-width:1250px;margin-bottom:var(--gap-lg);">
+          <div class="code-hdr"><span class="clang">URL</span></div>
+          <div class="code-body">
+            <pre><code><span style="color:var(--teal);">http://</span><span style="color:var(--amber);">dahlem1</span><span style="color:var(--green);">/transparent-bit</span></code></pre>
+          </div>
+        </div>
+        <div class="vocab-list">
+          <div class="vocab-item">
+            <div class="vocab-term" style="color:var(--teal);">Protocol &mdash; http://</div>
+            <div class="vocab-def">Tells the browser (or you!) which rules to use for communication with the server.</div>
+          </div>
+          <div class="vocab-item">
+            <div class="vocab-term" style="color:var(--amber);">Hostname / Domain Name &mdash; dahlem1</div>
+            <div class="vocab-def">The name of the server (computer) you are asking for the file.</div>
+          </div>
+          <div class="vocab-item">
+            <div class="vocab-term" style="color:var(--green);">Path &mdash; /transparent-bit</div>
+            <div class="vocab-def">The specific file or resource you want from the server.</div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · GO TO CODE.ORG -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Get Started</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Go To Code.org</h2>
+        <div class="split split-top">
+          <ul class="bullets">
+            <li>Open code.org Unit 2 Lesson 6 and go to Stage 1 to see the latest version of the Internet Simulator.</li>
+            <li>Join a random router. The other people connected to your router won&rsquo;t change how this activity runs.</li>
+            <li>The simulator will give you a <span style="color:var(--teal);">hostname</span> based on your username. My hostname is <code>dahlem1</code> in this picture.</li>
+            <li>You also have a <span style="color:var(--amber);">DNS server</span>. You&rsquo;ll need its IP address &mdash; mine is <code>1.15</code>.</li>
+          </ul>
+          <div class="shot-card" style="max-width:360px;justify-self:end;">
+            <img class="img-zoomable" src="media/router-diagram.png" alt="Router diagram showing hostname dahlem1 at 1.2, router1, and dns at 1.15">
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · GO TO BITS.MYCODE.RUN -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Get Started</span>
+        <h2 style="margin-bottom:var(--gap);">Go To bits.mycode.run</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">You&rsquo;ll use this site along with the Internet Simulator, so keep both open <span style="color:var(--teal);">side by side</span> so you can switch back and forth quickly.</p>
+        <ul class="bullets" style="margin-top:var(--gap);max-width:1250px;">
+          <li>Enter the join code provided by your instructor, then the hostname you got from code.org.</li>
+          <li>Confirm your hostname, then wait for everyone else to join. Your instructor will explain the activity over the next few slides.</li>
+        </ul>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p><a href="https://bits.mycode.run" target="_blank" rel="noopener" style="color:var(--teal);">Click here</a> to open bits.mycode.run in a new tab.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 12 · ARRANGE YOUR TABS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Setup</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Arrange Your Tabs</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;margin-bottom:var(--gap);">You&rsquo;ll need access to both tabs at the same time. Drag the ActiveBits tab to the <span style="color:var(--teal);">right side</span> of your screen and code.org to the <span style="color:var(--amber);">left side</span> of your screen.</p>
+        <div class="shot-card" style="max-width:1100px;">
+          <img class="img-zoomable" src="media/arrange-tabs.png" alt="Two browser windows arranged side by side, code.org on the left and ActiveBits on the right">
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 13 · CLIENT AND SERVER ROLES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Fragment Fetch Challenge</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Client and Server Roles</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">You&rsquo;ll have two roles in this activity.</p>
+        <div class="split split-top">
+          <div class="callout accent-green">
+            <h3>As a Server</h3>
+            <p>You will host several different files that other clients will need. When someone sends you a GET for a file, click the button to copy the file, then send it to them in a packet on the Internet Simulator.</p>
+          </div>
+          <div class="callout">
+            <h3>As a Client</h3>
+            <p>Use the DNS in the Internet Simulator to find IPs for the hosts serving your files. Send a GET request for each file you need to the correct host.</p>
+          </div>
+        </div>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p><strong>Rules:</strong> No talking during the main round &mdash; use only the protocols! Use Code.org&rsquo;s Internet Simulator to send GET messages for DNS and files.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 14 · GETTING YOUR FRAGMENTS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:36px;">
+        <span class="slide-tag">Fragment Fetch Challenge</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Getting Your Fragments</h2>
+        <p class="fragtour-caption" style="font-size:var(--body);color:var(--text-muted);max-width:1250px;margin-bottom:var(--gap);min-height:1.6em;" data-fragtour-caption>Look at your ActiveBits tab. It has two parts: the Server and the Browser.</p>
+        <div class="shot-card" id="fragtour-shot" style="max-width:1100px;">
+          <img src="media/www-sim-fragments-panel.png" alt="ActiveBits web simulation screen with an HTTP Server panel on the left and DNS Lookup Table, Source HTML, and Rendered View panels on the right">
+          <div class="shot-highlight-layer">
+            <div class="shot-highlight swap-frame frame-active" data-frame="0" style="left:0%;top:5%;width:18%;height:95%;">
+              <span class="shot-highlight-label">Server</span>
+            </div>
+            <div class="shot-highlight swap-frame frame-active" data-frame="0" style="left:19%;top:5%;width:79%;height:95%;">
+              <span class="shot-highlight-label">Browser</span>
+            </div>
+            <div class="shot-highlight swap-frame" data-frame="1" style="left:19%;top:13%;width:79%;height:18%;">
+              <span class="shot-highlight-label">DNS Lookup Table</span>
+            </div>
+            <div class="shot-highlight swap-frame" data-frame="2" style="left:19%;top:33%;width:38%;height:66%;">
+              <span class="shot-highlight-label">Source HTML</span>
+            </div>
+            <div class="shot-highlight swap-frame" data-frame="3" style="left:59%;top:33%;width:39%;height:66%;">
+              <span class="shot-highlight-label">Rendered View</span>
+            </div>
+            <span class="fragment frame-trigger" data-frame-caption="On the Browser side, you&#39;ll find a DNS Lookup Table &mdash; this is where you record the IP addresses of the servers you contact."></span>
+            <span class="fragment frame-trigger" data-frame-caption="Below that, the Source HTML is the webpage that needs the &#8220;fragments&#8221; you will request from the servers."></span>
+            <span class="fragment frame-trigger" data-frame-caption="The Rendered View is an example of what the &#8220;user&#8221; would see once you, the browser, get all of the fragments."></span>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 15 · THE FIRST FRAGMENT TAG -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Fragment Fetch Challenge</span>
+        <h2 style="margin-bottom:var(--gap);">The First Fragment Tag</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">In your Source HTML, look for the first fragment. You should see something like:</p>
+        <div class="code-card" style="max-width:1250px;margin-top:var(--gap);">
+          <div class="code-hdr"><span class="clang">HTML</span></div>
+          <div class="code-body">
+            <pre><code>&lt;fragment src="http://<span style="color:var(--amber);">dahlem1</span>/transparent-bit"&gt;&lt;/fragment&gt;</code></pre>
+          </div>
+        </div>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;margin-top:var(--gap);">This tag specifies that the web page needs a file from that URL. Your job as the browser is to get this file to fill the fragment.</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Your first step is to figure out who to ask for the file. The <span style="color:var(--amber);">hostname</span> in the URL tells you &mdash; here, that&rsquo;s <code>dahlem1</code>. You need that host&rsquo;s IP address, and you&rsquo;ll get it from your DNS server.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 16 · ASK THE DNS FOR THE IP -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Fragment Fetch Challenge</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Ask the DNS for the IP</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">Address a packet to your DNS with the format <code>GET hostname</code>. It will respond with the IP address.</p>
+        <div class="split split-top" style="grid-template-columns:1fr 300px;">
+          <div class="packet-flow">
+            <div class="packet-step">
+              <span class="packet-dir dir-send">send</span>
+              <div class="shot-card"><img class="img-zoomable" src="media/dns-request-packet.png" alt="Packet to 1.15 from 1.13 with message GET dahlem1"></div>
+            </div>
+            <div class="packet-step">
+              <span class="packet-dir dir-rcv">rcv</span>
+              <div class="shot-card"><img class="img-zoomable" src="media/dns-response-packet.png" alt="Packet to 1.3 from 1.15 with message dahlem1:1.2"></div>
+            </div>
+          </div>
+          <div class="shot-card" style="justify-self:end;">
+            <img class="img-zoomable" src="media/router-diagram.png" alt="Router diagram showing hostname dahlem1, router1, and dns">
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 17 · GETTING THE FILE FROM THE SERVER -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Fragment Fetch Challenge</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Getting the File From the Server</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">With the IP address of the server, put it in your DNS Lookup Table, then ask the server for the file.</p>
+        <div class="split split-top" style="grid-template-columns:1fr 340px;">
+          <div class="packet-flow">
+            <div class="packet-step">
+              <span class="packet-dir dir-send">send</span>
+              <div class="shot-card"><img class="img-zoomable" src="media/get-file-request-packet.png" alt="Packet to 1.2 from 1.3 with message GET /transparent-bit"></div>
+            </div>
+            <div class="packet-step">
+              <span class="packet-dir dir-rcv">rcv</span>
+              <div class="shot-card"><img class="img-zoomable" src="media/file-response-packet.png" alt="Packet with HTTP/1.1 200 OK headers followed by the requested file content"></div>
+            </div>
+          </div>
+          <div class="shot-card" style="justify-self:end;">
+            <img class="img-zoomable" src="media/dns-lookup-table-filled.png" alt="DNS Lookup Table with dahlem1 mapped to 1.2">
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 18 · COPY JUST THE CONTENT -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Fragment Fetch Challenge</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Copy Just the Content</h2>
+        <div class="split split-top">
+          <div>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">Now that you have the file from the server, copy its content into the Source HTML. Hover your mouse over the fragment and a box will appear.</p>
+            <div class="tip-box" style="margin-top:var(--gap);">
+              <p>The server includes <span style="color:var(--amber);">headers</span> (metadata that helps the browser with the transfer) above the actual file <span style="color:var(--green);">data</span>. Only copy the content, not the headers &mdash; when you click Check, the fragment turns green if the correct piece was pasted.</p>
+            </div>
+          </div>
+          <div class="shot-card" style="max-width:460px;justify-self:end;">
+            <img class="img-zoomable" src="media/paste-fragment-box.png" alt="Paste fragment box for http://dahlem1/modular-route with a Check button, and the fragment's HTTP response text below it">
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 19 · SENDING THE FILE AS THE SERVER -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Fragment Fetch Challenge</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Sending the File, as the Server</h2>
+        <div class="split split-top">
+          <div>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">Oh wait! You just got a message asking you for a file. As the server, it&rsquo;s your job to send it back.</p>
+            <ul class="bullets" style="margin-top:var(--gap);">
+              <li>Create a packet and address it &mdash; use the <span style="color:var(--teal);">from</span> address on the request you got as the <span style="color:var(--amber);">to</span> address on your reply.</li>
+              <li>Find the file that matches the request in your Server Panel, and drag it into the packet&rsquo;s message box (or click to copy, then paste).</li>
+            </ul>
+          </div>
+          <div class="shot-card" style="max-width:360px;justify-self:end;">
+            <img class="img-zoomable" src="media/server-file-list.png" alt="HTTP Server file list for dahlem1 with files modular-route, transparent-bit, clear-system, reliable-node, and transparent-route, each with a Copy with HTTP Header link">
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 20 · SENDING AN ERROR -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Fragment Fetch Challenge</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Sending an Error</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;margin-bottom:var(--gap);">But I don&rsquo;t have that file! If the browser requests a file you don&rsquo;t have, or makes a request that doesn&rsquo;t follow the protocol, you can send them an error message instead.</p>
+        <div class="split split-top">
+          <div class="shot-card"><img class="img-zoomable" src="media/get-request-missing-file.png" alt="Packet requesting GET /neon-bitrate, a file the server does not have"></div>
+          <div class="shot-card" style="justify-self:end;max-width:320px;"><img class="img-zoomable" src="media/error-messages-panel.png" alt="Error Messages panel with 404-File-Not-Found and 400-Bad-Request cards"></div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 21 · DNS WRAP-UP -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Debrief</span>
+        <h2 style="margin-bottom:var(--gap);">DNS Wrap-Up</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Thanks to the DNS, we can talk to other people even if we don&rsquo;t know their IP addresses. This system is built entirely on <span style="color:var(--teal);">all the other layers below it</span>.</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>When you talk to the DNS you&rsquo;re still sending information over the network, so you still need to know the <span style="color:var(--amber);">IP address</span> of a DNS server! You send the DNS a message that gets turned into packets and routed using UDP or TCP and IP.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 22 · VIDEO GUIDE: HTTP -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Video Guide</span>
+        <h2 style="margin-bottom:var(--gap);">What to Watch For</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">As we watch this video, use the Video Guide to take notes on the HTTP protocol.</p>
+        <ul class="bullets" style="margin-top:var(--gap);max-width:1250px;">
+          <li>What problem is HTTP solving?</li>
+          <li>What is a GET request, and what are you requesting?</li>
+          <li>How does HTTP rely on the other layers of the Internet?</li>
+          <li>Why are <span style="color:var(--teal);">SSL/TLS</span> and <span style="color:var(--teal);">HTTPS</span> necessary?</li>
+          <li>What do <span style="color:var(--amber);">certificate authorities</span> do, and why are they necessary?</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 23 · VIDEO: HTTP & HTML -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:23:0"
+      data-activity-options='{"sourceUrl":"https://www.youtubeeducation.com/watch?v=kBXQZMmiA4s"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">The Internet: HTTP &amp; HTML</h2>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 24 · SENDING A MESSAGE THROUGH THE LAYERS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:36px;">
+        <span class="slide-tag">Putting It Together</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Sending a Message Through the Layers</h2>
+        <div class="flipbook-labels" data-flipbook-labels>
+          <span class="flipbook-label" data-label-slot="left"></span>
+          <span class="flipbook-label" data-label-slot="right" style="color:#ff51e8;">Email</span>
+        </div>
+        <div class="flipbook-stage" id="flipbook-layers">
+          <div class="swap-frame frame-active" data-frame="0"><img src="media/layer-01.png" alt="Me hands a note to the Application layer student"></div>
+          <div class="swap-frame" data-frame="1"><img src="media/layer-02.png" alt="Application layer hands the note to the Transport layer student"></div>
+          <div class="swap-frame" data-frame="2"><img src="media/layer-03.png" alt="Transport layer hands the note to the Internet layer student"></div>
+          <div class="swap-frame" data-frame="3"><img src="media/layer-04.png" alt="Internet layer hands the note to the Link layer student"></div>
+          <div class="swap-frame" data-frame="4"><img src="media/layer-05.png" alt="Link layer hands the note to the Physical layer student"></div>
+          <div class="swap-frame" data-frame="5"><img src="media/layer-06.png" alt="Physical layer passes the note across to the Link layer student on the receiving side"></div>
+          <div class="swap-frame" data-frame="6"><img src="media/layer-07.png" alt="Link layer hands the note up to the Internet layer student"></div>
+          <div class="swap-frame" data-frame="7"><img src="media/layer-08.png" alt="Internet layer hands the note up to the Transport layer student"></div>
+          <div class="swap-frame" data-frame="8"><img src="media/layer-09.png" alt="Transport layer hands the note up to the Application layer student"></div>
+          <div class="swap-frame" data-frame="9"><img src="media/layer-10.png" alt="Application layer hands the note to you"></div>
+          <div class="swap-frame" data-frame="10"><img src="media/layer-11.png" alt="You open the note and it's a photo of Rick Astley"></div>
+          <span class="fragment frame-trigger"></span>
+          <span class="fragment frame-trigger"></span>
+          <span class="fragment frame-trigger"></span>
+          <span class="fragment frame-trigger"></span>
+          <span class="fragment frame-trigger"></span>
+          <span class="fragment frame-trigger"></span>
+          <span class="fragment frame-trigger"></span>
+          <span class="fragment frame-trigger"></span>
+          <span class="fragment frame-trigger"></span>
+          <span class="fragment frame-trigger"></span>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 25 · PUT IT ALL TOGETHER -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Wrap-Up</span>
+        <h2 style="margin-bottom:var(--gap);">Put It All Together</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Use the last page of the activity guide to think about all of the layers we have discussed over the past several lessons. Each layer relies upon the ones below it to make the Internet work.</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Using the descriptions of the layers, and what you have seen, explain how each of the different layers is involved when you go to a link like <code>code.org</code>.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-2-6-http-and-dns',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+    function getLiveElementById(id) {
+      return Array.prototype.find.call(
+        document.querySelectorAll('#' + id),
+        function(element) { return !element.closest('#storyboard'); }
+      );
+    }
+
+    /* ── Generic frame-swap stage ──────────────────────────────────
+       Shared by the "Getting Your Fragments" callout tour and the
+       layers flip-book. A stack of position:absolute frames sits under
+       a row of invisible fragment "triggers"; each trigger's show/hide
+       event swaps which frame carries .frame-active, rather than
+       relying on Reveal's own fragment opacity (which the deck's base
+       CSS forces to a plain 0/1 toggle). Resets to frame 0 whenever the
+       slide is (re)entered, same as any other un-scored walkthrough. */
+    function initFrameSwap(containerId, onFrame) {
+      var root = getLiveElementById(containerId);
+      if (!root) return;
+      var frames = Array.prototype.slice.call(root.querySelectorAll('.swap-frame'));
+      var triggers = Array.prototype.slice.call(root.querySelectorAll('.frame-trigger'));
+
+      function showFrame(idx) {
+        frames.forEach(function(f) {
+          f.classList.toggle('frame-active', Number(f.dataset.frame) === idx);
+        });
+        if (onFrame) onFrame(idx, triggers[idx - 1] || null);
+      }
+
+      showFrame(0);
+
+      triggers.forEach(function(trigger, i) {
+        Reveal.on('fragmentshown', function(e) {
+          if (e.fragment === trigger) showFrame(i + 1);
+        });
+        Reveal.on('fragmenthidden', function(e) {
+          if (e.fragment === trigger) showFrame(i);
+        });
+      });
+
+      Reveal.on('slidechanged', function(e) {
+        if (e.currentSlide === root.closest('section')) showFrame(0);
+      });
+    }
+
+    initFrameSwap('fragtour-shot', function(idx, trigger) {
+      var captionEl = document.querySelector('#fragtour-shot').closest('section').querySelector('[data-fragtour-caption]');
+      if (!captionEl) return;
+      if (idx === 0) {
+        captionEl.textContent = 'Look at your ActiveBits tab. It has two parts: the Server and the Browser.';
+      } else if (trigger && trigger.dataset.frameCaption) {
+        captionEl.textContent = trigger.dataset.frameCaption;
+      }
+    });
+
+    /* Protocol label shown above each character, keyed by frame index.
+       Each character's generic "___ layer" role maps to one fixed
+       protocol name (Application layer = Email, Transport layer = TCP,
+       Internet layer = IP, Link layer = Ethernet, Physical layer =
+       Physical Wire); "me" and "you" never get a label. Verified against
+       the original slides' own text boxes rather than assumed, since
+       their left/right position does not follow the slide's raw text
+       order. The punchline frame (idx 10) has no characters, so no labels. */
+    var FLIPBOOK_LABELS = [
+      [null, 'Email'],
+      ['Email', 'TCP'],
+      ['TCP', 'IP'],
+      ['IP', 'Ethernet'],
+      ['Ethernet', 'Physical Wire'],
+      ['Physical Wire', 'Ethernet'],
+      ['Ethernet', 'IP'],
+      ['IP', 'TCP'],
+      ['TCP', 'Email'],
+      ['Email', null],
+      [null, null],
+    ];
+
+    /* Each protocol's label is colored to match that character's shirt in
+       the artwork (sampled directly from the frame images), so the label
+       reads as pointing at that specific person rather than a generic
+       heading floating above the panel. */
+    var PROTOCOL_COLOR = {
+      'Email': '#ff51e8',
+      'TCP': '#e8f04a',
+      'IP': '#1de37f',
+      'Ethernet': '#ff5a5a',
+      'Physical Wire': '#ff9a52',
+    };
+
+    initFrameSwap('flipbook-layers', function(idx) {
+      var labelsEl = document.querySelector('#flipbook-layers').closest('section').querySelector('[data-flipbook-labels]');
+      if (!labelsEl) return;
+      var pair = FLIPBOOK_LABELS[idx] || [null, null];
+      var leftEl = labelsEl.querySelector('[data-label-slot="left"]');
+      var rightEl = labelsEl.querySelector('[data-label-slot="right"]');
+      leftEl.textContent = pair[0] || '';
+      leftEl.style.color = PROTOCOL_COLOR[pair[0]] || '';
+      rightEl.textContent = pair[1] || '';
+      rightEl.style.color = PROTOCOL_COLOR[pair[1]] || '';
+    });
+
+    /* ── Fill-in-the-blank drag-and-drop ───────────────────────────
+       Six words are dealt into a shuffled word bank; each has exactly
+       one correct blank in the DNS definition sentence. Native HTML5
+       drag-and-drop is the primary interaction, with a click-to-select
+       then click-to-place fallback for touch/keyboard/switch access,
+       matching the repo's existing drag-and-drop conventions. A wrong
+       drop shakes the blank and counts as an attempt but leaves the
+       chip in the bank; "perfect" (overlay + pulsing badge) means
+       attempts === blank count, i.e. zero wrong attempts, matching the
+       matching-pairs activity's definition of a mistake-free run. */
+    function initFillBlank() {
+      var root = getLiveElementById('fillblank-dns');
+      if (!root) return;
+
+      var WORDS = ['Domain', 'Name', 'System', 'Servers', 'IP Address', 'example.com'];
+      var blanks = Array.prototype.slice.call(root.querySelectorAll('.blank'));
+      var bankHost = root.querySelector('[data-word-bank]');
+      var scoreEl = root.querySelector('[data-fillblank-score]');
+      var attemptsEl = root.querySelector('[data-fillblank-attempts]');
+      var completeEl = root.querySelector('[data-fillblank-complete]');
+      var section = root.closest('section');
+      var overlayEl = section ? section.querySelector('[data-fillblank-overlay]') : null;
+      if (overlayEl) {
+        overlayEl.addEventListener('click', function() {
+          overlayEl.classList.remove('visible');
+        });
+      }
+
+      var filled = 0;
+      var attempts = 0;
+      var selectedChip = null;
+      var chips = [];
+
+      /* Progress survives navigating away and back via sessionStorage,
+         the same pattern as the matching-pairs activity: fragmentshown
+         re-entry restores rather than reshuffles, so students don't lose
+         a solved (or partly solved) sentence just by stepping past the
+         slide and back. */
+      var STORAGE_KEY = 'csp-2-6-http-and-dns:fillblank-dns';
+
+      function shuffled(array) {
+        var copy = array.slice();
+        for (var i = copy.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
+        }
+        return copy;
+      }
+
+      function loadState() {
+        try {
+          var raw = sessionStorage.getItem(STORAGE_KEY);
+          if (!raw) return null;
+          var parsed = JSON.parse(raw);
+          if (!parsed || !Array.isArray(parsed.filledWords) || parsed.filledWords.length !== blanks.length) return null;
+          return parsed;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function saveState() {
+        try {
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+            filledWords: blanks.map(function(b) {
+              return b.classList.contains('blank-filled') ? b.dataset.blankAnswer : null;
+            }),
+            attempts: attempts,
+          }));
+        } catch (e) {
+          /* storage unavailable (private mode, quota) — activity still works, just won't persist */
+        }
+      }
+
+      function updateStatus() {
+        scoreEl.textContent = filled + ' of ' + WORDS.length + ' filled';
+        attemptsEl.textContent = attempts + (attempts === 1 ? ' attempt' : ' attempts');
+        var isComplete = filled === WORDS.length;
+        var isPerfect = isComplete && attempts === WORDS.length;
+        completeEl.style.display = isComplete ? 'inline' : 'none';
+        if (overlayEl) overlayEl.classList.toggle('visible', isPerfect);
+        attemptsEl.classList.toggle('badge-amber', !isPerfect);
+        attemptsEl.classList.toggle('badge-pulse-complete', isPerfect);
+      }
+
+      function deselect() {
+        if (selectedChip) selectedChip.classList.remove('chip-selected');
+        selectedChip = null;
+      }
+
+      function placeWord(word, chipEl, blankEl) {
+        attempts++;
+        if (blankEl.dataset.blankAnswer === word) {
+          blankEl.textContent = word;
+          blankEl.classList.add('blank-filled');
+          blankEl.classList.remove('blank-dragover');
+          chipEl.classList.add('chip-used');
+          filled++;
+        } else {
+          blankEl.classList.add('blank-wrong');
+          setTimeout(function() { blankEl.classList.remove('blank-wrong', 'blank-dragover'); }, 400);
+        }
+        deselect();
+        updateStatus();
+        saveState();
+      }
+
+      function makeChip(word) {
+        /* A plain div (not a <button>) is used here on purpose: some
+           browsers don't reliably initiate native HTML5 drag on
+           draggable buttons, since their built-in press/focus handling
+           can pre-empt the drag gesture. role="button" + tabindex plus
+           a keydown handler keep it keyboard-operable like a real button. */
+        var chip = document.createElement('div');
+        chip.className = 'word-chip';
+        chip.setAttribute('role', 'button');
+        chip.setAttribute('tabindex', '0');
+        chip.textContent = word;
+        chip.draggable = true;
+        chip.dataset.word = word;
+
+        chip.addEventListener('dragstart', function(e) {
+          e.dataTransfer.setData('text/plain', word);
+          e.dataTransfer.effectAllowed = 'move';
+        });
+
+        function activate() {
+          if (chip.classList.contains('chip-used')) return;
+          if (selectedChip === chip) {
+            deselect();
+            return;
+          }
+          deselect();
+          selectedChip = chip;
+          chip.classList.add('chip-selected');
+        }
+
+        chip.addEventListener('click', activate);
+        chip.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            activate();
+          }
+        });
+
+        chips.push(chip);
+        return chip;
+      }
+
+      function wireBlank(blankEl) {
+        blankEl.addEventListener('dragover', function(e) {
+          if (blankEl.classList.contains('blank-filled')) return;
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          blankEl.classList.add('blank-dragover');
+        });
+        blankEl.addEventListener('dragleave', function() {
+          blankEl.classList.remove('blank-dragover');
+        });
+        blankEl.addEventListener('drop', function(e) {
+          e.preventDefault();
+          blankEl.classList.remove('blank-dragover');
+          if (blankEl.classList.contains('blank-filled')) return;
+          var word = e.dataTransfer.getData('text/plain');
+          var chipEl = chips.filter(function(c) { return c.dataset.word === word && !c.classList.contains('chip-used'); })[0];
+          if (!chipEl) return;
+          placeWord(word, chipEl, blankEl);
+        });
+        blankEl.addEventListener('click', function() {
+          if (blankEl.classList.contains('blank-filled') || !selectedChip) return;
+          placeWord(selectedChip.dataset.word, selectedChip, blankEl);
+        });
+      }
+
+      function paint(filledWords, attemptsVal) {
+        filled = 0;
+        attempts = attemptsVal || 0;
+        chips = [];
+        deselect();
+        blanks.forEach(function(b, i) {
+          var word = filledWords ? filledWords[i] : null;
+          if (word) {
+            b.textContent = word;
+            b.classList.add('blank-filled');
+            filled++;
+          } else {
+            b.textContent = '';
+            b.classList.remove('blank-filled', 'blank-wrong', 'blank-dragover');
+          }
+        });
+        bankHost.innerHTML = '';
+        shuffled(WORDS).forEach(function(word) {
+          var chip = makeChip(word);
+          if (filledWords && filledWords.indexOf(word) !== -1) chip.classList.add('chip-used');
+          bankHost.appendChild(chip);
+        });
+        updateStatus();
+      }
+
+      function renderFresh() {
+        paint(null, 0);
+        saveState();
+      }
+
+      function renderFromStorageOrFresh() {
+        var saved = loadState();
+        if (saved) {
+          paint(saved.filledWords, saved.attempts);
+        } else {
+          renderFresh();
+        }
+      }
+
+      blanks.forEach(wireBlank);
+      renderFromStorageOrFresh();
+
+      Reveal.on('slidechanged', function(event) {
+        if (event.currentSlide === root.closest('section')) renderFromStorageOrFresh();
+      });
+    }
+
+    initFillBlank();
+
+  },
+});
+</script>
+</body>
+</html>
