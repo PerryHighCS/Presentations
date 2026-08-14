@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1vr654k">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.5 Packets</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Packets
+   ============================================================ */
+
+/* ─── Tip callout (single paragraph, amber accent) ───────────────────── */
+.tip-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,212,59,0.4);
+  border-left: 3px solid var(--yellow);
+  border-radius: 3px;
+  padding: 0.7em 1.2em;
+}
+.tip-box p {
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ─── White image card (screenshots need a light backdrop) ──────────── */
+.shot-card {
+  position: relative;
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.4);
+}
+.shot-card img { display: block; width: 100%; border-radius: 3px; }
+.shot-card + .shot-card { margin-top: var(--gap-sm); }
+
+.shot-card .callout-arrow {
+  position: absolute;
+  inset: 10px;
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  overflow: visible;
+  pointer-events: none;
+}
+.shot-card .callout-arrow line {
+  stroke: var(--red);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ─── Step-by-step flow (instruction + its own screenshot) ──────────── */
+.step-flow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--gap-lg);
+  width: 100%;
+  align-items: start;
+}
+.step-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.step-text {
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.step-text strong { color: var(--text); }
+
+/* ─── Vocabulary term cards ───────────────────────────────────────── */
+.vocab-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+.vocab-item .vocab-term {
+  font-family: var(--font-mono);
+  font-size: var(--h3);
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 4px;
+}
+.vocab-item .vocab-def {
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+/* ─── Protocol comparison table ──────────────────────────────────────
+   A row-labelled grid where each protocol's answers fade in one at a
+   time via fragments, mirroring the original slide-by-slide build. ─── */
+.ptable {
+  display: grid;
+  grid-template-columns: 200px repeat(var(--ptable-cols, 1), 1fr);
+  gap: var(--gap-sm) var(--gap);
+  width: 100%;
+  align-items: stretch;
+}
+.ptable .ph {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--teal-border);
+}
+.ptable .ph-udp { color: var(--teal); }
+.ptable .ph-tcp { color: var(--amber); }
+.ptable .row-label {
+  font-size: var(--body);
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+}
+.ptable .cell {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 14px 18px;
+  font-size: var(--small);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.ptable .cell.cell-tcp { border-color: rgba(255,212,59,0.3); }
+
+/* ─── Matching Pairs activity (shared mechanism, see 2.4) ────────────── */
+.match-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: 100%;
+}
+.match-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.match-status .badge { font-size: var(--small); }
+.match-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap-sm) var(--gap);
+  width: 100%;
+}
+.match-card {
+  all: unset;
+  position: relative;
+  cursor: pointer;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 104px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: var(--small);
+  line-height: 1.4;
+  color: var(--text-muted);
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.15s var(--ease);
+}
+.match-card.match-card-term { font-family: var(--font-mono); font-weight: 700; color: var(--text); font-size: var(--body); }
+.match-card:hover:not(.mc-matched) {
+  border-color: rgba(0,201,177,0.5);
+}
+.match-card.mc-selected {
+  border-color: var(--teal);
+  background: var(--teal-glow);
+  box-shadow: 0 0 0 1px rgba(0,201,177,0.35) inset;
+}
+.match-card.mc-matched {
+  cursor: default;
+  border: 2px solid var(--green);
+  background: rgba(105,219,124,0.16);
+  color: var(--text);
+  box-shadow: 0 0 0 1px rgba(105,219,124,0.3) inset, 0 10px 24px rgba(0,0,0,0.3);
+}
+.match-card.match-card-term.mc-matched { color: var(--green); }
+.match-card.mc-matched .mc-badge {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #04150f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+  animation: mc-badge-pop 0.6s var(--ease) both;
+}
+@keyframes mc-badge-pop {
+  0%   { transform: scale(0.2) rotate(-12deg); opacity: 0; }
+  40%  { transform: scale(1.3) rotate(10deg);  opacity: 1; }
+  58%  { transform: scale(0.88) rotate(-6deg);             }
+  72%  { transform: scale(1.12) rotate(4deg);              }
+  86%  { transform: scale(0.96) rotate(-1deg);             }
+  100% { transform: scale(1) rotate(0deg);     opacity: 1; }
+}
+.match-card.mc-wrong {
+  border-color: var(--red);
+  background: rgba(255,107,107,0.08);
+  animation: mc-shake 0.4s var(--ease);
+}
+@keyframes mc-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.match-complete {
+  font-size: var(--body);
+  color: var(--green);
+  font-weight: 600;
+}
+
+/* ─── Perfect-score overlay — big enough to read from across the room ── */
+.match-perfect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4,12,11,0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease);
+}
+.match-perfect-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.match-perfect-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+}
+.match-perfect-overlay.visible .match-perfect-badge {
+  animation: match-perfect-pop 0.7s var(--ease) both;
+}
+.match-perfect-check {
+  font-size: 220px;
+  line-height: 1;
+  color: var(--green);
+  filter: drop-shadow(0 0 46px rgba(105,219,124,0.55));
+}
+.match-perfect-text {
+  font-family: var(--font-display);
+  font-size: 84px;
+  font-weight: 700;
+  color: var(--text);
+  text-shadow: 0 0 34px rgba(0,201,177,0.45);
+}
+.match-perfect-hint {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+@keyframes match-perfect-pop {
+  0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  75%  { transform: scale(0.96) rotate(-1deg);             }
+  100% { transform: scale(1) rotate(0deg);    opacity: 1; }
+}
+
+/* Attempts badge keeps pulsing green after a perfect score, so the result
+   still reads from across the room once the overlay has been dismissed. */
+.badge-pulse-complete {
+  background: rgba(105,219,124,0.18);
+  border-color: rgba(105,219,124,0.6);
+  color: var(--green);
+  animation: badge-pulse-glow 1.6s ease-in-out infinite;
+}
+@keyframes badge-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(105,219,124,0.5); }
+  50%      { box-shadow: 0 0 16px 5px rgba(105,219,124,0.45); }
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 2 · Lesson 5</span>
+        <h1 class="title-h1">Packets</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 02 · WARM-UP: MOVING THE LIBRARY -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Suppose our school library is moving to a new building on campus and you have been hired to help. What approach would you take if you just needed to clear out the space by the end of the day?","order":0,"responseTimeLimitMs":90000},{"id":"q2","type":"free-response","text":"Suppose our school library is moving to a new building on campus and you have been hired to help. How would your approach change if you had more time and wanted to check that every book made it safely and was on the same shelf it was on before the move?","order":1,"responseTimeLimitMs":90000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Warm-Up · Discussion</span>
+        <h2 style="margin-bottom:var(--gap);">Moving the Library</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;">Suppose our school library is moving to a new building on campus and you have been hired to help.</p>
+        <ul class="bullets" style="margin-top:var(--gap);max-width:1250px;">
+          <li>What approach would you take if you just needed to <span style="color:var(--teal);">clear out the space</span> by the end of the day?</li>
+          <li>How would your approach change if you had more time and wanted to <span style="color:var(--amber);">check that every book made it safely</span> and was on the same shelf it was on before the move?</li>
+        </ul>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>What approach would you take if you just needed to clear out the space by the end of the day?</p>
+        </div>
+        <div class="frq-box" style="margin-top:var(--gap-sm);max-width:1250px;">
+          <p>How would your approach change if you had more time and wanted to check that every book made it safely and was on the same shelf it was on before the move?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 03 · BIG MESSAGES, TWO PROTOCOLS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Today</span>
+        <h2 style="margin-bottom:var(--gap);">Sending Big Messages</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Sometimes we need to send really large messages over the internet, like movies or large pictures. Just like moving your entire school library, there are problems that arise when we want to send large messages on the internet.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">Today we&rsquo;re going to learn about <span style="color:var(--teal);">two different protocols</span> for sending information online: one that&rsquo;s used when all we care about is speed, and one that&rsquo;s used when accuracy is more important.</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>In lesson 2.4 we learned that messages can take different paths to get to the same place on the Internet. Remember that fact as we explore these protocols.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 04 · REVIEW: WHAT IS A PROTOCOL? -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:4:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What is a protocol?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"An agreed-upon set of rules that specify the behavior of some system","isCorrect":true},{"id":"q1b","text":"The inclusion of extra components so that a system can continue to work even if individual components fail, for example by having more than one path between any two connected devices in a network","isCorrect":false},{"id":"q1c","text":"A process for creating a digital representation of analog data by measuring the analog data at regular intervals","isCorrect":false},{"id":"q1d","text":"A finite set of instructions that accomplish a task","isCorrect":false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Quick Review</span>
+        <h2 style="margin-bottom:var(--gap);">What Is a Protocol?</h2>
+        <ul class="mcq-opts" style="max-width:1250px;">
+          <li><span class="opt-key">A</span><span>An agreed-upon set of rules that specify the behavior of some system</span></li>
+          <li><span class="opt-key">B</span><span>The inclusion of extra components so that a system can continue to work even if individual components fail</span></li>
+          <li><span class="opt-key">C</span><span>A process for creating a digital representation of analog data by measuring it at regular intervals</span></li>
+          <li><span class="opt-key">D</span><span>A finite set of instructions that accomplish a task</span></li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 05 · JUMP TO CODE.ORG -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Get Started</span>
+        <h2 style="margin-bottom:var(--gap);">Jump to Code.org</h2>
+        <ul class="bullets" style="max-width:1250px;">
+          <li><strong>Step 1:</strong> Find a partner under the direction of your teacher.</li>
+          <li><strong>Step 2:</strong> Open code.org Unit 2 Lesson 5.</li>
+          <li><strong>Step 3:</strong> Connect to a <span style="color:var(--teal);">different router</span> than your partner. Make sure you each know each other&rsquo;s IP address.</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 06 · EXPLORE THE SIMULATOR -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Explore</span>
+        <h2 style="margin-bottom:var(--gap);">Explore the Simulator</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">Use the Internet Simulator to have a short conversation about either:</p>
+        <ul class="bullets" style="margin-top:var(--gap-sm);max-width:1250px;">
+          <li>Your favorite movies</li>
+          <li>Your favorite band/artist</li>
+          <li>The superpower you wish you had</li>
+        </ul>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Try to figure out what&rsquo;s new with the Internet Simulator. You&rsquo;ll have 5 minutes to explore and tell me what has changed on the next slide.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 07 · REFLECTION: WHAT CHANGED? -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:7:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What has changed with the Internet Simulator?","order":0,"responseTimeLimitMs":60000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Reflect</span>
+        <h2 style="margin-bottom:var(--gap);">What Has Changed?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>What has changed with the Internet Simulator?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 08 · PACKETS AND BITS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">New This Time</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Packets and Bits</h2>
+        <div class="split split-top">
+          <ul class="bullets">
+            <li>A single message can be made up of many <strong>&ldquo;packets&rdquo;</strong>, which you can add with the <span style="color:var(--teal);">&ldquo;Add Packet&rdquo;</span> button.</li>
+            <li>Packets can only be <strong>80 bits</strong> long.</li>
+            <li><strong>16 bits</strong> are already used for packet <span style="color:var(--amber);">metadata</span> to help route the messages.</li>
+            <li>You only have <strong>64 bits</strong>, or <strong>8 ASCII characters</strong>, free for each of your messages.</li>
+          </ul>
+          <div class="shot-card">
+            <img class="img-zoomable" src="media/add-packet-message.png" alt="Send a Message panel showing two packets, each with To, From, and Message fields in ASCII and binary, with a bit count and Add Packet / Send buttons">
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 09 · REFLECTION: WHY PACKETS? -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:9:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Open the activity guide and read the first paragraph. In as short a summary as possible, explain why the Internet divides messages into packets.","order":0,"responseTimeLimitMs":180000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Reflect</span>
+        <h2 style="margin-bottom:var(--gap);">Why Packets?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>Open the activity guide and read the first paragraph. In as short a summary as possible, explain why the Internet divides messages into packets.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · EXPLORE: SEND A MULTI-PACKET MESSAGE -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Explore</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Send a Multi-Packet Message</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;margin-bottom:var(--gap);">Use the <span style="color:var(--teal);">ADD PACKET</span> button to create a message with <strong>5&ndash;10 words</strong>, one word per packet, and send it to your partner.</p>
+        <div class="step-flow">
+          <div class="step-block">
+            <p class="step-text">Open the router <span style="color:var(--amber);">Log Browser</span>.</p>
+            <div class="shot-card">
+              <img class="img-zoomable" src="media/router-stats-log-browser.png" alt="Router stats panel with a Log Browser button below the uptime, queued packets, throughput, and routed packet stats">
+              <svg class="callout-arrow" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                  <marker id="arrowhead-10" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                    <path d="M0,0 L8,4 L0,8 Z" fill="var(--red)"></path>
+                  </marker>
+                </defs>
+                <line x1="35" y1="55" x2="18" y2="82" marker-end="url(#arrowhead-10)" vector-effect="non-scaling-stroke" preserveAspectRatio="none"></line>
+              </svg>
+            </div>
+          </div>
+          <div class="step-block">
+            <p class="step-text">Choose &ldquo;Show My Traffic&rdquo; and &ldquo;Show All Routers&rdquo; to see the path your message takes through the network.</p>
+            <div class="shot-card">
+              <img class="img-zoomable" src="media/router-traffic-filter-dropdown.png" alt="Router log filter dropdowns set to Show My Traffic and Show All Routers, with the traffic-scope options expanded">
+            </div>
+          </div>
+        </div>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-top:var(--gap);">From what you see, answer the first two questions on the Activity Guide.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · CHECK YOUR RESULTS -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:11:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Did all your packets make it to your partner?","order":0,"responseTimeLimitMs":20000,"options":[{"id":"q1a","text":"Yes","isCorrect":false},{"id":"q1b","text":"No","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"Did all your packets arrive in the right order?","order":1,"responseTimeLimitMs":20000,"options":[{"id":"q2a","text":"Yes","isCorrect":false},{"id":"q2b","text":"No","isCorrect":false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Poll</span>
+        <h2 style="margin-bottom:var(--gap);">Check Your Results</h2>
+        <ul class="bullets" style="max-width:1250px;">
+          <li>Did all your packets make it to your partner?</li>
+          <li>Did all your packets arrive in the right order?</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 12 · PROTOCOL 1 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Debrief</span>
+        <h2 style="margin-bottom:var(--gap);">Protocol 1</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Protocol 1 has some issues, as we just saw. Packets can arrive <span style="color:var(--amber);">out of order</span> or totally <span style="color:var(--amber);">get lost</span>, and there&rsquo;s no way for the computer to tell what happened.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">That said, it&rsquo;s a really simple protocol, and it&rsquo;s <span style="color:var(--teal);">fast</span>. In the real world, this is known as <strong>UDP</strong>, or <span style="color:var(--teal);">User Datagram Protocol</span>.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 13 · TWO PROTOCOLS: UDP -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Two Protocols</span>
+        <h2 style="margin-bottom:var(--gap-sm);">User Datagram Protocol (UDP)</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">There are two protocols commonly used to send packets online, and depending on the situation, websites or apps will choose the one that makes sense.</p>
+        <div class="ptable" style="--ptable-cols:1;">
+          <div></div>
+          <div class="ph ph-udp">UDP</div>
+
+          <div class="row-label">Main idea</div>
+          <div class="cell fragment fade-up">Like Protocol 1, or clearing out the library as fast as you can: the goal is to send information quickly without worrying about accuracy.</div>
+
+          <div class="row-label">Basics of how it works</div>
+          <div class="cell fragment fade-up">Send all the packets, but don&rsquo;t check if they all get through or arrive in the right order.</div>
+
+          <div class="row-label">Use in real life</div>
+          <div class="cell fragment fade-up">Useful when split seconds matter more than correcting errors, like video-conferencing, live streaming, or online gaming.</div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 14 · PROTOCOL 2: CHECK FOR ERRORS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Design Challenge</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Protocol 2: Check for Errors</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">With your partner, discuss rules for a protocol that can address the challenges presented by Protocol 1. The sender should be able to construct a single multi-packet message and send it at once. Afterwards, the sender and receiver can communicate to fix any errors they encounter.</p>
+        <p style="font-size:var(--small);color:var(--text-dim);margin-top:var(--gap);margin-bottom:var(--gap-sm);">Consider:</p>
+        <ul class="bullets" style="max-width:1250px;">
+          <li>How will the receiver know if the order of the packets is wrong, or if any are missing?</li>
+          <li>How will the receiver <span style="color:var(--teal);">request missing packets</span>? What will the sender do in response?</li>
+          <li>How will <strong>both</strong> the sender and receiver know all packets have arrived successfully?</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 15 · POSTBOARD: WHAT'S YOUR PROTOCOL? -->
+    <section
+      data-activity-id="postboard"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="postboard:15:0"
+      data-activity-options='{"prompt":"What&#39;s your protocol? Copy and paste your protocol&#39;s rules below.","autoApprove":"false"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Postboard</span>
+        <h2 style="margin-bottom:var(--gap);">What&rsquo;s Your Protocol?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>Copy and paste your protocol&rsquo;s rules below. We&rsquo;ll take a look at the board together once everyone has posted.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 16 · TRY IT OUT! -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Test It</span>
+        <h2 style="margin-bottom:var(--gap);">Try It Out!</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Send your message to your partner again. This time, follow your new protocol. Does it work?</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Do you need to make some changes to it? Update your rules on the Activity Guide if you find something that needs improvement.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 17 · TWO PROTOCOLS: UDP VS. TCP -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Two Protocols</span>
+        <h2 style="margin-bottom:var(--gap-sm);">UDP vs. TCP</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">Your Protocol 2 is a lot like the second protocol websites and apps use when accuracy matters more than speed.</p>
+        <div class="ptable" style="--ptable-cols:2;">
+          <div></div>
+          <div class="ph ph-udp">UDP</div>
+          <div class="ph ph-tcp">TCP</div>
+
+          <div class="row-label">Main idea</div>
+          <div class="cell">Like Protocol 1, or clearing out the library as fast as you can: the goal is to send information quickly without worrying about accuracy.</div>
+          <div class="cell cell-tcp fragment fade-up">Like Protocol 2, or numbering every book in the library. It&rsquo;s slower, but more accurate.</div>
+
+          <div class="row-label">Basics of how it works</div>
+          <div class="cell">Send all the packets, but don&rsquo;t check if they all get through or arrive in the right order.</div>
+          <div class="cell cell-tcp fragment fade-up">Number packets so they can be re-ordered, confirm all were received, and resend any missing packets. Multiple back-and-forth confirmations between sender and receiver.</div>
+
+          <div class="row-label">Use in real life</div>
+          <div class="cell">Useful when split seconds matter more than correcting errors, like video-conferencing, live streaming, or online gaming.</div>
+          <div class="cell cell-tcp fragment fade-up">Useful when accuracy matters more than saving a split second, like sending emails, photos, or just browsing websites.</div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 18 · VIDEO: PACKETS, ROUTING & RELIABILITY -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:18:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=AYdF7b3nMto"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">The Internet: Packets, Routing &amp; Reliability</h2>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 19 · KEY VOCABULARY -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:36px;">
+        <span class="slide-tag">Key Vocabulary</span>
+        <h2 style="margin-bottom:var(--gap);">Packets</h2>
+        <div class="split split-top">
+          <div class="vocab-list">
+            <div class="vocab-item">
+              <div class="vocab-term">Datastream</div>
+              <div class="vocab-def">Information passed through the internet in packets.</div>
+            </div>
+            <div class="vocab-item">
+              <div class="vocab-term">Packet</div>
+              <div class="vocab-def">A chunk of data sent over a network. Larger messages are divided into packets that may arrive at the destination in order, out-of-order, or not at all.</div>
+            </div>
+            <div class="vocab-item">
+              <div class="vocab-term">Packet Metadata</div>
+              <div class="vocab-def">Data added to packets, including the IP address of the sender and receiver, to help route them through the network and reassemble the original message.</div>
+            </div>
+          </div>
+          <div class="vocab-list">
+            <div class="vocab-item">
+              <div class="vocab-term">Transmission Control Protocol (TCP)</div>
+              <div class="vocab-def">A protocol for sending packets that does error-checking to ensure all packets are received and properly ordered.</div>
+            </div>
+            <div class="vocab-item">
+              <div class="vocab-term">User Datagram Protocol (UDP)</div>
+              <div class="vocab-def">A protocol for sending packets quickly with minimal error-checking and no resending of dropped packets.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 20 · MATCHING PAIRS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Check Your Understanding</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Match the Term to Its Definition</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">Click two cards to test whether they match. Each term has one definition somewhere on the board.</p>
+        <div class="match-wrap" id="match-vocab">
+          <div class="match-status">
+            <span class="badge" data-match-score>0 of 5 matched</span>
+            <span class="badge badge-amber" data-match-attempts>0 attempts</span>
+            <span class="match-complete" data-match-complete style="display:none;">Nicely done! You matched every pair.</span>
+          </div>
+          <div class="match-grid" data-match-grid></div>
+        </div>
+      </div>
+      <div class="match-perfect-overlay" data-match-overlay aria-hidden="true">
+        <div class="match-perfect-badge">
+          <span class="match-perfect-check">&#10003;</span>
+          <span class="match-perfect-text">Perfect Match!</span>
+          <span class="match-perfect-hint">Click to keep browsing the board</span>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 21 · WRAP-UP -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Wrap-Up</span>
+        <h2 style="margin-bottom:var(--gap);">Finish Up</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1100px;line-height:1.55;">Finish up by answering the <a href="https://learn.mycode.run/link/lcxqb" target="_blank" rel="noopener" style="color:var(--teal);">two questions</a> on code.org.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-2-5-packets',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+    /* ── Matching Pairs ────────────────────────────────────────────
+       Five vocabulary terms and their five definitions are dealt onto a
+       single shuffled 4-column board, mirroring the original mixed-card
+       layout rather than sorting terms and definitions into separate
+       lists. Clicking any two cards attempts a match; correct pairs
+       lock in place, incorrect attempts shake and clear the selection.
+       Progress (tile positions, matches, attempts) is saved to
+       sessionStorage on every attempt and restored whenever the slide is
+       re-entered, so navigating away and back doesn't wipe a student's
+       in-progress or completed board. A fresh shuffle only happens the
+       first time the slide is seen in a given tab/session.
+       ─────────────────────────────────────────────────────────────── */
+    var MATCH_PAIRS = [
+      { id: 'datastream', term: 'Datastream', def: 'Information passed through the internet in packets.' },
+      { id: 'packet', term: 'Packet', def: 'A chunk of data sent over a network. Larger messages are divided into packets that may arrive in order, out-of-order, or not at all.' },
+      { id: 'metadata', term: 'Packet Metadata', def: 'Data added to packets to help route them through the network and reassemble the original message.' },
+      { id: 'tcp', term: 'Transmission Control Protocol (TCP)', def: 'A protocol for sending packets that does error-checking to ensure all packets are received and properly ordered.' },
+      { id: 'udp', term: 'User Datagram Protocol (UDP)', def: 'A protocol for sending packets quickly with minimal error-checking and no resending of dropped packets.' },
+    ];
+
+    function getLiveElementById(id) {
+      return Array.prototype.find.call(
+        document.querySelectorAll('#' + id),
+        function(element) { return !element.closest('#storyboard'); }
+      );
+    }
+
+    function shuffled(array) {
+      var copy = array.slice();
+      for (var i = copy.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
+      }
+      return copy;
+    }
+
+    var MATCH_STORAGE_KEY = 'csp-2-5-packets:match-vocab';
+
+    function loadMatchState() {
+      try {
+        var raw = sessionStorage.getItem(MATCH_STORAGE_KEY);
+        if (!raw) return null;
+        var parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.tiles) || parsed.tiles.length !== MATCH_PAIRS.length * 2) return null;
+        return parsed;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function saveMatchState(tiles, attempts) {
+      try {
+        sessionStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify({
+          tiles: tiles.map(function(t) { return { id: t.id, isTerm: t.isTerm, matched: t.matched }; }),
+          attempts: attempts,
+        }));
+      } catch (e) {
+        /* storage unavailable (private mode, quota) — activity still works, just won't persist */
+      }
+    }
+
+    function getMatchLabel(id, isTerm) {
+      var pair = MATCH_PAIRS.filter(function(p) { return p.id === id; })[0];
+      return pair ? (isTerm ? pair.term : pair.def) : '';
+    }
+
+    function buildFreshTiles() {
+      var tiles = [];
+      MATCH_PAIRS.forEach(function(pair) {
+        tiles.push({ id: pair.id, isTerm: true, matched: false });
+        tiles.push({ id: pair.id, isTerm: false, matched: false });
+      });
+      return shuffled(tiles);
+    }
+
+    function initMatchingPairs() {
+      var root = getLiveElementById('match-vocab');
+      if (!root) return;
+
+      var gridHost = root.querySelector('[data-match-grid]');
+      var scoreEl = root.querySelector('[data-match-score]');
+      var attemptsEl = root.querySelector('[data-match-attempts]');
+      var completeEl = root.querySelector('[data-match-complete]');
+      var section = root.closest('section');
+      var overlayEl = section ? section.querySelector('[data-match-overlay]') : null;
+      if (overlayEl) {
+        overlayEl.addEventListener('click', function() {
+          overlayEl.classList.remove('visible');
+        });
+      }
+
+      var tiles = [];
+      var matched = 0;
+      var attempts = 0;
+      var selected = null;
+
+      function updateStatus() {
+        scoreEl.textContent = matched + ' of ' + MATCH_PAIRS.length + ' matched';
+        attemptsEl.textContent = attempts + (attempts === 1 ? ' attempt' : ' attempts');
+        var isComplete = matched === MATCH_PAIRS.length;
+        /* "Perfect" means every attempt was a correct match, not just that
+           the board eventually got fully matched after some wrong guesses. */
+        var isPerfect = isComplete && attempts === MATCH_PAIRS.length;
+        completeEl.style.display = isComplete ? 'inline' : 'none';
+        if (overlayEl) overlayEl.classList.toggle('visible', isPerfect);
+        attemptsEl.classList.toggle('badge-amber', !isPerfect);
+        attemptsEl.classList.toggle('badge-pulse-complete', isPerfect);
+      }
+
+      function persist() {
+        saveMatchState(tiles, attempts);
+      }
+
+      function markMatched(card, tile) {
+        tile.matched = true;
+        card.classList.remove('mc-selected');
+        card.classList.add('mc-matched');
+        card.setAttribute('aria-disabled', 'true');
+        var badge = document.createElement('span');
+        badge.className = 'mc-badge';
+        badge.setAttribute('aria-hidden', 'true');
+        badge.textContent = '✓';
+        card.appendChild(badge);
+      }
+
+      function attemptMatch(a, b) {
+        attempts++;
+        var tileA = tiles[a.dataset.idx];
+        var tileB = tiles[b.dataset.idx];
+        if (a.dataset.matchId === b.dataset.matchId) {
+          markMatched(a, tileA);
+          markMatched(b, tileB);
+          matched++;
+        } else {
+          a.classList.add('mc-wrong');
+          b.classList.add('mc-wrong');
+          setTimeout(function() {
+            a.classList.remove('mc-wrong', 'mc-selected');
+            b.classList.remove('mc-wrong', 'mc-selected');
+          }, 400);
+        }
+        selected = null;
+        updateStatus();
+        persist();
+      }
+
+      function makeCard(tile, idx) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'match-card' + (tile.isTerm ? ' match-card-term' : '');
+        btn.dataset.matchId = tile.id;
+        btn.dataset.idx = idx;
+        btn.textContent = getMatchLabel(tile.id, tile.isTerm);
+        if (tile.matched) markMatched(btn, tile);
+        btn.addEventListener('click', function() {
+          if (btn.classList.contains('mc-matched')) return;
+          if (selected === btn) {
+            btn.classList.remove('mc-selected');
+            selected = null;
+            return;
+          }
+          if (selected) {
+            btn.classList.add('mc-selected');
+            attemptMatch(selected, btn);
+          } else {
+            selected = btn;
+            btn.classList.add('mc-selected');
+          }
+        });
+        return btn;
+      }
+
+      function paint() {
+        gridHost.innerHTML = '';
+        selected = null;
+        matched = 0;
+        tiles.forEach(function(tile, idx) {
+          if (tile.matched) matched++;
+          gridHost.appendChild(makeCard(tile, idx));
+        });
+        matched = matched / 2;
+        updateStatus();
+      }
+
+      function renderFresh() {
+        tiles = buildFreshTiles();
+        attempts = 0;
+        paint();
+        persist();
+      }
+
+      function renderFromStorageOrFresh() {
+        var saved = loadMatchState();
+        if (saved) {
+          tiles = saved.tiles;
+          attempts = saved.attempts || 0;
+          paint();
+        } else {
+          renderFresh();
+        }
+      }
+
+      renderFromStorageOrFresh();
+
+      Reveal.on('slidechanged', function(event) {
+        if (event.currentSlide === root.closest('section')) renderFromStorageOrFresh();
+      });
+    }
+
+    initMatchingPairs();
+
+  },
+});
+</script>
+</body>
+</html>
