@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="j6trcn">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.5.1 Top-Down Design</title>
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../../theme.css">
+<style>
+  /* ── Numbered step walkthrough (matches Decks/HPy/Welcome) ───────── */
+  .step-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .step-item { display: flex; align-items: flex-start; gap: 16px; }
+  .step-num {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--accent-border);
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: var(--small);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-text { font-size: var(--body); color: var(--text-muted); line-height: 1.55; padding-top: 3px; }
+</style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ============================================================
+         SLIDE 01 · TITLE
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">HPy &middot; Unit 2</span>
+        <h1 class="title-h1">2.5.1 Top-Down Design</h1>
+        <p class="subtitle">breaking a big problem into well-named helper functions &middot; testing before you build</p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 02 · CONCEPT — what top-down design is
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">2.5.1 Top-Down Design</span>
+        <h2>Some problems are <span style="color:var(--warn);">too complicated</span> for one function</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1100px;">
+          We often run into problems that are too complicated to solve inside a single function. It helps to break the problem apart using multiple <span style="color:var(--result);">helper functions</span>, one for each sub-problem. We call this <span style="color:var(--accent);">top-down design</span>: start from the big picture, and work your way down into smaller pieces.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 03 · CONCEPT — the process
+         ============================================================ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">The Process</span>
+        <h2>Write the <span style="color:var(--accent);">main idea</span> first</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li class="fragment fade-up">Start writing an algorithm for the <strong>main</strong> problem, in plain steps.</li>
+          <li class="fragment fade-up">When you hit a part that feels complicated, give it a <strong>well-named helper function</strong> instead of writing it out right there.</li>
+          <li class="fragment fade-up"><strong>Assume the helper is already written</strong> and correct, then keep going with the main problem. Come back and actually write the helper later.</li>
+          <li class="fragment fade-up">Repeat this for every complicated part, until the main problem is done and every helper is written.</li>
+        </ul>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);max-width:1000px;">
+          <strong>The key move is assuming.</strong> You don't need <code style="color:var(--text);">isHappy(n)</code> to exist yet to write code that calls <code style="color:var(--text);">isHappy(n)</code>. Trust the name, keep moving, and fill it in afterward.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 04 · CONCEPT — benefits
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Why Bother</span>
+        <h2>Three benefits of <span style="color:var(--result);">top-down design</span></h2>
+        <div style="display:flex;gap:var(--gap);margin-top:var(--gap-lg);">
+          <div class="key-prop fragment fade-up" style="flex:1;">
+            <strong style="color:var(--accent);">Cleaner code</strong><br>
+            <span style="font-size:var(--small);color:var(--text-dim);">One short function that calls well-named helpers reads far easier than one long function with everything tangled together.</span>
+          </div>
+          <div class="key-prop fragment fade-up" style="flex:1;">
+            <strong style="color:var(--result);">Reusable logic</strong><br>
+            <span style="font-size:var(--small);color:var(--text-dim);">A helper you write for one problem can be reused, unchanged, in a completely different problem later.</span>
+          </div>
+          <div class="key-prop fragment fade-up" style="flex:1;">
+            <strong style="color:var(--text);">Easier testing</strong><br>
+            <span style="font-size:var(--small);color:var(--text-dim);">You can test each helper on its own, so a bug points you straight at which small function is wrong.</span>
+          </div>
+        </div>
+        <p class="fragment fade-up" style="font-size:var(--body);margin-top:var(--gap-lg);max-width:1100px;">
+          Debugging five short, individually-tested functions is almost always easier than debugging one giant one.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 05 · SECTION — Test-Driven Development
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Asserts are your guide</span>
+        <h2>Test-Driven Development</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1100px;">
+          <span style="color:var(--accent);">Test-driven development</span> (TDD) is a programming workflow that flips the usual order of writing code and testing it. Instead of writing the code first and testing it afterward, you write the tests first, then write the code to make them pass.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 06 · CONCEPT — TDD, light touch
+         ============================================================ -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">A Failing Test Is a To-Do List</span>
+        <h2>Stub it, <span style="color:var(--accent);">test</span> it, then <span style="color:var(--result);">build</span> it</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap-sm);max-width:1100px;">
+          Here's what that looks like in practice. Follow these four steps for every function you write.
+        </p>
+        <div class="split split-50" style="margin-top:var(--gap);">
+          <ol class="step-list">
+            <li class="step-item fragment fade-up" data-fragment-index="1"><span class="step-num">1</span><span class="step-text">Write the function header with an obviously-wrong placeholder body, like <code style="color:var(--text);">return 42</code>, so the file runs without crashing.</span></li>
+            <li class="step-item fragment fade-up" data-fragment-index="2"><span class="step-num">2</span><span class="step-text">Write the <code style="color:var(--text);">assert</code> test cases for it right away, based only on what the function is <em>supposed</em> to do.</span></li>
+            <li class="step-item fragment fade-up" data-fragment-index="3"><span class="step-num">3</span><span class="step-text">Run it. Every <code style="color:var(--text);">assert</code> that fails is telling you exactly what's still broken, that's your to-do list.</span></li>
+            <li class="step-item fragment fade-up" data-fragment-index="4"><span class="step-num">4</span><span class="step-text">Edit the real function until every <code style="color:var(--text);">assert</code> passes silently.</span></li>
+          </ol>
+          <div class="code-card fragment fade-up" data-fragment-index="0">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">isHappy</span>(<span class="tok-nm">n</span>):
+    <span class="tok-kw">return</span> <span class="tok-num">42</span>  <span class="tok-cm"># obviously wrong, on purpose</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">testIsHappy</span>():
+    <span class="tok-kw">assert</span>(<span class="tok-nm">isHappy</span>(<span class="tok-num">1</span>) <span class="tok-op">==</span> <span class="tok-bool">True</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">isHappy</span>(<span class="tok-num">2212</span>) <span class="tok-op">==</span> <span class="tok-bool">True</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">isHappy</span>(<span class="tok-num">4</span>) <span class="tok-op">==</span> <span class="tok-bool">False</span>)
+    <span class="tok-kw">print</span>(<span class="tok-str">"Works!"</span>)</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 07 · CONCEPT — guided exercise transition + happy numbers
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Guided Exercise &middot; Happy Numbers</span>
+        <h2>Let's build <span style="color:var(--accent);">nthHappyPrime(n)</span> together</h2>
+        <div class="split split-50" style="margin-top:var(--gap);">
+          <div>
+            <p style="font-size:var(--body);">
+              We'll walk through top-down design as a class, using one example problem from start to finish. Given a positive number <code style="color:var(--text);">n</code>, compute a new number by summing the square of every digit of <code style="color:var(--text);">n</code>. Repeat that process on the result, over and over.
+            </p>
+            <p style="font-size:var(--body);margin-top:var(--gap);">
+              Every number eventually lands on either <span style="color:var(--result);">1</span> or <span style="color:var(--warn);">4</span>, and then stays there forever. A number that reaches <span style="color:var(--result);">1</span> is <strong>happy</strong>; a number that reaches <span style="color:var(--warn);">4</span> is <strong>unhappy</strong>.
+            </p>
+          </div>
+          <div class="code-card">
+            <div class="code-hdr" style="justify-content:center;">example &middot; 2212</div>
+            <div class="code-body" style="display:flex;flex-direction:column;gap:10px;align-items:center;font-family:var(--font-mono);font-size:var(--code);">
+              <div><span style="color:var(--text);">2</span><sup style="color:var(--text-dim);">2</sup> <span class="tok-op">+</span> <span style="color:var(--text);">2</span><sup style="color:var(--text-dim);">2</sup> <span class="tok-op">+</span> <span style="color:var(--text);">1</span><sup style="color:var(--text-dim);">2</sup> <span class="tok-op">+</span> <span style="color:var(--text);">2</span><sup style="color:var(--text-dim);">2</sup> <span class="tok-op">=</span> <span style="color:var(--accent);">13</span></div>
+              <div><span style="color:var(--text);">1</span><sup style="color:var(--text-dim);">2</sup> <span class="tok-op">+</span> <span style="color:var(--text);">3</span><sup style="color:var(--text-dim);">2</sup> <span class="tok-op">=</span> <span style="color:var(--accent);">10</span></div>
+              <div><span style="color:var(--text);">1</span><sup style="color:var(--text-dim);">2</sup> <span class="tok-op">+</span> <span style="color:var(--text);">0</span><sup style="color:var(--text-dim);">2</sup> <span class="tok-op">=</span> <span style="color:var(--result);">1</span></div>
+              <div style="margin-top:6px;color:var(--result);">2212 is happy</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 08 · CONCEPT — happy primes, the goal, starter code
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-40">
+        <div>
+          <span class="slide-tag">The Goal</span>
+          <h2>Write <span style="color:var(--accent);">nthHappyPrime(n)</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            A <strong>happy prime</strong> is a number that is both happy and prime. <code style="color:var(--text);">7</code> is the first one.
+          </p>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            Write <code style="color:var(--text);">nthHappyPrime(n)</code>, which takes an integer <code style="color:var(--text);">n</code> and returns the <code style="color:var(--text);">n</code>th happy prime, counting from <code style="color:var(--text);">0</code>.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py &middot; starter code</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">nthHappyPrime</span>(<span class="tok-nm">n</span>):
+    <span class="tok-kw">return</span> <span class="tok-num">42</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">testNthHappyPrime</span>():
+    <span class="tok-kw">assert</span>(<span class="tok-nm">nthHappyPrime</span>(<span class="tok-num">0</span>) <span class="tok-op">==</span> <span class="tok-num">7</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">nthHappyPrime</span>(<span class="tok-num">1</span>) <span class="tok-op">==</span> <span class="tok-num">13</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">nthHappyPrime</span>(<span class="tok-num">2</span>) <span class="tok-op">==</span> <span class="tok-num">19</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">nthHappyPrime</span>(<span class="tok-num">3</span>) <span class="tok-op">==</span> <span class="tok-num">23</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">nthHappyPrime</span>(<span class="tok-num">4</span>) <span class="tok-op">==</span> <span class="tok-num">31</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">nthHappyPrime</span>(<span class="tok-num">5</span>) <span class="tok-op">==</span> <span class="tok-num">79</span>)
+    <span class="tok-kw">print</span>(<span class="tok-str">"Works!"</span>)
+
+<span class="tok-kw">def</span> <span class="tok-nm">main</span>():
+    <span class="tok-nm">testNthHappyPrime</span>()
+
+<span class="tok-nm">main</span>()</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 09 · CONCEPT — top-down sketch + bottom-up build order
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);top:-90px;right:6%;"></div>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Design Top-Down, Build Bottom-Up</span>
+          <h2>Sketch it <span style="color:var(--accent);">top-down</span>, write it <span style="color:var(--result);">bottom-up</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            Sketch <code style="color:var(--text);">nthHappyPrime</code> as if its helpers already exist, calling them by name before they're written. That's the top-down part.
+          </p>
+          <p class="fragment fade-up" style="font-size:var(--body);margin-top:var(--gap);">
+            Then flip the order for actually building: write and test the helper with <strong>no dependencies</strong> first, since there's nothing it needs to wait on. Once you trust it, write the next helper that calls it, and so on, until you reach <code style="color:var(--text);">nthHappyPrime</code> itself.
+          </p>
+        </div>
+        <div>
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py &middot; sketch</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">nthHappyPrime</span>(<span class="tok-nm">n</span>):
+    <span class="tok-nm">candidate</span> <span class="tok-op">=</span> <span class="tok-num">1</span>
+    <span class="tok-nm">count</span> <span class="tok-op">=</span> <span class="tok-num">0</span>
+    <span class="tok-kw">while</span> <span class="tok-bool">True</span>:
+        <span class="tok-nm">candidate</span> <span class="tok-op">+=</span> <span class="tok-num">1</span>
+        <span class="tok-cm"># assume this helper exists, write it later</span>
+        <span class="tok-kw">if</span> <span class="tok-nm">isHappyPrime</span>(<span class="tok-nm">candidate</span>):
+            <span class="tok-cm">...</span></code></pre>
+            </div>
+          </div>
+          <div class="callout-result fragment fade-up" style="margin-top:var(--gap);">
+            <strong>You've already built one of these helpers.</strong> <code style="color:var(--text);">isPrime(n)</code>, from 2.1&ndash;2.2, is exactly the reusable logic top-down design promised. Reuse it as-is instead of rewriting it.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 10 · SECTION — patterns in development
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Patterns in Development</span>
+        <h2>Some code <span style="color:var(--accent);">shapes</span> show up again and again</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1100px;">
+          A <span style="color:var(--accent);">pattern</span> is a recognizable shape of code that solves a certain kind of problem, independent of the problem-specific details filled into it. Once you recognize a pattern, you can sketch its skeleton immediately, before you've written a single line of the logic that's actually specific to your problem.
+        </p>
+        <ul class="bullets" style="margin-top:var(--gap-lg);font-size:var(--body);max-width:1100px;">
+          <li class="fragment fade-up"><strong>Accumulator:</strong> a variable that starts at an identity value and updates a little more on every pass, like the running total in <code style="color:var(--text);">sumToN</code>.</li>
+          <li class="fragment fade-up"><strong>Count-and-track-the-best:</strong> tally how often each value shows up, and remember the best one so far, like <code style="color:var(--text);">mostFrequentDigit</code>.</li>
+          <li class="fragment fade-up"><strong>Search for the nth match:</strong> walk candidates upward, test each one, and count only the ones that qualify. That's today's example, next.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 11 · CONCEPT — the nth X pattern, as an example
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Example &middot; A Pattern You Already Know</span>
+          <h2>The <span style="color:var(--accent);">nth X</span> pattern</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            You've written this loop shape before: <code style="color:var(--text);">nthPrime</code>. Whenever a problem asks for <em>the nth thing with some property</em>, the shape is the same.
+          </p>
+          <p class="fragment fade-up" data-fragment-index="1" style="font-size:var(--body);margin-top:var(--gap);">
+            Find candidate values one at a time, test each one, and only count the ones that qualify. Once you recognize the shape, you can sketch the outer loop before you've written a single helper.
+          </p>
+          <p class="fragment fade-up" data-fragment-index="3" style="font-size:var(--body);margin-top:var(--gap);">
+            The only thing that changes from one problem to the next is the <span style="color:var(--accent);">property</span> being tested. In <code style="color:var(--text);">nthPrime</code>, the property is primality. In <code style="color:var(--text);">nthHappyPrime</code>, the property is being both happy and prime.
+          </p>
+        </div>
+        <div class="code-card fragment fade-up" data-fragment-index="2">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">the pattern</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">nthX</span>(<span class="tok-nm">n</span>):
+    <span class="tok-nm">candidate</span> <span class="tok-op">=</span> <span class="tok-nm">STARTING_VALUE</span>
+    <span class="tok-nm">count</span> <span class="tok-op">=</span> <span class="tok-num">0</span>
+    <span class="tok-kw">while</span> <span class="tok-bool">True</span>:
+        <span class="tok-nm">candidate</span> <span class="tok-op">+=</span> <span class="tok-num">1</span>
+        <span class="tok-kw">if</span> <span class="tok-nm">hasProperty</span>(<span class="tok-nm">candidate</span>):
+            <span class="tok-kw">if</span> <span class="tok-nm">count</span> <span class="tok-op">==</span> <span class="tok-nm">n</span>:
+                <span class="tok-kw">return</span> <span class="tok-nm">candidate</span>
+            <span class="tok-nm">count</span> <span class="tok-op">+=</span> <span class="tok-num">1</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 12 · CONCEPT — two lenses before the postboard
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-40">
+        <div>
+          <span class="slide-tag">Before You Post</span>
+          <h2>Look at it through <span style="color:var(--accent);">two lenses</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            We're about to build <code style="color:var(--text);">nthHappyPrime</code> using both ideas from today: top-down design and test-driven development. Keep both in mind as you post.
+          </p>
+          <div style="display:flex;flex-direction:column;gap:var(--gap-sm);margin-top:var(--gap);">
+            <div class="key-prop fragment fade-up">
+              <strong style="color:var(--accent);">Top-down lens:</strong> <span style="font-size:var(--small);color:var(--text-dim);">which parts feel complicated enough to deserve their own helper function?</span>
+            </div>
+            <div class="key-prop fragment fade-up">
+              <strong style="color:var(--result);">TDD lens:</strong> <span style="font-size:var(--small);color:var(--text-dim);">for each helper you name, what <code style="color:var(--text);">assert</code> would prove it works, before you write it?</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py &middot; starter code</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">nthHappyPrime</span>(<span class="tok-nm">n</span>):
+    <span class="tok-kw">return</span> <span class="tok-num">42</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">testNthHappyPrime</span>():
+    <span class="tok-kw">assert</span>(<span class="tok-nm">nthHappyPrime</span>(<span class="tok-num">0</span>) <span class="tok-op">==</span> <span class="tok-num">7</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">nthHappyPrime</span>(<span class="tok-num">1</span>) <span class="tok-op">==</span> <span class="tok-num">13</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">nthHappyPrime</span>(<span class="tok-num">2</span>) <span class="tok-op">==</span> <span class="tok-num">19</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">nthHappyPrime</span>(<span class="tok-num">3</span>) <span class="tok-op">==</span> <span class="tok-num">23</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">nthHappyPrime</span>(<span class="tok-num">4</span>) <span class="tok-op">==</span> <span class="tok-num">31</span>)
+    <span class="tok-kw">assert</span>(<span class="tok-nm">nthHappyPrime</span>(<span class="tok-num">5</span>) <span class="tok-op">==</span> <span class="tok-num">79</span>)
+    <span class="tok-kw">print</span>(<span class="tok-str">"Works!"</span>)
+
+<span class="tok-kw">def</span> <span class="tok-nm">main</span>():
+    <span class="tok-nm">testNthHappyPrime</span>()
+
+<span class="tok-nm">main</span>()</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 13 · POSTBOARD — brainstorm helper functions
+         ============================================================ -->
+    <section
+      data-activity-id="postboard"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="postboard:13:0"
+      data-activity-options='{"prompt":"Looking at nthHappyPrime, what helper functions do you think we&#39;ll need? Post a function name and a short description of what it should do.","autoApprove":"false"}'>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Postboard &middot; Decompose It</span>
+        <h2 style="margin-bottom:var(--gap);">What helper functions do we need?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>Think about the complicated parts of <code style="color:var(--text);">nthHappyPrime</code>: computing happiness, checking primality, combining the two. Post a helper function name and a short description of what it should do. We'll look at the board together once everyone has posted.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 14 · POSTBOARD — brainstorm tests
+         ============================================================ -->
+    <section
+      data-activity-id="postboard"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="postboard:14:0"
+      data-activity-options='{"prompt":"Pick one of the helper functions we just listed. Post an assert test case for it: an input and the expected output.","autoApprove":"false"}'>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(242,177,52,0.08),transparent 70%);"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Postboard &middot; Test It First</span>
+        <h2 style="margin-bottom:var(--gap);">What tests prove our helpers work?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>Pick one of the helper functions from the last board. Post an <code style="color:var(--text);">assert</code> test case for it, an input and the expected output, the way you would write it before the function itself exists.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 15 · MOBCODE — guided exercise, nthHappyPrime
+         ============================================================ -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-options='{"files":{"main.py":"def nthHappyPrime(n):\n    return 42\n\ndef testNthHappyPrime():\n    assert(nthHappyPrime(0) == 7)\n    assert(nthHappyPrime(1) == 13)\n    assert(nthHappyPrime(2) == 19)\n    assert(nthHappyPrime(3) == 23)\n    assert(nthHappyPrime(4) == 31)\n    assert(nthHappyPrime(5) == 79)\n    print(\"Works!\")\n\ndef main():\n    testNthHappyPrime()\n\nmain()\n"},"activeFile":"main.py","runnerId":"brython-terminal","startTryItMode":false}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);top:-90px;right:6%;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Build It &middot; As a Class</span>
+        <h2>Make every <span style="color:var(--result);">assert</span> pass</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          Build from the bottom up: write and test the helper with no dependencies first, then work outward until <code style="color:var(--text);">nthHappyPrime</code> itself passes.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 16 · WRAP-UP — recap
+         ============================================================ -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Top-down design and test-driven development</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li><strong>Top-down design:</strong> sketch the main problem first, hand off complicated parts to well-named helper functions, and assume each one works until you actually write it.</li>
+          <li><strong>Test-driven development:</strong> write the <code style="color:var(--text);">assert</code> test cases before the real implementation. A failing test tells you exactly what's still broken.</li>
+          <li><strong>Build order:</strong> design top-down, but build and test bottom-up, starting with the helper that has no dependencies.</li>
+          <li>Well-tested helpers are reusable. <code style="color:var(--text);">isPrime</code> proved that today, and it won't be the last time.</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+  initSyncDeckReveal({
+    deckId: 'hpy-2-5-1-top-down-design',
+    standaloneHosting: {
+      activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+      hash: true,
+      hashOneBasedIndex: true,
+      transition: 'fade',
+      transitionSpeed: 'fast',
+      backgroundTransition: 'none',
+      center: false,
+      controls: true,
+      controlsLayout: 'edges',
+      progress: true,
+      slideNumber: 'c/t',
+      keyboard: true,
+      touch: true,
+      fragments: true,
+      width: 1600,
+      height: 900,
+      margin: 0.04,
+      minScale: 0.2,
+      maxScale: 2.5,
+    },
+  });
+</script>
+</body>
+</html>
