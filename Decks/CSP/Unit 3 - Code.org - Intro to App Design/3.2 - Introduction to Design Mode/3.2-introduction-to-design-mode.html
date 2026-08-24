@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="138dxla">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.2 Introduction to Design Mode</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Introduction to Design Mode
+   ============================================================ */
+
+/* ─── Tip callout (single paragraph, amber accent) ───────────────────── */
+.tip-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,212,59,0.4);
+  border-left: 3px solid var(--yellow);
+  border-radius: 3px;
+  padding: 0.7em 1.2em;
+}
+.tip-box p {
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ─── Input/Output classify activity ──────────────────────────────────
+   Drag (or click-select, click-place) elements into the Input or Output
+   column. Check locks the board and marks each chip; a perfect score
+   pops the same style of full-slide overlay used by the matching-pairs
+   activities elsewhere in this course. ────────────────────────────── */
+.classify-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: 100%;
+}
+.classify-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.classify-status .badge { font-size: var(--small); }
+
+.classify-btn {
+  font-family: var(--font-body);
+  font-size: var(--small);
+  font-weight: 700;
+  padding: 0.5em 1.1em;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--teal-border);
+  background: var(--teal-glow);
+  color: var(--teal);
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+.classify-btn:hover:not(:disabled) { border-color: var(--teal); }
+.classify-btn:disabled { opacity: 0.4; cursor: default; }
+.classify-btn-secondary {
+  border-color: rgba(255,212,59,0.4);
+  background: rgba(255,212,59,0.08);
+  color: var(--amber);
+}
+.classify-btn-secondary:hover { border-color: var(--amber); }
+
+.classify-tray {
+  min-height: 84px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 10px;
+  padding: 14px;
+  background: var(--bg-card);
+  border: 1px dashed var(--teal-border);
+  border-radius: 6px;
+}
+.classify-empty {
+  font-size: var(--small);
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.classify-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  width: 100%;
+}
+.classify-bin {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.classify-bin-header {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 4px;
+  text-align: center;
+}
+.classify-bin-header-input {
+  background: var(--teal-glow);
+  color: var(--teal);
+  border: 1px solid var(--teal-border);
+}
+.classify-bin-header-output {
+  background: rgba(255,212,59,0.1);
+  color: var(--amber);
+  border: 1px solid rgba(255,212,59,0.35);
+}
+.classify-bin-items {
+  min-height: 190px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 10px;
+  padding: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+}
+.classify-bin[data-bin="output"] .classify-bin-items {
+  border-color: rgba(255,212,59,0.35);
+}
+
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(226,245,242,0.05);
+  border: 1px solid var(--teal-border);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--text);
+  cursor: grab;
+  user-select: none;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.15s var(--ease);
+}
+.chip:hover { border-color: rgba(0,201,177,0.6); }
+.chip-selected {
+  border-color: var(--teal);
+  background: var(--teal-glow);
+  box-shadow: 0 0 0 1px rgba(0,201,177,0.35) inset;
+}
+.chip-correct {
+  border-color: var(--green);
+  background: rgba(105,219,124,0.14);
+  color: var(--green);
+  cursor: default;
+}
+.chip-incorrect {
+  border-color: var(--red);
+  background: rgba(255,107,107,0.1);
+  color: var(--red);
+  cursor: default;
+}
+.chip-mark { font-weight: 900; }
+.chip-mark-good { color: var(--green); }
+.chip-mark-bad { color: var(--red); }
+
+.classify-perfect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4,12,11,0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease);
+}
+.classify-perfect-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.classify-perfect-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+}
+.classify-perfect-overlay.visible .classify-perfect-badge {
+  animation: classify-perfect-pop 0.7s var(--ease) both;
+}
+.classify-perfect-check {
+  font-size: 220px;
+  line-height: 1;
+  color: var(--green);
+  filter: drop-shadow(0 0 46px rgba(105,219,124,0.55));
+}
+.classify-perfect-text {
+  font-family: var(--font-display);
+  font-size: 84px;
+  font-weight: 700;
+  color: var(--text);
+  text-shadow: 0 0 34px rgba(0,201,177,0.45);
+}
+.classify-perfect-hint {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+@keyframes classify-perfect-pop {
+  0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  75%  { transform: scale(0.96) rotate(-1deg);             }
+  100% { transform: scale(1) rotate(0deg);    opacity: 1; }
+}
+
+.badge-pulse-complete {
+  background: rgba(105,219,124,0.18);
+  border-color: rgba(105,219,124,0.6);
+  color: var(--green);
+  animation: badge-pulse-glow 1.6s ease-in-out infinite;
+}
+@keyframes badge-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(105,219,124,0.4); }
+  50%      { box-shadow: 0 0 0 6px rgba(105,219,124,0); }
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 3 &middot; Lesson 2</span>
+        <h1 class="title-h1">Introduction<br>to Design Mode</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 02 · FRQ: SKETCH AN APP YOU USE EVERY DAY -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Grab a whiteboard or a piece of paper. Take a few minutes to sketch the user interface of an app you use every day, drawing it the way it actually looks on your screen. Then, in the box below, describe how you interact with that app: what do you tap, type, swipe, or otherwise do to make it work?","order":0,"responseTimeLimitMs":300000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Sketch &amp; Describe</span>
+        <h2 style="margin-bottom:var(--gap);">Sketch an App You Use Every Day</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Grab a <span style="color:var(--teal);">whiteboard</span> or a piece of paper. Take a few minutes to sketch the user interface of an app you use every day, drawing it the way it actually looks on your screen.</p>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Then, describe how you interact with that app: what do you tap, type, swipe, or otherwise do to make it work?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 03 · RECAP -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Recap</span>
+        <h2 style="margin-bottom:var(--gap);">What We Covered Last Time</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">During the last lesson, we looked at a few different apps and talked about their <span style="color:var(--teal);">input</span> and <span style="color:var(--amber);">output</span>. We also introduced the <span style="color:var(--teal);">User Interface</span>, the part of an app a person actually sees and touches.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">Today we&rsquo;ll learn how to build a user interface in App Lab, starting by looking at how one of the example apps was put together.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 04 · EXPLORE A SAMPLE APP -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Explore</span>
+        <h2 style="margin-bottom:var(--gap);">Explore a Sample App in Design Mode</h2>
+        <ul class="bullets" style="max-width:1250px;">
+          <li>Look at the elements on the screen. Try moving some of them around.</li>
+          <li>See if you can figure out how the user interface is built. How does it work?</li>
+          <li>Play with the parts of the UI. What <span style="color:var(--teal);">properties</span> can you change? Is there anything you can&rsquo;t change?</li>
+        </ul>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Go to <a href="https://learn.mycode.run/link/xnwqr" target="_blank" rel="noopener" style="color:var(--teal);">Code.org Unit 3 Lesson 2</a> and explore the sample app.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 05 · POSTBOARD: WHAT DID WE FIND OUT? -->
+    <section
+      data-activity-id="postboard"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="postboard:5:0"
+      data-activity-options='{"prompt":"What did we find out? What kinds of elements are on the screens you explored? What can you change about those elements? What changes when you move to a different screen?","autoApprove":"false"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Discuss &amp; Post</span>
+        <h2 style="margin-bottom:var(--gap);">What Did We Find Out?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>What kinds of elements are on the screens you explored? What can you change about those elements? What changes when you move to a different screen?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 06 · CONTINUE YOUR EXPLORATION -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Explore &middot; Round 2</span>
+        <h2 style="margin-bottom:var(--gap);">Continue Your Exploration</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Move on to dot 2 on Code.org. Talk to your partner to help each other work through the rest of the dots.</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Think about what kinds of <span style="color:var(--teal);">elements</span> you use as you go, and how they can be used.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 07 · POSTBOARD: NAME AN APP ELEMENT -->
+    <section
+      data-activity-id="postboard"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="postboard:7:0"
+      data-activity-options='{"prompt":"Name one element you can use to design an app&#39;s user interface, and describe what it lets the app do. Choose an element that hasn&#39;t been posted yet.","autoApprove":"false"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Discuss &amp; Post</span>
+        <h2 style="margin-bottom:var(--gap);">Name an App Element</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>Name one element you can use to design an app&rsquo;s user interface, and describe what it lets the app do. Choose an element that <span style="color:var(--amber);">hasn&rsquo;t been posted yet</span>.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 08 · CLASSIFY: INPUT OR OUTPUT? -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:36px;">
+        <span class="slide-tag">Check Your Understanding</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Input or Output?</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">Every element in Design Mode either <span style="color:var(--teal);">collects information</span> from the user or <span style="color:var(--amber);">shows information</span> to the user. Drag each element into the column where it belongs, then check your answers.</p>
+        <div class="classify-wrap" id="classify-io">
+          <div class="classify-status">
+            <span class="badge" data-classify-placed>0 of 12 placed</span>
+            <span class="badge badge-amber" data-classify-score style="display:none;">0 of 12 correct</span>
+            <button type="button" class="classify-btn classify-btn-primary" data-classify-check disabled>Check My Answers</button>
+            <button type="button" class="classify-btn classify-btn-secondary" data-classify-reset style="display:none;">Try Again</button>
+          </div>
+          <div class="classify-tray" data-classify-tray data-bin="tray" tabindex="0" aria-label="Unplaced elements"></div>
+          <div class="classify-board">
+            <div class="classify-bin" data-bin="input">
+              <div class="classify-bin-header classify-bin-header-input">Input</div>
+              <div class="classify-bin-items" data-classify-items="input" tabindex="0" aria-label="Input elements"></div>
+            </div>
+            <div class="classify-bin" data-bin="output">
+              <div class="classify-bin-header classify-bin-header-output">Output</div>
+              <div class="classify-bin-items" data-classify-items="output" tabindex="0" aria-label="Output elements"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="classify-perfect-overlay" data-classify-overlay aria-hidden="true">
+        <div class="classify-perfect-badge">
+          <span class="classify-perfect-check">&#10003;</span>
+          <span class="classify-perfect-text">Perfect!</span>
+          <span class="classify-perfect-hint">Click to keep exploring the board</span>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 09 · POLL: CAN AN ELEMENT DO BOTH? -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:9:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Do you think there are elements that can do both, take input and show output?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"Yes, there are.","isCorrect":true},{"id":"q1b","text":"No way.","isCorrect":false}]}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Quick Poll</span>
+        <h2>Can an Element Do Both?</h2>
+        <div class="frq-box" style="margin-top:var(--gap-lg);max-width:1000px;">
+          <p>Do you think there are elements that can do both, take input and show output?</p>
+        </div>
+        <ul class="mcq-opts" style="max-width:1000px;">
+          <li><span class="opt-key">A</span> Yes, there are.</li>
+          <li><span class="opt-key">B</span> No way.</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;bottom:-160px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · FRQ: MEANINGFUL ELEMENT IDS -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:10:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"You will soon be making your own app designs. Why is it important for element IDs to have meaningful names?","order":0,"responseTimeLimitMs":90000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ</span>
+        <h2>Naming Your Elements</h2>
+        <div class="frq-box" style="margin-top:var(--gap-lg);max-width:1000px;">
+          <p>You will soon be making your own app designs. Why is it important for element IDs to have <span style="color:var(--teal);">meaningful names</span>?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:600px;height:600px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+/* ── Input/Output classify activity ──────────────────────────────────
+   Twelve Design Mode elements start in a tray; students drag (or
+   click-select, click-place) each one into the Input or Output column.
+   Check My Answers is disabled until all twelve are placed, then locks
+   the board, marks each chip correct/incorrect, and — on a perfect
+   score — pops the same full-slide "Perfect!" overlay used by the
+   matching-pairs activities elsewhere in this course. Try Again clears
+   everything for a fresh attempt. ──────────────────────────────────── */
+var CLASSIFY_ITEMS = [
+  { id: 'text-input',   label: 'Text Input',   correct: 'input'  },
+  { id: 'photo-select', label: 'Photo Select', correct: 'input'  },
+  { id: 'slider',       label: 'Slider',       correct: 'input'  },
+  { id: 'text-area',    label: 'Text Area',    correct: 'input'  },
+  { id: 'checkbox',     label: 'Checkbox',     correct: 'input'  },
+  { id: 'radio-button', label: 'Radio Button', correct: 'input'  },
+  { id: 'dropdown',     label: 'Dropdown',     correct: 'input'  },
+  { id: 'button',       label: 'Button',       correct: 'input'  },
+  { id: 'chart',        label: 'Chart',        correct: 'output' },
+  { id: 'screen',       label: 'Screen',       correct: 'output' },
+  { id: 'label',        label: 'Label',        correct: 'output' },
+  { id: 'image',        label: 'Image',        correct: 'output' },
+];
+
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function(element) { return !element.closest('#storyboard'); }
+  );
+}
+
+function initClassifyIO(Reveal) {
+  var root = getLiveElementById('classify-io');
+  if (!root) return;
+
+  var section = root.closest('section');
+  var trayEl = root.querySelector('[data-classify-tray]');
+  var inputEl = root.querySelector('[data-classify-items="input"]');
+  var outputEl = root.querySelector('[data-classify-items="output"]');
+  var placedBadge = root.querySelector('[data-classify-placed]');
+  var scoreBadge = root.querySelector('[data-classify-score]');
+  var checkBtn = root.querySelector('[data-classify-check]');
+  var resetBtn = root.querySelector('[data-classify-reset]');
+  var overlayEl = section ? section.querySelector('[data-classify-overlay]') : null;
+  var zones = Array.prototype.slice.call(root.querySelectorAll('[data-bin]'));
+
+  var state = { placement: {}, selected: null, locked: false };
+
+  function resetState() {
+    CLASSIFY_ITEMS.forEach(function(item) { state.placement[item.id] = 'tray'; });
+    state.selected = null;
+    state.locked = false;
+  }
+  resetState();
+
+  function renderChip(item) {
+    var cls = 'chip';
+    if (state.selected === item.id) cls += ' chip-selected';
+    var mark = '';
+    if (state.locked && state.placement[item.id] !== 'tray') {
+      if (item.correct === state.placement[item.id]) {
+        cls += ' chip-correct';
+        mark = '<span class="chip-mark chip-mark-good" aria-hidden="true">&#10003;</span>';
+      } else {
+        cls += ' chip-incorrect';
+        mark = '<span class="chip-mark chip-mark-bad" aria-hidden="true">&#10007;</span>';
+      }
+    }
+    return '<div class="' + cls + '" draggable="' + (!state.locked) + '" data-item="' + item.id +
+      '" tabindex="0" role="button" aria-label="' + item.label + '">' + item.label + mark + '</div>';
+  }
+
+  function render() {
+    var tray = CLASSIFY_ITEMS.filter(function(i) { return state.placement[i.id] === 'tray'; });
+    var input = CLASSIFY_ITEMS.filter(function(i) { return state.placement[i.id] === 'input'; });
+    var output = CLASSIFY_ITEMS.filter(function(i) { return state.placement[i.id] === 'output'; });
+
+    trayEl.innerHTML = tray.length
+      ? tray.map(renderChip).join('')
+      : '<span class="classify-empty">All elements placed</span>';
+    inputEl.innerHTML = input.map(renderChip).join('');
+    outputEl.innerHTML = output.map(renderChip).join('');
+
+    var placedCount = CLASSIFY_ITEMS.length - tray.length;
+    placedBadge.textContent = placedCount + ' of ' + CLASSIFY_ITEMS.length + ' placed';
+    checkBtn.disabled = state.locked || placedCount < CLASSIFY_ITEMS.length;
+  }
+
+  function place(itemId, bin) {
+    if (state.locked || !itemId) return;
+    state.placement[itemId] = bin;
+    state.selected = null;
+    render();
+  }
+
+  function evaluate() {
+    if (state.locked) return;
+    state.locked = true;
+    var correct = CLASSIFY_ITEMS.filter(function(i) { return state.placement[i.id] === i.correct; }).length;
+    var perfect = correct === CLASSIFY_ITEMS.length;
+    render();
+    placedBadge.style.display = 'none';
+    scoreBadge.style.display = 'inline-flex';
+    scoreBadge.textContent = correct + ' of ' + CLASSIFY_ITEMS.length + ' correct';
+    scoreBadge.classList.toggle('badge-amber', !perfect);
+    scoreBadge.classList.toggle('badge-pulse-complete', perfect);
+    checkBtn.style.display = 'none';
+    resetBtn.style.display = 'inline-flex';
+    if (overlayEl) overlayEl.classList.toggle('visible', perfect);
+  }
+
+  function tryAgain() {
+    resetState();
+    placedBadge.style.display = 'inline-flex';
+    scoreBadge.style.display = 'none';
+    checkBtn.style.display = 'inline-flex';
+    resetBtn.style.display = 'none';
+    if (overlayEl) overlayEl.classList.remove('visible');
+    render();
+  }
+
+  root.addEventListener('click', function(event) {
+    var chip = event.target.closest('.chip');
+    if (chip) {
+      if (state.locked) return;
+      var id = chip.getAttribute('data-item');
+      state.selected = state.selected === id ? null : id;
+      render();
+      return;
+    }
+    var zone = event.target.closest('[data-bin]');
+    if (zone && state.selected) {
+      place(state.selected, zone.getAttribute('data-bin'));
+    }
+  });
+
+  root.addEventListener('keydown', function(event) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    var chip = event.target.closest('.chip');
+    if (chip) {
+      event.preventDefault();
+      if (state.locked) return;
+      var id = chip.getAttribute('data-item');
+      state.selected = state.selected === id ? null : id;
+      render();
+      return;
+    }
+    var zone = event.target.closest('[data-bin]');
+    if (zone && state.selected) {
+      event.preventDefault();
+      place(state.selected, zone.getAttribute('data-bin'));
+    }
+  });
+
+  root.addEventListener('dragstart', function(event) {
+    var chip = event.target.closest('.chip');
+    if (!chip || state.locked) return;
+    event.dataTransfer.setData('text/plain', chip.getAttribute('data-item'));
+    state.selected = chip.getAttribute('data-item');
+  });
+
+  zones.forEach(function(zone) {
+    zone.addEventListener('dragover', function(event) {
+      if (state.locked) return;
+      event.preventDefault();
+    });
+    zone.addEventListener('drop', function(event) {
+      if (state.locked) return;
+      event.preventDefault();
+      var id = event.dataTransfer.getData('text/plain') || state.selected;
+      place(id, zone.getAttribute('data-bin'));
+    });
+  });
+
+  checkBtn.addEventListener('click', evaluate);
+  resetBtn.addEventListener('click', tryAgain);
+  if (overlayEl) {
+    overlayEl.addEventListener('click', function() { overlayEl.classList.remove('visible'); });
+  }
+
+  render();
+
+  Reveal.on('slidechanged', function(event) {
+    if (event.currentSlide === section) tryAgain();
+  });
+}
+
+initSyncDeckReveal({
+  deckId: 'csp-3-2-introduction-to-design-mode',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    initClassifyIO(Reveal);
+  },
+});
+</script>
+</body>
+</html>
