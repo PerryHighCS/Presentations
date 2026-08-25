@@ -42,6 +42,12 @@ mechanism.
 - **Mechanism:** click-driven progressive reveal, per-scenario reset on slide change, no drag/drop.
 - **Reuse:** generic step-by-step walkthrough pattern (hazard→control→limit, cause→effect chains, any staged reveal).
 
+### Countdown timer with completion sound
+- **Where:** `Decks/CSP/Cybersecurity/security-risks-part-1.html` (`makeCountdown`, JS ~334-415, two instances `t3`/`t4`); reused in `Decks/CSP/Unit 3 - Code.org - Intro to App Design/3.3 - Project_ Designing An App Part 1/3.3-project-designing-an-app-part-1.html` (two instances `t1`/`t2`, slides 4 and 7)
+- **Concept:** a plain Start/Stop/Reset countdown clock (`MM:SS`) for a timed activity, e.g. group work or a Code.org step that carries its own suggested time. The display turns amber inside the last 30-60s and red at zero, and a `times-up.mp3` chime plays once when the clock hits zero.
+- **Mechanism:** `makeCountdown(id, totalSecs)` takes an id prefix (`#<id>-display`, `#<id>-start`, `#<id>-stop`, `#<id>-reset`) and a duration in seconds; plain `setInterval`/`clearInterval`, one shared `new Audio('times-up.mp3')` instance per deck. No Reveal fragment/slidechanged wiring — the clock just keeps running if you navigate away, matching how an instructor actually uses it (start it, then advance slides while it counts down in the background... though note it isn't visible again until you return to that slide). Requires a local `times-up.mp3` copied into the deck's own folder (each deck keeps its own copy rather than sharing one from the runtime).
+- **Reuse:** the generic go-to for any Code.org-style lesson slide that carries a literal countdown-badge image in the source slides (e.g. a static "2:00" graphic) — replace the static image with this live widget set to the same duration. Multiple independent instances can coexist on different slides of the same deck (each gets its own id prefix passed to `makeCountdown`).
+
 ### Timed random-prompt game shell
 - **Where:** `Decks/AR1/Engineering Communication/Disruptus.html` (section ~274-307, JS ~343-465)
 - **Concept:** round-based brainstorming game — reveals a random "mode," deals random cards, runs a 60s countdown with low-time warning and completion sound.
