@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="ybjvjm">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.5 Intro to Programming</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Intro to Programming
+   ============================================================ */
+
+/* ─── Tip callout (single paragraph, amber accent) ───────────────────── */
+.tip-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,212,59,0.4);
+  border-left: 3px solid var(--yellow);
+  border-radius: 3px;
+  padding: 0.7em 1.2em;
+}
+.tip-box p {
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ─── White image card (screenshots need a light backdrop) ────────────
+   Matches the Unit 2 shot-card convention — see html5-activities-index. */
+.shot-card {
+  position: relative;
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.4);
+}
+.shot-card img { display: block; width: 100%; border-radius: 3px; }
+
+/* ─── Driver / Navigator role cards ───────────────────────────────────── */
+.role-row {
+  display: flex;
+  gap: var(--gap-lg);
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
+.role-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 10px;
+  padding: 26px 30px;
+  max-width: 380px;
+}
+.role-icon-wrap {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.role-icon-wrap.driver { background: var(--teal-glow); border: 2px solid var(--teal-border); }
+.role-icon-wrap.navigator { background: rgba(255,212,59,0.12); border: 2px solid rgba(255,212,59,0.35); }
+.role-icon-wrap img { width: 54px; height: 54px; object-fit: contain; }
+.role-label {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--h3);
+  letter-spacing: 0.02em;
+}
+.role-label.driver { color: var(--teal); }
+.role-label.navigator { color: var(--amber); }
+.role-desc {
+  font-size: var(--small);
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+}
+.swap-icon-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(226,245,242,0.08);
+  border: 1px solid var(--teal-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.swap-icon-wrap img { width: 34px; height: 34px; }
+.swap-caption {
+  font-size: var(--small);
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: var(--gap-sm);
+}
+
+/* ─── Numbered setup steps (Slide 8) ──────────────────────────────────── */
+.setup-steps { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.setup-step { display: flex; align-items: flex-start; gap: 14px; }
+.setup-step-num {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.setup-step p { margin: 0; font-size: var(--body); color: var(--text-muted); line-height: 1.5; padding-top: 4px; }
+.setup-step p strong { color: var(--text); font-weight: 600; }
+
+/* ─── Two-column split: text beside a screenshot ──────────────────────── */
+.split-layout { display: flex; gap: var(--gap-lg); align-items: flex-start; width: 100%; }
+.split-text { flex: 1 1 42%; }
+.split-media { flex: 1 1 58%; }
+
+/* ─── Vocabulary slide: definitions with inline example screenshots ──── */
+.vocab-block { display: flex; flex-direction: column; gap: 12px; margin-bottom: var(--gap); }
+.vocab-term { font-family: var(--font-mono); font-weight: 700; color: var(--teal); font-size: var(--body); }
+.stmt-row { display: flex; gap: 14px; }
+.stmt-row .shot-card { flex: 1 1 0; padding: 8px; }
+.triptych { display: flex; gap: 14px; align-items: center; }
+.triptych-shot { flex: 0 0 auto; text-align: center; }
+.triptych-shot .shot-card { padding: 6px; display: inline-block; }
+.triptych-shot .shot-card img { height: 130px; width: auto; }
+.triptych-code { flex: 1 1 auto; }
+.triptych-code .shot-card { padding: 10px; }
+.triptych-code .shot-card img { height: auto; width: 100%; }
+.triptych-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 6px;
+}
+.triptych-arrow { font-size: 26px; color: var(--text-dim); flex: 0 0 auto; }
+
+/* ─── Stacked screenshots (Sequential vs. Event-Driven) ───────────────── */
+.dual-shots { display: flex; flex-direction: column; gap: 16px; }
+.dual-shot-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.dual-shot-label.sequential { color: var(--teal); }
+.dual-shot-label.event { color: var(--amber); }
+
+/* ─── Quiz reference thumbnail (Slide 13) ─────────────────────────────── */
+.quiz-thumb-card { max-width: 300px; margin: 0 auto var(--gap); }
+.quiz-thumb-caption {
+  font-size: 13px;
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* ─── App Lab project link (Slide 14) ──────────────────────────────────
+   code.org's CSP for the project "view" page does not include
+   studio-CSP.github.io style GitHub Pages hosts in its
+   frame-ancestors allow-list, so it cannot be iframed from this site —
+   confirmed by inspecting the page's response headers before building
+   this slide. A large call-to-action link is the reliable alternative. */
+.cta-shot {
+  max-width: 760px;
+  margin: 0 auto var(--gap);
+}
+.cta-link {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--teal);
+  background: var(--bg-card);
+  border: 2px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 18px 40px;
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  transition: border-color 150ms, background 150ms, box-shadow 150ms;
+}
+.cta-link:hover {
+  border-color: rgba(0,201,177,0.6);
+  background: rgba(0,201,177,0.08);
+  box-shadow: 0 0 24px rgba(0,201,177,0.2);
+  color: var(--teal);
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 3 &middot; Lesson 5</span>
+        <h1 class="title-h1">Intro to<br>Programming</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 02 · FROM ENGLISH TO COMPUTER (PT. 1) -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">From English to Computer</span>
+        <h2 style="margin-bottom:var(--gap);">From English to Computer</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">In the last lesson, we learned that it can be difficult to clearly communicate instructions to other humans. Imagine how difficult it would be to communicate instructions to a computer, one that has no ability to <span style="color:var(--amber);">&ldquo;read between the lines.&rdquo;</span></p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">Instead, we&rsquo;ll have to do the extra work to make sure the computer can understand what we want, rather than what we say.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 03 · FROM ENGLISH TO COMPUTER (PT. 2) -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Up Next</span>
+        <h2 style="margin-bottom:var(--gap);">From English to Computer</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Today is a big day. We&rsquo;re going to get our first taste of what <span style="color:var(--teal);">programming</span> looks like, and we&rsquo;ll see different ways we can use these tools to communicate our instructions to a computer.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 04 · PAIR PROGRAMMING -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Pair Programming</span>
+        <h2 style="margin-bottom:var(--gap);">Pair Programming</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1100px;line-height:1.55;"><span style="color:var(--teal);">Everything&rsquo;s better with a friend!</span> That&rsquo;s true with programming, just as it is in life.</p>
+      </div>
+      <div class="glow" style="width:700px;height:700px;right:-180px;top:-180px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 68%);"></div>
+    </section>
+
+    <!-- SLIDE 05 · VIDEO: PAIR PROGRAMMING -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:5:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=q7d_JtyCq1A"}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Pair Programming &middot; Video</span>
+        <h2>Watch Together</h2>
+        <p style="margin-top:var(--gap-sm);color:var(--text-muted);font-size:var(--body);max-width:1000px;">Let&rsquo;s take a quick look at what pair programming looks like before we try it ourselves.</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;left:-160px;bottom:-160px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 06 · WHAT IS PAIR PROGRAMMING? (DRIVER / NAVIGATOR) -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">What Is Pair Programming?</span>
+        <h2 style="margin-bottom:var(--gap-lg);">Driver and Navigator</h2>
+        <div class="role-row">
+          <div class="role-card">
+            <div class="role-icon-wrap driver"><img src="media/icon-driver.png" alt="Icon of a person at a steering wheel"></div>
+            <div class="role-label driver">Driver</div>
+            <p class="role-desc">Manipulates the keyboard and the mouse.</p>
+          </div>
+          <div class="role-card">
+            <div class="role-icon-wrap navigator"><img src="media/icon-navigator.png" alt="Icon of a person with a headset giving directions"></div>
+            <div class="role-label navigator">Navigator</div>
+            <p class="role-desc">Keeps track of the big picture. Guides towards the goal.</p>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 07 · WHAT IS PAIR PROGRAMMING? (SWAP FREQUENTLY) -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">What Is Pair Programming?</span>
+        <h2 style="margin-bottom:var(--gap-lg);">Swap Roles Often</h2>
+        <div class="role-row">
+          <div class="role-card">
+            <div class="role-icon-wrap driver"><img src="media/icon-driver.png" alt="Icon of a person at a steering wheel"></div>
+            <div class="role-label driver">Driver</div>
+          </div>
+          <div class="swap-icon-wrap"><img src="media/icon-swap.png" alt="Swap arrows icon"></div>
+          <div class="role-card">
+            <div class="role-icon-wrap navigator"><img src="media/icon-navigator.png" alt="Icon of a person with a headset giving directions"></div>
+            <div class="role-label navigator">Navigator</div>
+          </div>
+        </div>
+        <p class="swap-caption">Swap frequently: every level on code.org.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 08 · OPEN CODE.ORG UNIT 3 LESSON 5 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Get Set Up</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Open <a href="https://learn.mycode.run/link/xnwrs" target="_blank" rel="noopener" style="color:var(--teal);">code.org Unit 3 Lesson 5</a></h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">Set up a team with your partner:</p>
+        <ol class="setup-steps">
+          <li class="setup-step"><span class="setup-step-num">1</span><p>In the top right corner, click your name.</p></li>
+          <li class="setup-step"><span class="setup-step-num">2</span><p>Click <strong>&ldquo;Pair Programming.&rdquo;</strong></p></li>
+          <li class="setup-step"><span class="setup-step-num">3</span><p>Choose your partner&rsquo;s name.</p></li>
+          <li class="setup-step"><span class="setup-step-num">4</span><p>Alternate driver and navigator roles each level.</p></li>
+          <li class="setup-step"><span class="setup-step-num">5</span><p>Make sure to <strong>Run</strong> and click <strong>Finish</strong> when you complete each level. This gives the navigator a copy of your work too.</p></li>
+        </ol>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 09 · INTRO TO PROGRAMS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Intro to Programs</span>
+        <h2 style="margin-bottom:var(--gap);">Intro to Programs</h2>
+        <div class="split-layout">
+          <div class="split-text">
+            <p style="font-size:var(--small);color:var(--text-dim);margin-bottom:var(--gap-sm);">For each stage, you and your partner should:</p>
+            <ul class="bullets">
+              <li>Work together to complete the <strong>&ldquo;Do This.&rdquo;</strong></li>
+              <li>Talk through the <strong>&ldquo;Discuss&rdquo;</strong> prompts together.</li>
+              <li>Modify the code to follow the directions given.</li>
+            </ul>
+          </div>
+          <div class="split-media">
+            <div class="shot-card"><img class="img-zoomable" src="media/intro-to-programs.png" alt="App Lab stage with Do This, Discuss, and Modify instructions beside a short console.log program"></div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · VOCABULARY -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:32px;">
+        <span class="slide-tag">Vocabulary</span>
+        <h2 style="margin-bottom:var(--gap);">Vocabulary</h2>
+
+        <div class="vocab-block">
+          <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.55;"><span class="vocab-term">Program Statement:</span> a command or instruction. Sometimes also called a <em>code statement</em>.</p>
+          <div class="stmt-row" style="max-width:700px;">
+            <div class="shot-card"><img class="img-zoomable" src="media/stmt-console-log.png" alt="Single program statement: console.log(&quot;Hi!&quot;);"></div>
+            <div class="shot-card"><img class="img-zoomable" src="media/stmt-set-property.png" alt="Single program statement: setProperty(bigButton, text, Click me);"></div>
+          </div>
+        </div>
+
+        <div class="vocab-block" style="margin-bottom:0;">
+          <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.55;"><span class="vocab-term">Program:</span> a collection of program statements. Programs run (or &ldquo;execute&rdquo;) one command at a time.</p>
+          <div class="triptych">
+            <div class="triptych-shot">
+              <div class="shot-card"><img class="img-zoomable" src="media/program-before.png" alt="App Lab screen before the program runs: a light blue button"></div>
+              <div class="triptych-label">Before</div>
+            </div>
+            <span class="triptych-arrow">&rarr;</span>
+            <div class="triptych-code">
+              <div class="shot-card"><img class="img-zoomable" src="media/program-code.png" alt="Two-line program: console.log and setProperty background-color to blue"></div>
+              <div class="triptych-label">Program Runs (statements get a yellow outline while running)</div>
+            </div>
+            <span class="triptych-arrow">&rarr;</span>
+            <div class="triptych-shot">
+              <div class="shot-card"><img class="img-zoomable" src="media/program-after.png" alt="App Lab screen after the program runs: a blue button"></div>
+              <div class="triptych-label">After</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · SEQUENTIAL VS. EVENT-DRIVEN -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:36px;">
+        <span class="slide-tag">Two Ways for Programs to Run</span>
+        <h2 style="margin-bottom:var(--gap);">Sequential vs. Event-Driven</h2>
+        <div class="split-layout">
+          <div class="split-text">
+            <p class="dual-shot-label sequential">Sequential Programming</p>
+            <ul class="bullets" style="margin-bottom:var(--gap);">
+              <li>Program statements run in order, from top to bottom.</li>
+              <li>No user interaction.</li>
+              <li>Code runs the same way every time.</li>
+            </ul>
+            <p class="dual-shot-label event">Event-Driven Programming</p>
+            <ul class="bullets">
+              <li>Some statements run only when triggered by an event, like a mouse click or a key press.</li>
+              <li>Programs run differently each time, depending on user interactions.</li>
+            </ul>
+          </div>
+          <div class="split-media dual-shots">
+            <div class="shot-card"><img class="img-zoomable" src="media/sequential-example.png" alt="Sequential App Lab program: five statements running top to bottom with no events"></div>
+            <div class="shot-card"><img class="img-zoomable" src="media/event-driven-example.png" alt="Event-driven App Lab program: an onEvent click handler on bigButton"></div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 12 · MIXING SEQUENTIAL AND EVENT-DRIVEN -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Mixing Sequential and Event-Driven</span>
+        <h2 style="margin-bottom:var(--gap);">Mixing Sequential and Event-Driven</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">When you mix sequential and event-driven programming, things can get confusing fast.</p>
+        <div class="tip-box" style="margin:var(--gap-sm) 0 var(--gap);max-width:1250px;">
+          <p>Here&rsquo;s the app we&rsquo;ll use. When we click the <strong>Run</strong> button, what color will the screen be?</p>
+        </div>
+        <div class="shot-card" style="max-width:640px;">
+          <img class="img-zoomable" src="media/mixing-code.png" alt="App Lab program mixing sequential statements with onEvent click handlers for two buttons">
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 13 · QUIZ: WHAT PRINTS TO THE CONSOLE? -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:13:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"With the same program shown here ([click the thumbnail to view it in full](https://perryhighcs.github.io/Presentations/CSP/Unit%203%20-%20Code.org%20-%20Intro%20to%20App%20Design/3.5%20-%20Intro%20to%20Programming/media/mixing-code.png)), what will print out on the console when you click the Run button?\n\n[![The mixing sequential and event-driven program from the previous slide](https://perryhighcs.github.io/Presentations/CSP/Unit%203%20-%20Code.org%20-%20Intro%20to%20App%20Design/3.5%20-%20Intro%20to%20Programming/media/mixing-code-thumb.png)](https://perryhighcs.github.io/Presentations/CSP/Unit%203%20-%20Code.org%20-%20Intro%20to%20App%20Design/3.5%20-%20Intro%20to%20Programming/media/mixing-code.png)","order":0,"responseTimeLimitMs":90000,"options":[{"id":"q1a","text":"Beginning Green Middle Yellow End","isCorrect":false},{"id":"q1b","text":"Beginning Middle End","isCorrect":true},{"id":"q1c","text":"Beginning blue Green green Middle Yellow yellow End red","isCorrect":false},{"id":"q1d","text":"Nothing, no buttons have been clicked.","isCorrect":false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Quiz</span>
+        <h2 style="margin-bottom:var(--gap);">What Prints to the Console?</h2>
+        <div class="quiz-thumb-card">
+          <div class="shot-card"><img class="img-zoomable" src="media/mixing-code-thumb.png" alt="The mixing sequential and event-driven program from the previous slide"></div>
+          <p class="quiz-thumb-caption">Click the screenshot to view the full program.</p>
+        </div>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>With the same program shown above, what will print out on the console when you click the <strong>Run</strong> button?</p>
+        </div>
+        <ul class="mcq-opts" style="max-width:1250px;">
+          <li><span class="opt-key">A</span> Beginning Green Middle Yellow End</li>
+          <li><span class="opt-key">B</span> Beginning Middle End</li>
+          <li><span class="opt-key">C</span> Beginning blue Green green Middle Yellow yellow End red</li>
+          <li><span class="opt-key">D</span> Nothing, no buttons have been clicked.</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 14 · RUN THE APP LAB PROJECT -->
+    <section>
+      <div class="slide-inner slide-center" style="padding-top:32px;">
+        <span class="slide-tag">Try It</span>
+        <h2 style="margin-bottom:var(--gap);">Run the Program Yourself</h2>
+        <div class="cta-shot shot-card">
+          <img class="img-zoomable" src="media/mixing-code.png" alt="App Lab program mixing sequential statements with onEvent click handlers for two buttons">
+        </div>
+        <a class="cta-link" href="https://studio.code.org/projects/applab/-pzhl5zvBPK9kgYKVH_fGnJ9Hih4lfWSauJT4046aTs/view" target="_blank" rel="noopener">Open in App Lab &nearr;</a>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 15 · FRQ: PROGRAMMING LANGUAGE VS. NATURAL LANGUAGE -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:15:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Think about your experiences in this lesson and the previous lesson. How is a programming language different from natural language?","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ</span>
+        <h2>Programming Language vs. Natural Language</h2>
+        <div class="frq-box" style="margin-top:var(--gap-lg);max-width:1100px;">
+          <p>Think about your experiences in this lesson and the previous lesson. How is a <span style="color:var(--teal);">programming language</span> different from <span style="color:var(--amber);">natural language</span>?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:600px;height:600px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-3-5-intro-to-programming',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
