@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="kgjcp">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise 2: DC and AC Inductors</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES - AC Exercise 2
+   ============================================================ */
+/* Standalone phase label shown above a heading (slides 5 and 6). */
+.switch-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: var(--h3);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border-radius: 6px;
+}
+
+/* Shared colour variants for both badge sizes */
+.half-on  { color: var(--accent); border: 1px solid var(--accent-border); background: var(--accent-dim); }
+.half-off { color: var(--result); border: 1px solid rgba(94,234,212,0.3); background: rgba(94,234,212,0.08); }
+
+/* Compact three-way comparison (R / C / L oppose current) */
+.oppose-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: var(--gap-sm); }
+.oppose-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.oppose-card .oc-tag {
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.oppose-card .oc-body { font-size: var(--small); color: var(--text-muted); line-height: 1.45; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(57,211,83,0.12),transparent 70%);"></div>
+  <div class="glow" style="width:400px;height:400px;bottom:-90px;right:10%;background:radial-gradient(circle,rgba(94,234,212,0.08),transparent 70%);"></div>
+
+  <div class="slide-inner slide-center">
+    <div class="trace-deco">
+      <svg viewBox="0 0 420 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M420 150 L300 150 L300 300" stroke="rgba(57,211,83,0.18)" stroke-width="1.5"/>
+        <path d="M300 300 q18 -22 0 -44 M300 344 q18 -22 0 -44 M300 388 q18 -22 0 -44 M300 432 q18 -22 0 -44"
+              stroke="rgba(57,211,83,0.4)" stroke-width="2.5" transform="translate(0,-22)"/>
+        <line x1="316" y1="256" x2="316" y2="410" stroke="rgba(57,211,83,0.4)" stroke-width="2.5"/>
+        <path d="M300 432 L300 560 L420 560" stroke="rgba(57,211,83,0.18)" stroke-width="1.5"/>
+        <circle cx="300" cy="150" r="5" fill="rgba(57,211,83,0.45)"/>
+        <circle cx="300" cy="560" r="4" fill="rgba(57,211,83,0.35)"/>
+      </svg>
+    </div>
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; AC Circuits &nbsp;·&nbsp; Exercise 2</span>
+    <h1 class="title-h1">DC and AC <span class="accent">Inductors</span></h1>
+    <p class="subtitle">// Magnetic fields &nbsp;·&nbsp; Induced voltage &nbsp;·&nbsp; Inductance &nbsp;·&nbsp; Inductive reactance</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · LEARNING OUTCOMES & TOPICS COVERED -->
+<section>
+  <div class="glow" style="width:500px;height:500px;top:-80px;right:-100px;background:radial-gradient(circle,rgba(57,211,83,0.08),transparent 70%);"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Learning Outcomes &amp; Topics Covered</span>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-sm);">
+
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">After this section you will be able to <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Explain the <strong>principles of operation</strong> of inductors, in both dc and ac circuits.</li>
+          <li><strong>Define inductance.</strong></li>
+          <li><strong>Calculate</strong> the reactance of an inductor, and the inductance and reactance of series and parallel inductors.</li>
+          <li><strong>List applications</strong> of inductors.</li>
+          <li><strong>Operate</strong> a component of the AC/DC Training System: the inductor.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">Topics <span class="accent">covered</span></h3>
+        <div class="agenda-grid" style="grid-template-columns:1fr;margin-top:0;">
+          <a class="agenda-item" href="#/3"><span class="agenda-num">01</span><span class="agenda-text"><strong>Introduction</strong> to inductors</span></a>
+          <a class="agenda-item" href="#/4"><span class="agenda-num">02</span><span class="agenda-text"><strong>Operation</strong> of inductors, in dc and ac circuits</span></a>
+          <a class="agenda-item" href="#/8"><span class="agenda-num">03</span><span class="agenda-text"><strong>Inductance</strong></span></a>
+          <a class="agenda-item" href="#/9"><span class="agenda-num">04</span><span class="agenda-text"><strong>Reactance</strong> of ac inductors</span></a>
+          <a class="agenda-item" href="#/11"><span class="agenda-num">05</span><span class="agenda-text"><strong>Series and parallel</strong> inductors</span></a>
+          <a class="agenda-item" href="#/12"><span class="agenda-num">06</span><span class="agenda-text"><strong>Applications</strong> of inductors</span></a>
+          <a class="agenda-item" href="#/13"><span class="agenda-num">07</span><span class="agenda-text">Training system component: <strong>the inductor</strong></span></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · INTRODUCTION TO INDUCTORS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Introduction to Inductors · Topic 01</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div>
+        <h2>What Is an <span class="accent">Inductor?</span></h2>
+        <p class="slide-intro">In the DC Circuit Fundamentals course you saw that current in a wire produces a magnetic field, and that winding the wire into a coil around an iron core makes that field much stronger. This coil is the basis of solenoids and motors.</p>
+        <p class="slide-intro">A coil of wire used in an ac circuit is called an <strong>inductor</strong>. Like a capacitor, almost none of the power supplied to it does immediate work. Its two main jobs are to <span style="color:var(--accent);">produce a magnetic field</span> and to <span style="color:var(--accent);">oppose current changes</span> in the circuit.</p>
+      </div>
+
+      <div>
+        <div class="sym-row" style="flex-direction:column;">
+          <div class="sym-card">
+            <svg width="84" height="30" viewBox="0 0 84 30" xmlns="http://www.w3.org/2000/svg">
+              <line x1="2" y1="24" x2="12" y2="24" stroke="#39d353" stroke-width="2.5"/>
+              <path d="M12 24 a6 6 0 0 1 12 0 a6 6 0 0 1 12 0 a6 6 0 0 1 12 0 a6 6 0 0 1 12 0" fill="none" stroke="#39d353" stroke-width="2.5"/>
+              <line x1="60" y1="24" x2="82" y2="24" stroke="#39d353" stroke-width="2.5"/>
+            </svg>
+            <span class="sym-name"><strong>Inductor</strong><br>general symbol</span>
+          </div>
+          <div class="sym-card">
+            <svg width="84" height="34" viewBox="0 0 84 34" xmlns="http://www.w3.org/2000/svg">
+              <line x1="2" y1="28" x2="12" y2="28" stroke="#39d353" stroke-width="2.5"/>
+              <path d="M12 28 a6 6 0 0 1 12 0 a6 6 0 0 1 12 0 a6 6 0 0 1 12 0 a6 6 0 0 1 12 0" fill="none" stroke="#39d353" stroke-width="2.5"/>
+              <line x1="60" y1="28" x2="82" y2="28" stroke="#39d353" stroke-width="2.5"/>
+              <line x1="12" y1="12" x2="60" y2="12" stroke="#39d353" stroke-width="2"/>
+              <line x1="12" y1="16" x2="60" y2="16" stroke="#39d353" stroke-width="2"/>
+            </svg>
+            <span class="sym-name"><strong>Magnetic-core inductor</strong><br>the most common type; the bars mark the iron core</span>
+          </div>
+        </div>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap);">
+          Resistors, capacitors, and inductors all <strong>oppose current flow</strong>. They just do it in different ways: a resistor dissipates energy, a capacitor stores it in an electric field, an inductor stores it in a <strong>magnetic field</strong>.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · OPERATION IN DC CIRCUITS: RESISTOR BASELINE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Operation of Inductors · Topic 02 · DC · Resistor Baseline</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div class="img-center">
+        <figure style="margin:0;">
+          <img class="c-img img-zoomable" src="EX2_AC_Inductors_Assets/fig28_dc_resistor_light.png"
+               alt="Figure 28: A DC power source connected through a toggle switch to a resistor in parallel with an indicator light."
+               style="width:100%;">
+          <figcaption class="img-caption">Figure 28: DC source, a resistor in parallel with an indicator light, controlled by a toggle switch.</figcaption>
+        </figure>
+      </div>
+
+      <div>
+        <h2>The <span class="accent">Resistor</span> Reference Circuit</h2>
+        <p class="slide-intro">This circuit has an ordinary resistor in parallel with the indicator light.</p>
+        <div class="method-steps">
+          <div class="method-step fragment fade-up">Closing the switch sends a current through the circuit that <strong>splits between the resistor and the light</strong>.</div>
+          <div class="method-step fragment fade-up">The split depends only on their resistances, and <strong>each current is constant</strong>.</div>
+          <div class="method-step fragment fade-up">So the light reaches its <strong>normal glow immediately</strong> and holds it steady.</div>
+          <div class="method-step fragment fade-up">Opening the switch turns the light <strong>off at once</strong>.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · OPERATION IN DC CIRCUITS: INDUCTOR, SWITCH CLOSES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Operation of Inductors · Topic 02 · DC · Inductor, Switch Closes</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div class="img-center">
+        <figure style="margin:0;">
+          <img class="c-img img-zoomable" src="EX2_AC_Inductors_Assets/fig29_dc_inductor_light.png"
+               alt="Figure 29: The same circuit with the resistor replaced by a magnetic-core inductor in parallel with the indicator light."
+               style="width:100%;">
+          <figcaption class="img-caption">Figure 29: The resistor replaced by a magnetic-core inductor.</figcaption>
+        </figure>
+      </div>
+
+      <div>
+        <div class="switch-badge half-on" style="margin-bottom:var(--gap-sm);">Switch closes</div>
+        <h2>The Light Flares, Then <span class="accent">Fades to Dim</span></h2>
+        <div class="method-steps">
+          <div class="method-step fragment fade-up">Voltage is applied to the inductor and its <strong>magnetic field starts to build</strong>.</div>
+          <div class="method-step fragment fade-up">A voltage is <strong>induced across the inductor</strong> with polarity opposing the source, which opposes current in the inductor.</div>
+          <div class="method-step fragment fade-up">At first little current takes the inductor path, so <strong>more flows through the light</strong>: it glows brighter than normal.</div>
+          <div class="method-step fragment fade-up">As the field reaches full strength the induced voltage falls, current shifts into the inductor, and the light <strong>fades to dimmer than normal</strong>.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · OPERATION IN DC CIRCUITS: TURNING OFF -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Operation of Inductors · Topic 02 · DC · Turning Off</span>
+    <div class="switch-badge half-off" style="margin-bottom:var(--gap-sm);">Switch opens</div>
+    <h2>The Light Flashes <span class="accent">Very Bright</span>, Then Dies</h2>
+
+    <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:var(--gap-lg);align-items:center;flex:1;min-height:0;margin-top:var(--gap-sm);">
+
+      <div class="img-center">
+        <figure style="margin:0;">
+          <img class="c-img img-zoomable" src="EX2_AC_Inductors_Assets/fig29_dc_inductor_light.png"
+               alt="Figure 29: The same DC circuit, now with the toggle switch being opened so the inductor magnetic field collapses."
+               style="width:100%;max-height:320px;object-fit:contain;">
+          <figcaption class="img-caption">Figure 29: Opening the switch collapses the field and briefly induces a large current.</figcaption>
+        </figure>
+      </div>
+
+      <div class="method-steps">
+        <div class="method-step fragment fade-up">Voltage is removed, so the inductor's <strong>magnetic field collapses</strong>.</div>
+        <div class="method-step fragment fade-up">The collapsing field induces a voltage across the inductor with the <strong>same polarity as the disconnected source</strong>.</div>
+        <div class="method-step fragment fade-up">That induced voltage drives a <strong>high current</strong> through the circuit, so the light briefly glows very bright.</div>
+        <div class="method-step fragment fade-up">As the field finishes collapsing the induced voltage drops to 0&nbsp;V, current stops, and the light <strong>fades out</strong>.</div>
+      </div>
+
+    </div>
+
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-sm);">
+      An inductor always fights the <strong>change</strong> in current: it resists current rising when you switch on, and it keeps current flowing when you switch off.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 07 · OPERATION IN AC CIRCUITS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Operation of Inductors · Topic 02 · AC</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div class="img-center">
+        <figure style="margin:0;">
+          <img class="c-img img-zoomable" src="EX2_AC_Inductors_Assets/fig30_ac_inductor_light.png"
+               alt="Figure 30: An AC power source connected through a toggle switch to a magnetic-core inductor in parallel with an indicator light."
+               style="width:100%;">
+          <figcaption class="img-caption">Figure 30: AC source, an inductor in parallel with an indicator light, controlled by a toggle switch.</figcaption>
+        </figure>
+      </div>
+
+      <div>
+        <h2>On AC, the Field Never <span class="accent">Settles</span></h2>
+        <ul class="bullets">
+          <li class="fragment fade-up">During the <span style="color:var(--accent);font-weight:600;">positive half-wave</span> the magnetic field builds up to a maximum, then collapses as the voltage returns to zero.</li>
+          <li class="fragment fade-up">During the <span style="color:var(--result);font-weight:600;">negative half-wave</span> the field builds again with <strong>inverted polarity</strong>, then collapses.</li>
+          <li class="fragment fade-up">This build-and-collapse repeats <strong>every cycle</strong>. Each time current tries to change, the induced voltage rises and the inductor <strong>opposes the change</strong>.</li>
+        </ul>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap-sm);">
+          So an ac inductor <strong>opposes current</strong>, just like a resistor or capacitor. It does this by <span style="color:var(--accent);">storing energy in its magnetic field</span> as current rises and releasing it as current falls.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 08 · INDUCTANCE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Inductance · Topic 03</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div>
+        <h2>Inductance <span class="accent">L</span></h2>
+        <p class="slide-intro">The fundamental characteristic of an inductor is its <strong>inductance</strong>: a measure of its ability to store energy in its magnetic field. The higher the inductance, the more energy it can store.</p>
+        <p class="slide-intro">Inductance is measured in <span style="color:var(--accent);font-weight:600;">henries (H)</span>, named after Joseph Henry, who discovered self-inductance.</p>
+        <div class="callout-warn fragment fade-up">
+          Like resistors and capacitors, an inductor has a <strong>tolerance</strong>: the percentage by which its actual inductance may differ from its nominal rating.
+        </div>
+      </div>
+
+      <div class="img-center">
+        <figure style="margin:0;">
+          <img class="photo-img img-zoomable" src="EX2_AC_Inductors_Assets/fig31_joseph_henry.jpg"
+               alt="Figure 31: An engraved portrait of the American scientist Joseph Henry."
+               style="max-height:480px;width:auto;">
+          <figcaption class="img-caption">Figure 31: American scientist Joseph Henry.</figcaption>
+        </figure>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 09 · REACTANCE OF AC INDUCTORS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Reactance of AC Inductors · Topic 04</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div>
+        <h2>Inductive <span class="accent">Reactance</span> X<sub>L</sub></h2>
+        <p class="slide-intro">An ac inductor opposes current by storing and releasing magnetic energy. That opposition is called <strong>inductive reactance</strong>, measured in <strong>ohms (&Omega;)</strong>, and it depends on the inductance and the source frequency.</p>
+        <div class="callout fragment fade-up">
+          A <strong>higher frequency</strong> or a <strong>larger inductance</strong> gives a <span style="color:var(--accent);">larger reactance</span>, so less current flows. This is the <strong>opposite</strong> trend to a capacitor.
+        </div>
+      </div>
+
+      <div>
+        <div class="calc-col" style="margin-bottom:var(--gap-sm);">
+          <div class="col-label">Equation 11: inductive reactance</div>
+          <div class="yt-formula">X<sub>L</sub> = 2&pi; f L</div>
+          <div class="yt-formula muted">f in hertz (Hz)<br>L in henries (H)<br>X<sub>L</sub> in ohms (&Omega;)</div>
+        </div>
+        <div class="calc-col">
+          <div class="col-label">Equation 12: Ohm's law for an inductor</div>
+          <div class="yt-formula">I = <span class="frac"><span class="num">E</span><span class="den">X<sub>L</sub></span></span></div>
+          <div class="yt-formula muted">X<sub>L</sub> takes the place of resistance R.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · WORKED EXAMPLE: REACTANCE AND CURRENT -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Worked Example · Topic 04</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div class="img-center">
+        <figure style="margin:0;">
+          <img class="c-img img-zoomable" src="EX2_AC_Inductors_Assets/fig32_reactance_example.png"
+               alt="Figure 32: A single-loop AC circuit. The AC power source is labelled E_S = 220 V, f_S = 50 Hz. An inductor is labelled L = 3.5 H. Source current I_S is marked at the top of the loop."
+               style="max-height:420px;width:auto;">
+          <figcaption class="img-caption">Figure 32: AC circuit containing an inductor.</figcaption>
+        </figure>
+      </div>
+
+      <div>
+        <h2>220&nbsp;V, 50&nbsp;Hz, <span class="accent">3.5&nbsp;H</span></h2>
+
+        <div class="calc-col" style="margin-bottom:var(--gap-sm);">
+          <div class="col-label">Step 1: inductive reactance</div>
+          <div class="formula-chain">
+            <div class="yt-formula fragment fade-up" data-fragment-index="1">X<sub>L</sub> = 2&pi; f<sub>S</sub> L</div>
+            <div class="yt-formula fragment fade-up" data-fragment-index="2">= 2&pi; &times; 50 &times; 3.5</div>
+            <div class="yt-result fragment fade-up" data-fragment-index="3">X<sub>L</sub> = 1100 &Omega;</div>
+          </div>
+        </div>
+
+        <div class="calc-col">
+          <div class="col-label">Step 2: source current</div>
+          <div class="formula-chain">
+            <div class="yt-formula fragment fade-up" data-fragment-index="4">I<sub>S</sub> = <span class="frac"><span class="num">E<sub>S</sub></span><span class="den">X<sub>L</sub></span></span></div>
+            <div class="yt-formula fragment fade-up" data-fragment-index="5">= <span class="frac"><span class="num">220&nbsp;V</span><span class="den">1100&nbsp;&Omega;</span></span></div>
+            <div class="yt-result fragment fade-up" data-fragment-index="6">I<sub>S</sub> = 0.20 A</div>
+          </div>
+        </div>
+
+        <div class="callout-warn fragment fade-up" data-fragment-index="7" style="margin-top:var(--gap-sm);">
+          Every real inductor also has <strong>wire resistance</strong>. The wire is long, so this resistance is significant and adds to the reactance in opposing current.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · SERIES AND PARALLEL INDUCTORS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Series and Parallel Inductors · Topic 05</span>
+    <h2>Combining Inductors: <span class="accent">Just Like Resistors</span></h2>
+    <p class="slide-intro">Equivalent inductance is found exactly as for resistors. You can then convert it to an equivalent reactance, or combine the individual reactances directly. This is the <strong>opposite</strong> of how capacitors combine.</p>
+
+    <div class="calc-cols-2" style="margin-top:var(--gap-sm);">
+
+      <div class="calc-col">
+        <div class="col-label">Series</div>
+        <div class="yt-formula">L<sub>eq</sub> = L<sub>1</sub> + L<sub>2</sub> + &hellip; + L<sub>n</sub> &nbsp;<span class="muted">(Eq.&nbsp;13)</span></div>
+        <div class="yt-formula">X<sub>eq</sub> = X<sub>L1</sub> + X<sub>L2</sub> + &hellip; + X<sub>Ln</sub> &nbsp;<span class="muted">(Eq.&nbsp;15)</span></div>
+      </div>
+
+      <div class="calc-col">
+        <div class="col-label">Parallel</div>
+        <div class="yt-formula"><span class="frac"><span class="num">1</span><span class="den">L<sub>eq</sub></span></span> = <span class="frac"><span class="num">1</span><span class="den">L<sub>1</sub></span></span> + <span class="frac"><span class="num">1</span><span class="den">L<sub>2</sub></span></span> + &hellip; + <span class="frac"><span class="num">1</span><span class="den">L<sub>n</sub></span></span> &nbsp;<span class="muted">(Eq.&nbsp;14)</span></div>
+        <div class="yt-formula"><span class="frac"><span class="num">1</span><span class="den">X<sub>eq</sub></span></span> = <span class="frac"><span class="num">1</span><span class="den">X<sub>L1</sub></span></span> + <span class="frac"><span class="num">1</span><span class="den">X<sub>L2</sub></span></span> + &hellip; + <span class="frac"><span class="num">1</span><span class="den">X<sub>Ln</sub></span></span> &nbsp;<span class="muted">(Eq.&nbsp;16)</span></div>
+      </div>
+
+    </div>
+
+    <div class="callout fragment fade-up" style="margin-top:var(--gap);">
+      Inductors in <strong>series</strong> add. Inductors in <strong>parallel</strong> give a smaller total. Their reactances follow the same pattern, and so does the resistance of series and parallel resistors.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · APPLICATIONS OF INDUCTORS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Applications of Inductors · Topic 06</span>
+    <div class="split split-50" style="align-items:start;">
+
+      <div>
+        <h2>Where Inductors <span class="accent">Show Up</span></h2>
+        <ul class="bullets" style="margin-bottom:var(--gap);">
+          <li class="fragment fade-up" data-fragment-index="1"><strong>Motors and generators.</strong> Their windings are essentially inductors. The interaction between the winding's magnetic field and the rest of the machine is the basic principle of how motors and generators work.</li>
+          <li class="fragment fade-up" data-fragment-index="2"><strong>Transformers.</strong> Two inductors whose magnetic fields interact, used to change the voltage and current of an ac circuit. Transformers are covered in the next exercise.</li>
+        </ul>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:var(--gap);">
+        <figure class="fragment fade-up" data-fragment-index="1" style="margin:0;">
+          <img class="photo-img img-zoomable" src="EX2_AC_Inductors_Assets/fig33_motor_rotor.jpg"
+               alt="Figure 33: A photograph of a motor rotor showing copper windings wound around a laminated steel core with a commutator and shaft."
+               style="max-height:260px;width:auto;">
+          <figcaption class="img-caption">Figure 33: The copper windings of a motor rotor.</figcaption>
+        </figure>
+        <figure class="fragment fade-up" data-fragment-index="2" style="margin:0;">
+          <img class="photo-img img-zoomable" src="EX2_AC_Inductors_Assets/fig34_transformer.jpg"
+               alt="Figure 34: A close-up photograph of a small transformer mounted on an orange circuit board, showing two sets of copper windings on a common core."
+               style="max-height:260px;width:auto;">
+          <figcaption class="img-caption">Figure 34: A transformer is two inductors sharing a magnetic core.</figcaption>
+        </figure>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · TRAINING SYSTEM COMPONENT: THE INDUCTOR -->
+<section>
+  <div class="glow" style="width:480px;height:480px;bottom:-150px;right:-100px;background:radial-gradient(circle,rgba(255,209,102,0.06),transparent 70%);"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Training System Component: the Inductor · Topic 07</span>
+    <div class="split split-50 split-top">
+
+      <div>
+        <h2>The <span class="accent">Inductor</span> in the AC/DC Training System</h2>
+        <div class="calc-col" style="margin-bottom:var(--gap-sm);">
+          <div class="col-label">Ratings</div>
+          <div class="yt-formula">Inductance: <strong style="color:var(--result);">1&nbsp;H</strong>, iron core, tolerance <strong style="color:var(--result);">15%</strong></div>
+          <div class="yt-formula">Voltage: <strong style="color:var(--warn);">30&nbsp;V</strong> max &nbsp;&nbsp; Current: <strong style="color:var(--warn);">240&nbsp;mA</strong> max</div>
+        </div>
+        <div class="callout-warn">
+          Do not exceed <strong>30&nbsp;V</strong> across the inductor or <strong>240&nbsp;mA</strong> through it. Exceeding either rating can damage the inductor.
+        </div>
+      </div>
+
+      <div>
+        <h2>The Parallel <span class="accent">Fluorescent Lamp</span></h2>
+        <ul class="bullets">
+          <li class="fragment fade-up">The inductor is wired <strong>in parallel with a 120&nbsp;V fluorescent lamp</strong>.</li>
+          <li class="fragment fade-up">A fluorescent lamp needs a minimum <strong>striking voltage</strong> to light, and that voltage is far above the 24&nbsp;V ac source.</li>
+          <li class="fragment fade-up">During normal operation the lamp stays dark and its resistance is nearly infinite, so it can be ignored.</li>
+          <li class="fragment fade-up">The lamp only flashes when the inductor's <strong>magnetic field collapses</strong> and induces a high voltage across it. That flash makes the inductor's behaviour <span style="color:var(--accent);">visible</span>.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+    deckId: 'dc-and-ac-inductors',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+});
+</script>
+</body>
+</html>
