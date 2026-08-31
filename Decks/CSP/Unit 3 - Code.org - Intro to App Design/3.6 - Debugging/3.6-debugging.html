@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="5j972n">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.6 Debugging</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — 3.6 Debugging
+   ============================================================ */
+
+/* ─── White image card (screenshots need a light backdrop) ──────────── */
+.shot-card {
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.4);
+}
+.shot-card img { display: block; width: 100%; border-radius: 3px; }
+.shot-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+/* ─── Two-column split: text beside media ───────────────────────────── */
+.split-layout { display: flex; gap: var(--gap-lg); align-items: flex-start; width: 100%; }
+.split-text { flex: 1 1 46%; }
+.split-media { flex: 1 1 54%; display: flex; flex-direction: column; gap: var(--gap-sm); }
+
+/* ─── Numbered setup steps (Slide 9) ───────────────────────────────── */
+.setup-steps { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.setup-step { display: flex; align-items: flex-start; gap: 14px; }
+.setup-step-num {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.setup-step p { margin: 0; font-size: var(--body); color: var(--text-muted); line-height: 1.5; padding-top: 4px; }
+.setup-step p strong { color: var(--text); font-weight: 600; }
+
+/* ─── Four-stage debugging process grid (Slide 7) ──────────────────── */
+.process-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  width: 100%;
+}
+.process-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 18px 22px;
+}
+.process-card h3 {
+  font-family: var(--font-mono);
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+.process-card p { font-size: 19px; line-height: 1.5; color: var(--text-muted); margin: 0; }
+
+/* ─── Call-to-action link (Slide 6) ────────────────────────────────── */
+.cta-link {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--teal);
+  background: var(--bg-card);
+  border: 2px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 16px 34px;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: border-color 150ms, background 150ms, box-shadow 150ms;
+}
+.cta-link:hover {
+  border-color: rgba(0,201,177,0.6);
+  background: rgba(0,201,177,0.08);
+  box-shadow: 0 0 24px rgba(0,201,177,0.2);
+  color: var(--teal);
+}
+
+/* ─── Vocabulary definitions (Slide 14) ────────────────────────────── */
+.vocab-defs { display: flex; flex-direction: column; gap: var(--gap); }
+.vocab-term { font-family: var(--font-mono); font-weight: 700; color: var(--teal); }
+.vocab-defs p { font-size: var(--body); line-height: 1.55; color: var(--text-muted); }
+.vocab-shots { display: flex; flex-direction: column; gap: 16px; }
+.vocab-doc-row { display: flex; gap: 14px; align-items: flex-start; }
+.vocab-doc-row > div { flex: 1 1 0; min-width: 0; }
+.vocab-shots .shot-card img { max-height: 240px; width: 100%; object-fit: contain; }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 3 &middot; Lesson 6</span>
+        <h1 class="title-h1">Debugging</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 2 · FRQ: TROUBLESHOOT A FRIEND'S PROBLEM -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Your friend calls and says, \"I can&#39;t get music to come out of my speakers, can you help?\" Write a quick list of everything you would ask them or have them check to try to fix the problem.","order":0,"responseTimeLimitMs":180000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ</span>
+        <h2 style="margin-bottom:var(--gap);">Help a Friend Troubleshoot</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>Your friend calls and says, <span style="color:var(--amber);">&ldquo;I can&rsquo;t get music to come out of my speakers, can you help?&rdquo;</span> Write a quick list of everything you would ask them or have them check to try to fix the problem.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 3 · PROGRAMMING AND DEBUGGING -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Why This Matters</span>
+        <h2 style="margin-bottom:var(--gap);">Programming and Debugging</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1200px;line-height:1.5;">Today we are going to practice programming, but we are also going to practice a very important skill that goes with it, called <span style="color:var(--teal);">debugging</span>. Let&rsquo;s see what that looks like.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 4 · VIDEO: HOW TO DEBUG IN FOUR EASY STEPS -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:4:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=auv10y-dN4s"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">How to Debug in Four Easy Steps</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);margin-bottom:var(--gap);">A short Code.org video on a repeatable process for finding and fixing bugs.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 5 · EVERYONE MAKES MISTAKES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:52px;">
+        <span class="slide-tag">Everyone Makes Mistakes</span>
+        <h2 style="margin-bottom:var(--gap);">Everyone Makes Mistakes</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Even big companies make mistakes, and they will even pay you to find them. On the next slide is a link to a list of <span style="color:var(--amber);">bug bounty programs</span> run by many big tech companies.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">A bug bounty program shows that a company cares about fixing its mistakes rather than hiding them out of embarrassment.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 6 · FRQ: BUG BOUNTY PROGRAMS -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:6:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Skim [the list of bug bounty programs](https://www.guru99.com/bug-bounty-programs.html). Is there anything that stands out to you? Name one program or detail you found interesting or surprising.","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner slide-center" style="padding-top:36px;">
+        <span class="slide-tag">FRQ</span>
+        <h2 style="margin-bottom:var(--gap);">Bug Bounty Programs</h2>
+        <div class="shot-card" style="max-width:560px;margin-bottom:var(--gap);">
+          <img class="img-zoomable" src="media/bug-bounty-list.jpg" alt="A web article listing the top bug bounty programs run by companies such as Intel and Yahoo">
+        </div>
+        <a class="cta-link" href="https://www.guru99.com/bug-bounty-programs.html" target="_blank" rel="noopener">See the list of bug bounty programs &nearr;</a>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1050px;">
+          <p>Skim the list. Is there anything that <span style="color:var(--amber);">stands out</span> to you? Name one program or detail you found interesting or surprising.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 7 · THE DEBUGGING PROCESS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:36px;">
+        <span class="slide-tag">The Process</span>
+        <h2 style="margin-bottom:var(--gap-sm);">What Is the Debugging Process?</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);margin-bottom:var(--gap);max-width:1250px;"><span style="color:var(--teal);">Debugging</span> is the process of finding and fixing problems in code. It follows four repeating stages.</p>
+        <div class="process-grid">
+          <div class="process-card">
+            <h3>1 &middot; Describe the Problem</h3>
+            <p>What do you expect it to do? What does it actually do? Does it always happen?</p>
+          </div>
+          <div class="process-card">
+            <h3>2 &middot; Hunt for Bugs</h3>
+            <p>Are there warnings or errors? What did you change most recently? Explain your code to someone else, and look for code related to the problem.</p>
+          </div>
+          <div class="process-card">
+            <h3>3 &middot; Try Solutions</h3>
+            <p>Make one small change at a time so you can tell what actually fixed the problem.</p>
+          </div>
+          <div class="process-card">
+            <h3>4 &middot; Document As You Go</h3>
+            <p>What have you learned? What strategies did you use? What questions do you still have?</p>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 8 · KEEP TRACK OF YOUR PROCESS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Document Your Process</span>
+        <h2 style="margin-bottom:var(--gap);">Keep Track of Your Process</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">It is important to keep track of your debugging process. As you start to identify common mistakes, you will be able to avoid them.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">Part of the AP test that we complete in class, whether or not you are taking the exam, is writing a program. You will need to answer questions about your process and explain how you <span style="color:var(--teal);">found and fixed</span> problems in your code.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">Start practicing now. When we go to Code.org on the next slide, you will be debugging some programs, so keep notes as you work.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 9 · OPEN CODE.ORG UNIT 3 LESSON 6 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Get Set Up</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Open <a href="https://learn.mycode.run/link/xnwmd" target="_blank" rel="noopener" style="color:var(--teal);">Code.org Unit 3 Lesson 6</a></h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">Set up a team with your partner:</p>
+        <ol class="setup-steps">
+          <li class="setup-step"><span class="setup-step-num">1</span><p>In the top right corner, click your name.</p></li>
+          <li class="setup-step"><span class="setup-step-num">2</span><p>Click <strong>Pair Programming</strong>.</p></li>
+          <li class="setup-step"><span class="setup-step-num">3</span><p>Choose your partner&rsquo;s name.</p></li>
+          <li class="setup-step"><span class="setup-step-num">4</span><p>Alternate the <strong>driver</strong> and <strong>navigator</strong> roles.</p></li>
+          <li class="setup-step"><span class="setup-step-num">5</span><p>Make sure to <strong>Run</strong> and click <strong>Finish</strong> when you complete each level. This gives the navigator a copy of your work.</p></li>
+        </ol>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · POSTBOARD: SHARE A DEBUGGING TIP -->
+    <section
+      data-activity-id="postboard"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="postboard:10:0"
+      data-activity-options='{"prompt":"If you were using the debugging process, you should have notes of good debugging tips. Post one tip below. No duplicates: if yours is already posted, post a different one.","autoApprove":"false"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Discuss &amp; Post</span>
+        <h2 style="margin-bottom:var(--gap);">Share a Debugging Tip</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>If you were using the debugging process, you should have some notes of good debugging tips. Share those with your partner and add any new ones you forgot. Post one tip below. <span style="color:var(--amber);">No duplicates</span>: if yours is already posted, post a different one.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · STRATEGY: KEEP YOUR CODE CLEAN -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Debugging Strategies</span>
+        <h2 style="margin-bottom:var(--gap);">Keep Your Code Clean</h2>
+        <ul class="bullets" style="max-width:1250px;">
+          <li>Use clear, meaningful <strong>IDs</strong> for your elements.</li>
+          <li>Keep your code organized in chunks that each do <strong>one thing only</strong>.</li>
+          <li>Use <strong>comments</strong> to explain your code.</li>
+          <li>Write code using <strong>blocks</strong>; text mode can wait.</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 12 · STRATEGY: RUN YOUR CODE -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Debugging Strategies</span>
+        <h2 style="margin-bottom:var(--gap);">Run Your Code Often</h2>
+        <ul class="bullets" style="max-width:1250px;">
+          <li>Run your code <strong>a lot</strong>, every time you add a command or two.</li>
+          <li>Slow down your code with the <strong>speed slider</strong> and watch closely how it runs.</li>
+          <li>Use <strong>console.log</strong> to get output.</li>
+          <li>Add extra output statements throughout your code to see which parts are running.</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 13 · STRATEGY: USE CLASSMATES AND RESOURCES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Debugging Strategies</span>
+        <h2 style="margin-bottom:var(--gap);">Use Classmates and Resources</h2>
+        <ul class="bullets" style="max-width:1250px;">
+          <li>Talk through the problem with a <strong>partner or classmate</strong>.</li>
+          <li>Compare your code to <strong>examples you know work</strong>.</li>
+          <li>Read the <strong>documentation</strong> to learn how a block is supposed to work.</li>
+          <li><strong>Hand trace</strong> your code to track what is happening.</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 14 · VOCABULARY: DOCUMENTATION AND COMMENTS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:32px;">
+        <span class="slide-tag">Vocabulary</span>
+        <h2 style="margin-bottom:var(--gap);">Documentation and Comments</h2>
+        <div class="split-layout">
+          <div class="split-text vocab-defs">
+            <p><span class="vocab-term">Documentation:</span> a written description of how a command or piece of code works or was developed. In App Lab, hovering a block or opening its help page shows the documentation for that command.</p>
+            <p><span class="vocab-term">Comment:</span> a form of program documentation written into the program to be read by people, which does not affect how the program runs.</p>
+          </div>
+          <div class="split-media vocab-shots">
+            <div class="vocab-doc-row">
+              <div>
+                <div class="shot-card"><img class="img-zoomable" src="media/playsound-tooltip.png" alt="A hover tooltip for the playSound block explaining that it plays an MP3 sound file from a URL"></div>
+                <p class="shot-label">Documentation: block hover tip</p>
+              </div>
+              <div>
+                <div class="shot-card"><img class="img-zoomable" src="media/playsound-docs.png" alt="The full App Lab documentation page for the playSound command, with a description, usage notes, and examples"></div>
+                <p class="shot-label">Documentation: full help page</p>
+              </div>
+            </div>
+            <div>
+              <div class="shot-card"><img class="img-zoomable" src="media/comments-example.png" alt="App Lab block code where the first two lines are green comment blocks describing what the code does"></div>
+              <p class="shot-label">Comments: written into the program</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-3-6-debugging',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
