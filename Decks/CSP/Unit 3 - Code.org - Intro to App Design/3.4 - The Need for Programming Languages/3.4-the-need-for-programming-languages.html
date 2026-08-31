@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1qbuwql">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.4 The Need for Programming Languages</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — The Need for Programming Languages
+   ============================================================ */
+
+/* ─── Tip callout (single paragraph, amber accent) ───────────────────── */
+.tip-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,212,59,0.4);
+  border-left: 3px solid var(--yellow);
+  border-radius: 3px;
+  padding: 0.7em 1.2em;
+}
+.tip-box p {
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ─── Countdown timer (Make a Structure / Create an Algorithm) ───────── */
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 96px;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1;
+  letter-spacing: -2px;
+  text-align: center;
+  padding: 8px 0;
+  text-shadow: 0 0 32px rgba(0,201,177,0.35);
+  transition: color 0.4s, text-shadow 0.4s;
+}
+.timer-display.warning {
+  color: var(--amber);
+  text-shadow: 0 0 32px rgba(255,212,59,0.4);
+}
+.timer-display.expired {
+  color: var(--red);
+  text-shadow: 0 0 32px rgba(255,107,107,0.4);
+}
+.timer-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+}
+.timer-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.timer-btn {
+  padding: 10px 24px;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 2px solid;
+  cursor: pointer;
+  transition: background 100ms, box-shadow 100ms, transform 80ms;
+  letter-spacing: 0.04em;
+  background: transparent;
+}
+.timer-btn:not(:disabled):active { transform: translateY(1px); }
+.timer-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+.timer-btn-start { color: var(--green); border-color: var(--green); }
+.timer-btn-start:not(:disabled):hover {
+  background: rgba(105,219,124,0.14);
+  box-shadow: 0 0 14px rgba(105,219,124,0.2);
+}
+.timer-btn-stop { color: var(--amber); border-color: var(--amber); }
+.timer-btn-stop:not(:disabled):hover {
+  background: rgba(255,212,59,0.14);
+  box-shadow: 0 0 14px rgba(255,212,59,0.2);
+}
+.timer-btn-reset { color: var(--text-muted); border-color: var(--teal-border); }
+.timer-btn-reset:not(:disabled):hover {
+  background: rgba(226,245,242,0.06);
+  color: var(--text);
+}
+.timer-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 420px;
+}
+
+/* ─── Materials slide: bullets beside the activity guide + a LEGO photo ─ */
+.materials-layout {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-lg);
+  width: 100%;
+}
+.materials-text { flex: 1 1 auto; }
+.materials-visuals {
+  flex: 0 0 auto;
+  width: 380px;
+  max-width: 42%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.activity-guide-card {
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+}
+.activity-guide-card img { display: block; width: 100%; }
+.materials-photo {
+  width: 82%;
+  filter: drop-shadow(0 16px 30px rgba(0,0,0,0.55));
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 3 &middot; Lesson 4</span>
+        <h1 class="title-h1">The Need for<br>Programming Languages</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 02 · FRQ: WHAT MAKES INSTRUCTIONS BAD? -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"We all use instructions all the time, whether it&#39;s directions to get somewhere, instructions to fill out a form, or even instructions from teachers. To help us get started, let&#39;s brainstorm what &#39;bad instructions&#39; look like. What are at least three different reasons you would call a set of instructions &#39;bad&#39;?","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ &middot; Warm-Up</span>
+        <h2 style="margin-bottom:var(--gap);">What Makes Instructions Bad?</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">We all use instructions all the time: directions to get somewhere, steps to fill out a form, even directions from a teacher. To help us get started, let&rsquo;s brainstorm what makes a set of instructions <span style="color:var(--amber);">bad</span>.</p>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>What are at least <span style="color:var(--teal);">three different reasons</span> you would call a set of instructions bad?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 03 · WRITING GOOD INSTRUCTIONS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Up Next</span>
+        <h2 style="margin-bottom:var(--gap);">Writing Good Instructions</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Now that we have an idea of what bad instructions look like, let&rsquo;s use that brainstorm to help us write <span style="color:var(--teal);">good</span> instructions in the next activity.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 04 · WHAT YOU'LL NEED -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Materials</span>
+        <h2 style="margin-bottom:var(--gap);">What You&rsquo;ll Need</h2>
+        <div class="materials-layout">
+          <div class="materials-text">
+            <ul class="bullets" style="max-width:700px;">
+              <li>The Need for Programming Languages activity guide</li>
+              <li>The Need for Programming Languages handout</li>
+              <li>Some LEGO bricks</li>
+            </ul>
+          </div>
+          <div class="materials-visuals">
+            <div class="activity-guide-card">
+              <img src="media/activity-guide-preview.png" alt="Preview of the printed activity guide, headed 'The Need for Programming Languages,' listing steps to create a LEGO arrangement, record it, and write instructions">
+            </div>
+            <img class="materials-photo" src="media/lego-pieces.png" alt="A small pile of loose LEGO bricks in several colors">
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 05 · STEP 1: MAKE A STRUCTURE (3 MIN COUNTDOWN) -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Step 1 &middot; 3 Minutes</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Make a Structure</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">Make a structure using at least <span style="color:var(--teal);">five LEGO pieces</span>. All of the pieces should be connected.</p>
+        <div class="tip-box" style="margin:var(--gap-sm) 0 var(--gap);max-width:1250px;">
+          <p>When you finish, take a picture of your completed structure and paste it into your activity guide.</p>
+        </div>
+        <div class="timer-wrap">
+          <div class="timer-label">Time Remaining</div>
+          <div class="timer-display" id="t1-display">03:00</div>
+          <div class="timer-controls">
+            <button class="timer-btn timer-btn-start" id="t1-start">Start</button>
+            <button class="timer-btn timer-btn-stop"  id="t1-stop"  disabled>Stop</button>
+            <button class="timer-btn timer-btn-reset" id="t1-reset">Reset</button>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 06 · STEP 2: CREATE AN ALGORITHM (5 MIN COUNTDOWN) -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Step 2 &middot; 5 Minutes</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Create an Algorithm</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">Create an <span style="color:var(--teal);">algorithm</span> for building your structure. Write instructions on the handout that someone else could follow to recreate it.</p>
+        <div class="tip-box" style="margin:var(--gap-sm) 0 var(--gap);max-width:1250px;">
+          <p>Be clear and precise. Use <span style="color:var(--amber);">only words</span>: no drawings, no diagrams, no pictures.</p>
+        </div>
+        <div class="timer-wrap">
+          <div class="timer-label">Time Remaining</div>
+          <div class="timer-display" id="t2-display">05:00</div>
+          <div class="timer-controls">
+            <button class="timer-btn timer-btn-start" id="t2-start">Start</button>
+            <button class="timer-btn timer-btn-stop"  id="t2-stop"  disabled>Stop</button>
+            <button class="timer-btn timer-btn-reset" id="t2-reset">Reset</button>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 07 · STEP 3: TEST YOUR ALGORITHM -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Step 3</span>
+        <h2 style="margin-bottom:var(--gap);">Test Your Algorithm</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Dismantle your structure and place the pieces on top of the handout. Swap places with someone from <span style="color:var(--teal);">another table</span>.</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Try to follow the instructions provided to recreate their structure, while they try to follow yours to recreate yours. As you work, highlight or circle any instructions that are unclear, confusing, or difficult to understand.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 08 · STEP 4: CHECK THE RESULTS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Step 4</span>
+        <h2 style="margin-bottom:var(--gap);">Check the Results</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">When your partner finishes their recreation, take a picture of it and paste it into your activity guide. Don&rsquo;t forget to give them credit by putting their <span style="color:var(--amber);">name</span> in the appropriate box.</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Show your partner the picture of the original version. Discuss the results of each recreation, then look at any highlighted instructions and talk about how they could be made better. Repeat with two other people.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 09 · STEP 5: FINISH UP THE ACTIVITY GUIDE -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Step 5</span>
+        <h2 style="margin-bottom:var(--gap);">Finish Up the Activity Guide</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Paste your pictures into the electronic version of your activity guide. You should end up with <span style="color:var(--teal);">four pictures</span>: your original structure and three recreations of it.</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Continue on to complete the reflection questions.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · FRQ: WHAT WENT WRONG? -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:10:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"When you or your partner made mistakes following instructions today, what &#39;went wrong&#39;? Try to be as specific as possible.","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ</span>
+        <h2>What Went Wrong?</h2>
+        <div class="frq-box" style="margin-top:var(--gap-lg);max-width:1100px;">
+          <p>When you or your partner made mistakes following instructions today, what <span style="color:var(--amber);">&ldquo;went wrong&rdquo;</span>? Try to be as specific as possible.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;bottom:-160px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · FRQ: REDESIGNING HUMAN LANGUAGE -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:11:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Imagine we were going to redesign human language to be really good for giving clear instructions. What types of changes would we need to make?","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ</span>
+        <h2>Redesigning Human Language</h2>
+        <div class="frq-box" style="margin-top:var(--gap-lg);max-width:1100px;">
+          <p>Imagine we were going to redesign human language to be really good at giving <span style="color:var(--teal);">clear instructions</span>. What types of changes would we need to make?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:600px;height:600px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 12 · FRQ: PROGRAMMING LANGUAGE OR NATURAL LANGUAGE? -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:12:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What do you think the difference is between a programming language and natural (every-day) language?","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ</span>
+        <h2>Programming Language or Natural Language?</h2>
+        <div class="frq-box" style="margin-top:var(--gap-lg);max-width:1100px;">
+          <p>What do you think the difference is between a <span style="color:var(--teal);">programming language</span> and a <span style="color:var(--amber);">natural, everyday language</span>?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;top:-160px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function(element) { return !element.closest('#storyboard'); }
+  );
+}
+
+/* ── Countdown timers — Make a Structure (3:00) and Create an Algorithm
+   (5:00). Shared engine, see .agent/knowledge/html5-activities-index.md
+   "Countdown timer with completion sound." ────────────────────────────── */
+var timesUpAudio = new Audio('times-up.mp3');
+
+function makeCountdown(id, totalSecs) {
+  var displayEl = getLiveElementById(id + '-display');
+  var startBtn  = getLiveElementById(id + '-start');
+  var stopBtn   = getLiveElementById(id + '-stop');
+  var resetBtn  = getLiveElementById(id + '-reset');
+  if (!displayEl || !startBtn) return;
+
+  var secsLeft = totalSecs;
+  var running  = false;
+  var interval = null;
+
+  function renderTime() {
+    var m = Math.floor(secsLeft / 60);
+    var s = secsLeft % 60;
+    displayEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    displayEl.classList.toggle('warning', secsLeft > 0 && secsLeft <= 30);
+    displayEl.classList.toggle('expired', secsLeft === 0);
+  }
+
+  function syncButtons() {
+    startBtn.disabled = running || secsLeft === 0;
+    stopBtn.disabled  = !running;
+  }
+
+  function tick() {
+    if (secsLeft <= 0) {
+      running = false;
+      clearInterval(interval);
+      interval = null;
+      syncButtons();
+      return;
+    }
+    secsLeft--;
+    renderTime();
+    if (secsLeft === 0) {
+      timesUpAudio.currentTime = 0;
+      timesUpAudio.play();
+    }
+  }
+
+  startBtn.addEventListener('click', function () {
+    if (running || secsLeft === 0) return;
+    running  = true;
+    interval = setInterval(tick, 1000);
+    syncButtons();
+  });
+
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    running = false;
+    clearInterval(interval);
+    interval = null;
+    syncButtons();
+  });
+
+  resetBtn.addEventListener('click', function () {
+    running = false;
+    clearInterval(interval);
+    interval = null;
+    secsLeft = totalSecs;
+    renderTime();
+    syncButtons();
+  });
+
+  renderTime();
+  syncButtons();
+}
+
+initSyncDeckReveal({
+  deckId: 'csp-3-4-the-need-for-programming-languages',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    makeCountdown('t1', 3 * 60);
+    makeCountdown('t2', 5 * 60);
+  },
+});
+</script>
+</body>
+</html>

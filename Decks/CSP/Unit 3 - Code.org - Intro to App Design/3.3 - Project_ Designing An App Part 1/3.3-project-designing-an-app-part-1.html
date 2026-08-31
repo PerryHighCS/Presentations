@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="2x7r4c">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.3 Project: Designing an App Part 1</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — Project: Designing an App Part 1
+   ============================================================ */
+
+/* ─── Tip callout (single paragraph, amber accent) ───────────────────── */
+.tip-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,212,59,0.4);
+  border-left: 3px solid var(--yellow);
+  border-radius: 3px;
+  padding: 0.7em 1.2em;
+}
+.tip-box p {
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ─── Countdown timer (Step 1 / Step 2 activity slides) ──────────────── */
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 96px;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1;
+  letter-spacing: -2px;
+  text-align: center;
+  padding: 8px 0;
+  text-shadow: 0 0 32px rgba(0,201,177,0.35);
+  transition: color 0.4s, text-shadow 0.4s;
+}
+.timer-display.warning {
+  color: var(--amber);
+  text-shadow: 0 0 32px rgba(255,212,59,0.4);
+}
+.timer-display.expired {
+  color: var(--red);
+  text-shadow: 0 0 32px rgba(255,107,107,0.4);
+}
+.timer-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+}
+.timer-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.timer-btn {
+  padding: 10px 24px;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 2px solid;
+  cursor: pointer;
+  transition: background 100ms, box-shadow 100ms, transform 80ms;
+  letter-spacing: 0.04em;
+  background: transparent;
+}
+.timer-btn:not(:disabled):active { transform: translateY(1px); }
+.timer-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+.timer-btn-start { color: var(--green); border-color: var(--green); }
+.timer-btn-start:not(:disabled):hover {
+  background: rgba(105,219,124,0.14);
+  box-shadow: 0 0 14px rgba(105,219,124,0.2);
+}
+.timer-btn-stop { color: var(--amber); border-color: var(--amber); }
+.timer-btn-stop:not(:disabled):hover {
+  background: rgba(255,212,59,0.14);
+  box-shadow: 0 0 14px rgba(255,212,59,0.2);
+}
+.timer-btn-reset { color: var(--text-muted); border-color: var(--teal-border); }
+.timer-btn-reset:not(:disabled):hover {
+  background: rgba(226,245,242,0.06);
+  color: var(--text);
+}
+.timer-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 420px;
+}
+
+/* ─── Matching pairs (vocab check) ────────────────────────────────────
+   Reused verbatim from the Unit 2 matching-pairs engine — see
+   .agent/knowledge/html5-activities-index.md. ─────────────────────── */
+.match-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: 100%;
+}
+.match-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.match-status .badge { font-size: var(--small); }
+.match-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap-sm) var(--gap);
+  width: 100%;
+}
+.match-card {
+  all: unset;
+  position: relative;
+  cursor: pointer;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 104px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: var(--small);
+  line-height: 1.4;
+  color: var(--text-muted);
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.15s var(--ease);
+}
+.match-card.match-card-term { font-family: var(--font-mono); font-weight: 700; color: var(--text); font-size: var(--body); }
+.match-card:hover:not(.mc-matched) {
+  border-color: rgba(0,201,177,0.5);
+}
+.match-card.mc-selected {
+  border-color: var(--teal);
+  background: var(--teal-glow);
+  box-shadow: 0 0 0 1px rgba(0,201,177,0.35) inset;
+}
+.match-card.mc-matched {
+  cursor: default;
+  border: 2px solid var(--green);
+  background: rgba(105,219,124,0.16);
+  color: var(--text);
+  box-shadow: 0 0 0 1px rgba(105,219,124,0.3) inset, 0 10px 24px rgba(0,0,0,0.3);
+}
+.match-card.match-card-term.mc-matched { color: var(--green); }
+.match-card.mc-matched .mc-badge {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #04150f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+  animation: mc-badge-pop 0.6s var(--ease) both;
+}
+@keyframes mc-badge-pop {
+  0%   { transform: scale(0.2) rotate(-12deg); opacity: 0; }
+  40%  { transform: scale(1.3) rotate(10deg);  opacity: 1; }
+  58%  { transform: scale(0.88) rotate(-6deg);             }
+  72%  { transform: scale(1.12) rotate(4deg);              }
+  86%  { transform: scale(0.96) rotate(-1deg);             }
+  100% { transform: scale(1) rotate(0deg);     opacity: 1; }
+}
+.match-card.mc-wrong {
+  border-color: var(--red);
+  background: rgba(255,107,107,0.08);
+  animation: mc-shake 0.4s var(--ease);
+}
+@keyframes mc-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.match-complete {
+  font-size: var(--body);
+  color: var(--green);
+  font-weight: 600;
+}
+.match-perfect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4,12,11,0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease);
+}
+.match-perfect-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.match-perfect-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+}
+.match-perfect-overlay.visible .match-perfect-badge {
+  animation: match-perfect-pop 0.7s var(--ease) both;
+}
+.match-perfect-check {
+  font-size: 220px;
+  line-height: 1;
+  color: var(--green);
+  filter: drop-shadow(0 0 46px rgba(105,219,124,0.55));
+}
+.match-perfect-text {
+  font-family: var(--font-display);
+  font-size: 84px;
+  font-weight: 700;
+  color: var(--text);
+  text-shadow: 0 0 34px rgba(0,201,177,0.45);
+}
+.match-perfect-hint {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+@keyframes match-perfect-pop {
+  0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  75%  { transform: scale(0.96) rotate(-1deg);             }
+  100% { transform: scale(1) rotate(0deg);    opacity: 1; }
+}
+.badge-pulse-complete {
+  background: rgba(105,219,124,0.18);
+  border-color: rgba(105,219,124,0.6);
+  color: var(--green);
+  animation: badge-pulse-glow 1.6s ease-in-out infinite;
+}
+@keyframes badge-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(105,219,124,0.5); }
+  50%      { box-shadow: 0 0 16px 5px rgba(105,219,124,0.45); }
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 3 &middot; Lesson 3</span>
+        <h1 class="title-h1">Project:<br>Designing an App</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 02 · FRQ: WHEN AN APP DOESN'T FIT -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"People design user interfaces to meet a user&#39;s needs, but they don&#39;t always get it right. Have you ever used an app where the user interface didn&#39;t actually meet your needs? What was the problem? What do you think the designers didn&#39;t understand about you or your needs?","order":0,"responseTimeLimitMs":180000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ &middot; Warm-Up</span>
+        <h2 style="margin-bottom:var(--gap);">When an App Doesn&rsquo;t Fit</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">People design user interfaces to meet a user&rsquo;s needs, but they don&rsquo;t always <span style="color:var(--teal);">get it right</span>.</p>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Have you ever used an app where the user interface didn&rsquo;t actually meet your needs? What was the problem, and what do you think the designers didn&rsquo;t understand about you?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 03 · KICKOFF: STARTING YOUR APP DESIGN PROJECT -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Kickoff</span>
+        <h2 style="margin-bottom:var(--gap);">Starting Your App Design Project</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">During the last lesson, you learned all about <span style="color:var(--teal);">Design Mode</span>. Now you&rsquo;re going to start designing your own app, one that teaches your classmates about a topic you find interesting.</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>This project continues for the rest of the unit, so the choices you make today will shape everything you build next.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 04 · STEP 1: BRAINSTORM TOPIC IDEAS (2 MIN COUNTDOWN) -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Step 1 &middot; 2 Minutes</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Brainstorm Topic Ideas</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">For this project, you&rsquo;ll create an app that teaches your classmates about a topic <span style="color:var(--teal);">you find interesting</span>. Work on your own for now and think about possible topics.</p>
+        <div class="tip-box" style="margin:var(--gap-sm) 0 var(--gap);max-width:1250px;">
+          <p>List at least three ideas at the bottom of the first page of your project guide.</p>
+        </div>
+        <div class="timer-wrap">
+          <div class="timer-label">Time Remaining</div>
+          <div class="timer-display" id="t1-display">02:00</div>
+          <div class="timer-controls">
+            <button class="timer-btn timer-btn-start" id="t1-start">Start</button>
+            <button class="timer-btn timer-btn-stop"  id="t1-stop"  disabled>Stop</button>
+            <button class="timer-btn timer-btn-reset" id="t1-reset">Reset</button>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 05 · PROJECT DESCRIPTION -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">The Project</span>
+        <h2 style="margin-bottom:var(--gap);">Project Description</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">For this project, you&rsquo;ll work with a <span style="color:var(--teal);">partner</span>. Together, you&rsquo;ll create an app that teaches your classmates about some topic that you choose.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">Along the way, you&rsquo;ll learn how to use many features of App Lab, along with skills that will help you build more apps throughout this class.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 06 · CHOOSE A PARTNER -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Partner Up</span>
+        <h2 style="margin-bottom:var(--gap);">Choose a Partner</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1100px;line-height:1.55;">For this project, you&rsquo;ll need a partner to work with. Choose one now, and <span style="color:var(--amber);">choose wisely</span>: you&rsquo;ll be working together for the rest of this unit.</p>
+      </div>
+      <div class="glow" style="width:700px;height:700px;right:-180px;top:-180px;background:radial-gradient(circle,rgba(255,212,59,0.07),transparent 68%);"></div>
+    </section>
+
+    <!-- SLIDE 07 · STEP 2: CHOOSE ONE TOPIC (3 MIN COUNTDOWN) -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Step 2 &middot; 3 Minutes</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Choose One Topic</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">Work with your partner to <span style="color:var(--teal);">narrow down your ideas</span>. Pick a topic you&rsquo;re both interested in. It doesn&rsquo;t have to be one of the ideas you brainstormed in Step 1.</p>
+        <div class="timer-wrap" style="margin-top:var(--gap);">
+          <div class="timer-label">Time Remaining</div>
+          <div class="timer-display" id="t2-display">03:00</div>
+          <div class="timer-controls">
+            <button class="timer-btn timer-btn-start" id="t2-start">Start</button>
+            <button class="timer-btn timer-btn-stop"  id="t2-stop"  disabled>Stop</button>
+            <button class="timer-btn timer-btn-reset" id="t2-reset">Reset</button>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 08 · AVOID BIAS: BIAS IN WHAT YOU WRITE -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Avoid Bias in Your Design</span>
+        <h2 style="margin-bottom:var(--gap);">Bias in What You Write</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">Collaboration is a big part of app development. Your team&rsquo;s different experiences help you catch <span style="color:var(--amber);">bias</span> that either partner might miss on their own.</p>
+        <div class="callout accent-amber" style="margin-top:var(--gap);max-width:1250px;">
+          <h3>For Example</h3>
+          <p>A team member writes the phrase &ldquo;All teenagers work after school to earn spending money&rdquo; because that&rsquo;s their own experience: they have a job. Their partner doesn&rsquo;t work after school, and points out the bias in that statement.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 09 · AVOID BIAS: BIAS IN WHAT YOU DESIGN -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Avoid Bias in Your Design</span>
+        <h2 style="margin-bottom:var(--gap);">Bias in What You Design</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">Bias can show up in more than just words. It can also hide in the choices you make about how your app <span style="color:var(--amber);">looks</span> and <span style="color:var(--amber);">feels</span>.</p>
+        <div class="callout accent-amber" style="margin-top:var(--gap);max-width:1250px;">
+          <h3>Another Example</h3>
+          <p>A team wants to build an app that encourages girls to sign up for a summer camp. One member assumes the background should be pink, because the app is aimed at girls. A girl on the team points out that she doesn&rsquo;t like pink, and that choice could represent bias too.</p>
+        </div>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-top:var(--gap-sm);">As you design your app, keep an eye out for bias, and lean on your partner to help you catch what you might miss.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · STEP 3: SURVEY YOUR CLASSMATES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Step 3</span>
+        <h2 style="margin-bottom:var(--gap);">Survey Your Classmates</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Split up from your partner. Each of you should join with at least two people from other groups to form a <span style="color:var(--teal);">focus group</span>.</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Complete Step 3 with your focus group, then return to your original partner to compare notes.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · FRQ: LEARNING FROM YOUR FOCUS GROUP -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:11:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"How did talking with the users of your app impact your design decisions?","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">FRQ</span>
+        <h2>Learning From Your Focus Group</h2>
+        <div class="frq-box" style="margin-top:var(--gap-lg);max-width:1000px;">
+          <p>How did talking with the users of your app impact your <span style="color:var(--teal);">design decisions</span>?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;bottom:-160px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 12 · STEP 4: DESIGN THE USER INTERFACE -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Step 4</span>
+        <h2 style="margin-bottom:var(--gap);">Design the User Interface</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Design the interface for your app. Sketch out the screens from your app on the handout.</p>
+        <div class="tip-box" style="margin-top:var(--gap);max-width:1250px;">
+          <p>Take a picture of your sketch and replace page 3 in your electronic planning guide with it. You&rsquo;ll need to turn in your design!</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 13 · MATCHING PAIRS: VOCAB CHECK -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Check Your Understanding</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Match the Term to Its Example</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">Click two cards to test whether they match. Each term has one example somewhere on the board.</p>
+        <div class="match-wrap" id="match-vocab">
+          <div class="match-status">
+            <span class="badge" data-match-score>0 of 3 matched</span>
+            <span class="badge badge-amber" data-match-attempts>0 attempts</span>
+            <span class="match-complete" data-match-complete style="display:none;">Nicely done! You matched every pair.</span>
+          </div>
+          <div class="match-grid" data-match-grid></div>
+        </div>
+      </div>
+      <div class="match-perfect-overlay" data-match-overlay aria-hidden="true">
+        <div class="match-perfect-badge">
+          <span class="match-perfect-check">&#10003;</span>
+          <span class="match-perfect-text">Perfect Match!</span>
+          <span class="match-perfect-hint">Click to keep browsing the board</span>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 14 · LOOKING FORWARD -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Looking Forward</span>
+        <h2 style="margin-bottom:var(--gap);">Looking Forward</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">In the lessons ahead, you&rsquo;ll continue to plan and build your app. What you&rsquo;re doing here is following a <span style="color:var(--teal);">development process</span>, similar to what real developers use when they create their own apps.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">A development process breaks a big project into small pieces, and you&rsquo;ve already completed the first few today. Different processes combine investigating, designing, prototyping, and testing in different orders, some very structured and some more exploratory. As you continue through this project, think about how each step helps organize your work.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function(element) { return !element.closest('#storyboard'); }
+  );
+}
+
+/* ── Countdown timers — Step 1 (2:00) and Step 2 (3:00) ────────────────
+   Shared engine, see .agent/knowledge/html5-activities-index.md
+   "Countdown timer with completion sound." Plays times-up.mp3 once when
+   the clock hits zero. ─────────────────────────────────────────────── */
+var timesUpAudio = new Audio('times-up.mp3');
+
+function makeCountdown(id, totalSecs) {
+  var displayEl = getLiveElementById(id + '-display');
+  var startBtn  = getLiveElementById(id + '-start');
+  var stopBtn   = getLiveElementById(id + '-stop');
+  var resetBtn  = getLiveElementById(id + '-reset');
+  if (!displayEl || !startBtn) return;
+
+  var secsLeft = totalSecs;
+  var running  = false;
+  var interval = null;
+
+  function renderTime() {
+    var m = Math.floor(secsLeft / 60);
+    var s = secsLeft % 60;
+    displayEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    displayEl.classList.toggle('warning', secsLeft > 0 && secsLeft <= 30);
+    displayEl.classList.toggle('expired', secsLeft === 0);
+  }
+
+  function syncButtons() {
+    startBtn.disabled = running || secsLeft === 0;
+    stopBtn.disabled  = !running;
+  }
+
+  function tick() {
+    if (secsLeft <= 0) {
+      running = false;
+      clearInterval(interval);
+      interval = null;
+      syncButtons();
+      return;
+    }
+    secsLeft--;
+    renderTime();
+    if (secsLeft === 0) {
+      timesUpAudio.currentTime = 0;
+      timesUpAudio.play();
+    }
+  }
+
+  startBtn.addEventListener('click', function () {
+    if (running || secsLeft === 0) return;
+    running  = true;
+    interval = setInterval(tick, 1000);
+    syncButtons();
+  });
+
+  stopBtn.addEventListener('click', function () {
+    if (!running) return;
+    running = false;
+    clearInterval(interval);
+    interval = null;
+    syncButtons();
+  });
+
+  resetBtn.addEventListener('click', function () {
+    running = false;
+    clearInterval(interval);
+    interval = null;
+    secsLeft = totalSecs;
+    renderTime();
+    syncButtons();
+  });
+
+  renderTime();
+  syncButtons();
+}
+
+/* ── Matching pairs — vocab check ──────────────────────────────────────
+   Three vocabulary terms (User Interface, Input, Output) and their three
+   examples, dealt onto a single shuffled board. Reused verbatim from the
+   Unit 2 matching-pairs engine (see html5-activities-index.md). Progress
+   persists to sessionStorage so navigating away and back doesn't wipe an
+   in-progress or completed board. ─────────────────────────────────────── */
+var MATCH_PAIRS = [
+  { id: 'ui',     term: 'User Interface', def: 'A screen with buttons, images, and text.' },
+  { id: 'input',  term: 'Input',          def: 'The user clicks a button.' },
+  { id: 'output', term: 'Output',         def: 'A song is played.' },
+];
+
+function shuffled(array) {
+  var copy = array.slice();
+  for (var i = copy.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
+  }
+  return copy;
+}
+
+var MATCH_STORAGE_KEY = 'csp-3-3-project-designing-an-app-part-1:match-vocab';
+
+function loadMatchState() {
+  try {
+    var raw = sessionStorage.getItem(MATCH_STORAGE_KEY);
+    if (!raw) return null;
+    var parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.tiles) || parsed.tiles.length !== MATCH_PAIRS.length * 2) return null;
+    return parsed;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveMatchState(tiles, attempts) {
+  try {
+    sessionStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify({
+      tiles: tiles.map(function(t) { return { id: t.id, isTerm: t.isTerm, matched: t.matched }; }),
+      attempts: attempts,
+    }));
+  } catch (e) {
+    /* storage unavailable (private mode, quota) — activity still works, just won't persist */
+  }
+}
+
+function getMatchLabel(id, isTerm) {
+  var pair = MATCH_PAIRS.filter(function(p) { return p.id === id; })[0];
+  return pair ? (isTerm ? pair.term : pair.def) : '';
+}
+
+function buildFreshTiles() {
+  var tiles = [];
+  MATCH_PAIRS.forEach(function(pair) {
+    tiles.push({ id: pair.id, isTerm: true, matched: false });
+    tiles.push({ id: pair.id, isTerm: false, matched: false });
+  });
+  return shuffled(tiles);
+}
+
+function initMatchingPairs(Reveal) {
+  var root = getLiveElementById('match-vocab');
+  if (!root) return;
+
+  var gridHost = root.querySelector('[data-match-grid]');
+  var scoreEl = root.querySelector('[data-match-score]');
+  var attemptsEl = root.querySelector('[data-match-attempts]');
+  var completeEl = root.querySelector('[data-match-complete]');
+  var section = root.closest('section');
+  var overlayEl = section ? section.querySelector('[data-match-overlay]') : null;
+  if (overlayEl) {
+    overlayEl.addEventListener('click', function() {
+      overlayEl.classList.remove('visible');
+    });
+  }
+
+  var tiles = [];
+  var matched = 0;
+  var attempts = 0;
+  var selected = null;
+
+  function updateStatus() {
+    scoreEl.textContent = matched + ' of ' + MATCH_PAIRS.length + ' matched';
+    attemptsEl.textContent = attempts + (attempts === 1 ? ' attempt' : ' attempts');
+    var isComplete = matched === MATCH_PAIRS.length;
+    var isPerfect = isComplete && attempts === MATCH_PAIRS.length;
+    completeEl.style.display = isComplete ? 'inline' : 'none';
+    if (overlayEl) overlayEl.classList.toggle('visible', isPerfect);
+    attemptsEl.classList.toggle('badge-amber', !isPerfect);
+    attemptsEl.classList.toggle('badge-pulse-complete', isPerfect);
+  }
+
+  function persist() {
+    saveMatchState(tiles, attempts);
+  }
+
+  function markMatched(card, tile) {
+    tile.matched = true;
+    card.classList.remove('mc-selected');
+    card.classList.add('mc-matched');
+    card.setAttribute('aria-disabled', 'true');
+    var badge = document.createElement('span');
+    badge.className = 'mc-badge';
+    badge.setAttribute('aria-hidden', 'true');
+    badge.textContent = '✓';
+    card.appendChild(badge);
+  }
+
+  function attemptMatch(a, b) {
+    attempts++;
+    var tileA = tiles[a.dataset.idx];
+    var tileB = tiles[b.dataset.idx];
+    if (a.dataset.matchId === b.dataset.matchId) {
+      markMatched(a, tileA);
+      markMatched(b, tileB);
+      matched++;
+    } else {
+      a.classList.add('mc-wrong');
+      b.classList.add('mc-wrong');
+      setTimeout(function() {
+        a.classList.remove('mc-wrong', 'mc-selected');
+        b.classList.remove('mc-wrong', 'mc-selected');
+      }, 400);
+    }
+    selected = null;
+    updateStatus();
+    persist();
+  }
+
+  function makeCard(tile, idx) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'match-card' + (tile.isTerm ? ' match-card-term' : '');
+    btn.dataset.matchId = tile.id;
+    btn.dataset.idx = idx;
+    btn.textContent = getMatchLabel(tile.id, tile.isTerm);
+    if (tile.matched) markMatched(btn, tile);
+    btn.addEventListener('click', function() {
+      if (btn.classList.contains('mc-matched')) return;
+      if (selected === btn) {
+        btn.classList.remove('mc-selected');
+        selected = null;
+        return;
+      }
+      if (selected) {
+        btn.classList.add('mc-selected');
+        attemptMatch(selected, btn);
+      } else {
+        selected = btn;
+        btn.classList.add('mc-selected');
+      }
+    });
+    return btn;
+  }
+
+  function paint() {
+    gridHost.innerHTML = '';
+    selected = null;
+    matched = 0;
+    tiles.forEach(function(tile, idx) {
+      if (tile.matched) matched++;
+      gridHost.appendChild(makeCard(tile, idx));
+    });
+    matched = matched / 2;
+    updateStatus();
+  }
+
+  function renderFresh() {
+    tiles = buildFreshTiles();
+    attempts = 0;
+    paint();
+    persist();
+  }
+
+  function renderFromStorageOrFresh() {
+    var saved = loadMatchState();
+    if (saved) {
+      tiles = saved.tiles;
+      attempts = saved.attempts || 0;
+      paint();
+    } else {
+      renderFresh();
+    }
+  }
+
+  renderFromStorageOrFresh();
+
+  Reveal.on('slidechanged', function(event) {
+    if (event.currentSlide === root.closest('section')) renderFromStorageOrFresh();
+  });
+}
+
+initSyncDeckReveal({
+  deckId: 'csp-3-3-project-designing-an-app-part-1',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    makeCountdown('t1', 2 * 60);
+    makeCountdown('t2', 3 * 60);
+    initMatchingPairs(Reveal);
+  },
+});
+</script>
+</body>
+</html>
