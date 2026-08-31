@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="x0yrf6">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise 3: Transformers</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES - AC Exercise 3 · Transformers
+   ============================================================ */
+
+/* Primary / secondary colour convention, used consistently:
+   primary side  -> --accent (green)
+   secondary side -> --result (cyan)                          */
+.pri { color: var(--accent); font-weight: 600; }
+.sec { color: var(--result); font-weight: 600; }
+
+/* Compact characteristic summary (the N/E/I inequality block) */
+.char-col .yt-formula { line-height: 1.7; }
+
+/* Type-of-transformer cards */
+.type-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+.type-card .tc-name {
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.type-card .tc-body {
+  font-size: var(--small);
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 5px;
+}
+.type-card .tc-body strong { color: var(--text); }
+
+/* Two stacked figures sharing a column */
+.fig-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+.fig-stack figure { margin: 0; text-align: center; }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(57,211,83,0.12),transparent 70%);"></div>
+  <div class="glow" style="width:400px;height:400px;bottom:-90px;right:10%;background:radial-gradient(circle,rgba(94,234,212,0.08),transparent 70%);"></div>
+
+  <div class="slide-inner slide-center">
+    <div class="trace-deco">
+      <svg viewBox="0 0 420 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- primary lead in -->
+        <path d="M420 210 L250 210 L250 300" stroke="rgba(57,211,83,0.18)" stroke-width="1.5"/>
+        <!-- primary coil -->
+        <path d="M250 300 q-20 22 0 44 M250 344 q-20 22 0 44 M250 388 q-20 22 0 44 M250 432 q-20 22 0 44"
+              stroke="rgba(57,211,83,0.42)" stroke-width="2.5"/>
+        <path d="M250 476 L250 560 L420 560" stroke="rgba(57,211,83,0.18)" stroke-width="1.5"/>
+        <!-- core -->
+        <line x1="266" y1="286" x2="266" y2="490" stroke="rgba(230,247,234,0.28)" stroke-width="2"/>
+        <line x1="276" y1="286" x2="276" y2="490" stroke="rgba(230,247,234,0.28)" stroke-width="2"/>
+        <!-- secondary coil -->
+        <path d="M292 300 q20 22 0 44 M292 344 q20 22 0 44 M292 388 q20 22 0 44 M292 432 q20 22 0 44"
+              stroke="rgba(94,234,212,0.42)" stroke-width="2.5"/>
+        <path d="M292 300 L292 250 L420 250" stroke="rgba(94,234,212,0.18)" stroke-width="1.5"/>
+        <path d="M292 476 L292 620 L420 620" stroke="rgba(94,234,212,0.18)" stroke-width="1.5"/>
+        <circle cx="250" cy="210" r="5" fill="rgba(57,211,83,0.45)"/>
+        <circle cx="292" cy="620" r="4" fill="rgba(94,234,212,0.4)"/>
+      </svg>
+    </div>
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; AC Circuits &nbsp;·&nbsp; Exercise 3</span>
+    <h1 class="title-h1"><span class="accent">Transformers</span></h1>
+    <p class="subtitle">// Two coupled windings &nbsp;·&nbsp; Turns ratio &nbsp;·&nbsp; Step-up &amp; step-down &nbsp;·&nbsp; Voltage regulation</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · LEARNING OUTCOMES & TOPICS COVERED -->
+<section>
+  <div class="glow" style="width:500px;height:500px;top:-80px;right:-100px;background:radial-gradient(circle,rgba(57,211,83,0.08),transparent 70%);"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Learning Outcomes &amp; Topics Covered</span>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-sm);">
+
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">After this section you will be able to <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Explain the <strong>principles of operation</strong> of transformers.</li>
+          <li>Define the <strong>turns ratio</strong>, <strong>voltage ratio</strong>, and <strong>current ratio</strong>.</li>
+          <li>Differentiate between <strong>step-up</strong> and <strong>step-down</strong> transformers.</li>
+          <li>Define the notion of <strong>voltage regulation</strong> for transformers.</li>
+          <li>Differentiate between <strong>control</strong>, <strong>power</strong>, and <strong>isolation</strong> transformers.</li>
+          <li><strong>Operate</strong> a component of the AC/DC Training System: the transformer.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">Topics <span class="accent">covered</span></h3>
+        <div class="agenda-grid" style="grid-template-columns:1fr;margin-top:0;">
+          <a class="agenda-item" href="#/3"><span class="agenda-num">01</span><span class="agenda-text"><strong>Introduction</strong> to transformers</span></a>
+          <a class="agenda-item" href="#/4"><span class="agenda-num">02</span><span class="agenda-text">Transformer <strong>operation</strong></span></a>
+          <a class="agenda-item" href="#/5"><span class="agenda-num">03</span><span class="agenda-text">Turns, voltage, and current <strong>ratios</strong></span></a>
+          <a class="agenda-item" href="#/8"><span class="agenda-num">04</span><span class="agenda-text"><strong>Step-up and step-down</strong> transformers</span></a>
+          <a class="agenda-item" href="#/11"><span class="agenda-num">05</span><span class="agenda-text">Transformer <strong>voltage regulation</strong></span></a>
+          <a class="agenda-item" href="#/12"><span class="agenda-num">06</span><span class="agenda-text"><strong>Types</strong> of transformers</span></a>
+          <a class="agenda-item" href="#/13"><span class="agenda-num">07</span><span class="agenda-text">Training system component: <strong>the transformer</strong></span></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · INTRODUCTION TO TRANSFORMERS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Introduction to Transformers · Topic 01</span>
+    <div class="split split-60" style="align-items:center;">
+
+      <div>
+        <h2>What Is a <span class="accent">Transformer?</span></h2>
+        <p class="slide-intro">A transformer is essentially two inductors, coils of wire, wound around a common core of ferromagnetic material such as iron. One coil is the <span class="pri">primary winding</span> and the other is the <span class="sec">secondary winding</span>. The two windings are electrically isolated from each other, so no current flows directly between them.</p>
+        <p class="slide-intro">The <span class="pri">primary winding</span> is connected to the ac power source and the <span class="sec">secondary winding</span> is connected to the load. Because a transformer is a bidirectional device, either winding can be used as the primary or the secondary.</p>
+        <div class="callout fragment fade-up">
+          Transformers transfer power from one winding to the other through the <strong>magnetic field</strong> produced by each coil, and they can change the voltage and current between the windings. These properties make them common in ac circuits.
+        </div>
+      </div>
+
+      <div class="fig-stack">
+        <div class="sym-card" style="align-self:center;">
+          <svg width="120" height="76" viewBox="0 0 104 68" xmlns="http://www.w3.org/2000/svg">
+            <!-- primary winding: bumps face the core -->
+            <line x1="6" y1="10" x2="40" y2="10" stroke="#39d353" stroke-width="2.5"/>
+            <line x1="6" y1="58" x2="40" y2="58" stroke="#39d353" stroke-width="2.5"/>
+            <path d="M40 10 a6 6 0 0 1 0 12 a6 6 0 0 1 0 12 a6 6 0 0 1 0 12 a6 6 0 0 1 0 12" fill="none" stroke="#39d353" stroke-width="2.5"/>
+            <!-- iron core -->
+            <line x1="49" y1="6" x2="49" y2="62" stroke="#e6f7ea" stroke-width="2"/>
+            <line x1="53" y1="6" x2="53" y2="62" stroke="#e6f7ea" stroke-width="2"/>
+            <!-- secondary winding: bumps face the core -->
+            <path d="M62 10 a6 6 0 0 0 0 12 a6 6 0 0 0 0 12 a6 6 0 0 0 0 12 a6 6 0 0 0 0 12" fill="none" stroke="#5eead4" stroke-width="2.5"/>
+            <line x1="62" y1="10" x2="98" y2="10" stroke="#5eead4" stroke-width="2.5"/>
+            <line x1="62" y1="58" x2="98" y2="58" stroke="#5eead4" stroke-width="2.5"/>
+          </svg>
+          <span class="sym-name"><strong>Transformer symbol</strong><br>two coils separated by an iron core</span>
+        </div>
+        <figure>
+          <img class="photo-img img-zoomable" src="EX3_Transformers_Assets/fig42_typical_transformer.jpg"
+               alt="Figure 42: A typical transformer, showing the iron core clamped around a bobbin of wound copper wire with terminal tags along the top and bottom edges."
+               style="max-height:300px;width:auto;">
+          <figcaption class="img-caption">Figure 42: A typical transformer.</figcaption>
+        </figure>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · TRANSFORMER OPERATION -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Transformer Operation · Topic 02</span>
+    <h2>How a Transformer <span class="accent">Transfers Power</span></h2>
+
+    <div class="split split-50" style="align-items:center;margin-top:var(--gap-sm);">
+
+      <div class="img-center">
+        <figure style="margin:0;">
+          <img class="c-img img-zoomable" src="EX3_Transformers_Assets/fig43a_circuit.png"
+               alt="Figure 43(a): An AC power source rated 24 V connected to the primary winding of a transformer at terminals A and B. The secondary winding at terminals C and D connects to a 60 ohm resistor."
+               style="width:100%;">
+          <figcaption class="img-caption">Figure 43(a): AC source, a transformer, and a 60&nbsp;&Omega; load.</figcaption>
+        </figure>
+      </div>
+
+      <div class="method-steps">
+        <div class="method-step fragment fade-up">The ac source applies a voltage to the <strong>primary winding</strong>, so current flows in the primary circuit.</div>
+        <div class="method-step fragment fade-up">That current makes the primary winding produce a <strong>magnetic field</strong> in the iron core.</div>
+        <div class="method-step fragment fade-up">The changing magnetic field <strong>induces a voltage</strong> across the secondary winding.</div>
+        <div class="method-step fragment fade-up">The induced voltage is applied to the resistor, driving current in the <strong>secondary circuit</strong>.</div>
+      </div>
+
+    </div>
+
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-sm);">
+      Power crosses from primary to secondary by <strong>electromagnetic induction</strong>, with no electrical contact between the windings. This is why a transformer <span class="accent">isolates</span> the ac source from the load.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · TURNS, VOLTAGE, AND CURRENT RATIOS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Turns, Voltage, and Current Ratios · Topic 03</span>
+    <h2>The Three <span class="accent">Ratios</span></h2>
+    <p class="slide-intro" style="margin-bottom:var(--gap-sm);">The <strong>turns ratio</strong> compares the number of turns in the primary winding, N<sub>Pri</sub>, with the number in the secondary winding, N<sub>Sec</sub>, written N<sub>Pri</sub>&nbsp;:&nbsp;N<sub>Sec</sub>. It sets the ratio between the transformer's input and output values. The two windings in the detailed view have the same number of turns, so this transformer's turns ratio is <span class="sec">1&nbsp;:&nbsp;1</span>.</p>
+
+    <div class="split split-40" style="align-items:center;">
+
+      <div class="img-center">
+        <figure style="margin:0;">
+          <img class="c-img img-zoomable" src="EX3_Transformers_Assets/fig43b_core.png"
+               alt="Figure 43(b): A detailed cutaway view of the transformer. The primary winding on the left and the secondary winding on the right each have the same number of turns around a rectangular iron core, with a dashed loop marking the magnetic field circulating through the core."
+               style="width:100%;">
+          <figcaption class="img-caption">Figure 43(b): Detailed view. Equal turns on each winding give a 1&nbsp;:&nbsp;1 turns ratio.</figcaption>
+        </figure>
+      </div>
+
+      <div>
+        <div class="calc-col" style="margin-bottom:var(--gap-sm);">
+          <div class="col-label">Voltage ratio &nbsp;·&nbsp; Eq. 17 &amp; 18</div>
+          <div class="yt-formula"><span class="frac"><span class="num">E<sub>Pri</sub></span><span class="den">E<sub>Sec</sub></span></span> = <span class="frac"><span class="num">N<sub>Pri</sub></span><span class="den">N<sub>Sec</sub></span></span></div>
+          <div class="yt-formula">E<sub>Sec</sub> = <span class="frac"><span class="num">E<sub>Pri</sub> &times; N<sub>Sec</sub></span><span class="den">N<sub>Pri</sub></span></span></div>
+        </div>
+        <div class="calc-col">
+          <div class="col-label">Current ratio &nbsp;·&nbsp; Eq. 19 &amp; 20</div>
+          <div class="yt-formula"><span class="frac"><span class="num">I<sub>Pri</sub></span><span class="den">I<sub>Sec</sub></span></span> = <span class="frac"><span class="num">N<sub>Sec</sub></span><span class="den">N<sub>Pri</sub></span></span></div>
+          <div class="yt-formula">I<sub>Sec</sub> = <span class="frac"><span class="num">I<sub>Pri</sub> &times; N<sub>Pri</sub></span><span class="den">N<sub>Sec</sub></span></span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-sm);">
+      The current ratio is <strong>inverted</strong> relative to the turns and voltage ratios. The winding with more turns carries the higher voltage but the lower current.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · WORKED EXAMPLE: THE 1:1 CIRCUIT -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Worked Example · Topic 03 · Turns Ratio 1 : 1</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div class="img-center">
+        <figure style="margin:0;">
+          <img class="c-img img-zoomable" src="EX3_Transformers_Assets/fig43a_circuit.png"
+               alt="Figure 43(a) again: the 24 V AC source, the 1:1 transformer, and the 60 ohm resistor."
+               style="width:100%;">
+          <figcaption class="img-caption">Figure 43(a): E<sub>Pri</sub>&nbsp;=&nbsp;24&nbsp;V, R&nbsp;=&nbsp;60&nbsp;&Omega;, turns ratio 1&nbsp;:&nbsp;1.</figcaption>
+        </figure>
+      </div>
+
+      <div>
+        <h2>Working the <span class="sec">1&nbsp;:&nbsp;1</span> Circuit</h2>
+
+        <div class="calc-col" style="margin-bottom:var(--gap-sm);">
+          <div class="col-label">Step 1: secondary voltage</div>
+          <div class="formula-chain">
+            <div class="yt-formula fragment fade-up" data-fragment-index="1">E<sub>Sec</sub> = <span class="frac"><span class="num">E<sub>Pri</sub> &times; N<sub>Sec</sub></span><span class="den">N<sub>Pri</sub></span></span> = <span class="frac"><span class="num">24&nbsp;V &times; 1</span><span class="den">1</span></span></div>
+            <div class="yt-result fragment fade-up" data-fragment-index="2">E<sub>Sec</sub> = 24 V</div>
+          </div>
+        </div>
+
+        <div class="calc-col" style="margin-bottom:var(--gap-sm);">
+          <div class="col-label">Step 2: secondary current &nbsp;·&nbsp; Ohm's law</div>
+          <div class="formula-chain">
+            <div class="yt-formula fragment fade-up" data-fragment-index="3">I<sub>Sec</sub> = <span class="frac"><span class="num">E<sub>Sec</sub></span><span class="den">R</span></span> = <span class="frac"><span class="num">24&nbsp;V</span><span class="den">60&nbsp;&Omega;</span></span></div>
+            <div class="yt-result fragment fade-up" data-fragment-index="4">I<sub>Sec</sub> = 0.4 A</div>
+          </div>
+        </div>
+
+        <div class="calc-col">
+          <div class="col-label">Step 3: primary current</div>
+          <div class="formula-chain">
+            <div class="yt-formula fragment fade-up" data-fragment-index="5">I<sub>Pri</sub> = <span class="frac"><span class="num">I<sub>Sec</sub> &times; N<sub>Sec</sub></span><span class="den">N<sub>Pri</sub></span></span> = <span class="frac"><span class="num">0.4&nbsp;A &times; 1</span><span class="den">1</span></span></div>
+            <div class="yt-result fragment fade-up" data-fragment-index="6">I<sub>Pri</sub> = 0.4 A</div>
+          </div>
+        </div>
+
+        <div class="callout fragment fade-up" data-fragment-index="7" style="margin-top:var(--gap-sm);">
+          With a 1&nbsp;:&nbsp;1 turns ratio the <span class="pri">primary</span> and <span class="sec">secondary</span> voltages are equal, and so are the currents.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · POWER IS CONSERVED -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Worked Example · Topic 03 · Power</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div>
+        <h2>Power In Equals Power <span class="accent">Out</span></h2>
+        <p class="slide-intro">The power at each winding is the product of its voltage and its current. Using the values from the 1&nbsp;:&nbsp;1 circuit:</p>
+        <div class="callout fragment fade-up">
+          In theory the power at the <span class="sec">secondary</span> winding always equals the power at the <span class="pri">primary</span> winding, whatever the turns, voltage, and current ratios.
+        </div>
+        <div class="callout-warn fragment fade-up" style="margin-top:var(--gap-sm);">
+          In practice the secondary power is always slightly lower. No transformer is 100% efficient, and some power is lost during the transfer from the primary winding to the secondary winding.
+        </div>
+      </div>
+
+      <div>
+        <div class="calc-col" style="margin-bottom:var(--gap-sm);">
+          <div class="col-label">Power at the primary winding</div>
+          <div class="yt-formula">P<sub>Pri</sub> = E<sub>Pri</sub> &times; I<sub>Pri</sub> = 24&nbsp;V &times; 0.4&nbsp;A</div>
+          <div class="yt-result">P<sub>Pri</sub> = 9.6 W</div>
+        </div>
+        <div class="calc-col">
+          <div class="col-label">Power at the secondary winding</div>
+          <div class="yt-formula">P<sub>Sec</sub> = E<sub>Sec</sub> &times; I<sub>Sec</sub> = 24&nbsp;V &times; 0.4&nbsp;A</div>
+          <div class="yt-result">P<sub>Sec</sub> = 9.6 W</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · STEP-UP AND STEP-DOWN TRANSFORMERS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Step-Up and Step-Down Transformers · Topic 04</span>
+    <h2>When the Turns Ratio Is Not <span class="sec">1&nbsp;:&nbsp;1</span></h2>
+    <p class="slide-intro">A 1&nbsp;:&nbsp;1 transformer leaves the voltage and current unchanged, but most transformers have a turns ratio other than 1&nbsp;:&nbsp;1. These are called <span class="accent">step-up</span> and <span class="accent">step-down</span> transformers, and they trade voltage for current between the primary and the secondary.</p>
+
+    <div class="calc-cols-2" style="margin-top:var(--gap-sm);">
+      <div class="calc-col">
+        <div class="col-label">Step-up transformer</div>
+        <div class="yt-formula">Fewer turns on the primary: N<sub>Pri</sub> &lt; N<sub>Sec</sub>.</div>
+        <div class="yt-formula muted">Raises the voltage, lowers the current.</div>
+      </div>
+      <div class="calc-col">
+        <div class="col-label">Step-down transformer</div>
+        <div class="yt-formula">More turns on the primary: N<sub>Pri</sub> &gt; N<sub>Sec</sub>.</div>
+        <div class="yt-formula muted">Lowers the voltage, raises the current.</div>
+      </div>
+    </div>
+
+    <div class="callout fragment fade-up" style="margin-top:var(--gap);">
+      Because power is conserved, raising the voltage by some factor must <strong>lower the current by the same factor</strong>, and lowering the voltage must raise the current. The power at the two windings stays equal.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · STEP-UP TRANSFORMER -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Step-Up Transformer · Topic 04 · Turns Ratio 1 : 2</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div class="img-center">
+        <figure style="margin:0;">
+          <img class="c-img img-zoomable" src="EX3_Transformers_Assets/fig47_stepup.png"
+               alt="Figure 47: A step-up transformer. The secondary winding on the right has twice as many turns as the primary winding on the left, giving a turns ratio of 1 to 2."
+               style="width:100%;">
+          <figcaption class="img-caption">Figure 47: Step-up transformer, turns ratio 1&nbsp;:&nbsp;2.</figcaption>
+        </figure>
+      </div>
+
+      <div>
+        <h2>More Turns on the <span class="sec">Secondary</span></h2>
+        <p class="slide-intro" style="margin-bottom:var(--gap-sm);">Here the secondary winding has twice the turns of the primary, a turns ratio of <span class="sec">1&nbsp;:&nbsp;2</span>. Connected to the same 24&nbsp;V, 60&nbsp;&Omega; circuit:</p>
+
+        <div class="calc-col" style="margin-bottom:var(--gap-sm);">
+          <div class="col-label">Voltage, current, power</div>
+          <div class="yt-formula fragment fade-up">E<sub>Sec</sub> = <span class="frac"><span class="num">24&nbsp;V &times; 2</span><span class="den">1</span></span> = <span class="result-color">48 V</span></div>
+          <div class="yt-formula fragment fade-up">I<sub>Sec</sub> = <span class="frac"><span class="num">48&nbsp;V</span><span class="den">60&nbsp;&Omega;</span></span> = <span class="result-color">0.8 A</span> &nbsp;&rarr;&nbsp; I<sub>Pri</sub> = <span class="frac"><span class="num">0.8&nbsp;A &times; 2</span><span class="den">1</span></span> = <span class="result-color">1.6 A</span></div>
+          <div class="yt-formula fragment fade-up">P<sub>Pri</sub> = 24&nbsp;V &times; 1.6&nbsp;A = P<sub>Sec</sub> = 48&nbsp;V &times; 0.8&nbsp;A = <span class="result-color">38.4 W</span></div>
+        </div>
+
+        <div class="callout fragment fade-up">
+          Step-up characteristics: <strong>N<sub>Pri</sub> &lt; N<sub>Sec</sub></strong>, so <strong>E<sub>Pri</sub> &lt; E<sub>Sec</sub></strong> and <strong>I<sub>Pri</sub> &gt; I<sub>Sec</sub></strong>. The voltage rises, the current falls, and the power is unchanged.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · STEP-DOWN TRANSFORMER -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Step-Down Transformer · Topic 04 · Turns Ratio 2 : 1</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div class="img-center">
+        <figure style="margin:0;">
+          <img class="c-img img-zoomable" src="EX3_Transformers_Assets/fig48_stepdown.png"
+               alt="Figure 48: A step-down transformer. The primary winding on the left has twice as many turns as the secondary winding on the right, giving a turns ratio of 2 to 1."
+               style="width:100%;">
+          <figcaption class="img-caption">Figure 48: Step-down transformer, turns ratio 2&nbsp;:&nbsp;1.</figcaption>
+        </figure>
+      </div>
+
+      <div>
+        <h2>More Turns on the <span class="pri">Primary</span></h2>
+        <p class="slide-intro" style="margin-bottom:var(--gap-sm);">Here the primary winding has twice the turns of the secondary, a turns ratio of <span class="pri">2&nbsp;:&nbsp;1</span>. Connected to the same 24&nbsp;V, 60&nbsp;&Omega; circuit:</p>
+
+        <div class="calc-col" style="margin-bottom:var(--gap-sm);">
+          <div class="col-label">Voltage, current, power</div>
+          <div class="yt-formula fragment fade-up">E<sub>Sec</sub> = <span class="frac"><span class="num">24&nbsp;V &times; 1</span><span class="den">2</span></span> = <span class="result-color">12 V</span></div>
+          <div class="yt-formula fragment fade-up">I<sub>Sec</sub> = <span class="frac"><span class="num">12&nbsp;V</span><span class="den">60&nbsp;&Omega;</span></span> = <span class="result-color">0.2 A</span> &nbsp;&rarr;&nbsp; I<sub>Pri</sub> = <span class="frac"><span class="num">0.2&nbsp;A &times; 1</span><span class="den">2</span></span> = <span class="result-color">0.1 A</span></div>
+          <div class="yt-formula fragment fade-up">P<sub>Pri</sub> = 24&nbsp;V &times; 0.1&nbsp;A = P<sub>Sec</sub> = 12&nbsp;V &times; 0.2&nbsp;A = <span class="result-color">2.4 W</span></div>
+        </div>
+
+        <div class="callout fragment fade-up">
+          Step-down characteristics: <strong>N<sub>Pri</sub> &gt; N<sub>Sec</sub></strong>, so <strong>E<sub>Pri</sub> &gt; E<sub>Sec</sub></strong> and <strong>I<sub>Pri</sub> &lt; I<sub>Sec</sub></strong>. The voltage falls, the current rises, and the power is unchanged.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · TRANSFORMER VOLTAGE REGULATION -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Transformer Voltage Regulation · Topic 05</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div class="img-center">
+        <figure style="margin:0;">
+          <img class="c-img img-zoomable" src="EX3_Transformers_Assets/fig49_regulation.png"
+               alt="Figure 49: A voltage regulation curve. The horizontal axis is secondary current as a percentage of the transformer current rating, from 0 to 100. The vertical axis is secondary voltage as a percentage of the transformer voltage rating. The curve starts at 100 percent and slopes gently down to about 95 percent at full current."
+               style="width:100%;">
+          <figcaption class="img-caption">Figure 49: Typical voltage regulation curve of a transformer.</figcaption>
+        </figure>
+      </div>
+
+      <div>
+        <h2>Voltage <span class="accent">Regulation</span></h2>
+        <p class="slide-intro" style="margin-bottom:var(--gap-sm);">In a real transformer the <span class="sec">secondary voltage</span> drops as the <span class="sec">secondary current</span> rises, that is, as the load becomes heavier. Voltage regulation is the transformer's ability to hold the secondary voltage steady as the secondary current increases. The better the regulation, the smaller the drop.</p>
+
+        <div class="calc-col">
+          <div class="col-label">Voltage regulation &nbsp;·&nbsp; Eq. 21</div>
+          <div class="yt-formula">Reg. (%) = <span class="frac"><span class="num">E<sub>NL</sub> &minus; E<sub>FL</sub></span><span class="den">E<sub>NL</sub></span></span> &times; 100%</div>
+          <div class="yt-formula muted">E<sub>NL</sub> = no-load secondary voltage (secondary current is zero)<br>E<sub>FL</sub> = full-load secondary voltage (secondary current equals the current rating)</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · TYPES OF TRANSFORMERS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Types of Transformers · Topic 06</span>
+    <div class="split split-60" style="align-items:center;">
+
+      <div>
+        <h2>Three Common <span class="accent">Types</span></h2>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="type-card fragment fade-up">
+            <span class="tc-name">Control transformer</span>
+            <p class="tc-body">Used where a <strong>steady voltage or current</strong> is needed. It has a low voltage and current rating, so it handles low power, and it is often used to step down the voltage in solenoid and relay circuits. It is generally well insulated.</p>
+          </div>
+          <div class="type-card fragment fade-up">
+            <span class="tc-name">Power transformer</span>
+            <p class="tc-body">Used to <strong>step up or step down the voltage of ac transmission lines</strong>. It has high voltage, current, and power ratings. Because a transformer is more efficient below its maximum ratings, a power transformer is often rated higher than necessary to keep losses low.</p>
+          </div>
+          <div class="type-card fragment fade-up">
+            <span class="tc-name">Isolation transformer</span>
+            <p class="tc-body">Built for <strong>maximum electrical insulation</strong>. It prevents electric shocks, suppresses electrical noise, and transfers power between circuits that must not be connected, such as around sensitive hospital equipment. It usually has a 1&nbsp;:&nbsp;1 turns ratio, so it barely changes the voltage and current.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="fig-stack">
+        <figure>
+          <img class="photo-img img-zoomable" src="EX3_Transformers_Assets/fig50_control.jpg"
+               alt="Figure 50: A control transformer. A black enclosed transformer with two rows of screw terminals and a Siemens rating label reading 100 VA, 50/60 Hz."
+               style="max-height:250px;width:auto;">
+          <figcaption class="img-caption">Figure 50: Control transformer.</figcaption>
+        </figure>
+        <figure>
+          <img class="photo-img img-zoomable" src="EX3_Transformers_Assets/fig51_power.jpg"
+               alt="Figure 51: A power transformer. A large grey outdoor substation transformer with tall ceramic bushings, cooling radiators, and high-voltage lines running to a lattice tower."
+               style="max-height:250px;width:auto;">
+          <figcaption class="img-caption">Figure 51: Power transformer.</figcaption>
+        </figure>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · TRAINING SYSTEM COMPONENT: THE TRANSFORMER -->
+<section>
+  <div class="glow" style="width:480px;height:480px;bottom:-150px;right:-100px;background:radial-gradient(circle,rgba(255,209,102,0.06),transparent 70%);"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Training System Component: the Transformer · Topic 07</span>
+    <div class="split split-50 split-top">
+
+      <div>
+        <h2>The <span class="accent">Transformer</span> in the AC/DC Training System</h2>
+        <div class="calc-col" style="margin-bottom:var(--gap-sm);">
+          <div class="col-label">Ratings</div>
+          <div class="yt-formula">Type: <strong style="color:var(--result);">isolation transformer</strong>, turns ratio <strong style="color:var(--result);">1&nbsp;:&nbsp;1</strong></div>
+          <div class="yt-formula">Voltage rating: <strong style="color:var(--warn);">24&nbsp;V</strong> &nbsp;&nbsp; Power rating: <strong style="color:var(--warn);">20&nbsp;VA</strong></div>
+        </div>
+        <div class="callout-warn">
+          Do not apply more than <strong>24&nbsp;V</strong> to the transformer or transfer more than <strong>20&nbsp;VA</strong> through it. Exceeding either rating could damage the transformer.
+        </div>
+      </div>
+
+      <div>
+        <h2>Reading the <span class="accent">Ratings</span></h2>
+        <ul class="bullets">
+          <li class="fragment fade-up">The power rating is given in <strong>VA (volt-amperes)</strong>, not watts. The value is simply the RMS current multiplied by the RMS voltage.</li>
+          <li class="fragment fade-up">Because it is an isolation transformer with a 1&nbsp;:&nbsp;1 ratio, it has virtually no effect on the voltage and current in the circuit.</li>
+          <li class="fragment fade-up">The winding insulation can be checked with an <strong>ohmmeter</strong>: the resistance between any primary terminal and any secondary terminal should read infinite.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+    deckId: 'transformers',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+});
+</script>
+</body>
+</html>
