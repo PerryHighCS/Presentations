@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1om09dw">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.7b Designing an App Part 5</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — 3.7b Designing an App Part 5
+   ============================================================ */
+
+/* ─── Two-column split: text beside media/widget ──────────────────── */
+.split-layout { display: flex; gap: var(--gap-lg); align-items: flex-start; width: 100%; }
+
+/* ─── Numbered steps (setup / submission checklists) ──────────────── */
+.setup-steps { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.setup-step { display: flex; align-items: flex-start; gap: 14px; }
+.setup-step-num {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.setup-step p { margin: 0; font-size: var(--body); color: var(--text-muted); line-height: 1.5; padding-top: 4px; }
+.setup-step p strong { color: var(--text); font-weight: 600; }
+
+/* ─── Repeating role-switch countdown (Slide 3) ─────────────────────
+   Shared engine with CSP 3.3 / 3.5 / 3.6 / 3.7 / 3.7a (see
+   html5-activities-index.md): repeat loop, 5 / 10 minute length
+   toggle, and the label flashes amber while the chime plays. ──────── */
+.timer-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 440px;
+  margin-top: var(--gap);
+}
+.timer-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+}
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 92px;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1;
+  letter-spacing: -2px;
+  text-align: center;
+  padding: 6px 0;
+  text-shadow: 0 0 32px rgba(0,201,177,0.35);
+  transition: color 0.4s, text-shadow 0.4s;
+}
+.timer-display.warning { color: var(--amber); text-shadow: 0 0 32px rgba(255,212,59,0.4); }
+.timer-display.expired { color: var(--red); text-shadow: 0 0 32px rgba(255,107,107,0.4); }
+.timer-controls { display: flex; gap: 12px; justify-content: center; }
+.timer-btn {
+  padding: 10px 24px;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 2px solid;
+  cursor: pointer;
+  transition: background 100ms, box-shadow 100ms, transform 80ms;
+  letter-spacing: 0.04em;
+  background: transparent;
+}
+.timer-btn:not(:disabled):active { transform: translateY(1px); }
+.timer-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+.timer-btn-start { color: var(--green); border-color: var(--green); }
+.timer-btn-start:not(:disabled):hover { background: rgba(105,219,124,0.14); box-shadow: 0 0 14px rgba(105,219,124,0.2); }
+.timer-btn-stop { color: var(--amber); border-color: var(--amber); }
+.timer-btn-stop:not(:disabled):hover { background: rgba(255,212,59,0.14); box-shadow: 0 0 14px rgba(255,212,59,0.2); }
+.timer-btn-reset { color: var(--text-muted); border-color: var(--teal-border); }
+.timer-btn-reset:not(:disabled):hover { background: rgba(226,245,242,0.06); color: var(--text); }
+.timer-durations { display: flex; gap: 8px; justify-content: center; }
+.timer-dur-btn {
+  padding: 6px 18px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  border: 1px solid var(--teal-border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.timer-dur-btn:hover { color: var(--text); border-color: rgba(0,201,177,0.5); }
+.timer-dur-btn.is-active { background: var(--teal-glow); border-color: var(--teal); color: var(--teal); }
+.timer-hint { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); text-align: center; letter-spacing: 0.03em; }
+.timer-label.is-flashing { animation: timer-label-flash 0.44s steps(1, end) infinite; }
+@keyframes timer-label-flash {
+  0%, 100% { color: var(--amber); opacity: 1; text-shadow: 0 0 16px rgba(255,212,59,0.65); }
+  50%      { color: var(--text-dim); opacity: 0.3; text-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .timer-label.is-flashing { animation: none; color: var(--amber); opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 3 &middot; Lesson 7b</span>
+        <h1 class="title-h1">Designing an App, Part 5</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 2 · WRAP THE APP -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:36px;">
+        <span class="slide-tag">Almost Done</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Wrap Up Your App</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;margin-bottom:var(--gap);">Your apps are almost done and soon will be ready to share with the world. Work with your partner to finish your app on Code.org, linked on the next slide.</p>
+        <ul class="bullets" style="max-width:1250px;">
+          <li>Do not forget to consider the <strong>suggestions your classmates made</strong> during the focus groups.</li>
+          <li>Check the <strong>rubric</strong> before you submit your app.</li>
+          <li>Finish the <strong>Reflection Section</strong> in the Planning Guide before you submit it.</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 3 · BACK TO CODE.ORG: DOT 3 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:28px;">
+        <span class="slide-tag">Keep Building</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Go to <a href="https://learn.mycode.run/link/xnwmx" target="_blank" rel="noopener" style="color:var(--teal);">Unit 3 Lesson 7 on Code.org</a>, dot 3</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap-sm);">Set up a team with your partner:</p>
+        <div class="split-layout">
+          <ol class="setup-steps" style="flex:1 1 58%;">
+            <li class="setup-step"><span class="setup-step-num">1</span><p>In the top right corner, click your name.</p></li>
+            <li class="setup-step"><span class="setup-step-num">2</span><p>Click <strong>Pair Programming</strong>.</p></li>
+            <li class="setup-step"><span class="setup-step-num">3</span><p>Choose your partner&rsquo;s name.</p></li>
+            <li class="setup-step"><span class="setup-step-num">4</span><p>Alternate the <strong>driver</strong> and <strong>navigator</strong> roles every five minutes.</p></li>
+            <li class="setup-step"><span class="setup-step-num">5</span><p>Make sure to <strong>Run</strong> and click <strong>Finish</strong> when you complete each level. This gives the navigator a copy of your work.</p></li>
+          </ol>
+          <div class="timer-wrap" id="switch-timer" style="flex:0 0 auto;">
+            <div class="timer-label">Switch Driver / Navigator In</div>
+            <div class="timer-display" id="switch-timer-display">05:00</div>
+            <div class="timer-controls">
+              <button class="timer-btn timer-btn-start" id="switch-timer-start">Start</button>
+              <button class="timer-btn timer-btn-stop"  id="switch-timer-stop"  disabled>Stop</button>
+              <button class="timer-btn timer-btn-reset" id="switch-timer-reset">Reset</button>
+            </div>
+            <div class="timer-durations" role="group" aria-label="Timer length">
+              <button class="timer-dur-btn is-active" data-dur="300" id="switch-timer-dur-300">5 min</button>
+              <button class="timer-dur-btn" data-dur="600" id="switch-timer-dur-600">10 min</button>
+            </div>
+            <div class="timer-hint">Chimes and restarts automatically on each cycle.</div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 4 · SUBMISSION TIME -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:28px;">
+        <span class="slide-tag">Submission Time</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Turn In Your Project</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">Turn in your working program on Code.org <span style="color:var(--amber);">and</span> the Project Planning Guide.</p>
+        <ol class="setup-steps" style="max-width:1250px;">
+          <li class="setup-step"><span class="setup-step-num">1</span><p>Make sure <strong>both partners</strong> have working copies of the program.</p></li>
+          <li class="setup-step"><span class="setup-step-num">2</span><p>Check the <strong>rubric</strong> once more to be sure you have everything.</p></li>
+          <li class="setup-step"><span class="setup-step-num">3</span><p>When you are really ready, click <strong>Run</strong> one last time, then click the scary purple <strong>Submit</strong> button.</p></li>
+          <li class="setup-step"><span class="setup-step-num">4</span><p>Go back to the <strong>Reflection Section</strong> of your planning guide and answer its two questions.</p></li>
+          <li class="setup-step"><span class="setup-step-num">5</span><p>Turn in your <strong>working program</strong> on Code.org and the <strong>Project Planning Guide</strong>.</p></li>
+        </ol>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-3-7b-designing-an-app-part-5',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+    /* ── Repeating role-switch countdown (Slide 3) ─────────────────
+       Shared engine with CSP 3.3 / 3.5 / 3.6 / 3.7 / 3.7a (see
+       html5-activities-index.md), with a repeat loop and a 5 / 10
+       minute length toggle. When the clock reaches zero it chimes,
+       holds on 00:00 for one second, then restarts from the selected
+       length and keeps running, so pairs get a recurring "swap driver
+       and navigator" nudge (this lesson calls for every five minutes).
+       While the chime plays the label flashes amber. The 5 min / 10
+       min buttons pick the cycle length; switching stops and resets
+       the clock so the instructor can start the new length cleanly.
+       It keeps ticking if you navigate away and is only visible again
+       when you return to the slide.
+       ─────────────────────────────────────────────────────────────── */
+    function getLiveElementById(id) {
+      return Array.prototype.find.call(
+        document.querySelectorAll('#' + id),
+        function(element) { return !element.closest('#storyboard'); }
+      );
+    }
+
+    var switchChime = new Audio('times-up.mp3');
+
+    function makeRepeatingCountdown(id, defaultSecs) {
+      var wrap      = getLiveElementById(id);
+      var displayEl = getLiveElementById(id + '-display');
+      var startBtn  = getLiveElementById(id + '-start');
+      var stopBtn   = getLiveElementById(id + '-stop');
+      var resetBtn  = getLiveElementById(id + '-reset');
+      if (!wrap || !displayEl || !startBtn) return;
+
+      var durBtns  = Array.prototype.slice.call(wrap.querySelectorAll('.timer-dur-btn'));
+      var labelEl  = wrap.querySelector('.timer-label');
+      var totalSecs = defaultSecs;
+      var secsLeft  = totalSecs;
+      var running   = false;
+      var interval  = null;
+      var loopPending = false;
+      var flashTimer = null;
+
+      function clearFlash() {
+        if (labelEl) labelEl.classList.remove('is-flashing');
+        if (flashTimer) { clearTimeout(flashTimer); flashTimer = null; }
+      }
+
+      function flashLabel() {
+        if (!labelEl) return;
+        labelEl.classList.add('is-flashing');
+        if (flashTimer) clearTimeout(flashTimer);
+        /* safety stop in case the audio 'ended' event never fires
+           (e.g. autoplay blocked before the first user gesture) */
+        flashTimer = setTimeout(clearFlash, 3000);
+      }
+
+      switchChime.addEventListener('ended', clearFlash);
+
+      function renderTime() {
+        var m = Math.floor(secsLeft / 60);
+        var s = secsLeft % 60;
+        displayEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        displayEl.classList.toggle('warning', secsLeft > 0 && secsLeft <= 30);
+        displayEl.classList.toggle('expired', secsLeft === 0);
+      }
+
+      function syncButtons() {
+        startBtn.disabled = running;
+        stopBtn.disabled  = !running;
+        durBtns.forEach(function (b) { b.disabled = running; });
+      }
+
+      function stop() {
+        running = false;
+        loopPending = false;
+        clearInterval(interval);
+        interval = null;
+        clearFlash();
+        syncButtons();
+      }
+
+      function tick() {
+        if (loopPending) {
+          loopPending = false;
+          secsLeft = totalSecs;
+          renderTime();
+          return;
+        }
+        if (secsLeft <= 0) { stop(); return; }
+        secsLeft--;
+        renderTime();
+        if (secsLeft === 0) {
+          switchChime.currentTime = 0;
+          switchChime.play().catch(function () {});
+          flashLabel();
+          loopPending = true;
+        }
+      }
+
+      startBtn.addEventListener('click', function () {
+        if (running) return;
+        if (secsLeft === 0) secsLeft = totalSecs;
+        running = true;
+        interval = setInterval(tick, 1000);
+        renderTime();
+        syncButtons();
+      });
+
+      stopBtn.addEventListener('click', stop);
+
+      resetBtn.addEventListener('click', function () {
+        stop();
+        secsLeft = totalSecs;
+        renderTime();
+      });
+
+      durBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var next = parseInt(btn.dataset.dur, 10);
+          if (!next || next === totalSecs) return;
+          totalSecs = next;
+          stop();
+          secsLeft = totalSecs;
+          durBtns.forEach(function (b) { b.classList.toggle('is-active', b === btn); });
+          renderTime();
+        });
+      });
+
+      renderTime();
+      syncButtons();
+    }
+
+    makeRepeatingCountdown('switch-timer', 5 * 60);
+
+  },
+});
+</script>
+</body>
+</html>
