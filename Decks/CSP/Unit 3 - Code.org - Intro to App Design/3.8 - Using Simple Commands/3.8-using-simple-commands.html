@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="b900eb">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.8 Using Simple Commands</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — 3.8 Using Simple Commands
+   ============================================================ */
+
+/* ─── Framed media card for screenshots / stills ──────────────────── */
+.media-card {
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.4);
+}
+.media-card img { display: block; width: 100%; }
+.media-caption {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--text-dim);
+  margin-top: var(--gap-sm);
+  line-height: 1.4;
+}
+
+/* ─── Two-column split: text beside media ─────────────────────────── */
+.split-layout { display: flex; gap: var(--gap-lg); align-items: center; width: 100%; }
+.split-text { flex: 1 1 48%; }
+.split-media { flex: 1 1 52%; display: flex; flex-direction: column; gap: var(--gap-sm); }
+
+/* ─── The App Lab turtle sprite (tiny source art, shown enlarged) ─── */
+.turtle-sprite {
+  width: 140px;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 24px rgba(0,201,177,0.35));
+}
+
+/* ─── Big teaser line (Slide 5) ───────────────────────────────────── */
+.teaser-line {
+  font-size: var(--h2);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.3;
+  max-width: 1200px;
+}
+
+/* ─── Call-to-action link (Slide 9) ───────────────────────────────── */
+.cta-link {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--teal);
+  background: var(--bg-card);
+  border: 2px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 16px 34px;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: border-color 150ms, background 150ms, box-shadow 150ms;
+}
+.cta-link:hover {
+  border-color: rgba(0,201,177,0.6);
+  background: rgba(0,201,177,0.08);
+  box-shadow: 0 0 24px rgba(0,201,177,0.2);
+  color: var(--teal);
+}
+
+/* ─── Slide 9 layout: instructions beside the swap timer ──────────── */
+.coding-row { display: flex; gap: var(--gap-lg); align-items: flex-start; width: 100%; }
+.coding-col { flex: 1 1 56%; display: flex; flex-direction: column; gap: var(--gap); align-items: flex-start; }
+
+/* ─── Pair Programming guide button ──────────────────────────────── */
+.guide-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--amber);
+  background: rgba(255,212,59,0.06);
+  border: 1px solid var(--amber-border);
+  border-radius: 8px;
+  padding: 12px 22px;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 140ms, border-color 140ms, box-shadow 140ms;
+}
+.guide-btn:hover {
+  background: rgba(255,212,59,0.12);
+  border-color: rgba(255,212,59,0.6);
+  box-shadow: 0 0 18px rgba(255,212,59,0.18);
+}
+.guide-btn::before { content: '\24D8'; font-size: 1.15em; }
+
+/* ─── Pair Programming modal ─────────────────────────────────────── */
+.pp-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: rgba(4,10,9,0.82);
+  backdrop-filter: blur(3px);
+}
+.pp-modal[hidden] { display: none; }
+.pp-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 12px;
+  padding: 44px 52px;
+  box-shadow: 0 26px 70px rgba(0,0,0,0.55);
+}
+.pp-modal-card h3 {
+  font-size: var(--h2);
+  color: var(--text);
+  margin-bottom: var(--gap);
+}
+.pp-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--teal-border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.pp-modal-close:hover { background: rgba(226,245,242,0.08); color: var(--text); border-color: rgba(0,201,177,0.5); }
+.pp-roles { display: flex; gap: var(--gap); width: 100%; margin-bottom: var(--gap); }
+.pp-role {
+  flex: 1 1 0;
+  background: rgba(0,201,177,0.04);
+  border: 1px solid var(--teal-border);
+  border-radius: 10px;
+  padding: 20px 24px;
+}
+.pp-role.navigator { background: rgba(255,212,59,0.05); border-color: var(--amber-border); }
+.pp-role-label {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--h3);
+  margin-bottom: var(--gap-sm);
+}
+.pp-role.driver .pp-role-label { color: var(--teal); }
+.pp-role.navigator .pp-role-label { color: var(--amber); }
+.pp-role p { font-size: var(--small); color: var(--text-muted); line-height: 1.5; }
+.pp-modal-card .setup-steps { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.pp-modal-card .setup-step { display: flex; align-items: flex-start; gap: 14px; }
+.pp-modal-card .setup-step-num {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pp-modal-card .setup-step p { margin: 0; font-size: var(--small); color: var(--text-muted); line-height: 1.5; padding-top: 3px; }
+.pp-modal-card .setup-step p strong { color: var(--text); font-weight: 600; }
+
+/* ─── Repeating role-switch countdown (shared engine with CSP 3.3 / 3.5 / 3.6,
+   see html5-activities-index.md), with a 3 / 5 / 10 minute length toggle. ─── */
+.timer-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 440px;
+  flex: 0 0 auto;
+}
+.timer-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+}
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 92px;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1;
+  letter-spacing: -2px;
+  text-align: center;
+  padding: 6px 0;
+  text-shadow: 0 0 32px rgba(0,201,177,0.35);
+  transition: color 0.4s, text-shadow 0.4s;
+}
+.timer-display.warning { color: var(--amber); text-shadow: 0 0 32px rgba(255,212,59,0.4); }
+.timer-display.expired { color: var(--red); text-shadow: 0 0 32px rgba(255,107,107,0.4); }
+.timer-controls { display: flex; gap: 12px; justify-content: center; }
+.timer-btn {
+  padding: 10px 24px;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 2px solid;
+  cursor: pointer;
+  transition: background 100ms, box-shadow 100ms, transform 80ms;
+  letter-spacing: 0.04em;
+  background: transparent;
+}
+.timer-btn:not(:disabled):active { transform: translateY(1px); }
+.timer-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+.timer-btn-start { color: var(--green); border-color: var(--green); }
+.timer-btn-start:not(:disabled):hover { background: rgba(105,219,124,0.14); box-shadow: 0 0 14px rgba(105,219,124,0.2); }
+.timer-btn-stop { color: var(--amber); border-color: var(--amber); }
+.timer-btn-stop:not(:disabled):hover { background: rgba(255,212,59,0.14); box-shadow: 0 0 14px rgba(255,212,59,0.2); }
+.timer-btn-reset { color: var(--text-muted); border-color: var(--teal-border); }
+.timer-btn-reset:not(:disabled):hover { background: rgba(226,245,242,0.06); color: var(--text); }
+.timer-durations { display: flex; gap: 8px; justify-content: center; }
+.timer-dur-btn {
+  padding: 6px 18px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  border: 1px solid var(--teal-border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.timer-dur-btn:hover { color: var(--text); border-color: rgba(0,201,177,0.5); }
+.timer-dur-btn.is-active { background: var(--teal-glow); border-color: var(--teal); color: var(--teal); }
+.timer-hint { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); text-align: center; letter-spacing: 0.03em; }
+.timer-label.is-flashing { animation: timer-label-flash 0.44s steps(1, end) infinite; }
+@keyframes timer-label-flash {
+  0%, 100% { color: var(--amber); opacity: 1; text-shadow: 0 0 16px rgba(255,212,59,0.65); }
+  50%      { color: var(--text-dim); opacity: 0.3; text-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .timer-label.is-flashing { animation: none; color: var(--amber); opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 3 &middot; Lesson 3.8</span>
+        <h1 class="title-h1">Using Simple Commands</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 2 · FRQ: WHAT DOES IT MEAN TO BE EFFICIENT -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What does it mean to be efficient? What is an example of a time when it is important to be efficient?","order":0,"responseTimeLimitMs":150000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ</span>
+        <h2 style="margin-bottom:var(--gap);">Warm Up: What Is Efficiency?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>What does it mean to be <span style="color:var(--teal);">efficient</span>? What is an example of a time when it is important to be efficient?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 3 · EFFICIENCY -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Why This Matters</span>
+        <h2 style="margin-bottom:var(--gap);">Efficiency</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">For the next few lessons we will look at how <span style="color:var(--teal);">efficient</span> we can make our programs. Computers are extremely fast at following instructions, so the trouble only shows up when there are a great many instructions to follow.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">If you have ever played a single-player game that started <span style="color:var(--amber);">slowing down or dropping frames</span> when a lot was happening on screen, you have seen what it looks like when the computer is asked to execute too many instructions at once.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 4 · SPACE INVADERS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:36px;">
+        <span class="slide-tag">A Famous Example</span>
+        <h2 style="margin-bottom:var(--gap);">The Space Invaders Speed-Up</h2>
+        <div class="split-layout">
+          <div class="split-text">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.65;">The original <span style="color:var(--teal);">Space Invaders</span> took advantage of this. As you destroyed more ships, the remaining ones sped up.</p>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.65;margin-top:var(--gap-sm);">That speed-up was actually a <span style="color:var(--amber);">bug</span>: with fewer ships to draw and move, the computer had less to do, so the game ran faster. Designer Tomohiro Nishikado liked the effect so much that he left it in.</p>
+          </div>
+          <div class="split-media">
+            <div class="media-card">
+              <img class="img-zoomable" src="media/space-invaders.png" alt="A screen from the original Space Invaders arcade game, showing rows of pixel-art alien ships descending toward a player cannon behind green bunkers">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 5 · THE MOST EFFICIENT ANIMAL -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Efficiency</span>
+        <p class="teaser-line">To explore efficiency, let&rsquo;s look at the most efficient animal there is&hellip;</p>
+      </div>
+      <div class="glow" style="width:600px;height:600px;right:-160px;top:-160px;background:radial-gradient(circle,rgba(0,201,177,0.07),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 6 · EFFICIENT TURTLES -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Efficient Turtles</span>
+        <h2 style="margin-bottom:var(--gap);">The Turtle?</h2>
+        <img class="turtle-sprite" src="media/applab-turtle.png" alt="The small arrowhead sprite that App Lab uses to represent the drawing turtle">
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1050px;line-height:1.6;margin-top:var(--gap);">App Lab gives you a <span style="color:var(--teal);">Turtle</span> that draws as it moves. You will control it with only a handful of <span style="color:var(--amber);">simple commands</span>, and your challenge is to make it draw shapes using as few instructions as possible.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 7 · VIDEO: PROGRAMMING WITH SIMPLE COMMANDS -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:7:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=i2KHYUhtOlM"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Programming with Simple Commands</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);margin-bottom:var(--gap);">A short Code.org video on the programming environment and building drawings from a few simple commands.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 8 · MCQ: THE INITIAL SET OF COMMANDS -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:8:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What is the initial set of commands you have to work with in App Lab?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"Move forward, turn left, pen up, and pen down.","isCorrect":true},{"id":"q1b","text":"Move forward, turn right, pen up, and pen down.","isCorrect":false},{"id":"q1c","text":"Move backward, turn left, pen up, and pen down.","isCorrect":false},{"id":"q1d","text":"Move backward, turn right, pen up, and pen down.","isCorrect":false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Multiple Choice</span>
+        <h2 style="margin-bottom:var(--gap);">The Starting Command Set</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>What is the initial set of commands you have to work with in App Lab?</p>
+        </div>
+        <ul class="mcq-opts" style="max-width:1250px;">
+          <li><span class="opt-key">A</span> Move forward, turn left, pen up, and pen down.</li>
+          <li><span class="opt-key">B</span> Move forward, turn right, pen up, and pen down.</li>
+          <li><span class="opt-key">C</span> Move backward, turn left, pen up, and pen down.</li>
+          <li><span class="opt-key">D</span> Move backward, turn right, pen up, and pen down.</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 9 · JUMP TO CODE.ORG -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Get Coding</span>
+        <h2 style="margin-bottom:var(--gap);">Efficient Turtles on Code.org</h2>
+        <div class="coding-row">
+          <div class="coding-col">
+            <a class="cta-link" href="https://learn.mycode.run/link/xnwmh" target="_blank" rel="noopener">Open Code.org Unit 3 Lesson 8 &nearr;</a>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">Complete <span style="color:var(--teal);">dots 3 through 9</span>. Use <span style="color:var(--amber);">Pair Programming</span> for levels 3, 4, and 5, and swap the driver and navigator roles when the timer chimes. Dots 6 through 9 are on your own.</p>
+            <button type="button" class="guide-btn" id="pp-guide-open">Pair Programming Guide</button>
+          </div>
+          <div class="timer-wrap" id="switch-timer">
+            <div class="timer-label">Switch Driver / Navigator In</div>
+            <div class="timer-display" id="switch-timer-display">03:00</div>
+            <div class="timer-controls">
+              <button class="timer-btn timer-btn-start" id="switch-timer-start">Start</button>
+              <button class="timer-btn timer-btn-stop"  id="switch-timer-stop"  disabled>Stop</button>
+              <button class="timer-btn timer-btn-reset" id="switch-timer-reset">Reset</button>
+            </div>
+            <div class="timer-durations" role="group" aria-label="Timer length">
+              <button class="timer-dur-btn is-active" data-dur="180" id="switch-timer-dur-180">3 min</button>
+              <button class="timer-dur-btn" data-dur="300" id="switch-timer-dur-300">5 min</button>
+              <button class="timer-dur-btn" data-dur="600" id="switch-timer-dur-600">10 min</button>
+            </div>
+            <div class="timer-hint">Chimes and restarts automatically on each cycle.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pp-modal" id="pp-guide-modal" hidden>
+        <div class="pp-modal-card" role="dialog" aria-modal="true" aria-labelledby="pp-guide-title">
+          <button type="button" class="pp-modal-close" id="pp-guide-close" aria-label="Close">&times;</button>
+          <h3 id="pp-guide-title">Pair Programming</h3>
+          <div class="pp-roles">
+            <div class="pp-role driver">
+              <div class="pp-role-label">Driver</div>
+              <p>Controls the keyboard and the mouse, and types the code.</p>
+            </div>
+            <div class="pp-role navigator">
+              <div class="pp-role-label">Navigator</div>
+              <p>Keeps track of the big picture and guides the driver toward the goal.</p>
+            </div>
+          </div>
+          <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-bottom:var(--gap);"><span style="color:var(--amber);">Swap roles often.</span> When the timer chimes, trade the keyboard so both partners spend time driving and navigating.</p>
+          <ol class="setup-steps">
+            <li class="setup-step"><span class="setup-step-num">1</span><p>In the top right corner, click your name.</p></li>
+            <li class="setup-step"><span class="setup-step-num">2</span><p>Click <strong>&ldquo;Pair Programming.&rdquo;</strong></p></li>
+            <li class="setup-step"><span class="setup-step-num">3</span><p>Choose your partner&rsquo;s name.</p></li>
+            <li class="setup-step"><span class="setup-step-num">4</span><p>Alternate driver and navigator roles as you work.</p></li>
+            <li class="setup-step"><span class="setup-step-num">5</span><p>Make sure to <strong>Run</strong> and click <strong>Finish</strong> when you complete each level. This gives the navigator a copy of your work too.</p></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · POLL: HOW MANY INSTRUCTIONS FOR THE GRID -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:10:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Look back at your level 5 (linked in the upper right corner of App Lab). How many instructions did it take you to draw the grid?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"30 to 35"},{"id":"q1b","text":"36 to 40"},{"id":"q1c","text":"41 to 45"},{"id":"q1d","text":"46 to 50"},{"id":"q1e","text":"51 to 55"},{"id":"q1f","text":"56 to 60"},{"id":"q1g","text":"61 or more"}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Quick Poll</span>
+        <h2 style="margin-bottom:var(--gap);">How Many Instructions for the Grid?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>Look back at your <span style="color:var(--teal);">level 5</span> (linked in the upper right corner of App Lab). How many instructions did it take you to draw the grid?</p>
+        </div>
+        <ul class="mcq-opts" style="max-width:900px;">
+          <li><span class="opt-key">A</span> 30 to 35</li>
+          <li><span class="opt-key">B</span> 36 to 40</li>
+          <li><span class="opt-key">C</span> 41 to 45</li>
+          <li><span class="opt-key">D</span> 46 to 50</li>
+          <li><span class="opt-key">E</span> 51 to 55</li>
+          <li><span class="opt-key">F</span> 56 to 60</li>
+          <li><span class="opt-key">G</span> 61 or more</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · EFFICIENCY WRAP-UP -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Looking Back</span>
+        <h2 style="margin-bottom:var(--gap);">Efficiency</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Today&rsquo;s activity challenged you to find the <span style="color:var(--teal);">most efficient solution</span> to a problem. We care about efficiency whenever we do not want to waste something valuable, such as <span style="color:var(--amber);">money, time, or space</span>.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">We measured the efficiency of our programs in <span style="color:var(--amber);">lines of code</span>, but that is only one way to think about it. Programs can also be measured by how much time they take to run and how much memory they use.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 12 · FRQ: WHAT OTHER RESOURCES -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:12:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"When we try to create efficient programs, what other valuable resources might we be concerned about conserving?","order":0,"responseTimeLimitMs":150000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ</span>
+        <h2 style="margin-bottom:var(--gap);">What Else Are We Conserving?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>When we try to create efficient programs, what other <span style="color:var(--teal);">valuable resources</span> might we be concerned about conserving?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 13 · WHY LIMIT TO FOUR COMMANDS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:36px;">
+        <span class="slide-tag">The Point</span>
+        <h2 style="margin-bottom:var(--gap);">Why Limit Yourself to Four Commands?</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">Learning to program is not just a matter of memorizing commands. The creative part, the <span style="color:var(--teal);">art of programming</span>, is always about understanding how to combine the features of a language to solve a problem.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;margin-top:var(--gap-sm);">Whether you know 4 commands or 400, you are always <span style="color:var(--amber);">constrained by the language</span>. There is no built-in command for every little thing, so you have to understand the set of things a language can do and then use creativity and problem-solving to get the computer to do what you want.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;margin-top:var(--gap-sm);">As we saw today, even drawing with a turtle and four commands, the solutions are <span style="color:var(--amber);">not always easy</span>. We will keep practicing as the challenges get more complex.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-3-8-using-simple-commands',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+    /* Find a live slide element by id, ignoring storyboard thumbnail clones. */
+    function getLiveElementById(id) {
+      return Array.prototype.find.call(
+        document.querySelectorAll('#' + id),
+        function(element) { return !element.closest('#storyboard'); }
+      );
+    }
+
+    /* ── Pair Programming guide modal (Slide 9) ───────────────────────
+       Summarises the driver / navigator explanation and Code.org
+       team-setup steps from CSP 3.5 in a popup so the coding slide
+       stays uncluttered. ─────────────────────────────────────────── */
+    (function initPairProgrammingModal() {
+      var openBtn  = getLiveElementById('pp-guide-open');
+      var modal    = getLiveElementById('pp-guide-modal');
+      var closeBtn = getLiveElementById('pp-guide-close');
+      if (!openBtn || !modal || !closeBtn) return;
+
+      function open() { modal.hidden = false; closeBtn.focus(); }
+      function close() { modal.hidden = true; openBtn.focus(); }
+
+      openBtn.addEventListener('click', open);
+      closeBtn.addEventListener('click', close);
+      modal.addEventListener('click', function(event) {
+        if (event.target === modal) close();
+      });
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && !modal.hidden) {
+          event.stopPropagation();
+          close();
+        }
+      }, true);
+    })();
+
+    /* ── Repeating role-switch countdown (Slide 9) ────────────────────
+       Shared engine with CSP 3.3 / 3.5 / 3.6 (html5-activities-index.md),
+       with a repeat loop and a 3 / 5 / 10 minute length toggle. When the
+       clock reaches zero it chimes, holds on 00:00 for one second, then
+       restarts from the selected length and keeps running, so pairs get
+       a recurring "swap driver and navigator" nudge. The 3 / 5 / 10 min
+       buttons pick the cycle length; switching stops and resets the
+       clock so the instructor can start the new length cleanly. It keeps
+       ticking if you navigate away and is only visible again when you
+       return to the slide. ─────────────────────────────────────────── */
+    var switchChime = new Audio('times-up.mp3');
+
+    function makeRepeatingCountdown(id, defaultSecs) {
+      var wrap      = getLiveElementById(id);
+      var displayEl = getLiveElementById(id + '-display');
+      var startBtn  = getLiveElementById(id + '-start');
+      var stopBtn   = getLiveElementById(id + '-stop');
+      var resetBtn  = getLiveElementById(id + '-reset');
+      if (!wrap || !displayEl || !startBtn) return;
+
+      var durBtns  = Array.prototype.slice.call(wrap.querySelectorAll('.timer-dur-btn'));
+      var labelEl  = wrap.querySelector('.timer-label');
+      var totalSecs = defaultSecs;
+      var secsLeft  = totalSecs;
+      var running   = false;
+      var interval  = null;
+      var loopPending = false;
+      var flashTimer = null;
+
+      function clearFlash() {
+        if (labelEl) labelEl.classList.remove('is-flashing');
+        if (flashTimer) { clearTimeout(flashTimer); flashTimer = null; }
+      }
+
+      function flashLabel() {
+        if (!labelEl) return;
+        labelEl.classList.add('is-flashing');
+        if (flashTimer) clearTimeout(flashTimer);
+        flashTimer = setTimeout(clearFlash, 3000);
+      }
+
+      switchChime.addEventListener('ended', clearFlash);
+
+      function renderTime() {
+        var m = Math.floor(secsLeft / 60);
+        var s = secsLeft % 60;
+        displayEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        displayEl.classList.toggle('warning', secsLeft > 0 && secsLeft <= 30);
+        displayEl.classList.toggle('expired', secsLeft === 0);
+      }
+
+      function syncButtons() {
+        startBtn.disabled = running;
+        stopBtn.disabled  = !running;
+        durBtns.forEach(function (b) { b.disabled = running; });
+      }
+
+      function stop() {
+        running = false;
+        loopPending = false;
+        clearInterval(interval);
+        interval = null;
+        clearFlash();
+        syncButtons();
+      }
+
+      function tick() {
+        if (loopPending) {
+          loopPending = false;
+          secsLeft = totalSecs;
+          renderTime();
+          return;
+        }
+        if (secsLeft <= 0) { stop(); return; }
+        secsLeft--;
+        renderTime();
+        if (secsLeft === 0) {
+          switchChime.currentTime = 0;
+          switchChime.play().catch(function () {});
+          flashLabel();
+          loopPending = true;
+        }
+      }
+
+      startBtn.addEventListener('click', function () {
+        if (running) return;
+        if (secsLeft === 0) secsLeft = totalSecs;
+        running = true;
+        interval = setInterval(tick, 1000);
+        renderTime();
+        syncButtons();
+      });
+
+      stopBtn.addEventListener('click', stop);
+
+      resetBtn.addEventListener('click', function () {
+        stop();
+        secsLeft = totalSecs;
+        renderTime();
+      });
+
+      durBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var next = parseInt(btn.dataset.dur, 10);
+          if (!next || next === totalSecs) return;
+          totalSecs = next;
+          stop();
+          secsLeft = totalSecs;
+          durBtns.forEach(function (b) { b.classList.toggle('is-active', b === btn); });
+          renderTime();
+        });
+      });
+
+      renderTime();
+      syncButtons();
+    }
+
+    makeRepeatingCountdown('switch-timer', 3 * 60);
+
+  },
+});
+</script>
+</body>
+</html>
