@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1u86bqv">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.10 Functions and Top-Down Design</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — 3.10 Functions and Top-Down Design
+   ============================================================ */
+
+/* ─── Two-column split: text beside a figure ─────────────────────── */
+.split-layout { display: flex; gap: var(--gap-lg); align-items: center; width: 100%; }
+.split-text { flex: 1 1 58%; }
+.split-media { flex: 1 1 42%; display: flex; flex-direction: column; align-items: center; gap: var(--gap-sm); }
+
+/* ─── White figure card (turtle line drawings need a light backdrop) ── */
+.figure-card {
+  background: #fff;
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.4);
+}
+.figure-card img { display: block; width: 100%; max-width: 300px; }
+.figure-label {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+/* ─── Senses-of-efficiency list (Slide 6) ────────────────────────── */
+.sense-list { list-style: none; display: flex; flex-direction: column; gap: 14px; max-width: 1250px; }
+.sense-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.sense-list li::before {
+  content: counter(sense);
+  counter-increment: sense;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+}
+.sense-list { counter-reset: sense; }
+
+/* ─── Numbered discussion questions (Slide 8) ─────────────────────── */
+.question-list { list-style: none; counter-reset: qnum; display: flex; flex-direction: column; gap: 14px; max-width: 1250px; }
+.question-list li {
+  counter-increment: qnum;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.question-list li::before {
+  content: counter(qnum);
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255,212,59,0.1);
+  border: 1px solid var(--amber-border);
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+}
+.question-list .q-hint {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  color: var(--text-dim);
+  margin-left: auto;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* ─── Call-to-action link (Slide 10) ─────────────────────────────── */
+.cta-link {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--teal);
+  background: var(--bg-card);
+  border: 2px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 16px 34px;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: border-color 150ms, background 150ms, box-shadow 150ms;
+}
+.cta-link:hover {
+  border-color: rgba(0,201,177,0.6);
+  background: rgba(0,201,177,0.08);
+  box-shadow: 0 0 24px rgba(0,201,177,0.2);
+  color: var(--teal);
+}
+
+/* ─── Definition card (Slide 10: iterative / incremental) ────────── */
+.def-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-left: 3px solid var(--teal);
+  border-radius: 3px;
+  padding: 0.9em 1.2em;
+}
+.def-card p { font-size: var(--small); color: var(--text-muted); line-height: 1.55; }
+.def-term { font-family: var(--font-mono); font-weight: 700; color: var(--teal); }
+
+/* ─── Pair Programming guide button ─────────────────────────────── */
+.guide-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--amber);
+  background: rgba(255,212,59,0.06);
+  border: 1px solid var(--amber-border);
+  border-radius: 8px;
+  padding: 12px 22px;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 140ms, border-color 140ms, box-shadow 140ms;
+}
+.guide-btn:hover {
+  background: rgba(255,212,59,0.12);
+  border-color: rgba(255,212,59,0.6);
+  box-shadow: 0 0 18px rgba(255,212,59,0.18);
+}
+.guide-btn::before { content: '\24D8'; font-size: 1.15em; }
+
+/* ─── Pair Programming modal ─────────────────────────────────────── */
+.pp-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: rgba(4,10,9,0.82);
+  backdrop-filter: blur(3px);
+}
+.pp-modal[hidden] { display: none; }
+.pp-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 12px;
+  padding: 44px 52px;
+  box-shadow: 0 26px 70px rgba(0,0,0,0.55);
+}
+.pp-modal-card h3 {
+  font-size: var(--h2);
+  color: var(--text);
+  margin-bottom: var(--gap);
+}
+.pp-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--teal-border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.pp-modal-close:hover { background: rgba(226,245,242,0.08); color: var(--text); border-color: rgba(0,201,177,0.5); }
+.pp-roles { display: flex; gap: var(--gap); width: 100%; margin-bottom: var(--gap); }
+.pp-role {
+  flex: 1 1 0;
+  background: rgba(0,201,177,0.04);
+  border: 1px solid var(--teal-border);
+  border-radius: 10px;
+  padding: 20px 24px;
+}
+.pp-role.navigator { background: rgba(255,212,59,0.05); border-color: var(--amber-border); }
+.pp-role-label {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--h3);
+  margin-bottom: var(--gap-sm);
+}
+.pp-role.driver .pp-role-label { color: var(--teal); }
+.pp-role.navigator .pp-role-label { color: var(--amber); }
+.pp-role p { font-size: var(--small); color: var(--text-muted); line-height: 1.5; }
+.pp-modal-card .setup-steps { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.pp-modal-card .setup-step { display: flex; align-items: flex-start; gap: 14px; }
+.pp-modal-card .setup-step-num {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pp-modal-card .setup-step p { margin: 0; font-size: var(--small); color: var(--text-muted); line-height: 1.5; padding-top: 3px; }
+.pp-modal-card .setup-step p strong { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 3 &middot; Lesson 3.10</span>
+        <h1 class="title-h1">Functions and Top-Down Design</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 2 · FRQ: FUNCTIONS AND ABSTRACTION -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"An abstraction is a general concept or idea, rather than something concrete or tangible. In computer science, abstraction reduces complexity by removing unnecessary information. How is the use of a function an example of abstraction?","order":0,"responseTimeLimitMs":150000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ</span>
+        <h2 style="margin-bottom:var(--gap);">Functions and Abstraction</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;margin-bottom:var(--gap);">An <span style="color:var(--teal);">abstraction</span> is a general concept or idea, rather than something concrete or tangible. In computer science, abstraction reduces complexity by removing unnecessary information.</p>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>How is the use of a function an example of <span style="color:var(--teal);">abstraction</span>?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 3 · DRAWDIAMOND IS AN ABSTRACTION -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Abstractions and Efficiency</span>
+        <h2 style="margin-bottom:var(--gap);">A Function Is an Abstraction</h2>
+        <div class="split-layout">
+          <div class="split-text">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">In the previous lesson we wrote a program that used layers of functions, functions that call other functions, to get the turtle to draw this diamond-shaped figure.</p>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">The function <span style="color:var(--teal);">drawDiamond()</span> is an abstraction. If you want to draw a diamond, you just call it. You do not need to know <span style="color:var(--amber);">how</span> it does the job, only that the turtle will draw a diamond where it is sitting.</p>
+          </div>
+          <div class="split-media">
+            <div class="figure-card"><img class="img-zoomable" src="media/draw-diamond-figure.png" alt="A diamond-shaped stepped outline drawn by the turtle, with the turtle arrow resting at the bottom point"></div>
+            <span class="figure-label">drawDiamond()</span>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 4 · FUNCTION CALLS COST INSTRUCTIONS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Abstractions and Efficiency</span>
+        <h2 style="margin-bottom:var(--gap);">Abstraction Has a Cost</h2>
+        <div class="split-layout">
+          <div class="split-text">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">You may have noticed that drawing the diamond actually ran <span style="color:var(--amber);">more instructions</span> than it would have taken as a plain list of <code>moveForward()</code> and <code>turnLeft()</code> commands.</p>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">Every function call is another instruction the program has to run, on top of the instructions that actually draw the diamond. That leads to a question&hellip;</p>
+          </div>
+          <div class="split-media">
+            <div class="figure-card"><img class="img-zoomable" src="media/draw-diamond-figure.png" alt="The same diamond-shaped stepped outline drawn by the turtle"></div>
+            <span class="figure-label">drawDiamond()</span>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 5 · FRQ: WHICH PROGRAM IS MORE EFFICIENT -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:5:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Imagine two programs that both drew the diamond-shaped figure. One uses functions, as we did in the previous lesson. The other does not use functions; it is just a long sequence of the turtle&#39;s primitive commands. Which program is more efficient? Make an argument for why one is more efficient than the other.","order":0,"responseTimeLimitMs":180000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ</span>
+        <h2 style="margin-bottom:var(--gap);">Which Program Is More Efficient?</h2>
+        <div class="split-layout">
+          <div class="split-text">
+            <div class="frq-box">
+              <p>Imagine two programs that both drew the diamond figure. One uses <span style="color:var(--teal);">functions</span>. The other is just a long sequence of the turtle&rsquo;s <span style="color:var(--amber);">primitive commands</span>. Which program is more efficient? Make an argument for why one is more efficient than the other.</p>
+            </div>
+          </div>
+          <div class="split-media">
+            <div class="figure-card"><img class="img-zoomable" src="media/draw-diamond-figure.png" alt="The diamond-shaped stepped outline drawn by the turtle"></div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 6 · WHAT EFFICIENT CAN MEAN -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Abstraction and Efficiency</span>
+        <h2 style="margin-bottom:var(--gap);">&ldquo;Efficient&rdquo; Can Mean Several Things</h2>
+        <ol class="sense-list">
+          <li>The total number of operations performed by the turtle.</li>
+          <li>The number of lines of code.</li>
+          <li>The ability to reuse code within your own code.</li>
+          <li>The speed and clarity with which you can write the program.</li>
+          <li>The speed at which someone else can read the program.</li>
+        </ol>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 7 · TOP-DOWN DESIGN -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Top-Down Design</span>
+        <h2 style="margin-bottom:var(--gap);">Leveraging the Power of Abstraction</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Efficiency is interesting to think about, but functions also let us leverage the power of abstraction. When we write a function, it solves a <span style="color:var(--teal);">small piece</span> of a bigger problem.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">Having that small problem solved lets us <span style="color:var(--amber);">ignore its details</span> and focus on the bigger tasks. Keep that in mind as we look at the worksheet.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 8 · WORKSHEET DISCUSSION -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:8:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Take about 5 minutes to read through the first page of the worksheet with your partner. Then discuss and answer: why did they choose to break the diamond down into drawDiamond(), drawSide(), and drawStep()?","order":0,"responseTimeLimitMs":360000},{"id":"q2","type":"free-response","text":"What is the benefit of coding like this?","order":1,"responseTimeLimitMs":60000},{"id":"q3","type":"free-response","text":"What is the first function you would need to write? What is the last function?","order":2,"responseTimeLimitMs":60000}]}'>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:36px;">
+        <span class="slide-tag">Discuss With Your Partner</span>
+        <h2 style="margin-bottom:var(--gap);">Read the First Page of the Worksheet</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;margin-bottom:var(--gap);">Read through the first page with your partner, then discuss the <span style="color:var(--teal);">top-down design</span> process. Question 1 gives you <span style="color:var(--amber);">5 minutes to read</span> plus time to answer; questions 2 and 3 give you <span style="color:var(--amber);">one minute</span> each.</p>
+        <ol class="question-list">
+          <li><span>Why did they choose to break the diamond down into <strong>drawDiamond()</strong>, <strong>drawSide()</strong>, and <strong>drawStep()</strong>?</span><span class="q-hint">6 min</span></li>
+          <li><span>What is the benefit of coding like this?</span><span class="q-hint">1 min</span></li>
+          <li><span>What is the first function you would need to write? What is the last function?</span><span class="q-hint">1 min</span></li>
+        </ol>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 9 · PRACTICING TOP-DOWN DESIGN -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Practice</span>
+        <h2 style="margin-bottom:var(--gap);">Practicing Top-Down Design</h2>
+        <div class="split-layout">
+          <div class="split-text">
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">With your partner, think through how you would program this shape. Write down the names of the functions you would use, all the way down to the <span style="color:var(--teal);">last function</span> that would just be simple turtle commands.</p>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-top:var(--gap-sm);">Then compare with another group. Is your plan <span style="color:var(--amber);">better</span> than theirs?</p>
+          </div>
+          <div class="split-media">
+            <div class="figure-card"><img class="img-zoomable" src="media/top-down-shape.png" alt="A plus-shaped figure built from a cross of short line segments, to be planned as a set of functions"></div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 10 · JUMP TO CODE.ORG -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:36px;">
+        <span class="slide-tag">Get Coding</span>
+        <h2 style="margin-bottom:var(--gap);">Top-Down Design on Code.org</h2>
+        <div class="split-layout" style="align-items:flex-start;">
+          <div class="split-text" style="display:flex;flex-direction:column;gap:var(--gap);align-items:flex-start;">
+            <a class="cta-link" href="https://learn.mycode.run/link/xnwtq" target="_blank" rel="noopener">Open Code.org Unit 3 Lesson 10 &nearr;</a>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">Complete <span style="color:var(--teal);">dots 2 and 3</span> as efficiently as possible with your partner. Complete <span style="color:var(--teal);">dots 4 through 7</span> on your own.</p>
+            <button type="button" class="guide-btn" id="pp-guide-open">Pair Programming Guide</button>
+          </div>
+          <div class="split-media" style="align-items:stretch;">
+            <p style="font-size:var(--small);color:var(--text-dim);margin-bottom:var(--gap-sm);">For dot 4:</p>
+            <div class="def-card" style="margin-bottom:var(--gap-sm);"><p><span class="def-term">iterative</span> means repetitive: doing something over and over.</p></div>
+            <div class="def-card" style="margin-bottom:var(--gap-sm);"><p><span class="def-term">incremental</span> means in small parts.</p></div>
+            <div class="def-card"><p>An <span class="def-term">iterative and incremental</span> process adds a small part, tests it, then adds the next small part, over and over.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pp-modal" id="pp-guide-modal" hidden>
+        <div class="pp-modal-card" role="dialog" aria-modal="true" aria-labelledby="pp-guide-title">
+          <button type="button" class="pp-modal-close" id="pp-guide-close" aria-label="Close">&times;</button>
+          <h3 id="pp-guide-title">Pair Programming</h3>
+          <div class="pp-roles">
+            <div class="pp-role driver">
+              <div class="pp-role-label">Driver</div>
+              <p>Controls the keyboard and the mouse, and types the code.</p>
+            </div>
+            <div class="pp-role navigator">
+              <div class="pp-role-label">Navigator</div>
+              <p>Keeps track of the big picture and guides the driver toward the goal.</p>
+            </div>
+          </div>
+          <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-bottom:var(--gap);"><span style="color:var(--amber);">Swap roles often</span> so both partners spend time driving and navigating.</p>
+          <ol class="setup-steps">
+            <li class="setup-step"><span class="setup-step-num">1</span><p>In the top right corner, click your name.</p></li>
+            <li class="setup-step"><span class="setup-step-num">2</span><p>Click <strong>&ldquo;Pair Programming.&rdquo;</strong></p></li>
+            <li class="setup-step"><span class="setup-step-num">3</span><p>Choose your partner&rsquo;s name.</p></li>
+            <li class="setup-step"><span class="setup-step-num">4</span><p>Alternate driver and navigator roles as you work.</p></li>
+            <li class="setup-step"><span class="setup-step-num">5</span><p>Make sure to <strong>Run</strong> and click <strong>Finish</strong> when you complete each level. This gives the navigator a copy of your work too.</p></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 11 · LAYERS OF ABSTRACTION -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:52px;">
+        <span class="slide-tag">Layers of Abstraction</span>
+        <h2 style="margin-bottom:var(--gap);">Functions Build Layers</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">When we layer functions, with functions that call other functions, we are creating <span style="color:var(--teal);">layers of abstraction</span>. This is how we design and build increasingly complex systems.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">We have seen layers of abstraction before: in the design of <span style="color:var(--amber);">Internet protocols</span> and in the <span style="color:var(--amber);">binary encoding</span> of information.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 12 · WHY LAYERS HELP -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Layers of Abstraction</span>
+        <h2 style="margin-bottom:var(--gap);">Trust the Solved Piece</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;">Solving a fundamental piece of a problem that can be <span style="color:var(--teal);">reliably reused</span> in a different context frees us to think about harder problems. We can trust the solved piece and stop worrying about its details.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;margin-top:var(--gap-sm);">Solving how to send a <span style="color:var(--amber);">single bit</span> from one place to another makes it easier to think about sending numbers, text, or images, to many people, over networks, in packets, and so on.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 13 · POSTBOARD: LAYERS OF ABSTRACTION IN YOUR LIFE -->
+    <section
+      data-activity-id="postboard"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="postboard:13:0"
+      data-activity-options='{"prompt":"Where else in your life have you seen layers of abstraction? Connect the idea of layers of abstraction to some other activity in your life.","autoApprove":"false"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Discuss &amp; Post</span>
+        <h2 style="margin-bottom:var(--gap);">Layers of Abstraction in Your Life</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>Where else in your life have you seen <span style="color:var(--teal);">layers of abstraction</span>? Connect the idea to some other activity in your life and post it below.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-3-10-functions-and-top-down-design',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+    /* Find a live slide element by id, ignoring storyboard thumbnail clones. */
+    function getLiveElementById(id) {
+      return Array.prototype.find.call(
+        document.querySelectorAll('#' + id),
+        function(element) { return !element.closest('#storyboard'); }
+      );
+    }
+
+    /* ── Pair Programming guide modal (Slide 10) ──────────────────────
+       Summarises the driver / navigator explanation and Code.org
+       team-setup steps from CSP 3.5 in a popup so the coding slide
+       stays uncluttered. ─────────────────────────────────────────── */
+    (function initPairProgrammingModal() {
+      var openBtn  = getLiveElementById('pp-guide-open');
+      var modal    = getLiveElementById('pp-guide-modal');
+      var closeBtn = getLiveElementById('pp-guide-close');
+      if (!openBtn || !modal || !closeBtn) return;
+
+      function open() { modal.hidden = false; closeBtn.focus(); }
+      function close() { modal.hidden = true; openBtn.focus(); }
+
+      openBtn.addEventListener('click', open);
+      closeBtn.addEventListener('click', close);
+      modal.addEventListener('click', function(event) {
+        if (event.target === modal) close();
+      });
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && !modal.hidden) {
+          event.stopPropagation();
+          close();
+        }
+      }, true);
+    })();
+
+  },
+});
+</script>
+</body>
+</html>
