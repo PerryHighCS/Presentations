@@ -424,13 +424,17 @@
 <script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
 <script>
 /* ── Input/Output classify activity ──────────────────────────────────
-   Twelve Design Mode elements start in a tray; students drag (or
-   click-select, click-place) each one into the Input or Output column.
+   Twelve Design Mode elements start in a tray in a freshly shuffled
+   order every run (state.order); students drag (or click-select,
+   click-place) each one into the Input or Output column.
    Check My Answers is disabled until all twelve are placed, then locks
    the board, marks each chip correct/incorrect, and — on a perfect
    score — pops the same full-slide "Perfect!" overlay used by the
    matching-pairs activities elsewhere in this course. Try Again clears
-   everything for a fresh attempt. ──────────────────────────────────── */
+   everything for a fresh attempt, but once any completed run has missed
+   something the "Perfect!" celebration stays off for the rest of the
+   session (tracked in sessionStorage, so a reload keeps the record and
+   only a brand-new tab starts clean). ─────────────────────────────── */
 var CLASSIFY_ITEMS = [
   { id: 'text-input',   label: 'Text Input',   correct: 'input'  },
   { id: 'photo-select', label: 'Photo Select', correct: 'input'  },
@@ -453,6 +457,15 @@ function getLiveElementById(id) {
   );
 }
 
+function shuffled(array) {
+  var copy = array.slice();
+  for (var i = copy.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
+  }
+  return copy;
+}
+
 function initClassifyIO(Reveal) {
   var root = getLiveElementById('classify-io');
   if (!root) return;
@@ -468,10 +481,21 @@ function initClassifyIO(Reveal) {
   var overlayEl = section ? section.querySelector('[data-classify-overlay]') : null;
   var zones = Array.prototype.slice.call(root.querySelectorAll('[data-bin]'));
 
-  var state = { placement: {}, selected: null, locked: false };
+  /* Once a completed run has missed anything, the "Perfect!" celebration
+     stays off for the rest of the session — a Try Again or a page reload
+     can still finish the board, but it can't retroactively earn a clean
+     score. Persisted to sessionStorage so a reload keeps the record;
+     a genuinely new tab/session starts fresh. */
+  var MISSED_KEY = 'csp-3-2-introduction-to-design-mode:classify-io-missed';
+  var everMissed = false;
+  try { everMissed = sessionStorage.getItem(MISSED_KEY) === '1'; } catch (e) { /* storage unavailable */ }
+
+  var state = { placement: {}, order: [], selected: null, locked: false };
 
   function resetState() {
     CLASSIFY_ITEMS.forEach(function(item) { state.placement[item.id] = 'tray'; });
+    /* fresh chip order every run so the bank isn't memorised by position */
+    state.order = shuffled(CLASSIFY_ITEMS);
     state.selected = null;
     state.locked = false;
   }
@@ -495,9 +519,9 @@ function initClassifyIO(Reveal) {
   }
 
   function render() {
-    var tray = CLASSIFY_ITEMS.filter(function(i) { return state.placement[i.id] === 'tray'; });
-    var input = CLASSIFY_ITEMS.filter(function(i) { return state.placement[i.id] === 'input'; });
-    var output = CLASSIFY_ITEMS.filter(function(i) { return state.placement[i.id] === 'output'; });
+    var tray = state.order.filter(function(i) { return state.placement[i.id] === 'tray'; });
+    var input = state.order.filter(function(i) { return state.placement[i.id] === 'input'; });
+    var output = state.order.filter(function(i) { return state.placement[i.id] === 'output'; });
 
     trayEl.innerHTML = tray.length
       ? tray.map(renderChip).join('')
@@ -521,7 +545,13 @@ function initClassifyIO(Reveal) {
     if (state.locked) return;
     state.locked = true;
     var correct = CLASSIFY_ITEMS.filter(function(i) { return state.placement[i.id] === i.correct; }).length;
-    var perfect = correct === CLASSIFY_ITEMS.length;
+    if (correct < CLASSIFY_ITEMS.length) {
+      everMissed = true;
+      try { sessionStorage.setItem(MISSED_KEY, '1'); } catch (e) { /* storage unavailable */ }
+    }
+    /* A flawless board only counts as "Perfect" if nothing was ever
+       missed in an earlier completed run this session. */
+    var perfect = correct === CLASSIFY_ITEMS.length && !everMissed;
     render();
     placedBadge.style.display = 'none';
     scoreBadge.style.display = 'inline-flex';
