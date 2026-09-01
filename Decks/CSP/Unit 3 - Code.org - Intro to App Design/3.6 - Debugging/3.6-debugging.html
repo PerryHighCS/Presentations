@@ -182,6 +182,14 @@
 .timer-dur-btn:hover { color: var(--text); border-color: rgba(0,201,177,0.5); }
 .timer-dur-btn.is-active { background: var(--teal-glow); border-color: var(--teal); color: var(--teal); }
 .timer-hint { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); text-align: center; letter-spacing: 0.03em; }
+.timer-label.is-flashing { animation: timer-label-flash 0.44s steps(1, end) infinite; }
+@keyframes timer-label-flash {
+  0%, 100% { color: var(--amber); opacity: 1; text-shadow: 0 0 16px rgba(255,212,59,0.65); }
+  50%      { color: var(--text-dim); opacity: 0.3; text-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .timer-label.is-flashing { animation: none; color: var(--amber); opacity: 1; }
+}
 </style>
 </head>
 <body>
@@ -501,11 +509,29 @@ initSyncDeckReveal({
       if (!wrap || !displayEl || !startBtn) return;
 
       var durBtns  = Array.prototype.slice.call(wrap.querySelectorAll('.timer-dur-btn'));
+      var labelEl  = wrap.querySelector('.timer-label');
       var totalSecs = defaultSecs;
       var secsLeft  = totalSecs;
       var running   = false;
       var interval  = null;
       var loopPending = false;
+      var flashTimer = null;
+
+      function clearFlash() {
+        if (labelEl) labelEl.classList.remove('is-flashing');
+        if (flashTimer) { clearTimeout(flashTimer); flashTimer = null; }
+      }
+
+      function flashLabel() {
+        if (!labelEl) return;
+        labelEl.classList.add('is-flashing');
+        if (flashTimer) clearTimeout(flashTimer);
+        /* safety stop in case the audio 'ended' event never fires
+           (e.g. autoplay blocked before the first user gesture) */
+        flashTimer = setTimeout(clearFlash, 3000);
+      }
+
+      switchChime.addEventListener('ended', clearFlash);
 
       function renderTime() {
         var m = Math.floor(secsLeft / 60);
@@ -526,6 +552,7 @@ initSyncDeckReveal({
         loopPending = false;
         clearInterval(interval);
         interval = null;
+        clearFlash();
         syncButtons();
       }
 
@@ -542,6 +569,7 @@ initSyncDeckReveal({
         if (secsLeft === 0) {
           switchChime.currentTime = 0;
           switchChime.play().catch(function () {});
+          flashLabel();
           loopPending = true;
         }
       }
