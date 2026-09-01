@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="vd94nq">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.7 Designing an App Part 3</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — 3.7 Designing an App Part 3
+   ============================================================ */
+
+/* ─── Numbered setup steps (Slides 4 and 6) ───────────────────────── */
+.setup-steps { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.setup-step { display: flex; align-items: flex-start; gap: 14px; }
+.setup-step-num {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.setup-step p { margin: 0; font-size: var(--body); color: var(--text-muted); line-height: 1.5; padding-top: 4px; }
+.setup-step p strong { color: var(--text); font-weight: 600; }
+
+/* ─── Roles split: driver / navigator (Slide 4) ───────────────────── */
+.roles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); width: 100%; }
+.role-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 18px 22px;
+}
+.role-card h3 {
+  font-family: var(--font-mono);
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+.role-card p { font-size: 19px; line-height: 1.5; color: var(--text-muted); margin: 0; }
+
+/* ─── Interaction chart (Slide 5) ────────────────────────────────── */
+.interaction-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--small);
+}
+.interaction-table th,
+.interaction-table td {
+  border: 1px solid var(--teal-border);
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.5;
+}
+.interaction-table th {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: var(--teal-glow);
+  font-weight: 700;
+}
+.interaction-table td { color: var(--text-muted); }
+.interaction-table tr.example-row td { color: var(--text); }
+.interaction-table td.id-cell { font-family: var(--font-mono); color: var(--amber); white-space: nowrap; }
+.interaction-table tr.blank-row td { height: 58px; }
+
+/* ─── Call-to-action link (Slide 6) ────────────────────────────────── */
+.cta-link {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--teal);
+  background: var(--bg-card);
+  border: 2px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 16px 34px;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: border-color 150ms, background 150ms, box-shadow 150ms;
+}
+.cta-link:hover {
+  border-color: rgba(0,201,177,0.6);
+  background: rgba(0,201,177,0.08);
+  box-shadow: 0 0 24px rgba(0,201,177,0.2);
+  color: var(--teal);
+}
+
+/* ─── Repeating role-switch countdown (Slide 6) ─────────────────────
+   Shared engine with CSP 3.3 (see html5-activities-index.md), extended
+   here with a repeat loop and a 5 / 10 minute length toggle. ───────── */
+.timer-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 440px;
+  margin-top: var(--gap);
+}
+.timer-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+}
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 92px;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1;
+  letter-spacing: -2px;
+  text-align: center;
+  padding: 6px 0;
+  text-shadow: 0 0 32px rgba(0,201,177,0.35);
+  transition: color 0.4s, text-shadow 0.4s;
+}
+.timer-display.warning { color: var(--amber); text-shadow: 0 0 32px rgba(255,212,59,0.4); }
+.timer-display.expired { color: var(--red); text-shadow: 0 0 32px rgba(255,107,107,0.4); }
+.timer-controls { display: flex; gap: 12px; justify-content: center; }
+.timer-btn {
+  padding: 10px 24px;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 2px solid;
+  cursor: pointer;
+  transition: background 100ms, box-shadow 100ms, transform 80ms;
+  letter-spacing: 0.04em;
+  background: transparent;
+}
+.timer-btn:not(:disabled):active { transform: translateY(1px); }
+.timer-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+.timer-btn-start { color: var(--green); border-color: var(--green); }
+.timer-btn-start:not(:disabled):hover { background: rgba(105,219,124,0.14); box-shadow: 0 0 14px rgba(105,219,124,0.2); }
+.timer-btn-stop { color: var(--amber); border-color: var(--amber); }
+.timer-btn-stop:not(:disabled):hover { background: rgba(255,212,59,0.14); box-shadow: 0 0 14px rgba(255,212,59,0.2); }
+.timer-btn-reset { color: var(--text-muted); border-color: var(--teal-border); }
+.timer-btn-reset:not(:disabled):hover { background: rgba(226,245,242,0.06); color: var(--text); }
+.timer-durations { display: flex; gap: 8px; justify-content: center; }
+.timer-dur-btn {
+  padding: 6px 18px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  border: 1px solid var(--teal-border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.timer-dur-btn:hover { color: var(--text); border-color: rgba(0,201,177,0.5); }
+.timer-dur-btn.is-active {
+  background: var(--teal-glow);
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.timer-hint { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); text-align: center; letter-spacing: 0.03em; }
+
+/* ─── Matching Pairs activity (shared mechanism, see CSP 2.4 / 2.5) ─── */
+.match-wrap { display: flex; flex-direction: column; gap: var(--gap); width: 100%; }
+.match-status { display: flex; align-items: center; gap: 14px; }
+.match-status .badge { font-size: var(--small); }
+.match-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap-sm) var(--gap-sm);
+  width: 100%;
+}
+.match-card {
+  all: unset;
+  position: relative;
+  cursor: pointer;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 92px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--text-muted);
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.15s var(--ease);
+}
+.match-card.match-card-term { font-family: var(--font-mono); font-weight: 700; color: var(--text); font-size: 18px; }
+.match-card:hover:not(.mc-matched) { border-color: rgba(0,201,177,0.5); }
+.match-card.mc-selected {
+  border-color: var(--teal);
+  background: var(--teal-glow);
+  box-shadow: 0 0 0 1px rgba(0,201,177,0.35) inset;
+}
+.match-card.mc-matched {
+  cursor: default;
+  border: 2px solid var(--green);
+  background: rgba(105,219,124,0.16);
+  color: var(--text);
+  box-shadow: 0 0 0 1px rgba(105,219,124,0.3) inset, 0 10px 24px rgba(0,0,0,0.3);
+}
+.match-card.match-card-term.mc-matched { color: var(--green); }
+.match-card.mc-matched .mc-badge {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #04150f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+  animation: mc-badge-pop 0.6s var(--ease) both;
+}
+@keyframes mc-badge-pop {
+  0%   { transform: scale(0.2) rotate(-12deg); opacity: 0; }
+  40%  { transform: scale(1.3) rotate(10deg);  opacity: 1; }
+  58%  { transform: scale(0.88) rotate(-6deg);             }
+  72%  { transform: scale(1.12) rotate(4deg);              }
+  86%  { transform: scale(0.96) rotate(-1deg);             }
+  100% { transform: scale(1) rotate(0deg);     opacity: 1; }
+}
+.match-card.mc-wrong {
+  border-color: var(--red);
+  background: rgba(255,107,107,0.08);
+  animation: mc-shake 0.4s var(--ease);
+}
+@keyframes mc-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.match-complete { font-size: var(--body); color: var(--green); font-weight: 600; }
+
+/* Perfect-score overlay — big enough to read from across the room */
+.match-perfect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4,12,11,0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease);
+}
+.match-perfect-overlay.visible { opacity: 1; pointer-events: auto; cursor: pointer; }
+.match-perfect-badge { display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0; }
+.match-perfect-overlay.visible .match-perfect-badge { animation: match-perfect-pop 0.7s var(--ease) both; }
+.match-perfect-check {
+  font-size: 220px;
+  line-height: 1;
+  color: var(--green);
+  filter: drop-shadow(0 0 46px rgba(105,219,124,0.55));
+}
+.match-perfect-text {
+  font-family: var(--font-display);
+  font-size: 84px;
+  font-weight: 700;
+  color: var(--text);
+  text-shadow: 0 0 34px rgba(0,201,177,0.45);
+}
+.match-perfect-hint {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+@keyframes match-perfect-pop {
+  0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  75%  { transform: scale(0.96) rotate(-1deg);             }
+  100% { transform: scale(1) rotate(0deg);    opacity: 1; }
+}
+.badge-pulse-complete {
+  background: rgba(105,219,124,0.18);
+  border-color: rgba(105,219,124,0.6);
+  color: var(--green);
+  animation: badge-pulse-glow 1.6s ease-in-out infinite;
+}
+@keyframes badge-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(105,219,124,0.0); }
+  50% { box-shadow: 0 0 16px 2px rgba(105,219,124,0.45); }
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 3 &middot; Lesson 7</span>
+        <h1 class="title-h1">Designing an App, Part 3</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 2 · FRQ: WHAT MAKES A GOOD PARTNER -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What makes a good partner? Think about a time you worked well with someone on a project, and describe the habits or attitudes that made the partnership work.","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ</span>
+        <h2 style="margin-bottom:var(--gap);">What Makes a Good Partner?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>Think about a time you worked well with someone on a project. Describe the <span style="color:var(--amber);">habits or attitudes</span> that made the partnership work.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 3 · YOU HAVE THE SKILLS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Where We Are</span>
+        <h2 style="margin-bottom:var(--gap);">Time to Write Some Code</h2>
+        <p style="font-size:var(--h3);color:var(--text-muted);max-width:1200px;line-height:1.5;">You now have the skills you need for your project. You know how to work as partners with <span style="color:var(--teal);">pair programming</span>, and you know how to <span style="color:var(--teal);">debug</span> code. Now it is time to put those skills to work and build your app.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 4 · PAIR PROGRAMMING TODAY -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">How We Work Today</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Pair Programming With Your Partner</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.55;margin-bottom:var(--gap);">To start, the partner on the <span style="color:var(--teal);">left</span> is the driver and the partner on the <span style="color:var(--teal);">right</span> is the navigator. Every few minutes I will ask you to switch roles.</p>
+        <div class="roles-grid" style="margin-bottom:var(--gap);">
+          <div class="role-card">
+            <h3>Driver</h3>
+            <p>Controls the keyboard and writes the code the pair has agreed on.</p>
+          </div>
+          <div class="role-card">
+            <h3>Navigator</h3>
+            <p>Keeps their head in the game, watches what the driver is doing, helps them along, and takes notes on the process.</p>
+          </div>
+        </div>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;line-height:1.55;">It is also the navigator&rsquo;s job to pick the radio station.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(255,212,59,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 5 · PROJECT GUIDE: INTERACTION CHART -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:32px;">
+        <span class="slide-tag">Project Guide &middot; Unit 3 App Project</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Fill Out the Chart on Page 4, Step 5</h2>
+        <p style="font-size:var(--small);color:var(--text-muted);max-width:1250px;line-height:1.55;margin-bottom:var(--gap);">List every element the user can interact with, such as a click or a mouse over, how the user interacts with it, and what happens when they do. Use <span style="color:var(--amber);">good element IDs</span>, because clear names make it much easier to keep track of them all when you add the code to your project.</p>
+        <table class="interaction-table">
+          <thead>
+            <tr><th>Element ID</th><th>Action</th><th>What happens?</th></tr>
+          </thead>
+          <tbody>
+            <tr class="example-row"><td class="id-cell">dogButton</td><td>click</td><td>A picture of a dog appears. The background of the screen changes to green.</td></tr>
+            <tr class="blank-row"><td></td><td></td><td></td></tr>
+            <tr class="blank-row"><td></td><td></td><td></td></tr>
+            <tr class="blank-row"><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 6 · OPEN CODE.ORG UNIT 3 LESSON 7 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:28px;">
+        <span class="slide-tag">Get Set Up</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Go to <a href="https://learn.mycode.run/link/xnwmv" target="_blank" rel="noopener" style="color:var(--teal);">Unit 3 Lesson 7 on Code.org</a></h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap-sm);">Just do dot 1 for now. Set up a team with your partner:</p>
+        <div class="split-layout" style="display:flex;gap:var(--gap-lg);align-items:flex-start;width:100%;">
+          <ol class="setup-steps" style="flex:1 1 58%;">
+            <li class="setup-step"><span class="setup-step-num">1</span><p>In the top right corner, click your name.</p></li>
+            <li class="setup-step"><span class="setup-step-num">2</span><p>Click <strong>Pair Programming</strong>.</p></li>
+            <li class="setup-step"><span class="setup-step-num">3</span><p>Choose your partner&rsquo;s name.</p></li>
+            <li class="setup-step"><span class="setup-step-num">4</span><p>Alternate the <strong>driver</strong> and <strong>navigator</strong> roles.</p></li>
+            <li class="setup-step"><span class="setup-step-num">5</span><p>Make sure to <strong>Run</strong> and click <strong>Finish</strong> when you complete the first level. This gives the navigator a copy of your work.</p></li>
+          </ol>
+          <div class="timer-wrap" id="switch-timer" style="flex:0 0 auto;">
+            <div class="timer-label">Switch Driver / Navigator In</div>
+            <div class="timer-display" id="switch-timer-display">05:00</div>
+            <div class="timer-controls">
+              <button class="timer-btn timer-btn-start" id="switch-timer-start">Start</button>
+              <button class="timer-btn timer-btn-stop"  id="switch-timer-stop"  disabled>Stop</button>
+              <button class="timer-btn timer-btn-reset" id="switch-timer-reset">Reset</button>
+            </div>
+            <div class="timer-durations" role="group" aria-label="Timer length">
+              <button class="timer-dur-btn is-active" data-dur="300" id="switch-timer-dur-300">5 min</button>
+              <button class="timer-dur-btn" data-dur="600" id="switch-timer-dur-600">10 min</button>
+            </div>
+            <div class="timer-hint">Chimes and restarts automatically on each cycle.</div>
+          </div>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 7 · FRQ: HOW DOES PAIR PROGRAMMING HELP -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:7:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"How does pair programming help when working on a project? How does it help with the debugging process in particular?","order":0,"responseTimeLimitMs":150000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ</span>
+        <h2 style="margin-bottom:var(--gap);">How Does Pair Programming Help?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>How does pair programming help when you are working on a project? How does it help with the <span style="color:var(--amber);">debugging process</span> in particular?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 8 · MATCHING PAIRS: WRAP-UP VOCABULARY -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:28px;">
+        <span class="slide-tag">Wrap-Up</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Match Each Term to Its Definition</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap-sm);">Click two cards to test whether they match. Each term has one definition somewhere on the board.</p>
+        <div class="match-wrap" id="match-vocab">
+          <div class="match-status">
+            <span class="badge" data-match-score>0 of 8 matched</span>
+            <span class="badge badge-amber" data-match-attempts>0 attempts</span>
+            <span class="match-complete" data-match-complete style="display:none;">Nicely done! You matched every pair.</span>
+          </div>
+          <div class="match-grid" data-match-grid></div>
+        </div>
+      </div>
+      <div class="match-perfect-overlay" data-match-overlay aria-hidden="true">
+        <div class="match-perfect-badge">
+          <span class="match-perfect-check">&#10003;</span>
+          <span class="match-perfect-text">Perfect Match!</span>
+          <span class="match-perfect-hint">Click to keep browsing the board</span>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-3-7-designing-an-app-part-3',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+    /* ── Repeating role-switch countdown (Slide 6) ─────────────────
+       Shared engine with CSP 3.3 (html5-activities-index.md), extended
+       with a repeat loop and a 5 / 10 minute length toggle. When the
+       clock reaches zero it chimes, holds on 00:00 for one second, then
+       restarts from the selected length and keeps running, so pairs get
+       a recurring "swap driver and navigator" nudge. The 5 min / 10 min
+       buttons pick the cycle length; switching stops and resets the
+       clock so the instructor can start the new length cleanly. Like
+       the 3.3 timer, it keeps ticking if you navigate away and is only
+       visible again when you return to the slide.
+       ─────────────────────────────────────────────────────────────── */
+    var switchChime = new Audio('times-up.mp3');
+
+    function makeRepeatingCountdown(id, defaultSecs) {
+      var wrap     = getLiveElementById(id);
+      var displayEl = getLiveElementById(id + '-display');
+      var startBtn  = getLiveElementById(id + '-start');
+      var stopBtn   = getLiveElementById(id + '-stop');
+      var resetBtn  = getLiveElementById(id + '-reset');
+      if (!wrap || !displayEl || !startBtn) return;
+
+      var durBtns  = Array.prototype.slice.call(wrap.querySelectorAll('.timer-dur-btn'));
+      var totalSecs = defaultSecs;
+      var secsLeft  = totalSecs;
+      var running   = false;
+      var interval  = null;
+      var loopPending = false;
+
+      function renderTime() {
+        var m = Math.floor(secsLeft / 60);
+        var s = secsLeft % 60;
+        displayEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        displayEl.classList.toggle('warning', secsLeft > 0 && secsLeft <= 30);
+        displayEl.classList.toggle('expired', secsLeft === 0);
+      }
+
+      function syncButtons() {
+        startBtn.disabled = running;
+        stopBtn.disabled  = !running;
+        durBtns.forEach(function (b) { b.disabled = running; });
+      }
+
+      function stop() {
+        running = false;
+        loopPending = false;
+        clearInterval(interval);
+        interval = null;
+        syncButtons();
+      }
+
+      function tick() {
+        if (loopPending) {
+          loopPending = false;
+          secsLeft = totalSecs;
+          renderTime();
+          return;
+        }
+        if (secsLeft <= 0) { stop(); return; }
+        secsLeft--;
+        renderTime();
+        if (secsLeft === 0) {
+          switchChime.currentTime = 0;
+          switchChime.play().catch(function () {});
+          loopPending = true;
+        }
+      }
+
+      startBtn.addEventListener('click', function () {
+        if (running) return;
+        if (secsLeft === 0) secsLeft = totalSecs;
+        running = true;
+        interval = setInterval(tick, 1000);
+        renderTime();
+        syncButtons();
+      });
+
+      stopBtn.addEventListener('click', stop);
+
+      resetBtn.addEventListener('click', function () {
+        stop();
+        secsLeft = totalSecs;
+        renderTime();
+      });
+
+      durBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var next = parseInt(btn.dataset.dur, 10);
+          if (!next || next === totalSecs) return;
+          totalSecs = next;
+          stop();
+          secsLeft = totalSecs;
+          durBtns.forEach(function (b) { b.classList.toggle('is-active', b === btn); });
+          renderTime();
+        });
+      });
+
+      renderTime();
+      syncButtons();
+    }
+
+    makeRepeatingCountdown('switch-timer', 5 * 60);
+
+    /* ── Matching Pairs ────────────────────────────────────────────
+       Eight vocabulary terms and their eight definitions are dealt onto a
+       single shuffled 4-column board, mirroring a mixed-card matching
+       exercise rather than two sorted lists. Clicking any two cards
+       attempts a match; correct pairs lock in place, incorrect attempts
+       shake and clear the selection. Progress (tile positions, matches,
+       attempts) is saved to sessionStorage on every attempt and restored
+       whenever the slide is re-entered, so navigating away and back does
+       not wipe an in-progress or completed board. A fresh shuffle only
+       happens the first time the slide is seen in a given tab/session.
+       Shared mechanism with CSP 2.4 Routers and 2.5 Packets.
+       ─────────────────────────────────────────────────────────────── */
+    var MATCH_PAIRS = [
+      { id: 'pairprog', term: 'Pair Programming', def: 'Two programmers work together, switching between writing code and planning high-level progress.' },
+      { id: 'documentation', term: 'Documentation', def: 'A written description of how a command or piece of code works or was developed.' },
+      { id: 'comment', term: 'Comment', def: 'Notes written into the code for people to read that do not affect how the program runs.' },
+      { id: 'sequential', term: 'Sequential Programming', def: 'Program statements run in order, from top to bottom.' },
+      { id: 'eventdriven', term: 'Event-Driven Programming', def: 'Some statements run only when triggered by an event such as a mouse click or a key press.' },
+      { id: 'ui', term: 'User Interface', def: 'The inputs and outputs that let a user interact with a piece of software.' },
+      { id: 'input', term: 'Input', def: 'Data sent to a computer for processing by a program.' },
+      { id: 'output', term: 'Output', def: 'Data sent from a program to a device.' },
+    ];
+
+    function getLiveElementById(id) {
+      return Array.prototype.find.call(
+        document.querySelectorAll('#' + id),
+        function(element) { return !element.closest('#storyboard'); }
+      );
+    }
+
+    function shuffled(array) {
+      var copy = array.slice();
+      for (var i = copy.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
+      }
+      return copy;
+    }
+
+    var MATCH_STORAGE_KEY = 'csp-3-7-designing-an-app-part-3:match-vocab';
+
+    function loadMatchState() {
+      try {
+        var raw = sessionStorage.getItem(MATCH_STORAGE_KEY);
+        if (!raw) return null;
+        var parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.tiles) || parsed.tiles.length !== MATCH_PAIRS.length * 2) return null;
+        return parsed;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function saveMatchState(tiles, attempts) {
+      try {
+        sessionStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify({
+          tiles: tiles.map(function(t) { return { id: t.id, isTerm: t.isTerm, matched: t.matched }; }),
+          attempts: attempts,
+        }));
+      } catch (e) {
+        /* storage unavailable (private mode, quota) — activity still works, just won't persist */
+      }
+    }
+
+    function getMatchLabel(id, isTerm) {
+      var pair = MATCH_PAIRS.filter(function(p) { return p.id === id; })[0];
+      return pair ? (isTerm ? pair.term : pair.def) : '';
+    }
+
+    function buildFreshTiles() {
+      var tiles = [];
+      MATCH_PAIRS.forEach(function(pair) {
+        tiles.push({ id: pair.id, isTerm: true, matched: false });
+        tiles.push({ id: pair.id, isTerm: false, matched: false });
+      });
+      return shuffled(tiles);
+    }
+
+    function initMatchingPairs() {
+      var root = getLiveElementById('match-vocab');
+      if (!root) return;
+
+      var gridHost = root.querySelector('[data-match-grid]');
+      var scoreEl = root.querySelector('[data-match-score]');
+      var attemptsEl = root.querySelector('[data-match-attempts]');
+      var completeEl = root.querySelector('[data-match-complete]');
+      var section = root.closest('section');
+      var overlayEl = section ? section.querySelector('[data-match-overlay]') : null;
+      if (overlayEl) {
+        overlayEl.addEventListener('click', function() {
+          overlayEl.classList.remove('visible');
+        });
+      }
+
+      var tiles = [];
+      var matched = 0;
+      var attempts = 0;
+      var selected = null;
+
+      function updateStatus() {
+        scoreEl.textContent = matched + ' of ' + MATCH_PAIRS.length + ' matched';
+        attemptsEl.textContent = attempts + (attempts === 1 ? ' attempt' : ' attempts');
+        var isComplete = matched === MATCH_PAIRS.length;
+        /* "Perfect" means every attempt was a correct match, not just that
+           the board eventually got fully matched after some wrong guesses. */
+        var isPerfect = isComplete && attempts === MATCH_PAIRS.length;
+        completeEl.style.display = isComplete ? 'inline' : 'none';
+        if (overlayEl) overlayEl.classList.toggle('visible', isPerfect);
+        attemptsEl.classList.toggle('badge-amber', !isPerfect);
+        attemptsEl.classList.toggle('badge-pulse-complete', isPerfect);
+      }
+
+      function persist() {
+        saveMatchState(tiles, attempts);
+      }
+
+      function markMatched(card, tile) {
+        tile.matched = true;
+        card.classList.remove('mc-selected');
+        card.classList.add('mc-matched');
+        card.setAttribute('aria-disabled', 'true');
+        var badge = document.createElement('span');
+        badge.className = 'mc-badge';
+        badge.setAttribute('aria-hidden', 'true');
+        badge.textContent = '✓';
+        card.appendChild(badge);
+      }
+
+      function attemptMatch(a, b) {
+        attempts++;
+        var tileA = tiles[a.dataset.idx];
+        var tileB = tiles[b.dataset.idx];
+        if (a.dataset.matchId === b.dataset.matchId) {
+          markMatched(a, tileA);
+          markMatched(b, tileB);
+          matched++;
+        } else {
+          a.classList.add('mc-wrong');
+          b.classList.add('mc-wrong');
+          setTimeout(function() {
+            a.classList.remove('mc-wrong', 'mc-selected');
+            b.classList.remove('mc-wrong', 'mc-selected');
+          }, 400);
+        }
+        selected = null;
+        updateStatus();
+        persist();
+      }
+
+      function makeCard(tile, idx) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'match-card' + (tile.isTerm ? ' match-card-term' : '');
+        btn.dataset.matchId = tile.id;
+        btn.dataset.idx = idx;
+        btn.textContent = getMatchLabel(tile.id, tile.isTerm);
+        if (tile.matched) markMatched(btn, tile);
+        btn.addEventListener('click', function() {
+          if (btn.classList.contains('mc-matched')) return;
+          if (selected === btn) {
+            btn.classList.remove('mc-selected');
+            selected = null;
+            return;
+          }
+          if (selected) {
+            btn.classList.add('mc-selected');
+            attemptMatch(selected, btn);
+          } else {
+            selected = btn;
+            btn.classList.add('mc-selected');
+          }
+        });
+        return btn;
+      }
+
+      function paint() {
+        gridHost.innerHTML = '';
+        selected = null;
+        matched = 0;
+        tiles.forEach(function(tile, idx) {
+          if (tile.matched) matched++;
+          gridHost.appendChild(makeCard(tile, idx));
+        });
+        matched = matched / 2;
+        updateStatus();
+      }
+
+      function renderFresh() {
+        tiles = buildFreshTiles();
+        attempts = 0;
+        paint();
+        persist();
+      }
+
+      function renderFromStorageOrFresh() {
+        var saved = loadMatchState();
+        if (saved) {
+          tiles = saved.tiles;
+          attempts = saved.attempts || 0;
+          paint();
+        } else {
+          renderFresh();
+        }
+      }
+
+      renderFromStorageOrFresh();
+
+      Reveal.on('slidechanged', function(event) {
+        if (event.currentSlide === root.closest('section')) renderFromStorageOrFresh();
+      });
+    }
+
+    initMatchingPairs();
+
+  },
+});
+</script>
+</body>
+</html>

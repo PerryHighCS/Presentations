@@ -111,6 +111,77 @@
 .vocab-doc-row { display: flex; gap: 14px; align-items: flex-start; }
 .vocab-doc-row > div { flex: 1 1 0; min-width: 0; }
 .vocab-shots .shot-card img { max-height: 240px; width: 100%; object-fit: contain; }
+
+/* ─── Repeating role-switch countdown (Slide 9) ─────────────────────
+   Shared engine with CSP 3.3 / 3.7 (see html5-activities-index.md),
+   with a repeat loop and a 5 / 10 minute length toggle. ───────────── */
+.timer-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 440px;
+  margin-top: var(--gap);
+}
+.timer-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+}
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 92px;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1;
+  letter-spacing: -2px;
+  text-align: center;
+  padding: 6px 0;
+  text-shadow: 0 0 32px rgba(0,201,177,0.35);
+  transition: color 0.4s, text-shadow 0.4s;
+}
+.timer-display.warning { color: var(--amber); text-shadow: 0 0 32px rgba(255,212,59,0.4); }
+.timer-display.expired { color: var(--red); text-shadow: 0 0 32px rgba(255,107,107,0.4); }
+.timer-controls { display: flex; gap: 12px; justify-content: center; }
+.timer-btn {
+  padding: 10px 24px;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 2px solid;
+  cursor: pointer;
+  transition: background 100ms, box-shadow 100ms, transform 80ms;
+  letter-spacing: 0.04em;
+  background: transparent;
+}
+.timer-btn:not(:disabled):active { transform: translateY(1px); }
+.timer-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+.timer-btn-start { color: var(--green); border-color: var(--green); }
+.timer-btn-start:not(:disabled):hover { background: rgba(105,219,124,0.14); box-shadow: 0 0 14px rgba(105,219,124,0.2); }
+.timer-btn-stop { color: var(--amber); border-color: var(--amber); }
+.timer-btn-stop:not(:disabled):hover { background: rgba(255,212,59,0.14); box-shadow: 0 0 14px rgba(255,212,59,0.2); }
+.timer-btn-reset { color: var(--text-muted); border-color: var(--teal-border); }
+.timer-btn-reset:not(:disabled):hover { background: rgba(226,245,242,0.06); color: var(--text); }
+.timer-durations { display: flex; gap: 8px; justify-content: center; }
+.timer-dur-btn {
+  padding: 6px 18px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  border: 1px solid var(--teal-border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.timer-dur-btn:hover { color: var(--text); border-color: rgba(0,201,177,0.5); }
+.timer-dur-btn.is-active { background: var(--teal-glow); border-color: var(--teal); color: var(--teal); }
+.timer-hint { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); text-align: center; letter-spacing: 0.03em; }
 </style>
 </head>
 <body>
@@ -245,14 +316,30 @@
       <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
         <span class="slide-tag">Get Set Up</span>
         <h2 style="margin-bottom:var(--gap-sm);">Open <a href="https://learn.mycode.run/link/xnwmd" target="_blank" rel="noopener" style="color:var(--teal);">Code.org Unit 3 Lesson 6</a></h2>
-        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">Set up a team with your partner:</p>
-        <ol class="setup-steps">
-          <li class="setup-step"><span class="setup-step-num">1</span><p>In the top right corner, click your name.</p></li>
-          <li class="setup-step"><span class="setup-step-num">2</span><p>Click <strong>Pair Programming</strong>.</p></li>
-          <li class="setup-step"><span class="setup-step-num">3</span><p>Choose your partner&rsquo;s name.</p></li>
-          <li class="setup-step"><span class="setup-step-num">4</span><p>Alternate the <strong>driver</strong> and <strong>navigator</strong> roles.</p></li>
-          <li class="setup-step"><span class="setup-step-num">5</span><p>Make sure to <strong>Run</strong> and click <strong>Finish</strong> when you complete each level. This gives the navigator a copy of your work.</p></li>
-        </ol>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap-sm);">Set up a team with your partner:</p>
+        <div style="display:flex;gap:var(--gap-lg);align-items:flex-start;width:100%;">
+          <ol class="setup-steps" style="flex:1 1 58%;">
+            <li class="setup-step"><span class="setup-step-num">1</span><p>In the top right corner, click your name.</p></li>
+            <li class="setup-step"><span class="setup-step-num">2</span><p>Click <strong>Pair Programming</strong>.</p></li>
+            <li class="setup-step"><span class="setup-step-num">3</span><p>Choose your partner&rsquo;s name.</p></li>
+            <li class="setup-step"><span class="setup-step-num">4</span><p>Alternate the <strong>driver</strong> and <strong>navigator</strong> roles.</p></li>
+            <li class="setup-step"><span class="setup-step-num">5</span><p>Make sure to <strong>Run</strong> and click <strong>Finish</strong> when you complete each level. This gives the navigator a copy of your work.</p></li>
+          </ol>
+          <div class="timer-wrap" id="switch-timer" style="flex:0 0 auto;">
+            <div class="timer-label">Switch Driver / Navigator In</div>
+            <div class="timer-display" id="switch-timer-display">05:00</div>
+            <div class="timer-controls">
+              <button class="timer-btn timer-btn-start" id="switch-timer-start">Start</button>
+              <button class="timer-btn timer-btn-stop"  id="switch-timer-stop"  disabled>Stop</button>
+              <button class="timer-btn timer-btn-reset" id="switch-timer-reset">Reset</button>
+            </div>
+            <div class="timer-durations" role="group" aria-label="Timer length">
+              <button class="timer-dur-btn is-active" data-dur="300" id="switch-timer-dur-300">5 min</button>
+              <button class="timer-dur-btn" data-dur="600" id="switch-timer-dur-600">10 min</button>
+            </div>
+            <div class="timer-hint">Chimes and restarts automatically on each cycle.</div>
+          </div>
+        </div>
       </div>
       <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
     </section>
@@ -382,6 +469,118 @@ initSyncDeckReveal({
     margin: 0.04,
     minScale: 0.2,
     maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+    /* ── Repeating role-switch countdown (Slide 9) ─────────────────
+       Shared engine with CSP 3.3 / 3.7 (html5-activities-index.md),
+       extended with a repeat loop and a 5 / 10 minute length toggle.
+       When the clock reaches zero it chimes, holds on 00:00 for one
+       second, then restarts from the selected length and keeps
+       running, so pairs get a recurring "swap driver and navigator"
+       nudge. The 5 min / 10 min buttons pick the cycle length;
+       switching stops and resets the clock so the instructor can
+       start the new length cleanly. It keeps ticking if you navigate
+       away and is only visible again when you return to the slide.
+       ─────────────────────────────────────────────────────────────── */
+    function getLiveElementById(id) {
+      return Array.prototype.find.call(
+        document.querySelectorAll('#' + id),
+        function(element) { return !element.closest('#storyboard'); }
+      );
+    }
+
+    var switchChime = new Audio('times-up.mp3');
+
+    function makeRepeatingCountdown(id, defaultSecs) {
+      var wrap      = getLiveElementById(id);
+      var displayEl = getLiveElementById(id + '-display');
+      var startBtn  = getLiveElementById(id + '-start');
+      var stopBtn   = getLiveElementById(id + '-stop');
+      var resetBtn  = getLiveElementById(id + '-reset');
+      if (!wrap || !displayEl || !startBtn) return;
+
+      var durBtns  = Array.prototype.slice.call(wrap.querySelectorAll('.timer-dur-btn'));
+      var totalSecs = defaultSecs;
+      var secsLeft  = totalSecs;
+      var running   = false;
+      var interval  = null;
+      var loopPending = false;
+
+      function renderTime() {
+        var m = Math.floor(secsLeft / 60);
+        var s = secsLeft % 60;
+        displayEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        displayEl.classList.toggle('warning', secsLeft > 0 && secsLeft <= 30);
+        displayEl.classList.toggle('expired', secsLeft === 0);
+      }
+
+      function syncButtons() {
+        startBtn.disabled = running;
+        stopBtn.disabled  = !running;
+        durBtns.forEach(function (b) { b.disabled = running; });
+      }
+
+      function stop() {
+        running = false;
+        loopPending = false;
+        clearInterval(interval);
+        interval = null;
+        syncButtons();
+      }
+
+      function tick() {
+        if (loopPending) {
+          loopPending = false;
+          secsLeft = totalSecs;
+          renderTime();
+          return;
+        }
+        if (secsLeft <= 0) { stop(); return; }
+        secsLeft--;
+        renderTime();
+        if (secsLeft === 0) {
+          switchChime.currentTime = 0;
+          switchChime.play().catch(function () {});
+          loopPending = true;
+        }
+      }
+
+      startBtn.addEventListener('click', function () {
+        if (running) return;
+        if (secsLeft === 0) secsLeft = totalSecs;
+        running = true;
+        interval = setInterval(tick, 1000);
+        renderTime();
+        syncButtons();
+      });
+
+      stopBtn.addEventListener('click', stop);
+
+      resetBtn.addEventListener('click', function () {
+        stop();
+        secsLeft = totalSecs;
+        renderTime();
+      });
+
+      durBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var next = parseInt(btn.dataset.dur, 10);
+          if (!next || next === totalSecs) return;
+          totalSecs = next;
+          stop();
+          secsLeft = totalSecs;
+          durBtns.forEach(function (b) { b.classList.toggle('is-active', b === btn); });
+          renderTime();
+        });
+      });
+
+      renderTime();
+      syncButtons();
+    }
+
+    makeRepeatingCountdown('switch-timer', 5 * 60);
+
   },
 });
 </script>
