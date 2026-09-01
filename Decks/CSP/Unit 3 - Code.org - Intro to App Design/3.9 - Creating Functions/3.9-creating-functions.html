@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="2skbw1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.9 Creating Functions</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — 3.9 Creating Functions
+   ============================================================ */
+
+/* ─── Call-to-action link (Slide 6) ───────────────────────────────── */
+.cta-link {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--teal);
+  background: var(--bg-card);
+  border: 2px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 16px 34px;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: border-color 150ms, background 150ms, box-shadow 150ms;
+}
+.cta-link:hover {
+  border-color: rgba(0,201,177,0.6);
+  background: rgba(0,201,177,0.08);
+  box-shadow: 0 0 24px rgba(0,201,177,0.2);
+  color: var(--teal);
+}
+
+/* ─── Slide 6 layout: instructions beside the swap timer ──────────── */
+.coding-row { display: flex; gap: var(--gap-lg); align-items: flex-start; width: 100%; }
+.coding-col { flex: 1 1 56%; display: flex; flex-direction: column; gap: var(--gap); align-items: flex-start; }
+
+/* ─── Pair Programming guide button ──────────────────────────────── */
+.guide-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--amber);
+  background: rgba(255,212,59,0.06);
+  border: 1px solid var(--amber-border);
+  border-radius: 8px;
+  padding: 12px 22px;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 140ms, border-color 140ms, box-shadow 140ms;
+}
+.guide-btn:hover {
+  background: rgba(255,212,59,0.12);
+  border-color: rgba(255,212,59,0.6);
+  box-shadow: 0 0 18px rgba(255,212,59,0.18);
+}
+.guide-btn::before { content: '\24D8'; font-size: 1.15em; }
+
+/* ─── Pair Programming modal ─────────────────────────────────────── */
+.pp-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: rgba(4,10,9,0.82);
+  backdrop-filter: blur(3px);
+}
+.pp-modal[hidden] { display: none; }
+.pp-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 12px;
+  padding: 44px 52px;
+  box-shadow: 0 26px 70px rgba(0,0,0,0.55);
+}
+.pp-modal-card h3 {
+  font-size: var(--h2);
+  color: var(--text);
+  margin-bottom: var(--gap);
+}
+.pp-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--teal-border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.pp-modal-close:hover { background: rgba(226,245,242,0.08); color: var(--text); border-color: rgba(0,201,177,0.5); }
+.pp-roles { display: flex; gap: var(--gap); width: 100%; margin-bottom: var(--gap); }
+.pp-role {
+  flex: 1 1 0;
+  background: rgba(0,201,177,0.04);
+  border: 1px solid var(--teal-border);
+  border-radius: 10px;
+  padding: 20px 24px;
+}
+.pp-role.navigator { background: rgba(255,212,59,0.05); border-color: var(--amber-border); }
+.pp-role-label {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--h3);
+  margin-bottom: var(--gap-sm);
+}
+.pp-role.driver .pp-role-label { color: var(--teal); }
+.pp-role.navigator .pp-role-label { color: var(--amber); }
+.pp-role p { font-size: var(--small); color: var(--text-muted); line-height: 1.5; }
+.pp-modal-card .setup-steps { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.pp-modal-card .setup-step { display: flex; align-items: flex-start; gap: 14px; }
+.pp-modal-card .setup-step-num {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--teal-glow);
+  border: 1px solid var(--teal-border);
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pp-modal-card .setup-step p { margin: 0; font-size: var(--small); color: var(--text-muted); line-height: 1.5; padding-top: 3px; }
+.pp-modal-card .setup-step p strong { color: var(--text); font-weight: 600; }
+
+/* ─── Repeating role-switch countdown (shared engine with CSP 3.3 / 3.5 / 3.6 / 3.8,
+   see html5-activities-index.md), with a 3 / 5 / 10 minute length toggle. ─── */
+.timer-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 440px;
+  flex: 0 0 auto;
+}
+.timer-label {
+  font-family: var(--font-mono);
+  font-size: var(--tag);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+}
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 92px;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1;
+  letter-spacing: -2px;
+  text-align: center;
+  padding: 6px 0;
+  text-shadow: 0 0 32px rgba(0,201,177,0.35);
+  transition: color 0.4s, text-shadow 0.4s;
+}
+.timer-display.warning { color: var(--amber); text-shadow: 0 0 32px rgba(255,212,59,0.4); }
+.timer-display.expired { color: var(--red); text-shadow: 0 0 32px rgba(255,107,107,0.4); }
+.timer-controls { display: flex; gap: 12px; justify-content: center; }
+.timer-btn {
+  padding: 10px 24px;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 2px solid;
+  cursor: pointer;
+  transition: background 100ms, box-shadow 100ms, transform 80ms;
+  letter-spacing: 0.04em;
+  background: transparent;
+}
+.timer-btn:not(:disabled):active { transform: translateY(1px); }
+.timer-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+.timer-btn-start { color: var(--green); border-color: var(--green); }
+.timer-btn-start:not(:disabled):hover { background: rgba(105,219,124,0.14); box-shadow: 0 0 14px rgba(105,219,124,0.2); }
+.timer-btn-stop { color: var(--amber); border-color: var(--amber); }
+.timer-btn-stop:not(:disabled):hover { background: rgba(255,212,59,0.14); box-shadow: 0 0 14px rgba(255,212,59,0.2); }
+.timer-btn-reset { color: var(--text-muted); border-color: var(--teal-border); }
+.timer-btn-reset:not(:disabled):hover { background: rgba(226,245,242,0.06); color: var(--text); }
+.timer-durations { display: flex; gap: 8px; justify-content: center; }
+.timer-dur-btn {
+  padding: 6px 18px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  border: 1px solid var(--teal-border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.timer-dur-btn:hover { color: var(--text); border-color: rgba(0,201,177,0.5); }
+.timer-dur-btn.is-active { background: var(--teal-glow); border-color: var(--teal); color: var(--teal); }
+.timer-hint { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); text-align: center; letter-spacing: 0.03em; }
+.timer-label.is-flashing { animation: timer-label-flash 0.44s steps(1, end) infinite; }
+@keyframes timer-label-flash {
+  0%, 100% { color: var(--amber); opacity: 1; text-shadow: 0 0 16px rgba(255,212,59,0.65); }
+  50%      { color: var(--text-dim); opacity: 0.3; text-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .timer-label.is-flashing { animation: none; color: var(--amber); opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 3 &middot; Lesson 3.9</span>
+        <h1 class="title-h1">Creating Functions</h1>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 2 · FRQ: A COMMAND YOU WISHED FOR -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"In the previous lesson we created simple turtle drawings using only four commands. At some point you probably wished that more commands were available to you. Describe a command you wanted to be able to use and explain why you wanted to use it.","order":0,"responseTimeLimitMs":150000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ</span>
+        <h2 style="margin-bottom:var(--gap);">A Command You Wished For</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>In the previous lesson we created simple turtle drawings using only <span style="color:var(--teal);">four commands</span>. At some point you probably wished that more commands were available to you. Describe a command you wanted to be able to use and explain <span style="color:var(--amber);">why</span> you wanted to use it.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 3 · YOUR VERY OWN COMMANDS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Why This Matters</span>
+        <h2 style="margin-bottom:var(--gap);">Your Very Own Commands</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;">Every programming language comes with commands that are already defined, but there will be many times when the exact command you want is not available.</p>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.65;margin-top:var(--gap-sm);">Today we start exploring a powerful feature of most programming languages that solves this problem: it lets you <span style="color:var(--teal);">create commands of your own</span>. Let&rsquo;s see how this works.</p>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 4 · VIDEO: FUNCTIONS -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:4:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=yPWQfa4CHbw"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Functions</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);margin-bottom:var(--gap);">A short Code.org video on why programmers write their own commands, and how a function lets you name a block of code and reuse it.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 5 · MCQ: WHAT IS A FUNCTION -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:5:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What is a function in JavaScript?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"A sequence of commands to perform an action.","isCorrect":false},{"id":"q1b","text":"A set of actions given a single name.","isCorrect":true},{"id":"q1c","text":"A way to define new procedures.","isCorrect":false},{"id":"q1d","text":"A way to call turtle commands.","isCorrect":false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Multiple Choice</span>
+        <h2 style="margin-bottom:var(--gap);">What Is a Function?</h2>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>What is a <span style="color:var(--teal);">function</span> in JavaScript?</p>
+        </div>
+        <ul class="mcq-opts" style="max-width:1250px;">
+          <li><span class="opt-key">A</span> A sequence of commands to perform an action.</li>
+          <li><span class="opt-key">B</span> A set of actions given a single name.</li>
+          <li><span class="opt-key">C</span> A way to define new procedures.</li>
+          <li><span class="opt-key">D</span> A way to call turtle commands.</li>
+        </ul>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 6 · JUMP TO CODE.ORG -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Get Coding</span>
+        <h2 style="margin-bottom:var(--gap);">Creating Functions on Code.org</h2>
+        <div class="coding-row">
+          <div class="coding-col">
+            <a class="cta-link" href="https://learn.mycode.run/link/xnwmq" target="_blank" rel="noopener">Open Code.org Unit 3 Lesson 9 &nearr;</a>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">Complete <span style="color:var(--teal);">dots 3 through 10</span> using Pair Programming, and swap the driver and navigator roles when the timer chimes. Talk through <span style="color:var(--amber);">dot 6</span> carefully with your partner: it matters going into the AP Create Task.</p>
+            <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;">Dots 11 through 14 are on your own, though you may still discuss them with your partner.</p>
+            <button type="button" class="guide-btn" id="pp-guide-open">Pair Programming Guide</button>
+          </div>
+          <div class="timer-wrap" id="switch-timer">
+            <div class="timer-label">Switch Driver / Navigator In</div>
+            <div class="timer-display" id="switch-timer-display">03:00</div>
+            <div class="timer-controls">
+              <button class="timer-btn timer-btn-start" id="switch-timer-start">Start</button>
+              <button class="timer-btn timer-btn-stop"  id="switch-timer-stop"  disabled>Stop</button>
+              <button class="timer-btn timer-btn-reset" id="switch-timer-reset">Reset</button>
+            </div>
+            <div class="timer-durations" role="group" aria-label="Timer length">
+              <button class="timer-dur-btn is-active" data-dur="180" id="switch-timer-dur-180">3 min</button>
+              <button class="timer-dur-btn" data-dur="300" id="switch-timer-dur-300">5 min</button>
+              <button class="timer-dur-btn" data-dur="600" id="switch-timer-dur-600">10 min</button>
+            </div>
+            <div class="timer-hint">Chimes and restarts automatically on each cycle.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pp-modal" id="pp-guide-modal" hidden>
+        <div class="pp-modal-card" role="dialog" aria-modal="true" aria-labelledby="pp-guide-title">
+          <button type="button" class="pp-modal-close" id="pp-guide-close" aria-label="Close">&times;</button>
+          <h3 id="pp-guide-title">Pair Programming</h3>
+          <div class="pp-roles">
+            <div class="pp-role driver">
+              <div class="pp-role-label">Driver</div>
+              <p>Controls the keyboard and the mouse, and types the code.</p>
+            </div>
+            <div class="pp-role navigator">
+              <div class="pp-role-label">Navigator</div>
+              <p>Keeps track of the big picture and guides the driver toward the goal.</p>
+            </div>
+          </div>
+          <p style="font-size:var(--body);color:var(--text-muted);line-height:1.6;margin-bottom:var(--gap);"><span style="color:var(--amber);">Swap roles often.</span> When the timer chimes, trade the keyboard so both partners spend time driving and navigating.</p>
+          <ol class="setup-steps">
+            <li class="setup-step"><span class="setup-step-num">1</span><p>In the top right corner, click your name.</p></li>
+            <li class="setup-step"><span class="setup-step-num">2</span><p>Click <strong>&ldquo;Pair Programming.&rdquo;</strong></p></li>
+            <li class="setup-step"><span class="setup-step-num">3</span><p>Choose your partner&rsquo;s name.</p></li>
+            <li class="setup-step"><span class="setup-step-num">4</span><p>Alternate driver and navigator roles as you work.</p></li>
+            <li class="setup-step"><span class="setup-step-num">5</span><p>Make sure to <strong>Run</strong> and click <strong>Finish</strong> when you complete each level. This gives the navigator a copy of your work too.</p></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 7 · FRQ: FUNCTIONS AND ABSTRACTION -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:7:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"An abstraction is a general concept or idea, rather than something concrete or tangible. In computer science, abstraction reduces complexity by removing unnecessary information. How is the use of a function an example of abstraction?","order":0,"responseTimeLimitMs":150000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">FRQ</span>
+        <h2 style="margin-bottom:var(--gap);">Functions and Abstraction</h2>
+        <p style="font-size:var(--body);color:var(--text-muted);max-width:1250px;line-height:1.6;margin-bottom:var(--gap);">An <span style="color:var(--teal);">abstraction</span> is a general concept or idea, rather than something concrete or tangible. In computer science, abstraction reduces complexity by removing unnecessary information.</p>
+        <div class="frq-box" style="max-width:1250px;">
+          <p>How is the use of a function an example of <span style="color:var(--teal);">abstraction</span>?</p>
+        </div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-3-9-creating-functions',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+    /* Find a live slide element by id, ignoring storyboard thumbnail clones. */
+    function getLiveElementById(id) {
+      return Array.prototype.find.call(
+        document.querySelectorAll('#' + id),
+        function(element) { return !element.closest('#storyboard'); }
+      );
+    }
+
+    /* ── Pair Programming guide modal (Slide 6) ───────────────────────
+       Summarises the driver / navigator explanation and Code.org
+       team-setup steps from CSP 3.5 in a popup so the coding slide
+       stays uncluttered. ─────────────────────────────────────────── */
+    (function initPairProgrammingModal() {
+      var openBtn  = getLiveElementById('pp-guide-open');
+      var modal    = getLiveElementById('pp-guide-modal');
+      var closeBtn = getLiveElementById('pp-guide-close');
+      if (!openBtn || !modal || !closeBtn) return;
+
+      function open() { modal.hidden = false; closeBtn.focus(); }
+      function close() { modal.hidden = true; openBtn.focus(); }
+
+      openBtn.addEventListener('click', open);
+      closeBtn.addEventListener('click', close);
+      modal.addEventListener('click', function(event) {
+        if (event.target === modal) close();
+      });
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && !modal.hidden) {
+          event.stopPropagation();
+          close();
+        }
+      }, true);
+    })();
+
+    /* ── Repeating role-switch countdown (Slide 6) ────────────────────
+       Shared engine with CSP 3.3 / 3.5 / 3.6 / 3.8 (html5-activities-index.md),
+       with a repeat loop and a 3 / 5 / 10 minute length toggle. When the
+       clock reaches zero it chimes, holds on 00:00 for one second, then
+       restarts from the selected length and keeps running, so pairs get
+       a recurring "swap driver and navigator" nudge. The 3 / 5 / 10 min
+       buttons pick the cycle length; switching stops and resets the
+       clock so the instructor can start the new length cleanly. It keeps
+       ticking if you navigate away and is only visible again when you
+       return to the slide. ─────────────────────────────────────────── */
+    var switchChime = new Audio('times-up.mp3');
+
+    function makeRepeatingCountdown(id, defaultSecs) {
+      var wrap      = getLiveElementById(id);
+      var displayEl = getLiveElementById(id + '-display');
+      var startBtn  = getLiveElementById(id + '-start');
+      var stopBtn   = getLiveElementById(id + '-stop');
+      var resetBtn  = getLiveElementById(id + '-reset');
+      if (!wrap || !displayEl || !startBtn) return;
+
+      var durBtns  = Array.prototype.slice.call(wrap.querySelectorAll('.timer-dur-btn'));
+      var labelEl  = wrap.querySelector('.timer-label');
+      var totalSecs = defaultSecs;
+      var secsLeft  = totalSecs;
+      var running   = false;
+      var interval  = null;
+      var loopPending = false;
+      var flashTimer = null;
+
+      function clearFlash() {
+        if (labelEl) labelEl.classList.remove('is-flashing');
+        if (flashTimer) { clearTimeout(flashTimer); flashTimer = null; }
+      }
+
+      function flashLabel() {
+        if (!labelEl) return;
+        labelEl.classList.add('is-flashing');
+        if (flashTimer) clearTimeout(flashTimer);
+        flashTimer = setTimeout(clearFlash, 3000);
+      }
+
+      switchChime.addEventListener('ended', clearFlash);
+
+      function renderTime() {
+        var m = Math.floor(secsLeft / 60);
+        var s = secsLeft % 60;
+        displayEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        displayEl.classList.toggle('warning', secsLeft > 0 && secsLeft <= 30);
+        displayEl.classList.toggle('expired', secsLeft === 0);
+      }
+
+      function syncButtons() {
+        startBtn.disabled = running;
+        stopBtn.disabled  = !running;
+        durBtns.forEach(function (b) { b.disabled = running; });
+      }
+
+      function stop() {
+        running = false;
+        loopPending = false;
+        clearInterval(interval);
+        interval = null;
+        clearFlash();
+        syncButtons();
+      }
+
+      function tick() {
+        if (loopPending) {
+          loopPending = false;
+          secsLeft = totalSecs;
+          renderTime();
+          return;
+        }
+        if (secsLeft <= 0) { stop(); return; }
+        secsLeft--;
+        renderTime();
+        if (secsLeft === 0) {
+          switchChime.currentTime = 0;
+          switchChime.play().catch(function () {});
+          flashLabel();
+          loopPending = true;
+        }
+      }
+
+      startBtn.addEventListener('click', function () {
+        if (running) return;
+        if (secsLeft === 0) secsLeft = totalSecs;
+        running = true;
+        interval = setInterval(tick, 1000);
+        renderTime();
+        syncButtons();
+      });
+
+      stopBtn.addEventListener('click', stop);
+
+      resetBtn.addEventListener('click', function () {
+        stop();
+        secsLeft = totalSecs;
+        renderTime();
+      });
+
+      durBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var next = parseInt(btn.dataset.dur, 10);
+          if (!next || next === totalSecs) return;
+          totalSecs = next;
+          stop();
+          secsLeft = totalSecs;
+          durBtns.forEach(function (b) { b.classList.toggle('is-active', b === btn); });
+          renderTime();
+        });
+      });
+
+      renderTime();
+      syncButtons();
+    }
+
+    makeRepeatingCountdown('switch-timer', 3 * 60);
+
+  },
+});
+</script>
+</body>
+</html>
