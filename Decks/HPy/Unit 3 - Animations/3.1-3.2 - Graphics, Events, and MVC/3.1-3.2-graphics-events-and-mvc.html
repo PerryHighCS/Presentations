@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="a76zjq">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.1-3.2 Graphics, Events, and MVC</title>
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../../theme.css">
+<style>
+  /* ── Deck-specific: coordinate/anatomy diagrams and the MVC legend ─── */
+  .diagram { display: block; margin: 0 auto; max-width: 100%; height: auto; overflow: visible; }
+  .diagram text { font-family: var(--font-mono); font-size: 13px; fill: var(--text-muted); }
+  .diagram .dim { fill: var(--text-dim); }
+  .diagram .axis { stroke: var(--accent); stroke-width: 2; }
+  .diagram .edge { stroke: var(--accent-border); stroke-width: 1.5; }
+  .diagram .rect-fill { fill: rgba(242,177,52,0.14); stroke: var(--accent); stroke-width: 2; }
+
+  /* This deck shows real cmu_graphics lines, which run a little long.
+     Nudge the code down a size and let a stray long line scroll rather
+     than clip inside the rounded card. */
+  .code-body { overflow-x: auto; }
+  .code-body pre code { font-size: 17px; line-height: 1.65; }
+
+  /* ── Slide 17: simulated "run" of the onMousePress program ──────────
+     A fake Run button opens an absolutely-positioned overlay (sibling of
+     .slide-inner, so it scales with Reveal's canvas) holding a blank
+     400x400 "app window" and a console. Clicking the window appends the
+     same line the real print() would, with (x, y) in 0..400 canvas
+     coordinates. Nothing is ever drawn, because the program has no
+     redrawAll. */
+  .sim-run {
+    margin-top: var(--gap-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-mono);
+    font-size: var(--small);
+    font-weight: 700;
+    color: var(--result);
+    background: rgba(124,217,146,0.10);
+    border: 1px solid rgba(124,217,146,0.4);
+    border-radius: 8px;
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
+  }
+  .sim-run:hover { background: rgba(124,217,146,0.18); border-color: var(--result); }
+  .sim-run:focus-visible { outline: 2px solid var(--result); outline-offset: 2px; }
+
+  .sim-modal {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8,6,4,0.74);
+  }
+  .sim-modal.is-open { display: flex; }
+
+  .sim-panel {
+    width: 520px;
+    background: var(--bg-card);
+    border: 1px solid var(--accent-border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+  }
+  .sim-panel-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--accent-border);
+    font-family: var(--font-mono);
+    font-size: var(--small);
+    color: var(--text-dim);
+  }
+  .sim-close {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+  .sim-close:hover { color: var(--warn); }
+
+  .sim-stage {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+  .sim-canvas {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    background: #ffffff;
+    border: 1px solid var(--accent-border);
+    cursor: crosshair;
+    overflow: hidden;
+  }
+  .sim-canvas-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    color: #9aa3ab;
+    pointer-events: none;
+  }
+  .sim-dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+    border: 2px solid rgba(242,177,52,0.9);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: sim-dot 0.5s var(--ease) forwards;
+  }
+  @keyframes sim-dot {
+    from { opacity: 1; transform: scale(0.4); }
+    to   { opacity: 0; transform: scale(1.7); }
+  }
+
+  .sim-console { border-top: 1px solid var(--accent-border); }
+  .sim-console-bar {
+    padding: 6px 16px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: rgba(0,0,0,0.28);
+  }
+  .sim-console-out {
+    height: 128px;
+    overflow-y: auto;
+    padding: 10px 16px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--result);
+    background: #0c0906;
+    white-space: pre-wrap;
+  }
+  .sim-console-out .sim-idle { color: var(--text-dim); }
+
+  .sim-rect {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background: #00ffff;
+    left: 100px;
+    top: 200px;
+    transition: left 0.13s var(--ease), top 0.13s var(--ease);
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sim-dot { animation: none; opacity: 0; }
+    .sim-rect { transition: none; }
+  }
+
+  /* ── Slide 21: drag the program's parts into Model / View / Controller ──
+     Adapted from the CSP "commit-then-check classifier with perfect
+     overlay" (Decks/CSP/.../3.2-introduction-to-design-mode.html). Chips
+     are styled as code and dragged out of a read-only program listing;
+     Check locks the board, marks each chip, and a clean score pops a
+     full-slide "Nailed it!" overlay. */
+  .mvc-sort { width: 100%; }
+  .mvc-sort-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--gap-lg);
+    align-items: start;
+  }
+  .mvc-sort-code .code-body pre code { font-size: 15px; line-height: 1.7; }
+
+  .mvc-sort-right { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .mvc-sort-status { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .mvc-badge {
+    font-family: var(--font-mono);
+    font-size: var(--small);
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--accent-border);
+    background: var(--accent-dim);
+    color: var(--text-muted);
+  }
+  /* score badge: red = missed something; amber = all right, but only after
+     an earlier miss; green + pulse = clean first run */
+  .mvc-badge-score { color: var(--warn); border-color: rgba(255,107,91,0.4); background: rgba(255,107,91,0.08); }
+  .mvc-badge-score.is-complete { color: var(--accent); border-color: var(--accent-border); background: var(--accent-dim); }
+  .mvc-badge-score.is-perfect {
+    color: var(--result);
+    border-color: rgba(124,217,146,0.6);
+    background: rgba(124,217,146,0.18);
+    animation: mvc-badge-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes mvc-badge-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(124,217,146,0.4); }
+    50%      { box-shadow: 0 0 0 6px rgba(124,217,146,0); }
+  }
+  .mvc-btn {
+    font-family: var(--font-ui);
+    font-size: var(--small);
+    font-weight: 700;
+    padding: 7px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid rgba(124,217,146,0.4);
+    background: rgba(124,217,146,0.1);
+    color: var(--result);
+    transition: border-color 0.15s var(--ease), background 0.15s var(--ease), opacity 0.15s var(--ease);
+  }
+  .mvc-btn:hover:not(:disabled) { border-color: var(--result); }
+  .mvc-btn:disabled { opacity: 0.4; cursor: default; }
+  .mvc-btn-2 { border-color: var(--accent-border); background: var(--accent-dim); color: var(--accent); }
+
+  /* Draggable tokens live inside the code listing itself. */
+  .mvc-drag {
+    cursor: grab;
+    border-radius: 4px;
+    padding: 0 4px;
+    outline: 1px dashed rgba(242,177,52,0.55);
+    background: rgba(242,177,52,0.12);
+    transition: background 0.15s var(--ease), outline-color 0.15s var(--ease), opacity 0.2s var(--ease);
+  }
+  .mvc-drag:hover { background: rgba(242,177,52,0.24); outline-color: var(--accent); }
+  .mvc-drag:active { cursor: grabbing; }
+  .mvc-drag.is-selected { background: rgba(242,177,52,0.32); outline: 1px solid var(--accent); box-shadow: 0 0 0 2px rgba(242,177,52,0.25); }
+  .mvc-drag.is-claimed { outline: none; background: transparent; opacity: 0.35; text-decoration: line-through; cursor: default; }
+  .mvc-drag:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .mvc-sort-code.is-drop-target { outline: 1px dashed var(--accent-border); }
+
+  .mvc-bins { display: flex; flex-direction: column; gap: 10px; }
+  .mvc-bin { display: flex; flex-direction: column; }
+  .mvc-bin-hdr {
+    font-family: var(--font-mono);
+    font-size: var(--small);
+    font-weight: 700;
+    padding: 7px 12px;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid var(--accent-border);
+    border-bottom: none;
+  }
+  .mvc-bin-hdr-data  { color: var(--syntax-string); background: rgba(126,200,227,0.10); border-color: rgba(126,200,227,0.35); }
+  .mvc-bin-hdr-draw  { color: var(--result);        background: rgba(124,217,146,0.10); border-color: rgba(124,217,146,0.35); }
+  .mvc-bin-hdr-event { color: var(--syntax-number); background: rgba(201,164,255,0.10); border-color: rgba(201,164,255,0.35); }
+  .mvc-bin-items {
+    min-height: 54px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--accent-border);
+    border-radius: 0 0 8px 8px;
+  }
+
+  .mvc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 13px;
+    border-radius: 6px;
+    border: 1px solid var(--accent-border);
+    background: rgba(242,177,52,0.06);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--text);
+    cursor: grab;
+    user-select: none;
+    transition: border-color 0.15s var(--ease), background 0.15s var(--ease), transform 0.12s var(--ease);
+  }
+  .mvc-chip:hover { border-color: var(--accent); }
+  .mvc-chip:active { cursor: grabbing; }
+  .mvc-chip.is-selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(242,177,52,0.25); }
+  .mvc-chip.is-correct { border-color: var(--result); background: rgba(124,217,146,0.14); color: var(--result); cursor: default; }
+  .mvc-chip.is-wrong { border-color: var(--warn); background: rgba(255,107,91,0.12); color: var(--warn); cursor: default; }
+  .mvc-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .mvc-chip-mark { font-weight: 900; }
+
+  .mvc-sort-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(12,9,6,0.92);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s var(--ease);
+  }
+  .mvc-sort-overlay.is-visible { opacity: 1; pointer-events: auto; cursor: pointer; }
+  .mvc-sort-badge { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .mvc-sort-overlay.is-visible .mvc-sort-badge { animation: mvc-sort-pop 0.7s var(--ease) both; }
+  .mvc-sort-check { font-size: 190px; line-height: 1; color: var(--result); filter: drop-shadow(0 0 44px rgba(124,217,146,0.5)); }
+  .mvc-sort-text { font-family: var(--font-ui); font-size: 74px; font-weight: 800; color: var(--text); text-shadow: 0 0 30px rgba(124,217,146,0.4); }
+  .mvc-sort-hint { font-family: var(--font-mono); font-size: var(--small); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+  @keyframes mvc-sort-pop {
+    0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+    75%  { transform: scale(0.96) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mvc-sort-overlay.is-visible .mvc-sort-badge { animation: none; }
+    .mvc-badge-score.is-perfect { animation: none; box-shadow: 0 0 0 2px rgba(124,217,146,0.4); }
+  }
+
+  /* MVC role colors — used only inside the 3.2.3 section, always the same way */
+  .m-model { color: var(--syntax-string); }   /* cyan   — the Model  */
+  .m-view  { color: var(--result); }          /* green  — the View   */
+  .m-ctrl  { color: var(--syntax-number); }   /* violet — Controller */
+
+  .mvc-legend {
+    display: flex;
+    gap: var(--gap);
+    flex-wrap: wrap;
+    margin-top: var(--gap-sm);
+    font-family: var(--font-mono);
+    font-size: var(--small);
+  }
+  .mvc-legend span::before {
+    content: '';
+    display: inline-block;
+    width: 11px; height: 11px;
+    border-radius: 3px;
+    margin-right: 7px;
+    vertical-align: baseline;
+  }
+  .mvc-legend .k-model::before { background: var(--syntax-string); }
+  .mvc-legend .k-view::before  { background: var(--result); }
+  .mvc-legend .k-ctrl::before  { background: var(--syntax-number); }
+
+  .rule-card {
+    background: var(--bg-card);
+    border: 1px solid var(--accent-border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    font-size: var(--body);
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .rule-card strong { color: var(--text); }
+  .rule-num {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-weight: 700;
+    margin-right: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">HPy &middot; Unit 3 &middot; Animations</span>
+        <h1 class="title-h1">3.1&ndash;3.2 Graphics, Events, and MVC</h1>
+        <p class="subtitle">drawing shapes and labels on a canvas &middot; responding to mouse presses &middot; organizing an app with Model-View-Controller</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 02 · 3.1 — WHAT AN ANIMATION IS -->
+    <section>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">3.1 Getting Started</span>
+        <h2>An animation is <span style="color:var(--accent);">graphics</span> plus <span style="color:var(--syntax-number);">events</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1150px;">
+          <span style="color:var(--accent);">Graphics</span> are drawings made from basic shapes: rectangles, circles, lines, and text labels.
+          <span style="color:var(--syntax-number);">Events</span> bring those drawings to life by letting them respond to the mouse, the keyboard, and the passage of time.
+          Put the two together and you get an animation that feels like a real web or phone app.
+        </p>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);max-width:1150px;">
+          <strong>We build these apps the way real apps are built.</strong> Our approach is called <span style="color:var(--accent);">Model-View-Controller</span>, or MVC. It takes a little more setup than the shortcuts you may have seen in earlier courses, but it scales up cleanly to large projects. In a later unit, that same structure will carry us all the way to Tetris.
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 03 · SECTION — 3.2.1 -->
+    <section>
+      <div class="glow" style="width:560px;height:560px;background:radial-gradient(circle,rgba(242,177,52,0.12) 0%,transparent 70%);left:-140px;bottom:-140px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Section</span>
+        <h1 class="title-h1" style="font-size:64px;">3.2.1 Drawing Rectangles and Labels</h1>
+        <p class="subtitle">the shape of every graphics program, the canvas coordinate system, and the tools that help you read a drawing</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 04 · FIRST GRAPHICS PROGRAM -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Our First Drawing</span>
+          <h2>A <span style="color:var(--syntax-string);">blue</span> rectangle in the corner</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            This program draws a 100&times;200 blue rectangle in the top-left corner of the <span style="color:var(--accent);">canvas</span>, the window where all our drawing happens.
+          </p>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            You'll follow this pattern in every graphics program we write this unit.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">from</span> <span class="tok-nm">cmu_graphics</span> <span class="tok-kw">import</span> <span class="tok-op">*</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">redrawAll</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">drawRect</span>(<span class="tok-num">0</span>, <span class="tok-num">0</span>, <span class="tok-num">100</span>, <span class="tok-num">200</span>, <span class="tok-nm">fill</span><span class="tok-op">=</span><span class="tok-str">'blue'</span>)
+
+<span class="tok-kw">def</span> <span class="tok-nm">main</span>():
+    <span class="tok-nm">runApp</span>()
+
+<span class="tok-nm">main</span>()</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 05 · LINE BY LINE -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">The Skeleton, Line by Line</span>
+        <h2>Four parts of the pattern</h2>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);margin-top:var(--gap);max-width:1200px;">
+          <div class="key-prop fragment fade-up"><code style="color:var(--accent);">from cmu_graphics import *</code> &nbsp; brings in all of the drawing functions. Imports go at the top of your code, so this will be the first line of every graphics program.</div>
+          <div class="key-prop fragment fade-up"><code style="color:var(--accent);">def redrawAll(app):</code> &nbsp; is where <strong>all</strong> drawing happens. Only this function, and any helpers it calls, may draw. We will see why in the MVC notes.</div>
+          <div class="key-prop fragment fade-up"><code style="color:var(--accent);">runApp()</code> &nbsp; opens the app window and starts it running. Call it from <code style="color:var(--text);">main</code>, following our usual best practice.</div>
+          <div class="key-prop fragment fade-up"><code style="color:var(--accent);">main()</code> &nbsp; is still your one and only line of top-level code.</div>
+        </div>
+        <div class="callout-warn fragment fade-up" style="margin-top:var(--gap);max-width:1200px;">
+          <strong>You never call <code style="color:var(--warn);">redrawAll</code> yourself.</strong> The <code>cmu_graphics</code> library calls it for you, over and over, to keep the screen up to date.
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 06 · drawRect ARGUMENTS -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The drawRect Function</span>
+          <h2><span style="color:var(--accent);">drawRect</span>(left, top, width, height)</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            drawRect's four required arguments are, in order, the <span style="color:var(--accent);">left</span> edge, the <span style="color:var(--accent);">top</span> edge, the <span style="color:var(--accent);">width</span>, and the <span style="color:var(--accent);">height</span>.
+          </p>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            Add <code style="color:var(--text);">fill='blue'</code> to set the color. Any name from the CMU color list works.
+          </p>
+          <p style="font-size:var(--small);color:var(--text);margin-top:var(--gap);">
+            <code>drawRect(0, 0, 100, 200, fill='blue')</code> means: left at x=0, top at y=0, 100 wide, 200 tall.
+          </p>
+        </div>
+        <div>
+          <svg class="diagram" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="A rectangle positioned by its left edge, top edge, width, and height, measured from the top-left origin of the canvas.">
+            <line class="edge" x1="34" y1="26" x2="360" y2="26"></line>
+            <line class="edge" x1="34" y1="26" x2="34" y2="282"></line>
+            <text x="6" y="18" class="dim">(0,0)</text>
+            <rect class="rect-fill" x="160" y="124" width="150" height="110"></rect>
+            <line class="axis" x1="34" y1="96" x2="160" y2="96" stroke-dasharray="4 4"></line>
+            <text x="97" y="88" text-anchor="middle">left</text>
+            <line class="axis" x1="130" y1="26" x2="130" y2="124" stroke-dasharray="4 4"></line>
+            <text x="137" y="82">top</text>
+            <line class="axis" x1="160" y1="252" x2="310" y2="252"></line>
+            <text x="235" y="274" text-anchor="middle">width</text>
+            <line class="axis" x1="330" y1="124" x2="330" y2="234"></line>
+            <text x="340" y="184">height</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 07 · VIDEO — USING THE INSPECTOR -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:inspector:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=ruU9sGgM_r8"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Tool &middot; Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Using the Inspector</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);margin-bottom:var(--gap);">
+          When you hover over a running drawing, the <span style="color:var(--accent);">Inspector</span> shows you the exact coordinates and sizes of every shape. It is how you figure out the numbers you need to reproduce a drawing yourself. Watch carefully.
+        </p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:520px;height:520px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 08 · VIDEO — AUTOGRADING GRAPHICS -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:autograde-graphics:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=lPChbyyM_Qc"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Tool &middot; Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Using the Autograder with Graphics</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);margin-bottom:var(--gap);">
+          You already know the <span style="color:var(--accent);">Autograder</span> checks your code for correctness. It works a little differently for graphics, because it has to compare what you drew against what was expected. This video shows how.
+        </p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:520px;height:520px;right:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 09 · THE CANVAS COORDINATE SYSTEM -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The Canvas</span>
+          <h2>Up is <span style="color:var(--warn);">down</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            The canvas is a grid of pixels, <span style="color:var(--accent);">400 by 400</span> by default. Its real size lives in <code style="color:var(--text);">app.width</code> and <code style="color:var(--text);">app.height</code>.
+          </p>
+          <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+            <li><code style="color:var(--text);">x</code> is 0 on the left and grows to the right.</li>
+            <li><code style="color:var(--text);">y</code> is 0 at the top and grows <span style="color:var(--warn);">downward</span>, the opposite of math class.</li>
+            <li><code style="color:var(--text);">(0, 0)</code> is the top-left corner; <code style="color:var(--text);">(app.width, app.height)</code> is the bottom-right.</li>
+            <li>The center is <code style="color:var(--text);">(app.width/2, app.height/2)</code>.</li>
+          </ul>
+        </div>
+        <div>
+          <svg class="diagram" width="320" height="300" viewBox="0 0 320 300" role="img" aria-label="The canvas as a square. The origin is the top-left corner. X increases to the right, Y increases downward, and the center is at half the width and half the height.">
+            <rect class="edge" x="24" y="24" width="252" height="236" fill="rgba(242,177,52,0.04)"></rect>
+            <text x="6" y="18" class="dim">(0,0)</text>
+            <text x="272" y="250" text-anchor="end" class="dim">(app.width, app.height)</text>
+            <line class="axis" x1="24" y1="24" x2="150" y2="24" marker-end="url(#ah)"></line>
+            <line class="axis" x1="24" y1="24" x2="24" y2="150" marker-end="url(#ah)"></line>
+            <text x="140" y="40">x</text>
+            <text x="34" y="142">y</text>
+            <circle cx="150" cy="142" r="4" fill="var(--result)"></circle>
+            <text x="150" y="166" text-anchor="middle" style="fill:var(--result);">center</text>
+            <defs>
+              <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"></path>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 10 · CENTERING A RECTANGLE -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Putting It Together</span>
+          <h2>Center a 200&times;300 <span style="color:var(--warn);">red</span> rectangle</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            <code style="color:var(--text);">drawRect</code> positions a rectangle by its <em>top-left corner</em>, not its center. So to center it, start at the middle of the canvas and back up by half the rectangle.
+          </p>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            The rectangle is 200 wide, so its left edge sits at <code style="color:var(--text);">app.width/2 - 100</code>. It is 300 tall, so its top sits at <code style="color:var(--text);">app.height/2 - 150</code>.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">from</span> <span class="tok-nm">cmu_graphics</span> <span class="tok-kw">import</span> <span class="tok-op">*</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">redrawAll</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">drawRect</span>(<span class="tok-nm">app</span>.<span class="tok-nm">width</span><span class="tok-op">/</span><span class="tok-num">2</span> <span class="tok-op">-</span> <span class="tok-num">100</span>,
+             <span class="tok-nm">app</span>.<span class="tok-nm">height</span><span class="tok-op">/</span><span class="tok-num">2</span> <span class="tok-op">-</span> <span class="tok-num">150</span>,
+             <span class="tok-num">200</span>, <span class="tok-num">300</span>, <span class="tok-nm">fill</span><span class="tok-op">=</span><span class="tok-str">'red'</span>)
+
+<span class="tok-kw">def</span> <span class="tok-nm">main</span>():
+    <span class="tok-nm">runApp</span>()
+
+<span class="tok-nm">main</span>()</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 11 · AVOID MAGIC NUMBERS -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Better Style</span>
+          <h2>Name the numbers you did math on</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            The <code style="color:var(--text);">100</code> and <code style="color:var(--text);">150</code> in the last version are <span style="color:var(--warn);">magic numbers</span>: they came from arithmetic that is not visible in the code.
+          </p>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            Store the width and height in <span style="color:var(--result);">well-named variables</span> and let the code show the arithmetic. Now <code style="color:var(--text);">rectWidth/2</code> explains itself.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">redrawAll</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">rectWidth</span> <span class="tok-op">=</span> <span class="tok-num">200</span>
+    <span class="tok-nm">rectHeight</span> <span class="tok-op">=</span> <span class="tok-num">300</span>
+    <span class="tok-nm">drawRect</span>(<span class="tok-nm">app</span>.<span class="tok-nm">width</span><span class="tok-op">/</span><span class="tok-num">2</span> <span class="tok-op">-</span> <span class="tok-nm">rectWidth</span><span class="tok-op">/</span><span class="tok-num">2</span>,
+             <span class="tok-nm">app</span>.<span class="tok-nm">height</span><span class="tok-op">/</span><span class="tok-num">2</span> <span class="tok-op">-</span> <span class="tok-nm">rectHeight</span><span class="tok-op">/</span><span class="tok-num">2</span>,
+             <span class="tok-nm">rectWidth</span>, <span class="tok-nm">rectHeight</span>, <span class="tok-nm">fill</span><span class="tok-op">=</span><span class="tok-str">'red'</span>)</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 12 · CHECKPOINT — CENTERING (RESONANCE MC) -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:center-rect:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"The canvas is 400 by 400. Which call draws a 100-wide, 40-tall rectangle centered on the canvas?","order":0,"responseTimeLimitMs":40000,"options":[{"id":"q1b","text":"drawRect(200, 200, 100, 40)","isCorrect":false},{"id":"q1a","text":"drawRect(150, 180, 100, 40)","isCorrect":true},{"id":"q1d","text":"drawRect(100, 40, 200, 200)","isCorrect":false},{"id":"q1c","text":"drawRect(50, 20, 100, 40)","isCorrect":false}]}]}'>
+      <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-90px;right:6%;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint &middot; Centering</span>
+        <h2>Which call centers the rectangle?</h2>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
+          The canvas is 400 by 400. You want a rectangle that is 100 wide and 40 tall, centered. Remember that <code style="color:var(--text);">drawRect</code> takes the <em>top-left corner</em>.
+        </p>
+        <ul class="mcq-opts" style="margin-top:var(--gap);max-width:640px;">
+          <li><span class="opt-key">A</span><code>drawRect(200, 200, 100, 40)</code></li>
+          <li><span class="opt-key">B</span><code>drawRect(150, 180, 100, 40)</code></li>
+          <li><span class="opt-key">C</span><code>drawRect(100, 40, 200, 200)</code></li>
+          <li><span class="opt-key">D</span><code>drawRect(50, 20, 100, 40)</code></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SLIDE 13 · drawLabel -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Drawing Text</span>
+          <h2><span style="color:var(--accent);">drawLabel</span>(value, centerX, centerY)</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            <code style="color:var(--text);">drawLabel</code> writes text on the canvas. The first argument is the string to draw. The next two are the <code style="color:var(--text);">(x, y)</code> location of the <em>center</em> of the text, not a corner.
+          </p>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            This call centers the words <span style="color:var(--syntax-string);">Some text</span> on a 400 by 400 canvas.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">from</span> <span class="tok-nm">cmu_graphics</span> <span class="tok-kw">import</span> <span class="tok-op">*</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">redrawAll</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">drawLabel</span>(<span class="tok-str">'Some text'</span>, <span class="tok-num">200</span>, <span class="tok-num">200</span>)
+
+<span class="tok-kw">def</span> <span class="tok-nm">main</span>():
+    <span class="tok-nm">runApp</span>()
+
+<span class="tok-nm">main</span>()</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 14 · SECTION — 3.2.2 -->
+    <section>
+      <div class="glow" style="width:560px;height:560px;background:radial-gradient(circle,rgba(201,164,255,0.10) 0%,transparent 70%);right:-140px;top:-140px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Section</span>
+        <h1 class="title-h1" style="font-size:64px;">3.2.2 Mouse Press Events</h1>
+        <p class="subtitle">running code once at startup, storing state on the app object, and reacting to every click</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 15 · onAppStart -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Runs Once</span>
+          <h2><span style="color:var(--syntax-number);">onAppStart</span>(app)</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            When an app starts, <code style="color:var(--text);">onAppStart(app)</code> is called exactly once, before anything else happens.
+          </p>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            Because <code style="color:var(--text);">onAppStart</code> runs exactly once, its message appears in the console a single time when the app opens, and never again while the app keeps running.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">from</span> <span class="tok-nm">cmu_graphics</span> <span class="tok-kw">import</span> <span class="tok-op">*</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">onAppStart</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">print</span>(<span class="tok-str">'Hello from onAppStart!'</span>)
+
+<span class="tok-kw">def</span> <span class="tok-nm">redrawAll</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">drawRect</span>(<span class="tok-num">0</span>, <span class="tok-num">0</span>, <span class="tok-num">50</span>, <span class="tok-num">50</span>, <span class="tok-nm">fill</span><span class="tok-op">=</span><span class="tok-str">'cyan'</span>)
+
+<span class="tok-kw">def</span> <span class="tok-nm">main</span>():
+    <span class="tok-nm">runApp</span>()
+
+<span class="tok-nm">main</span>()</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 16 · STORING STATE ON app -->
+    <section>
+      <div class="slide-inner split split-40">
+        <div>
+          <span class="slide-tag">The app Object</span>
+          <h2>You can store your <span style="color:var(--syntax-string);">own values</span> on app</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            There is only <strong>one</strong> <code style="color:var(--text);">app</code> object shared by every <code>cmu_graphics</code> function. So a value you set in <code style="color:var(--text);">onAppStart</code> is still there in <code style="color:var(--text);">redrawAll</code>.
+          </p>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            Here <code style="color:var(--text);">onAppStart</code> sets <code style="color:var(--syntax-string);">app.rectLeft</code> and <code style="color:var(--syntax-string);">app.rectTop</code>, and <code style="color:var(--text);">redrawAll</code> reads them back to place the rectangle.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">from</span> <span class="tok-nm">cmu_graphics</span> <span class="tok-kw">import</span> <span class="tok-op">*</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">onAppStart</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectLeft</span> <span class="tok-op">=</span> <span class="tok-num">100</span>
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectTop</span> <span class="tok-op">=</span> <span class="tok-num">200</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">redrawAll</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">drawRect</span>(<span class="tok-nm">app</span>.<span class="tok-nm">rectLeft</span>, <span class="tok-nm">app</span>.<span class="tok-nm">rectTop</span>,
+             <span class="tok-num">50</span>, <span class="tok-num">50</span>, <span class="tok-nm">fill</span><span class="tok-op">=</span><span class="tok-str">'cyan'</span>)
+
+<span class="tok-kw">def</span> <span class="tok-nm">main</span>():
+    <span class="tok-nm">runApp</span>()
+
+<span class="tok-nm">main</span>()</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 17 · onMousePress -->
+    <section>
+      <div class="slide-inner split split-40">
+        <div>
+          <span class="slide-tag">Reacting to Clicks</span>
+          <h2><span style="color:var(--syntax-number);">onMousePress</span>(app, mouseX, mouseY)</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            <code style="color:var(--text);">onMousePress</code> is called automatically every time the user presses the mouse. Along with <code style="color:var(--text);">app</code>, it receives <code style="color:var(--text);">mouseX</code> and <code style="color:var(--text);">mouseY</code>: the exact spot that was clicked.
+          </p>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            This program has no <code style="color:var(--text);">redrawAll</code>, so nothing is ever drawn. It only prints. Press <span style="color:var(--result);">Run</span>, then click inside the app window and watch the console.
+          </p>
+        </div>
+        <div>
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">from</span> <span class="tok-nm">cmu_graphics</span> <span class="tok-kw">import</span> <span class="tok-op">*</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">onMousePress</span>(<span class="tok-nm">app</span>, <span class="tok-nm">mouseX</span>, <span class="tok-nm">mouseY</span>):
+    <span class="tok-nm">print</span>(<span class="tok-str">f'You pressed the mouse at {mouseX},{mouseY}'</span>)
+
+<span class="tok-kw">def</span> <span class="tok-nm">main</span>():
+    <span class="tok-nm">runApp</span>()
+
+<span class="tok-nm">main</span>()</code></pre>
+            </div>
+          </div>
+          <button class="sim-run" data-sim-open type="button"><span aria-hidden="true">&#9654;</span> Run</button>
+        </div>
+      </div>
+
+      <div class="sim-modal" data-sim-modal>
+        <div class="sim-panel" role="dialog" aria-label="Simulated app window running main.py">
+          <div class="sim-panel-hdr">
+            <span>running main.py</span>
+            <button class="sim-close" data-sim-close type="button" aria-label="Stop and close">&times;</button>
+          </div>
+          <div class="sim-stage">
+            <div class="sim-canvas" data-sim-canvas>
+              <span class="sim-canvas-hint" data-sim-hint>app window &middot; 400 &times; 400<br>click anywhere</span>
+            </div>
+          </div>
+          <div class="sim-console">
+            <div class="sim-console-bar">console</div>
+            <div class="sim-console-out" data-sim-console><span class="sim-idle"># waiting &mdash; click the app window above</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 18 · OUR FIRST ANIMATION -->
+    <section>
+      <div class="slide-inner split split-40">
+        <div>
+          <span class="slide-tag">Our First Animation</span>
+          <h2>The rectangle <span style="color:var(--result);">follows</span> your clicks</h2>
+          <p style="font-size:var(--body);margin-top:var(--gap-sm);">
+            Change <code style="color:var(--text);">onMousePress</code> so it updates <code style="color:var(--syntax-string);">app.rectLeft</code> and <code style="color:var(--syntax-string);">app.rectTop</code> to the click location. That is the whole animation.
+          </p>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            Click, and the rectangle jumps there. <code style="color:var(--text);">redrawAll</code> did not change at all; it just keeps drawing the rectangle wherever the stored values say.
+          </p>
+        </div>
+        <div>
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">from</span> <span class="tok-nm">cmu_graphics</span> <span class="tok-kw">import</span> <span class="tok-op">*</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">onAppStart</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectLeft</span> <span class="tok-op">=</span> <span class="tok-num">100</span>
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectTop</span> <span class="tok-op">=</span> <span class="tok-num">200</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">onMousePress</span>(<span class="tok-nm">app</span>, <span class="tok-nm">mouseX</span>, <span class="tok-nm">mouseY</span>):
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectLeft</span> <span class="tok-op">=</span> <span class="tok-nm">mouseX</span>
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectTop</span> <span class="tok-op">=</span> <span class="tok-nm">mouseY</span>
+
+<span class="tok-kw">def</span> <span class="tok-nm">redrawAll</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">drawRect</span>(<span class="tok-nm">app</span>.<span class="tok-nm">rectLeft</span>, <span class="tok-nm">app</span>.<span class="tok-nm">rectTop</span>,
+             <span class="tok-num">50</span>, <span class="tok-num">50</span>, <span class="tok-nm">fill</span><span class="tok-op">=</span><span class="tok-str">'cyan'</span>)
+
+<span class="tok-kw">def</span> <span class="tok-nm">main</span>():
+    <span class="tok-nm">runApp</span>()
+
+<span class="tok-nm">main</span>()</code></pre>
+            </div>
+          </div>
+          <button class="sim-run" data-sim-open type="button"><span aria-hidden="true">&#9654;</span> Run</button>
+        </div>
+      </div>
+
+      <div class="sim-modal" data-sim-modal data-sim-mode="animate">
+        <div class="sim-panel" role="dialog" aria-label="Simulated app window running main.py">
+          <div class="sim-panel-hdr">
+            <span>running main.py</span>
+            <button class="sim-close" data-sim-close type="button" aria-label="Stop and close">&times;</button>
+          </div>
+          <div class="sim-stage">
+            <div class="sim-canvas" data-sim-canvas>
+              <div class="sim-rect" data-sim-rect></div>
+              <span class="sim-canvas-hint" data-sim-hint>app window &middot; 400 &times; 400<br>click to move the rectangle</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 19 · IMPORTANT DETAILS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Three Things to Remember</span>
+        <h2>How the pieces fit together</h2>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);margin-top:var(--gap);max-width:1200px;">
+          <div class="key-prop fragment fade-up"><strong>redrawAll clears everything first.</strong> Every call wipes the canvas and redraws it from scratch. You never erase old shapes yourself; you just describe the whole picture again.</div>
+          <div class="key-prop fragment fade-up"><strong>You never call the event handlers.</strong> <code style="color:var(--text);">onAppStart</code>, <code style="color:var(--text);">onMousePress</code>, and <code style="color:var(--text);">redrawAll</code> are all called for you by <code>cmu_graphics</code>.</div>
+          <div class="key-prop fragment fade-up"><strong>Do not name your own values <code style="color:var(--text);">width</code> or <code style="color:var(--text);">height</code>.</strong> <code style="color:var(--text);">app.width</code> and <code style="color:var(--text);">app.height</code> are reserved for the canvas size.</div>
+        </div>
+        <div class="callout-result fragment fade-up" style="margin-top:var(--gap);max-width:1200px;">
+          <strong>redrawAll runs again after every event handler.</strong> Any time your data could have changed, the screen is redrawn for you. You never have to trigger a redraw by hand.
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 20 · VIDEO — AUTOGRADING ANIMATIONS -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:autograde-animations:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=3hb23vqA5AM"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Tool &middot; Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Autograding Animations</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);margin-bottom:var(--gap);">
+          Once your app responds to events, the <span style="color:var(--accent);">Autograder</span> needs to simulate those events and check the result after each one. There are details you need to know so it works for you. Watch closely.
+        </p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:520px;height:520px;left:-120px;bottom:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+    </section>
+
+    <!-- SLIDE 21 · SORT THE WORK — drag code from main.py into three jobs -->
+    <section>
+      <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Sort the Work</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Which part of the program does each job?</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1200px;margin-bottom:var(--gap);">
+          Drag the <span style="color:var(--accent);">highlighted parts</span> of <code style="color:var(--text);">main.py</code> into the job they do. Some parts hold the data the app remembers, one part draws the picture, and some parts run when something happens. Press <span style="color:var(--result);">Check</span> when all four are placed. (Drag a piece back onto the code to undo.)
+        </p>
+
+        <div class="mvc-sort" id="mvc-sort">
+          <div class="mvc-sort-main">
+            <div class="code-card mvc-sort-code" data-bin="code">
+              <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+              <div class="code-body"><pre><code><span class="tok-kw">from</span> <span class="tok-nm">cmu_graphics</span> <span class="tok-kw">import</span> <span class="tok-op">*</span>
+
+<span class="tok-kw">def</span> <span class="mvc-drag" data-mvc-src="onappstart" draggable="true" tabindex="0" role="button" aria-label="onAppStart">onAppStart</span>(<span class="tok-nm">app</span>):
+    <span class="mvc-drag" data-mvc-src="state" draggable="true" tabindex="0" role="button" aria-label="app.rectLeft and app.rectTop">app.rectLeft</span> <span class="tok-op">=</span> <span class="tok-num">100</span>
+    <span class="mvc-drag" data-mvc-src="state" draggable="true" tabindex="0" role="button" aria-label="app.rectLeft and app.rectTop">app.rectTop</span> <span class="tok-op">=</span> <span class="tok-num">200</span>
+
+<span class="tok-kw">def</span> <span class="mvc-drag" data-mvc-src="onmousepress" draggable="true" tabindex="0" role="button" aria-label="onMousePress">onMousePress</span>(<span class="tok-nm">app</span>, <span class="tok-nm">mouseX</span>, <span class="tok-nm">mouseY</span>):
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectLeft</span> <span class="tok-op">=</span> <span class="tok-nm">mouseX</span>
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectTop</span> <span class="tok-op">=</span> <span class="tok-nm">mouseY</span>
+
+<span class="tok-kw">def</span> <span class="mvc-drag" data-mvc-src="redrawall" draggable="true" tabindex="0" role="button" aria-label="redrawAll">redrawAll</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">drawRect</span>(<span class="tok-nm">app</span>.<span class="tok-nm">rectLeft</span>, <span class="tok-nm">app</span>.<span class="tok-nm">rectTop</span>,
+             <span class="tok-num">50</span>, <span class="tok-num">50</span>, <span class="tok-nm">fill</span><span class="tok-op">=</span><span class="tok-str">&#39;cyan&#39;</span>)</code></pre>
+              </div>
+            </div>
+
+            <div class="mvc-sort-right">
+              <div class="mvc-sort-status">
+                <span class="mvc-badge" data-mvc-placed>0 of 4 placed</span>
+                <span class="mvc-badge mvc-badge-score" data-mvc-score style="display:none;">0 of 4 correct</span>
+                <button type="button" class="mvc-btn" data-mvc-check disabled>Check</button>
+                <button type="button" class="mvc-btn mvc-btn-2" data-mvc-reset style="display:none;">Try Again</button>
+              </div>
+              <div class="mvc-bins">
+                <div class="mvc-bin" data-bin="data">
+                  <div class="mvc-bin-hdr mvc-bin-hdr-data">Holds the data the app remembers</div>
+                  <div class="mvc-bin-items" data-mvc-items="data" tabindex="0" aria-label="Holds the data the app remembers"></div>
+                </div>
+                <div class="mvc-bin" data-bin="draw">
+                  <div class="mvc-bin-hdr mvc-bin-hdr-draw">Draws the picture</div>
+                  <div class="mvc-bin-items" data-mvc-items="draw" tabindex="0" aria-label="Draws the picture"></div>
+                </div>
+                <div class="mvc-bin" data-bin="event">
+                  <div class="mvc-bin-hdr mvc-bin-hdr-event">Runs when something happens: a click, or the app starting</div>
+                  <div class="mvc-bin-items" data-mvc-items="event" tabindex="0" aria-label="Runs when something happens"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mvc-sort-overlay" data-mvc-overlay aria-hidden="true">
+        <div class="mvc-sort-badge">
+          <span class="mvc-sort-check" aria-hidden="true">&#10003;</span>
+          <span class="mvc-sort-text">Nailed it!</span>
+          <span class="mvc-sort-hint">click to keep looking at the board</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 22 · SECTION — 3.2.3 -->
+    <section>
+      <div class="glow" style="width:560px;height:560px;background:radial-gradient(circle,rgba(124,217,146,0.10) 0%,transparent 70%);left:-140px;bottom:-140px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Section</span>
+        <h1 class="title-h1" style="font-size:64px;">3.2.3 Model-View-Controller</h1>
+        <p class="subtitle">a name for the structure we have been using, and the rules that keep it clean</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 23 · WHY MVC -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Why Bother</span>
+        <h2>Three reasons we use <span style="color:var(--accent);">MVC</span></h2>
+        <div style="display:flex;gap:var(--gap);margin-top:var(--gap-lg);">
+          <div class="key-prop fragment fade-up" style="flex:1;">
+            <strong style="color:var(--accent);">Clean design</strong><br>
+            <span style="font-size:var(--small);color:var(--text);">Event-handling code is kept separate from drawing code. This <span style="color:var(--accent)">separation of concerns</span> means fewer bugs and clearer thinking.</span>
+          </div>
+          <div class="key-prop fragment fade-up" style="flex:1;">
+            <strong style="color:var(--result);">Scalability</strong><br>
+            <span style="font-size:var(--small);color:var(--text);">As a project grows, the <span style="color:var(--accent)">MVC structure</span> keeps the complexity manageable instead of letting it overwhelm you.</span>
+          </div>
+          <div class="key-prop fragment fade-up" style="flex:1;">
+            <strong style="color:var(--syntax-number);">Real-world fit</strong><br>
+            <span style="font-size:var(--small);color:var(--text);">Real web and mobile frameworks are built on the same idea. Learning it here prepares you for them.</span>
+          </div>
+        </div>
+        <p class="fragment fade-up" style="font-size:var(--body);margin-top:var(--gap-lg);max-width:1150px;">
+          This structure is what will let us build much larger apps, without drowning in our own code.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 24 · THE THREE PARTS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Definitions</span>
+        <h2>Model, View, Controller</h2>
+        <div class="mvc-legend">
+          <span class="k-model">Model</span>
+          <span class="k-view">View</span>
+          <span class="k-ctrl">Controller</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);margin-top:var(--gap);max-width:1200px;">
+          <div class="rule-card fragment fade-up" style="border-left-color:var(--syntax-string);">
+            <strong class="m-model">Model</strong> &nbsp; all the data the app needs, stored on the <code style="color:var(--text);">app</code> object. In our animation the model is <code class="m-model">app.rectLeft</code> and <code class="m-model">app.rectTop</code>.
+          </div>
+          <div class="rule-card fragment fade-up" style="border-left-color:var(--result);">
+            <strong class="m-view">View</strong> &nbsp; the code that draws the app from the model, and nothing else. Our view is <code class="m-view">redrawAll</code> plus any helpers it calls.
+          </div>
+          <div class="rule-card fragment fade-up" style="border-left-color:var(--syntax-number);">
+            <strong class="m-ctrl">Controller</strong> &nbsp; the event handlers that respond to input and update the model. Ours are <code class="m-ctrl">onAppStart</code> and <code class="m-ctrl">onMousePress</code>. These are also called event handlers.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 25 · ANNOTATED CODE -->
+    <section>
+      <div class="slide-inner split split-40">
+        <div>
+          <span class="slide-tag">The Same Program, Labeled</span>
+          <h2>Every function has <span style="color:var(--accent);">one</span> role</h2>
+          <div class="mvc-legend" style="margin-top:var(--gap-sm);">
+            <span class="k-model">Model &middot; the data</span>
+            <span class="k-view">View &middot; draws</span>
+            <span class="k-ctrl">Controller &middot; responds</span>
+          </div>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            The controllers write to the model. The view reads the model. The model itself is just values sitting on <code style="color:var(--text);">app</code>. Data flows one direction around that loop.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">from</span> <span class="tok-nm">cmu_graphics</span> <span class="tok-kw">import</span> <span class="tok-op">*</span>
+
+<span class="tok-kw">def</span> <span class="m-ctrl">onAppStart</span>(<span class="tok-nm">app</span>):
+    <span class="m-model">app.rectLeft</span> <span class="tok-op">=</span> <span class="tok-num">100</span>
+    <span class="m-model">app.rectTop</span> <span class="tok-op">=</span> <span class="tok-num">200</span>
+
+<span class="tok-kw">def</span> <span class="m-ctrl">onMousePress</span>(<span class="tok-nm">app</span>, <span class="tok-nm">mouseX</span>, <span class="tok-nm">mouseY</span>):
+    <span class="m-model">app.rectLeft</span> <span class="tok-op">=</span> <span class="tok-nm">mouseX</span>
+    <span class="m-model">app.rectTop</span> <span class="tok-op">=</span> <span class="tok-nm">mouseY</span>
+
+<span class="tok-kw">def</span> <span class="m-view">redrawAll</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">drawRect</span>(<span class="m-model">app.rectLeft</span>, <span class="m-model">app.rectTop</span>,
+             <span class="tok-num">50</span>, <span class="tok-num">50</span>, <span class="tok-nm">fill</span><span class="tok-op">=</span><span class="tok-str">'cyan'</span>)</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 26 · MVC RULES -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">The Rules</span>
+        <h2>Three rules you must follow</h2>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);margin-top:var(--gap);max-width:1200px;">
+          <div class="rule-card fragment fade-up"><span class="rule-num">1</span><strong>Never call the view or a controller yourself.</strong> They are always called for you. If you need to restart the app, write a helper like <code style="color:var(--text);">resetApp</code> and call that from both <code style="color:var(--text);">onAppStart</code> and wherever else you need it.</div>
+          <div class="rule-card fragment fade-up"><span class="rule-num">2</span><strong>Controllers only update the model.</strong> <code class="m-ctrl">onMousePress</code> must not call <code class="m-view">redrawAll</code> or any drawing function. The redraw happens automatically when the handler finishes.</div>
+          <div class="rule-card fragment fade-up"><span class="rule-num">3</span><strong>The view never updates the model.</strong> <code class="m-view">redrawAll</code> must not change <code class="m-model">app.rectLeft</code> or <code class="m-model">app.rectTop</code>. It only reads them.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 27 · MVC VIOLATIONS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">When You Break Rule 2 or 3</span>
+        <h2>MVC <span style="color:var(--warn);">Violations</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap-sm);max-width:1200px;">
+          Breaking rule 2 or rule 3 is an <span style="color:var(--warn);">MVC Violation</span>. Your code stops and shows a runtime error. Read the console: it names the error and the line number, which is exactly what you need to fix it.
+        </p>
+        <div class="split split-50" style="margin-top:var(--gap);">
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">violation &middot; rule 2</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">onMousePress</span>(<span class="tok-nm">app</span>, <span class="tok-nm">mouseX</span>, <span class="tok-nm">mouseY</span>):
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectLeft</span> <span class="tok-op">=</span> <span class="tok-nm">mouseX</span>
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectTop</span> <span class="tok-op">=</span> <span class="tok-nm">mouseY</span>
+    <span class="tok-nm">redrawAll</span>(<span class="tok-nm">app</span>)  <span class="tok-cm"># controller drew</span></code></pre>
+            </div>
+          </div>
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">violation &middot; rule 3</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">redrawAll</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">drawRect</span>(<span class="tok-nm">app</span>.<span class="tok-nm">rectLeft</span>, <span class="tok-nm">app</span>.<span class="tok-nm">rectTop</span>,
+             <span class="tok-num">50</span>, <span class="tok-num">50</span>, <span class="tok-nm">fill</span><span class="tok-op">=</span><span class="tok-str">'cyan'</span>)
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectLeft</span> <span class="tok-op">=</span> <span class="tok-num">50</span>  <span class="tok-cm"># view changed the model</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 28 · CHECKPOINT — MVC VIOLATIONS (RESONANCE, TWO QUESTIONS) -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:mvc-violations:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"This code is an MVC Violation. It runs fine until you press the mouse, then it crashes.\n\n```python\ndef onMousePress(app, mouseX, mouseY):\n    app.rectLeft = mouseX\n    app.rectTop = mouseY\n    redrawAll(app)   # MVC Violation\n```\n\nWhy does the error only appear after a mouse press, not sooner?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1b","text":"onMousePress illegally modifies app.rectLeft.","isCorrect":false},{"id":"q1c","text":"MVC Violations can only happen after a mouse press.","isCorrect":false},{"id":"q1a","text":"The illegal call to redrawAll is inside onMousePress, which does not run until the mouse is pressed.","isCorrect":true},{"id":"q1d","text":"None of these.","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"This code is also an MVC Violation. It crashes immediately, before you ever touch the mouse.\n\n```python\ndef redrawAll(app):\n    drawRect(app.rectLeft, app.rectTop, 50, 50, fill=&#39;cyan&#39;)\n    app.rectLeft = 50   # MVC Violation\n```\n\nWhy does the error appear right at startup?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2c","text":"onAppStart illegally modifies app.rectLeft.","isCorrect":false},{"id":"q2a","text":"redrawAll illegally modifies app.rectLeft, and redrawAll runs when the app starts, right after onAppStart.","isCorrect":true},{"id":"q2b","text":"An illegal call to redrawAll was placed in onAppStart.","isCorrect":false},{"id":"q2d","text":"None of these.","isCorrect":false}]}]}'>
+      <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);top:-90px;right:6%;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint &middot; MVC Violations</span>
+        <h2>Two crashes, two <span style="color:var(--warn);">reasons</span></h2>
+        <p style="font-size:var(--body);margin-top:var(--gap-sm);max-width:1100px;">
+          Each snippet breaks an MVC rule. One crashes only after a mouse press; the other the instant the app starts. Work out why for each.
+        </p>
+        <div class="split split-50" style="margin-top:var(--gap);">
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">violation &middot; rule 2</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">onMousePress</span>(<span class="tok-nm">app</span>, <span class="tok-nm">mouseX</span>, <span class="tok-nm">mouseY</span>):
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectLeft</span> <span class="tok-op">=</span> <span class="tok-nm">mouseX</span>
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectTop</span> <span class="tok-op">=</span> <span class="tok-nm">mouseY</span>
+    <span class="tok-nm">redrawAll</span>(<span class="tok-nm">app</span>)  <span class="tok-cm"># MVC Violation</span></code></pre>
+            </div>
+          </div>
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">violation &middot; rule 3</span></div>
+            <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">redrawAll</span>(<span class="tok-nm">app</span>):
+    <span class="tok-nm">drawRect</span>(<span class="tok-nm">app</span>.<span class="tok-nm">rectLeft</span>, <span class="tok-nm">app</span>.<span class="tok-nm">rectTop</span>,
+             <span class="tok-num">50</span>, <span class="tok-num">50</span>, <span class="tok-nm">fill</span><span class="tok-op">=</span><span class="tok-str">&#39;cyan&#39;</span>)
+    <span class="tok-nm">app</span>.<span class="tok-nm">rectLeft</span> <span class="tok-op">=</span> <span class="tok-num">50</span>  <span class="tok-cm"># MVC Violation</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 29 · RECAP -->
+    <section>
+      <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Recap</span>
+        <h2>Graphics, events, and MVC</h2>
+        <ul class="bullets" style="margin-top:var(--gap);font-size:var(--body);">
+          <li><strong>Every graphics program</strong> has the same skeleton: <code style="color:var(--text);">from cmu_graphics import *</code>, a <code style="color:var(--text);">redrawAll</code>, and <code style="color:var(--text);">main</code> calling <code style="color:var(--text);">runApp</code>.</li>
+          <li><strong>Shapes:</strong> <code style="color:var(--text);">drawRect(left, top, width, height, fill=...)</code> takes a corner; <code style="color:var(--text);">drawLabel(value, centerX, centerY)</code> takes a center. On the canvas, y grows downward.</li>
+          <li><strong>Tools:</strong> the Inspector reads coordinates off a drawing; the Autograder checks graphics and animations by simulating events.</li>
+          <li><strong>Events:</strong> <code style="color:var(--text);">onAppStart</code> runs once; <code style="color:var(--text);">onMousePress</code> runs on every click with <code style="color:var(--text);">mouseX</code> and <code style="color:var(--text);">mouseY</code>. Store your state on <code style="color:var(--text);">app</code>.</li>
+          <li><strong>MVC:</strong> the <span class="m-model">model</span> is data on <code>app</code>, the <span class="m-view">view</span> (<code>redrawAll</code>) draws it, the <span class="m-ctrl">controllers</span> (event handlers) update it. Controllers do not draw; the view does not change data.</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script>
+  /* Slides 17 & 18 — simulate "running" a cmu_graphics program the deck
+     itself can't execute. A fake Run button opens an overlay with a
+     400x400 app window.
+       mode="print"   (slide 17): window stays blank (no redrawAll); each
+                      click appends the line print() would, x/y in 0..400.
+       mode="animate" (slide 18): a 50x50 cyan rectangle starts at
+                      (100, 200) and jumps its top-left corner to each
+                      click, exactly like the onMousePress in the code. */
+  (function () {
+    var modals = Array.prototype.filter.call(
+      document.querySelectorAll('[data-sim-modal]'),
+      function (m) { return !m.closest('.story-scene') && !m.closest('#storyboard'); }
+    );
+    modals.forEach(setupSim);
+
+    function setupSim(modal) {
+      var section = modal.closest('section');
+      var openBtn = section && section.querySelector('[data-sim-open]');
+      if (!openBtn) return;
+
+      var mode = modal.getAttribute('data-sim-mode') || 'print';
+      var closeBtn = modal.querySelector('[data-sim-close]');
+      var canvas = modal.querySelector('[data-sim-canvas]');
+      var hint = modal.querySelector('[data-sim-hint]');
+      var out = modal.querySelector('[data-sim-console]');
+      var simRect = modal.querySelector('[data-sim-rect]');
+      var IDLE = '<span class="sim-idle"># waiting \u2014 click the app window above</span>';
+
+      function open() {
+        if (out) out.innerHTML = IDLE;
+        if (simRect) { simRect.style.left = '100px'; simRect.style.top = '200px'; }
+        if (hint) hint.style.display = '';
+        modal.classList.add('is-open');
+      }
+      function close() { modal.classList.remove('is-open'); }
+
+      function canvasXY(e) {
+        var r = canvas.getBoundingClientRect();
+        var x = Math.round((e.clientX - r.left) * (canvas.offsetWidth / r.width));
+        var y = Math.round((e.clientY - r.top) * (canvas.offsetHeight / r.height));
+        return {
+          x: Math.max(0, Math.min(canvas.offsetWidth, x)),
+          y: Math.max(0, Math.min(canvas.offsetHeight, y))
+        };
+      }
+
+      openBtn.addEventListener('click', open);
+      closeBtn.addEventListener('click', close);
+      modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+
+      canvas.addEventListener('click', function (e) {
+        var p = canvasXY(e);
+        if (hint) hint.style.display = 'none';
+
+        if (mode === 'animate' && simRect) {
+          simRect.style.left = p.x + 'px';
+          simRect.style.top = p.y + 'px';
+          return;
+        }
+
+        var dot = document.createElement('div');
+        dot.className = 'sim-dot';
+        dot.style.left = p.x + 'px';
+        dot.style.top = p.y + 'px';
+        canvas.appendChild(dot);
+        window.setTimeout(function () { dot.remove(); }, 500);
+
+        if (out) {
+          var idle = out.querySelector('.sim-idle');
+          if (idle) idle.remove();
+          var line = document.createElement('div');
+          line.textContent = 'You pressed the mouse at ' + p.x + ',' + p.y;
+          out.appendChild(line);
+          out.scrollTop = out.scrollHeight;
+        }
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (!modal.classList.contains('is-open')) return;
+        if (e.key === 'Escape') close();
+        e.stopPropagation();
+      }, true);
+    }
+  })();
+
+  /* Slide 21 — drag the highlighted tokens out of the main.py listing
+     into one of three job bins (data / draw / event). Commit-then-check;
+     a clean board pops a full-slide "Nailed it!" overlay. Category names
+     are deliberately plain here: MVC is not introduced until 3.2.3.
+     Adapted from CSP 3.2's commit-then-check classifier. */
+  var MVC_ITEMS = [
+    { id: 'state',        label: 'app.rectLeft / app.rectTop', correct: 'data'  },
+    { id: 'redrawall',    label: 'redrawAll',                  correct: 'draw'  },
+    { id: 'onappstart',   label: 'onAppStart',                 correct: 'event' },
+    { id: 'onmousepress', label: 'onMousePress',               correct: 'event' }
+  ];
+  var MVC_BINS = ['data', 'draw', 'event'];
+
+  function mvcLiveEl(id) {
+    return Array.prototype.find.call(
+      document.querySelectorAll('#' + id),
+      function (el) { return !el.closest('#storyboard'); }
+    );
+  }
+
+  function initMvcSort(Reveal) {
+    var root = mvcLiveEl('mvc-sort');
+    if (!root) return;
+    var section = root.closest('section');
+    var codeEl = root.querySelector('.mvc-sort-code code');
+    var placedBadge = root.querySelector('[data-mvc-placed]');
+    var scoreBadge = root.querySelector('[data-mvc-score]');
+    var checkBtn = root.querySelector('[data-mvc-check]');
+    var resetBtn = root.querySelector('[data-mvc-reset]');
+    var overlay = section && section.querySelector('[data-mvc-overlay]');
+    var binItems = {};
+    MVC_BINS.forEach(function (b) { binItems[b] = root.querySelector('[data-mvc-items="' + b + '"]'); });
+    var zones = Array.prototype.slice.call(root.querySelectorAll('[data-bin]'));
+
+    /* "Missed something already" is scoped to the browser session
+       (sessionStorage): it survives a reload/refresh of this tab, and
+       clears when the deck is reopened in a new tab or window. A deck's
+       own inline script has no access to a SyncDeck presentation/session
+       id, so the browser session is the closest available scope. */
+    var MISSED_KEY = 'hpy-3-1-3-2-graphics-events-and-mvc:mvc-sort-missed';
+    var everMissed = false;
+    try { everMissed = sessionStorage.getItem(MISSED_KEY) === '1'; } catch (e) { /* storage unavailable */ }
+
+    var state = { placement: {}, selected: null, locked: false };
+
+    function reset() {
+      MVC_ITEMS.forEach(function (it) { state.placement[it.id] = 'code'; });
+      state.selected = null;
+      state.locked = false;
+    }
+    reset();
+
+    function itemById(id) {
+      return MVC_ITEMS.filter(function (i) { return i.id === id; })[0];
+    }
+
+    function chipHTML(it) {
+      var cls = 'mvc-chip';
+      if (state.selected === it.id) cls += ' is-selected';
+      var mark = '';
+      if (state.locked) {
+        if (state.placement[it.id] === it.correct) {
+          cls += ' is-correct';
+          mark = ' <span class="mvc-chip-mark" aria-hidden="true">&#10003;</span>';
+        } else {
+          cls += ' is-wrong';
+          mark = ' <span class="mvc-chip-mark" aria-hidden="true">&#10007;</span>';
+        }
+      }
+      return '<span class="' + cls + '" draggable="' + (!state.locked) +
+        '" data-item="' + it.id + '" tabindex="0" role="button" aria-label="' +
+        it.label + '">' + it.label + mark + '</span>';
+    }
+
+    function render() {
+      MVC_BINS.forEach(function (bin) {
+        var items = MVC_ITEMS.filter(function (i) { return state.placement[i.id] === bin; });
+        binItems[bin].innerHTML = items.map(chipHTML).join('');
+      });
+      MVC_ITEMS.forEach(function (it) {
+        var claimed = state.placement[it.id] !== 'code';
+        var spans = codeEl.querySelectorAll('[data-mvc-src="' + it.id + '"]');
+        Array.prototype.forEach.call(spans, function (sp) {
+          sp.classList.toggle('is-claimed', claimed);
+          sp.classList.toggle('is-selected', !claimed && state.selected === it.id);
+          sp.setAttribute('draggable', String(!claimed && !state.locked));
+        });
+      });
+      var placed = MVC_ITEMS.filter(function (i) { return state.placement[i.id] !== 'code'; }).length;
+      placedBadge.textContent = placed + ' of ' + MVC_ITEMS.length + ' placed';
+      checkBtn.disabled = state.locked || placed < MVC_ITEMS.length;
+    }
+
+    function place(id, bin) {
+      if (state.locked || !id || !itemById(id)) return;
+      state.placement[id] = bin;
+      state.selected = null;
+      render();
+    }
+
+    function evaluate() {
+      if (state.locked) return;
+      state.locked = true;
+      var correct = MVC_ITEMS.filter(function (i) { return state.placement[i.id] === i.correct; }).length;
+      if (correct < MVC_ITEMS.length) {
+        everMissed = true;
+        try { sessionStorage.setItem(MISSED_KEY, '1'); } catch (e) { /* storage unavailable */ }
+      }
+      var allCorrect = correct === MVC_ITEMS.length;
+      /* Green badge for any fully-correct board; the "Nailed it!" overlay
+         is held back for a clean first run (nothing missed this session). */
+      var celebrate = allCorrect && !everMissed;
+      render();
+      placedBadge.style.display = 'none';
+      scoreBadge.style.display = 'inline-flex';
+      scoreBadge.textContent = correct + ' of ' + MVC_ITEMS.length + ' correct';
+      scoreBadge.classList.toggle('is-perfect', celebrate);
+      scoreBadge.classList.toggle('is-complete', allCorrect && !celebrate);
+      checkBtn.style.display = 'none';
+      resetBtn.style.display = 'inline-flex';
+      if (overlay) overlay.classList.toggle('is-visible', celebrate);
+    }
+
+    function tryAgain() {
+      reset();
+      placedBadge.style.display = 'inline-flex';
+      scoreBadge.style.display = 'none';
+      scoreBadge.classList.remove('is-perfect', 'is-complete');
+      checkBtn.style.display = 'inline-flex';
+      resetBtn.style.display = 'none';
+      if (overlay) overlay.classList.remove('is-visible');
+      render();
+    }
+
+    function idFromTarget(target) {
+      var drag = target.closest('.mvc-drag');
+      if (drag) return drag.getAttribute('data-mvc-src');
+      var chip = target.closest('.mvc-chip');
+      if (chip) return chip.getAttribute('data-item');
+      return null;
+    }
+
+    function pick(target) {
+      if (state.locked) return false;
+      var drag = target.closest('.mvc-drag');
+      if (drag && drag.classList.contains('is-claimed')) {
+        place(drag.getAttribute('data-mvc-src'), 'code');
+        return true;
+      }
+      var id = idFromTarget(target);
+      if (id) {
+        state.selected = state.selected === id ? null : id;
+        render();
+        return true;
+      }
+      var zone = target.closest('[data-bin]');
+      if (zone && state.selected) {
+        place(state.selected, zone.getAttribute('data-bin'));
+        return true;
+      }
+      return false;
+    }
+
+    root.addEventListener('click', function (e) { pick(e.target); });
+    root.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      if (pick(e.target)) e.preventDefault();
+    });
+    root.addEventListener('dragstart', function (e) {
+      if (state.locked) return;
+      var drag = e.target.closest('.mvc-drag');
+      if (drag && drag.classList.contains('is-claimed')) return;
+      var id = idFromTarget(e.target);
+      if (!id) return;
+      e.dataTransfer.setData('text/plain', id);
+      state.selected = id;
+    });
+    zones.forEach(function (zone) {
+      zone.addEventListener('dragover', function (e) { if (!state.locked) e.preventDefault(); });
+      zone.addEventListener('drop', function (e) {
+        if (state.locked) return;
+        e.preventDefault();
+        place(e.dataTransfer.getData('text/plain') || state.selected, zone.getAttribute('data-bin'));
+      });
+    });
+    checkBtn.addEventListener('click', evaluate);
+    resetBtn.addEventListener('click', tryAgain);
+    if (overlay) overlay.addEventListener('click', function () { overlay.classList.remove('is-visible'); });
+
+    render();
+    Reveal.on('slidechanged', function (e) { if (e.currentSlide === section) tryAgain(); });
+  }
+</script>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+  initSyncDeckReveal({
+    deckId: 'hpy-3-1-3-2-graphics-events-and-mvc',
+    standaloneHosting: {
+      activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    afterInit: function (Reveal) {
+      initMvcSort(Reveal);
+    },
+    revealOverrides: {
+      hash: true,
+      hashOneBasedIndex: true,
+      transition: 'fade',
+      transitionSpeed: 'fast',
+      backgroundTransition: 'none',
+      center: false,
+      controls: true,
+      controlsLayout: 'edges',
+      progress: true,
+      slideNumber: 'c/t',
+      keyboard: true,
+      touch: true,
+      fragments: true,
+      width: 1600,
+      height: 900,
+      margin: 0.04,
+      minScale: 0.2,
+      maxScale: 2.5,
+    },
+  });
+</script>
+</body>
+</html>
