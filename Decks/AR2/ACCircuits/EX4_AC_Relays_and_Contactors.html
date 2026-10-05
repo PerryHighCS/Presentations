@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="66kjw5">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise 4: AC Relays and Contactors</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES - AC Exercise 4 · AC Relays and Contactors
+   ============================================================ */
+
+/* Colour convention, used consistently:
+   control circuit (switch + relay coil) -> --accent (green)
+   load circuit (relay contacts + loads)  -> --result (cyan)
+   ratings / cautions / lit lamps         -> --warn  (amber)   */
+.ctl  { color: var(--accent); font-weight: 600; }
+.load { color: var(--result); font-weight: 600; }
+.rate { color: var(--warn);   font-weight: 600; }
+
+/* Application cards (same shape as EX3's type cards) */
+.type-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+.type-card .tc-name {
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.type-card .tc-body {
+  font-size: var(--small);
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 5px;
+}
+.type-card .tc-body strong { color: var(--text); }
+
+/* Polarity cards on the introduction slide */
+.pole-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+.pole-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  text-align: center;
+}
+.pole-card svg { display: block; margin: 0 auto; }
+.pole-card .img-caption { font-size: 15px; color: var(--text-muted); }
+
+/* Waveform graph on the chattering slide */
+.wave-svg { width: 100%; height: auto; display: block; }
+.wave-svg text { font-family: var(--font-mono); font-size: 14px; fill: var(--text-dim); }
+
+/* MCQ fallback options */
+.mcq-opts { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; }
+.mcq-opts li {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.45;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+}
+.opt-key {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 22px;
+}
+.frq-box {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 22px 26px;
+  font-size: 28px;
+  color: var(--text);
+  line-height: 1.5;
+  max-width: 1150px;
+}
+
+/* ─── Interactive relay circuit simulator ─────────────────
+   Root: .relay-sim[data-input="toggle" | "nc-push"]
+   Any element with data-when="energized | deenergized |
+   always | closed | actuated" gets .on when that condition
+   holds. Wires are path.w (.ctl or .load); the JS clones each
+   into a .flow overlay that animates back and forth when on.
+   ───────────────────────────────────────────────────────── */
+.relay-sim svg { width: 100%; height: auto; display: block; overflow: visible; }
+.relay-sim .w, .relay-sim .flow, .relay-sim .sym {
+  fill: none;
+  stroke: rgba(230,247,234,0.45);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.25s ease, filter 0.25s ease;
+}
+.relay-sim .w.ctl.on  { stroke: var(--accent); filter: drop-shadow(0 0 4px rgba(57,211,83,0.55)); }
+.relay-sim .w.load.on { stroke: var(--result); filter: drop-shadow(0 0 4px rgba(94,234,212,0.55)); }
+.relay-sim .flow { opacity: 0; stroke: #ffffff; stroke-width: 2; stroke-dasharray: 3 15; }
+.relay-sim .flow.on { opacity: 0.85; animation: ac-slosh 1.2s ease-in-out infinite alternate; }
+@keyframes ac-slosh { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 36; } }
+
+.relay-sim .node { fill: rgba(230,247,234,0.75); }
+.relay-sim .term { fill: var(--bg); stroke: rgba(230,247,234,0.75); stroke-width: 2.5; }
+.relay-sim .lbl { font-family: var(--font-mono); font-size: 15px; fill: var(--text-muted); }
+.relay-sim .lbl-in { font-family: var(--font-mono); font-size: 18px; font-weight: 700; fill: var(--text); text-anchor: middle; dominant-baseline: central; }
+
+/* Toggle switch blade (pivot set per instance with an inline transform-origin) */
+.relay-sim .blade { transform-box: view-box; transform: rotate(-24deg); transition: transform 0.25s var(--ease); }
+.relay-sim .blade.on { transform: rotate(0deg); }
+
+/* NC push button: bar touches the terminals when released, drops away when pressed */
+.relay-sim .pb { transform-box: view-box; transition: transform 0.15s ease; }
+.relay-sim .pb.on { transform: translateY(16px); }
+
+/* Relay coil */
+.relay-sim .coil { fill: var(--bg); stroke: rgba(230,247,234,0.6); stroke-width: 3; transition: all 0.25s ease; }
+.relay-sim .coil.on { fill: rgba(57,211,83,0.22); stroke: var(--accent); filter: drop-shadow(0 0 10px rgba(57,211,83,0.7)); }
+
+/* Contact "conducting" bridge between the plates */
+.relay-sim .bridge { stroke: var(--result); stroke-width: 5; opacity: 0; transition: opacity 0.2s ease; }
+.relay-sim .bridge.on { opacity: 1; }
+
+/* Indicator lamps */
+.relay-sim .lamp { fill: var(--bg); stroke: rgba(230,247,234,0.6); stroke-width: 3; transition: all 0.25s ease; }
+.relay-sim .lamp.on { fill: var(--warn); stroke: var(--warn); filter: drop-shadow(0 0 16px rgba(255,209,102,0.9)); }
+.relay-sim .ray { stroke: rgba(230,247,234,0.45); stroke-width: 2.5; transition: stroke 0.25s ease; }
+.relay-sim .ray.on { stroke: var(--warn); }
+.relay-sim .lamp-txt { font-family: var(--font-mono); font-size: 20px; font-weight: 700; fill: var(--text); text-anchor: middle; dominant-baseline: central; transition: fill 0.25s ease; }
+.relay-sim .lamp-txt.on { fill: #0d1117; }
+
+.relay-sim .hit { fill: transparent; cursor: pointer; }
+.relay-sim .hit-ring { pointer-events: none; fill: none; stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 5 5; opacity: 0.55; }
+
+/* Controls + state readout under the diagram */
+.sim-controls { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: var(--gap-sm); }
+.sim-btn {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--bg);
+  background: var(--warn);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  cursor: pointer;
+  user-select: none;
+  touch-action: none;
+}
+.sim-btn:active { transform: translateY(1px); }
+.sim-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.sim-chip {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--text-dim);
+  padding: 6px 12px;
+  border: 1px solid rgba(230,247,234,0.15);
+  border-radius: 999px;
+  transition: all 0.2s ease;
+}
+.sim-chip b { color: var(--text-muted); font-weight: 700; }
+.sim-chip.on { color: var(--text); border-color: var(--accent-border); background: var(--accent-dim); }
+.sim-chip.on b { color: var(--accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .relay-sim .flow.on { animation: none; }
+  .relay-sim .blade, .relay-sim .pb { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(57,211,83,0.12),transparent 70%);"></div>
+  <div class="glow" style="width:400px;height:400px;bottom:-90px;right:10%;background:radial-gradient(circle,rgba(94,234,212,0.08),transparent 70%);"></div>
+
+  <div class="slide-inner slide-center">
+    <div class="trace-deco">
+      <svg viewBox="0 0 420 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- control lead into the coil -->
+        <path d="M420 230 L250 230 L250 340" stroke="rgba(57,211,83,0.18)" stroke-width="1.5"/>
+        <!-- relay coil -->
+        <circle cx="250" cy="380" r="40" stroke="rgba(57,211,83,0.42)" stroke-width="2.5"/>
+        <path d="M250 420 L250 520 L420 520" stroke="rgba(57,211,83,0.18)" stroke-width="1.5"/>
+        <!-- mechanical link to the contact -->
+        <line x1="290" y1="380" x2="330" y2="380" stroke="rgba(230,247,234,0.22)" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <!-- NO contact -->
+        <path d="M350 200 L350 368" stroke="rgba(94,234,212,0.18)" stroke-width="1.5"/>
+        <line x1="326" y1="368" x2="374" y2="368" stroke="rgba(94,234,212,0.42)" stroke-width="2.5"/>
+        <line x1="326" y1="392" x2="374" y2="392" stroke="rgba(94,234,212,0.42)" stroke-width="2.5"/>
+        <path d="M350 392 L350 680 L420 680" stroke="rgba(94,234,212,0.18)" stroke-width="1.5"/>
+        <circle cx="250" cy="230" r="5" fill="rgba(57,211,83,0.45)"/>
+        <circle cx="350" cy="200" r="4" fill="rgba(94,234,212,0.4)"/>
+      </svg>
+    </div>
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; AC Circuits &nbsp;·&nbsp; Exercise 4</span>
+    <h1 class="title-h1"><span class="accent">AC Relays</span> and Contactors</h1>
+    <p class="subtitle">// Coil and contacts &nbsp;·&nbsp; Chattering and shading coils &nbsp;·&nbsp; Contactors &nbsp;·&nbsp; Protection relays</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · LEARNING OUTCOMES & TOPICS COVERED -->
+<section>
+  <div class="glow" style="width:500px;height:500px;top:-80px;right:-100px;background:radial-gradient(circle,rgba(57,211,83,0.08),transparent 70%);"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Learning Outcomes &amp; Topics Covered</span>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-sm);">
+
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">After this section you will be able to <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Explain the <strong>principles of operation</strong> of ac relays.</li>
+          <li>List <strong>applications</strong> of ac relays.</li>
+          <li><strong>Operate</strong> a component of the AC/DC Training System: the ac relay.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">Topics <span class="accent">covered</span></h3>
+        <div class="agenda-grid" style="grid-template-columns:1fr;margin-top:0;">
+          <a class="agenda-item" href="#/3"><span class="agenda-num">01</span><span class="agenda-text"><strong>Introduction</strong> to ac relays</span></a>
+          <a class="agenda-item" href="#/6"><span class="agenda-num">02</span><span class="agenda-text"><strong>Contactors</strong></span></a>
+          <a class="agenda-item" href="#/7"><span class="agenda-num">03</span><span class="agenda-text"><strong>Applications</strong> of ac relays</span></a>
+          <a class="agenda-item" href="#/9"><span class="agenda-num">04</span><span class="agenda-text">Training system component: <strong>the ac relay</strong></span></a>
+          <a class="agenda-item" href="#/10"><span class="agenda-num">05</span><span class="agenda-text"><strong>Review</strong> questions</span></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · INTRODUCTION TO AC RELAYS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Introduction to AC Relays · Topic 01</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div>
+        <h2>From DC Relays to <span class="accent">AC Relays</span></h2>
+        <p class="slide-intro">In the DC Circuit Fundamentals course, you saw that a relay is made of an <span class="ctl">electromagnet</span>, usually a coil of wire wound around an iron core, and one or more sets of <span class="load">contacts</span>. When current flows in the coil, the coil is <strong>energized</strong> and produces a magnetic field. That field pulls on the relay armature, which opens or closes the contacts. Each set of contacts acts like a switch in the circuit it is connected to.</p>
+        <p class="slide-intro">An ac relay works the same way. The only difference is that the current in the coil is <span class="ctl">alternating current</span> instead of direct current.</p>
+        <div class="callout fragment fade-up">
+          The armature is made of a <strong>ferromagnetic material</strong>, so it is attracted to the coil's magnetic field no matter which way that field points. Reversing the current every half-cycle therefore has <strong>no effect</strong> on how the relay operates.
+        </div>
+      </div>
+
+      <div class="pole-row">
+        <div class="pole-card">
+          <svg width="240" height="290" viewBox="0 0 190 230" xmlns="http://www.w3.org/2000/svg" aria-label="Electromagnet with a north pole on top pulling the armature down">
+            <rect x="35" y="14" width="120" height="16" rx="3" fill="#8b949e"/>
+            <text x="95" y="26" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#0d1117" font-weight="700">ARMATURE</text>
+            <path d="M95 38 L95 58" stroke="#ffd166" stroke-width="3"/>
+            <path d="M87 50 L95 58 L103 50" stroke="#ffd166" stroke-width="3" fill="none"/>
+            <rect x="75" y="66" width="40" height="130" rx="3" fill="#2a3440"/>
+            <text x="95" y="86" text-anchor="middle" font-family="JetBrains Mono" font-size="18" font-weight="700" fill="#39d353">N</text>
+            <text x="95" y="188" text-anchor="middle" font-family="JetBrains Mono" font-size="18" font-weight="700" fill="#e6f7ea">S</text>
+            <path d="M68 100 h54 M68 116 h54 M68 132 h54 M68 148 h54 M68 164 h54" stroke="#39d353" stroke-width="5" stroke-linecap="round"/>
+            <path d="M40 210 q10 -12 20 0 t20 0" stroke="#39d353" stroke-width="2.5" fill="none"/>
+            <text x="100" y="216" font-family="JetBrains Mono" font-size="13" fill="#e6f7ea">i &gt; 0</text>
+          </svg>
+          <div class="img-caption">Positive half-cycle: the armature is pulled in.</div>
+        </div>
+        <div class="pole-card">
+          <svg width="240" height="290" viewBox="0 0 190 230" xmlns="http://www.w3.org/2000/svg" aria-label="Electromagnet with a south pole on top still pulling the armature down">
+            <rect x="35" y="14" width="120" height="16" rx="3" fill="#8b949e"/>
+            <text x="95" y="26" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#0d1117" font-weight="700">ARMATURE</text>
+            <path d="M95 38 L95 58" stroke="#ffd166" stroke-width="3"/>
+            <path d="M87 50 L95 58 L103 50" stroke="#ffd166" stroke-width="3" fill="none"/>
+            <rect x="75" y="66" width="40" height="130" rx="3" fill="#2a3440"/>
+            <text x="95" y="86" text-anchor="middle" font-family="JetBrains Mono" font-size="18" font-weight="700" fill="#39d353">S</text>
+            <text x="95" y="188" text-anchor="middle" font-family="JetBrains Mono" font-size="18" font-weight="700" fill="#e6f7ea">N</text>
+            <path d="M68 100 h54 M68 116 h54 M68 132 h54 M68 148 h54 M68 164 h54" stroke="#39d353" stroke-width="5" stroke-linecap="round"/>
+            <path d="M40 204 q10 12 20 0 t20 0" stroke="#39d353" stroke-width="2.5" fill="none"/>
+            <text x="100" y="216" font-family="JetBrains Mono" font-size="13" fill="#e6f7ea">i &lt; 0</text>
+          </svg>
+          <div class="img-caption">Negative half-cycle: still pulled in.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · CHATTERING AND THE SHADING COIL -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Introduction to AC Relays · Topic 01 · Chattering</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div>
+        <h2>The Problem at the <span class="rate">Crossing</span></h2>
+        <p class="slide-intro">Twice every cycle, the ac current in the coil passes through zero. At those instants the coil is momentarily <strong>de-energized</strong>, so the pull on the armature drops to nothing.</p>
+        <div class="callout-warn fragment fade-up" data-fragment-index="1">
+          The armature lets go for an instant, which makes a slight buzzing sound called <strong>chattering</strong>. It can also make the contacts very briefly open or close, which is highly undesirable.
+        </div>
+        <div class="callout-result fragment fade-up" data-fragment-index="2" style="margin-top:var(--gap-sm);">
+          AC relays solve this with a <strong>shading coil</strong> (or shading pole). It produces a second, delayed magnetic field, so some field is <strong>always present</strong> even when the main current passes through zero.
+        </div>
+      </div>
+
+      <div>
+        <svg class="wave-svg" viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" aria-label="Graph: the coil current is a sine wave. The magnetic pull from the main coil drops to zero at every zero crossing of the current. With a shading coil added, the total pull never reaches zero.">
+          <!-- panel labels -->
+          <text x="40" y="18">COIL CURRENT, i</text>
+          <text x="40" y="168">PULL ON THE ARMATURE</text>
+          <!-- axes -->
+          <line x1="40" y1="80" x2="680" y2="80" stroke="rgba(230,247,234,0.2)" stroke-width="1.5"/>
+          <line x1="40" y1="290" x2="680" y2="290" stroke="rgba(230,247,234,0.2)" stroke-width="1.5"/>
+          <!-- zero crossings -->
+          <g stroke="rgba(255,209,102,0.45)" stroke-width="1.5" stroke-dasharray="4 5">
+            <line x1="200" y1="30" x2="200" y2="300"/>
+            <line x1="360" y1="30" x2="360" y2="300"/>
+            <line x1="520" y1="30" x2="520" y2="300"/>
+          </g>
+          <!-- current -->
+          <path d="M40.0,80.0 L46.7,73.5 L53.3,67.1 L60.0,60.9 L66.7,55.0 L73.3,49.6 L80.0,44.6 L86.7,40.3 L93.3,36.7 L100.0,33.8 L106.7,31.7 L113.3,30.4 L120.0,30.0 L126.7,30.4 L133.3,31.7 L140.0,33.8 L146.7,36.7 L153.3,40.3 L160.0,44.6 L166.7,49.6 L173.3,55.0 L180.0,60.9 L186.7,67.1 L193.3,73.5 L200.0,80.0 L206.7,86.5 L213.3,92.9 L220.0,99.1 L226.7,105.0 L233.3,110.4 L240.0,115.4 L246.7,119.7 L253.3,123.3 L260.0,126.2 L266.7,128.3 L273.3,129.6 L280.0,130.0 L286.7,129.6 L293.3,128.3 L300.0,126.2 L306.7,123.3 L313.3,119.7 L320.0,115.4 L326.7,110.4 L333.3,105.0 L340.0,99.1 L346.7,92.9 L353.3,86.5 L360.0,80.0 L366.7,73.5 L373.3,67.1 L380.0,60.9 L386.7,55.0 L393.3,49.6 L400.0,44.6 L406.7,40.3 L413.3,36.7 L420.0,33.8 L426.7,31.7 L433.3,30.4 L440.0,30.0 L446.7,30.4 L453.3,31.7 L460.0,33.8 L466.7,36.7 L473.3,40.3 L480.0,44.6 L486.7,49.6 L493.3,55.0 L500.0,60.9 L506.7,67.1 L513.3,73.5 L520.0,80.0 L526.7,86.5 L533.3,92.9 L540.0,99.1 L546.7,105.0 L553.3,110.4 L560.0,115.4 L566.7,119.7 L573.3,123.3 L580.0,126.2 L586.7,128.3 L593.3,129.6 L600.0,130.0 L606.7,129.6 L613.3,128.3 L620.0,126.2 L626.7,123.3 L633.3,119.7 L640.0,115.4 L646.7,110.4 L653.3,105.0 L660.0,99.1 L666.7,92.9 L673.3,86.5 L680.0,80.0" fill="none" stroke="#39d353" stroke-width="3"/>
+          <!-- main-coil pull -->
+          <path d="M40.0,290.0 L46.7,288.5 L53.3,284.0 L60.0,276.8 L66.7,267.5 L73.3,256.6 L80.0,245.0 L86.7,233.4 L93.3,222.5 L100.0,213.2 L106.7,206.0 L113.3,201.5 L120.0,200.0 L126.7,201.5 L133.3,206.0 L140.0,213.2 L146.7,222.5 L153.3,233.4 L160.0,245.0 L166.7,256.6 L173.3,267.5 L180.0,276.8 L186.7,284.0 L193.3,288.5 L200.0,290.0 L206.7,288.5 L213.3,284.0 L220.0,276.8 L226.7,267.5 L233.3,256.6 L240.0,245.0 L246.7,233.4 L253.3,222.5 L260.0,213.2 L266.7,206.0 L273.3,201.5 L280.0,200.0 L286.7,201.5 L293.3,206.0 L300.0,213.2 L306.7,222.5 L313.3,233.4 L320.0,245.0 L326.7,256.6 L333.3,267.5 L340.0,276.8 L346.7,284.0 L353.3,288.5 L360.0,290.0 L366.7,288.5 L373.3,284.0 L380.0,276.8 L386.7,267.5 L393.3,256.6 L400.0,245.0 L406.7,233.4 L413.3,222.5 L420.0,213.2 L426.7,206.0 L433.3,201.5 L440.0,200.0 L446.7,201.5 L453.3,206.0 L460.0,213.2 L466.7,222.5 L473.3,233.4 L480.0,245.0 L486.7,256.6 L493.3,267.5 L500.0,276.8 L506.7,284.0 L513.3,288.5 L520.0,290.0 L526.7,288.5 L533.3,284.0 L540.0,276.8 L546.7,267.5 L553.3,256.6 L560.0,245.0 L566.7,233.4 L573.3,222.5 L580.0,213.2 L586.7,206.0 L593.3,201.5 L600.0,200.0 L606.7,201.5 L613.3,206.0 L620.0,213.2 L626.7,222.5 L633.3,233.4 L640.0,245.0 L646.7,256.6 L653.3,267.5 L660.0,276.8 L666.7,284.0 L673.3,288.5 L680.0,290.0 L680,290 L40,290 Z" fill="rgba(57,211,83,0.14)" stroke="none"/>
+          <path d="M40.0,290.0 L46.7,288.5 L53.3,284.0 L60.0,276.8 L66.7,267.5 L73.3,256.6 L80.0,245.0 L86.7,233.4 L93.3,222.5 L100.0,213.2 L106.7,206.0 L113.3,201.5 L120.0,200.0 L126.7,201.5 L133.3,206.0 L140.0,213.2 L146.7,222.5 L153.3,233.4 L160.0,245.0 L166.7,256.6 L173.3,267.5 L180.0,276.8 L186.7,284.0 L193.3,288.5 L200.0,290.0 L206.7,288.5 L213.3,284.0 L220.0,276.8 L226.7,267.5 L233.3,256.6 L240.0,245.0 L246.7,233.4 L253.3,222.5 L260.0,213.2 L266.7,206.0 L273.3,201.5 L280.0,200.0 L286.7,201.5 L293.3,206.0 L300.0,213.2 L306.7,222.5 L313.3,233.4 L320.0,245.0 L326.7,256.6 L333.3,267.5 L340.0,276.8 L346.7,284.0 L353.3,288.5 L360.0,290.0 L366.7,288.5 L373.3,284.0 L380.0,276.8 L386.7,267.5 L393.3,256.6 L400.0,245.0 L406.7,233.4 L413.3,222.5 L420.0,213.2 L426.7,206.0 L433.3,201.5 L440.0,200.0 L446.7,201.5 L453.3,206.0 L460.0,213.2 L466.7,222.5 L473.3,233.4 L480.0,245.0 L486.7,256.6 L493.3,267.5 L500.0,276.8 L506.7,284.0 L513.3,288.5 L520.0,290.0 L526.7,288.5 L533.3,284.0 L540.0,276.8 L546.7,267.5 L553.3,256.6 L560.0,245.0 L566.7,233.4 L573.3,222.5 L580.0,213.2 L586.7,206.0 L593.3,201.5 L600.0,200.0 L606.7,201.5 L613.3,206.0 L620.0,213.2 L626.7,222.5 L633.3,233.4 L640.0,245.0 L646.7,256.6 L653.3,267.5 L660.0,276.8 L666.7,284.0 L673.3,288.5 L680.0,290.0" fill="none" stroke="#39d353" stroke-width="3"/>
+          <!-- chatter points -->
+          <g class="fragment" data-fragment-index="1">
+            <circle cx="200" cy="290" r="8" fill="#ffd166"/>
+            <circle cx="360" cy="290" r="8" fill="#ffd166"/>
+            <circle cx="520" cy="290" r="8" fill="#ffd166"/>
+            <text x="370" y="320" fill="#ffd166" style="fill:#ffd166;">pull = 0 &rarr; chattering</text>
+          </g>
+          <!-- shading coil -->
+          <g class="fragment" data-fragment-index="2">
+            <path d="M40.0,245.4 L46.7,249.9 L53.3,255.5 L60.0,261.7 L66.7,268.2 L73.3,274.4 L80.0,280.1 L86.7,284.7 L93.3,288.0 L100.0,289.7 L106.7,289.8 L113.3,288.2 L120.0,285.1 L126.7,280.6 L133.3,275.0 L140.0,268.8 L146.7,262.3 L153.3,256.1 L160.0,250.4 L166.7,245.8 L173.3,242.5 L180.0,240.8 L186.7,240.7 L193.3,242.3 L200.0,245.4 L206.7,249.9 L213.3,255.5 L220.0,261.7 L226.7,268.2 L233.3,274.4 L240.0,280.1 L246.7,284.7 L253.3,288.0 L260.0,289.7 L266.7,289.8 L273.3,288.2 L280.0,285.1 L286.7,280.6 L293.3,275.0 L300.0,268.8 L306.7,262.3 L313.3,256.1 L320.0,250.4 L326.7,245.8 L333.3,242.5 L340.0,240.8 L346.7,240.7 L353.3,242.3 L360.0,245.4 L366.7,249.9 L373.3,255.5 L380.0,261.7 L386.7,268.2 L393.3,274.4 L400.0,280.1 L406.7,284.7 L413.3,288.0 L420.0,289.7 L426.7,289.8 L433.3,288.2 L440.0,285.1 L446.7,280.6 L453.3,275.0 L460.0,268.8 L466.7,262.3 L473.3,256.1 L480.0,250.4 L486.7,245.8 L493.3,242.5 L500.0,240.8 L506.7,240.7 L513.3,242.3 L520.0,245.4 L526.7,249.9 L533.3,255.5 L540.0,261.7 L546.7,268.2 L553.3,274.4 L560.0,280.1 L566.7,284.7 L573.3,288.0 L580.0,289.7 L586.7,289.8 L593.3,288.2 L600.0,285.1 L606.7,280.6 L613.3,275.0 L620.0,268.8 L626.7,262.3 L633.3,256.1 L640.0,250.4 L646.7,245.8 L653.3,242.5 L660.0,240.8 L666.7,240.7 L673.3,242.3 L680.0,245.4" fill="none" stroke="#5eead4" stroke-width="2" stroke-dasharray="6 6" opacity="0.7"/>
+            <path d="M40.0,245.4 L46.7,248.4 L53.3,249.5 L60.0,248.5 L66.7,245.7 L73.3,241.1 L80.0,235.1 L86.7,228.0 L93.3,220.5 L100.0,212.9 L106.7,205.9 L113.3,199.8 L120.0,195.1 L126.7,192.1 L133.3,191.0 L140.0,192.0 L146.7,194.8 L153.3,199.4 L160.0,205.4 L166.7,212.5 L173.3,220.0 L180.0,227.6 L186.7,234.6 L193.3,240.7 L200.0,245.4 L206.7,248.4 L213.3,249.5 L220.0,248.5 L226.7,245.7 L233.3,241.1 L240.0,235.1 L246.7,228.0 L253.3,220.5 L260.0,212.9 L266.7,205.9 L273.3,199.8 L280.0,195.1 L286.7,192.1 L293.3,191.0 L300.0,192.0 L306.7,194.8 L313.3,199.4 L320.0,205.4 L326.7,212.5 L333.3,220.0 L340.0,227.6 L346.7,234.6 L353.3,240.7 L360.0,245.4 L366.7,248.4 L373.3,249.5 L380.0,248.5 L386.7,245.7 L393.3,241.1 L400.0,235.1 L406.7,228.0 L413.3,220.5 L420.0,212.9 L426.7,205.9 L433.3,199.8 L440.0,195.1 L446.7,192.1 L453.3,191.0 L460.0,192.0 L466.7,194.8 L473.3,199.4 L480.0,205.4 L486.7,212.5 L493.3,220.0 L500.0,227.6 L506.7,234.6 L513.3,240.7 L520.0,245.4 L526.7,248.4 L533.3,249.5 L540.0,248.5 L546.7,245.7 L553.3,241.1 L560.0,235.1 L566.7,228.0 L573.3,220.5 L580.0,212.9 L586.7,205.9 L593.3,199.8 L600.0,195.1 L606.7,192.1 L613.3,191.0 L620.0,192.0 L626.7,194.8 L633.3,199.4 L640.0,205.4 L646.7,212.5 L653.3,220.0 L660.0,227.6 L666.7,234.6 L673.3,240.7 L680.0,245.4" fill="none" stroke="#5eead4" stroke-width="4"/>
+            <text x="470" y="168" style="fill:#5eead4;">with a shading coil</text>
+          </g>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · AN AC RELAY IN A CIRCUIT (INTERACTIVE) -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Introduction to AC Relays · Topic 01 · Based on Figure 58</span>
+    <div class="split split-40" style="align-items:center;">
+
+      <div>
+        <h2>A Light Controlled by an <span class="accent">AC Relay</span></h2>
+        <p class="slide-intro">In the <span class="ctl">control circuit</span>, a toggle switch connects the ac source to the relay coil, CR. In the <span class="load">load circuit</span>, the source feeds an indicator light through the relay's normally open (NO) contact, also labeled CR because it belongs to that coil.</p>
+        <p class="slide-intro">Close the switch and watch the chain of events: the coil energizes, its field closes the NO contact, and the light turns on.</p>
+        <div class="callout-warn fragment fade-up">
+          A coil in an ac circuit is an inductor, so the relay coil has an <strong>inductive reactance</strong> that limits the current flowing in it. Take that into account when you choose the ac source that powers the coil.
+        </div>
+      </div>
+
+      <div class="relay-sim" data-input="toggle">
+        <svg viewBox="0 0 780 460" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive circuit: an ac source, a toggle switch and relay coil CR in the control circuit, and an NO contact CR and indicator light in the load circuit.">
+          <!-- shared source leads -->
+          <path class="w ctl" data-when="energized" d="M170,206 V130"/>
+          <path class="w ctl" data-when="energized" d="M170,274 V330"/>
+          <!-- control circuit -->
+          <path class="w ctl" data-when="energized" d="M170,130 H292"/>
+          <path class="w ctl" data-when="energized" d="M378,130 H460 V206"/>
+          <path class="w ctl" data-when="energized" d="M460,274 V330 H170"/>
+          <!-- load circuit -->
+          <path class="w load" data-when="energized" d="M170,130 V40 H700 V150"/>
+          <path class="w load" data-when="energized" d="M700,170 V300"/>
+          <path class="w load" data-when="energized" d="M700,368 V420 H170 V330"/>
+
+          <!-- ac source -->
+          <circle cx="170" cy="240" r="34" class="sym" style="fill:#0d1117;"/>
+          <path d="M150,240 q10,-18 20,0 t20,0" class="sym"/>
+          <text x="124" y="246" class="lbl" text-anchor="end">AC source</text>
+          <circle cx="170" cy="130" r="6" class="node"/>
+          <circle cx="170" cy="330" r="6" class="node"/>
+
+          <!-- toggle switch -->
+          <line x1="298" y1="130" x2="370" y2="130" class="sym blade" data-when="closed" style="transform-origin:298px 130px;"/>
+          <circle cx="298" cy="130" r="6" class="term"/>
+          <circle cx="372" cy="130" r="6" class="term"/>
+          <text x="335" y="70" class="lbl" text-anchor="middle">Toggle switch</text>
+          <rect x="280" y="84" width="110" height="64" rx="8" class="hit" data-act="toggle"/>
+          <rect x="280" y="84" width="110" height="64" rx="8" class="hit-ring"/>
+
+          <!-- relay coil -->
+          <circle cx="460" cy="240" r="34" class="coil" data-when="energized"/>
+          <text x="460" y="240" class="lbl-in">CR</text>
+          <text x="506" y="246" class="lbl">Relay coil</text>
+
+          <!-- NO contact -->
+          <line x1="700" y1="150" x2="700" y2="170" class="bridge" data-when="energized"/>
+          <line x1="672" y1="150" x2="728" y2="150" class="sym"/>
+          <line x1="672" y1="170" x2="728" y2="170" class="sym"/>
+          <text x="740" y="166" class="lbl">CR</text>
+          <text x="660" y="166" class="lbl" text-anchor="end">NO contact</text>
+
+          <!-- indicator light -->
+          <circle cx="700" cy="334" r="34" class="lamp" data-when="energized"/>
+          <g class="ray" data-when="energized">
+            <line x1="676" y1="310" x2="666" y2="300"/><line x1="724" y1="310" x2="734" y2="300"/>
+            <line x1="676" y1="358" x2="666" y2="368"/><line x1="724" y1="358" x2="734" y2="368"/>
+          </g>
+          <text x="654" y="340" class="lbl" text-anchor="end">Indicator light</text>
+        </svg>
+        <div class="sim-controls">
+          <button class="sim-btn" data-act="toggle" data-label-off="Close the switch" data-label-on="Open the switch">Close the switch</button>
+          <div class="sim-chips">
+            <span class="sim-chip" data-when="closed" data-on="Switch: <b>closed</b>" data-off="Switch: <b>open</b>">Switch: <b>open</b></span>
+            <span class="sim-chip" data-when="energized" data-on="Coil: <b>energized</b>" data-off="Coil: <b>de-energized</b>">Coil: <b>de-energized</b></span>
+            <span class="sim-chip" data-when="energized" data-on="NO contact: <b>closed</b>" data-off="NO contact: <b>open</b>">NO contact: <b>open</b></span>
+            <span class="sim-chip" data-when="energized" data-on="Light: <b>on</b>" data-off="Light: <b>off</b>">Light: <b>off</b></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · CONTACTORS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Contactors · Topic 02</span>
+    <div class="split split-60" style="align-items:center;">
+
+      <div>
+        <h2>A Relay Built for <span class="accent">Big Currents</span></h2>
+        <p class="slide-intro">A common type of ac relay is the <span class="accent">contactor</span>. Its operating principles are virtually identical to those of any other relay: a coil is energized, and its magnetic field opens or closes a set of contacts.</p>
+        <p class="slide-intro">The only feature that sets a contactor apart is its <span class="rate">current rating</span>, which is much higher than that of other types of relays.</p>
+        <div class="calc-col" style="margin-bottom:var(--gap-sm);">
+          <div class="col-label">Typical contactor current rating</div>
+          <div class="yt-result">from at least 10&nbsp;A up to several hundred amperes</div>
+        </div>
+        <div class="callout fragment fade-up">
+          That high rating makes contactors ideal for controlling many types of <strong>high-power loads</strong>, such as the pump motor this contactor switches.
+        </div>
+      </div>
+
+      <div class="img-center">
+        <figure style="margin:0;text-align:center;">
+          <img class="photo-img img-zoomable" src="EX4_AC_Relays_Assets/fig59_contactor.jpg"
+               alt="Figure 59: An ac contactor mounted in a pump control panel. A black contactor body with a white auxiliary contact block clipped to its front, with numbered wire markers on the orange and red wires connected to its terminals."
+               style="max-height:560px;width:auto;">
+          <figcaption class="img-caption">Figure 59: AC contactor used in a pump application.</figcaption>
+        </figure>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · APPLICATIONS OF AC RELAYS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Applications of AC Relays · Topic 03</span>
+    <h2>Where AC Relays <span class="accent">Are Used</span></h2>
+    <p class="slide-intro">Just like dc relays, ac relays are used in a wide variety of applications as a <strong>replacement for switches</strong>. A relay is safer for the user to operate than a switch, because the <span class="ctl">control circuit</span> for the relay coil is isolated from the <span class="load">circuit the relay controls</span>. That isolation lets a much lower current flow in the control circuit than in the controlled circuit.</p>
+
+    <div class="calc-cols-2" style="margin-top:var(--gap-sm);">
+      <div class="type-card fragment fade-up">
+        <span class="tc-name">High-power loads</span>
+        <p class="tc-body">The isolation advantage matters most for <strong>contactors</strong>, which control high-power loads such as heavy-duty motors, lighting and heating equipment, and capacitor banks.</p>
+      </div>
+      <div class="type-card fragment fade-up">
+        <span class="tc-name">HVAC systems</span>
+        <p class="tc-body">Another common use of ac relays is in <strong>heating, ventilation, and air conditioning</strong> (HVAC) systems, where a low-voltage thermostat circuit switches blowers, compressors, and heaters.</p>
+      </div>
+    </div>
+
+    <div class="callout fragment fade-up" style="margin-top:var(--gap);">
+      Pressing a small button on a 24&nbsp;V <span class="ctl">control circuit</span> can safely start a motor that draws tens of amperes in the <span class="load">load circuit</span>. The person operating the button never touches the high-current circuit.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · PROTECTION RELAYS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Applications of AC Relays · Topic 03 · Protection</span>
+    <div class="split split-60" style="align-items:center;">
+
+      <div>
+        <h2>Protection <span class="accent">Relays</span></h2>
+        <p class="slide-intro">AC relays are also often used for circuit protection, in which case they are called <span class="accent">protection relays</span>. A protection relay is designed to <strong>open a circuit</strong> when certain conditions occur, which stops the current from flowing.</p>
+        <div class="method-steps">
+          <div class="method-step fragment fade-up">For example, a protection relay can prevent <strong>overvoltage</strong>.</div>
+          <div class="method-step fragment fade-up">As soon as the voltage applied to the relay coil reaches a <strong>set value</strong>, the coil becomes energized.</div>
+          <div class="method-step fragment fade-up">The relay contacts then <strong>open</strong>, disconnecting the circuit before the excess voltage can do damage.</div>
+        </div>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap-sm);">
+          The overload relay shown here protects a motor. It stops the motor as soon as certain <strong>predetermined ratings</strong> are exceeded.
+        </div>
+      </div>
+
+      <div class="img-center">
+        <figure style="margin:0;text-align:center;">
+          <img class="photo-img img-zoomable" src="EX4_AC_Relays_Assets/fig60_overload_relay.jpg"
+               alt="Figure 60: A Siemens SIRIUS overload relay for motors. A black and light grey block with five pin terminals on top, a red STOP button, a blue RESET dial, an adjustment dial, and NC 95-96 and NO 97-98 auxiliary contact terminals along the bottom."
+               style="max-height:540px;width:auto;">
+          <figcaption class="img-caption">Figure 60: Typical overload relay used for motors.</figcaption>
+        </figure>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · TRAINING SYSTEM COMPONENT: THE AC RELAY -->
+<section>
+  <div class="glow" style="width:480px;height:480px;bottom:-150px;right:-100px;background:radial-gradient(circle,rgba(255,209,102,0.06),transparent 70%);"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Training System Component: the AC Relay · Topic 04</span>
+    <div class="split split-50 split-top">
+
+      <div>
+        <h2>The <span class="accent">AC Relay</span> in the AC/DC Training System</h2>
+        <div class="calc-col" style="margin-bottom:var(--gap-sm);">
+          <div class="col-label">Ratings</div>
+          <div class="yt-formula"><span class="ctl">Coil</span> voltage rating: <strong style="color:var(--warn);">24&nbsp;V</strong></div>
+          <div class="yt-formula"><span class="load">Contacts</span>: <strong style="color:var(--result);">two sets</strong>, each with an NO and an NC terminal</div>
+          <div class="yt-formula">Each contact set: <strong style="color:var(--warn);">125&nbsp;V</strong> and <strong style="color:var(--warn);">10&nbsp;A</strong> maximum</div>
+        </div>
+        <div class="callout-warn">
+          Never apply more than <strong>125&nbsp;V</strong> across the contacts or let more than <strong>10&nbsp;A</strong> flow through them. Exceeding either rating could damage the ac relay and prevent its normal operation.
+        </div>
+      </div>
+
+      <div>
+        <h2>Reading the <span class="accent">Front Panel</span></h2>
+        <ul class="bullets">
+          <li class="fragment fade-up">Applying <strong>24&nbsp;V</strong> across the coil energizes it.</li>
+          <li class="fragment fade-up">Each set of contacts controls its own <strong>independent circuit</strong>, so one relay can switch two separate loads.</li>
+          <li class="fragment fade-up">The NO and NC terminals of a set can be used <strong>at the same time</strong>. When the coil is energized, the circuit on the NC contact opens while the circuit on the NO contact closes.</li>
+        </ul>
+        <div class="sym-row fragment fade-up">
+          <div class="sym-card">
+            <svg width="64" height="54" viewBox="0 0 64 54" xmlns="http://www.w3.org/2000/svg">
+              <line x1="32" y1="0" x2="32" y2="18" stroke="#5eead4" stroke-width="2.5"/>
+              <line x1="10" y1="18" x2="54" y2="18" stroke="#5eead4" stroke-width="2.5"/>
+              <line x1="10" y1="36" x2="54" y2="36" stroke="#5eead4" stroke-width="2.5"/>
+              <line x1="32" y1="36" x2="32" y2="54" stroke="#5eead4" stroke-width="2.5"/>
+            </svg>
+            <span class="sym-name"><strong>NO contact</strong><br>open until the coil is energized</span>
+          </div>
+          <div class="sym-card">
+            <svg width="64" height="54" viewBox="0 0 64 54" xmlns="http://www.w3.org/2000/svg">
+              <line x1="32" y1="0" x2="32" y2="18" stroke="#5eead4" stroke-width="2.5"/>
+              <line x1="10" y1="18" x2="54" y2="18" stroke="#5eead4" stroke-width="2.5"/>
+              <line x1="10" y1="36" x2="54" y2="36" stroke="#5eead4" stroke-width="2.5"/>
+              <line x1="32" y1="36" x2="32" y2="54" stroke="#5eead4" stroke-width="2.5"/>
+              <line x1="22" y1="44" x2="42" y2="10" stroke="#5eead4" stroke-width="2.5"/>
+            </svg>
+            <span class="sym-name"><strong>NC contact</strong><br>closed until the coil is energized</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · REVIEW QUESTION 1 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:10:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What are the basic components of an ac relay? Select all correct answers.","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"An electromagnet (generally a coil of wire wound around an iron core)","isCorrect":true},{"id":"q1b","text":"An isolation transformer","isCorrect":false},{"id":"q1c","text":"A voltage measurement device","isCorrect":false},{"id":"q1d","text":"One or more sets of contacts","isCorrect":true},{"id":"q1e","text":"Several resistors in parallel","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Question 1 · Select All That Apply</span>
+    <h2>What Are the Basic Components of an <span class="accent">AC Relay?</span></h2>
+    <ul class="mcq-opts" style="max-width:1100px;">
+      <li><span class="opt-key">A</span> An electromagnet (generally a coil of wire wound around an iron core)</li>
+      <li><span class="opt-key">B</span> An isolation transformer</li>
+      <li><span class="opt-key">C</span> A voltage measurement device</li>
+      <li><span class="opt-key">D</span> One or more sets of contacts</li>
+      <li><span class="opt-key">E</span> Several resistors in parallel</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · REVIEW QUESTION 2 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:11:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What undesirable effect does the ac current flowing in the coil of an ac relay cause? How can this be solved?","order":0,"responseTimeLimitMs":90000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Question 2 · Free Response</span>
+    <h2>An <span class="rate">Undesirable</span> Effect</h2>
+    <div class="frq-box">
+      What undesirable effect does the ac current flowing in the coil of an ac relay cause? How can this be solved?
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · REVIEW QUESTION 3 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:12:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which one of the following is the definition of a contactor?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"A low-resistance resistor that can be added in series to a circuit in order to prevent overcurrents and damage to the equipment.","isCorrect":false},{"id":"q1b","text":"An automatically actuated electrical switch that allows a circuit to be opened in order to prevent undesirable operating conditions.","isCorrect":false},{"id":"q1c","text":"A common type of ac relay whose current rating is much higher than that of other types of relays.","isCorrect":true},{"id":"q1d","text":"Two inductors (coils of wire) wound around a common core of ferromagnetic material such as iron.","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Question 3</span>
+    <h2>Which Is the Definition of a <span class="accent">Contactor?</span></h2>
+    <ul class="mcq-opts" style="max-width:1200px;">
+      <li><span class="opt-key">A</span> A low-resistance resistor that can be added in series to a circuit in order to prevent overcurrents and damage to the equipment.</li>
+      <li><span class="opt-key">B</span> An automatically actuated electrical switch that allows a circuit to be opened in order to prevent undesirable operating conditions.</li>
+      <li><span class="opt-key">C</span> A common type of ac relay whose current rating is much higher than that of other types of relays.</li>
+      <li><span class="opt-key">D</span> Two inductors (coils of wire) wound around a common core of ferromagnetic material such as iron.</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · REVIEW QUESTION 4 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:13:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Using the circuit on the slide: when the NC push button is **released**, what is the state of the relay coil?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"Energized","isCorrect":true},{"id":"q1b","text":"De-energized","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"When the NC push button is **released**, which indicator lights are on? Select all that apply.","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"Indicator light A","isCorrect":true},{"id":"q2b","text":"Indicator light B","isCorrect":true},{"id":"q2c","text":"Indicator light C","isCorrect":false}]},{"id":"q3","type":"multiple-choice","text":"When the NC push button is **pressed**, what is the state of the relay coil?","order":2,"responseTimeLimitMs":30000,"options":[{"id":"q3a","text":"Energized","isCorrect":false},{"id":"q3b","text":"De-energized","isCorrect":true}]},{"id":"q4","type":"multiple-choice","text":"When the NC push button is **pressed**, which indicator lights are on? Select all that apply.","order":3,"responseTimeLimitMs":45000,"options":[{"id":"q4a","text":"Indicator light A","isCorrect":true},{"id":"q4b","text":"Indicator light B","isCorrect":false},{"id":"q4c","text":"Indicator light C","isCorrect":true}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Question 4 · Predict</span>
+    <div class="split split-60" style="align-items:center;">
+      <div class="img-center">
+        <figure style="margin:0;">
+          <img class="c-img img-zoomable" src="EX4_AC_Relays_Assets/fig65_review_circuit.png"
+               alt="Figure 65: A 24 V ac power source feeds two circuits. In the control circuit, an NC push button connects the source to relay coil CR. In the load circuit, indicator light A is in series with two parallel branches: indicator light B through an NO contact, and indicator light C through an NC contact."
+               style="width:100%;">
+          <figcaption class="img-caption">Figure 65: Circuit for the present question.</figcaption>
+        </figure>
+      </div>
+      <div>
+        <h2>Predict the <span class="accent">Coil</span> and the <span class="rate">Lights</span></h2>
+        <p class="slide-intro">For each state of the NC push button, decide whether the relay coil is energized or de-energized, and whether each indicator light is on or off.</p>
+        <div class="calc-cols-2">
+          <div class="calc-col">
+            <div class="col-label">NC button released</div>
+            <div class="yt-formula muted">Relay coil: ?<br>Light A: ?<br>Light B: ?<br>Light C: ?</div>
+          </div>
+          <div class="calc-col">
+            <div class="col-label">NC button pressed</div>
+            <div class="yt-formula muted">Relay coil: ?<br>Light A: ?<br>Light B: ?<br>Light C: ?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · REVIEW QUESTION 4 CHECK (INTERACTIVE) -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Question 4 · Check Your Prediction</span>
+    <div class="split split-60" style="align-items:center;">
+
+      <div class="relay-sim" data-input="nc-push">
+        <svg viewBox="0 0 900 470" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive version of Figure 65. Hold the NC push button to open it and watch the relay coil and indicator lights A, B, and C respond.">
+          <!-- shared source leads (light A is always lit, so these always carry current) -->
+          <path class="w ctl" data-when="always" d="M140,206 V150"/>
+          <path class="w ctl" data-when="always" d="M140,274 V330"/>
+          <!-- control circuit -->
+          <path class="w ctl" data-when="energized" d="M140,150 H262"/>
+          <path class="w ctl" data-when="energized" d="M338,150 H460 V206"/>
+          <path class="w ctl" data-when="energized" d="M460,274 V330 H140"/>
+          <!-- load circuit: through light A, then B or C -->
+          <path class="w load" data-when="always" d="M140,150 V60 H446"/>
+          <path class="w load" data-when="always" d="M514,60 H640"/>
+          <path class="w load" data-when="energized" d="M640,60 V200"/>
+          <path class="w load" data-when="energized" d="M640,220 V340"/>
+          <path class="w load" data-when="energized" d="M640,408 V430"/>
+          <path class="w load" data-when="deenergized" d="M640,60 H820 V200"/>
+          <path class="w load" data-when="deenergized" d="M820,220 V340"/>
+          <path class="w load" data-when="deenergized" d="M820,408 V430 H640"/>
+          <path class="w load" data-when="always" d="M640,430 H140 V330"/>
+
+          <!-- ac source -->
+          <circle cx="140" cy="240" r="34" class="sym" style="fill:#0d1117;"/>
+          <path d="M120,240 q10,-18 20,0 t20,0" class="sym"/>
+          <text x="96" y="234" class="lbl" text-anchor="end">AC source</text>
+          <text x="96" y="256" class="lbl" text-anchor="end">24 V</text>
+          <circle cx="140" cy="150" r="6" class="node"/>
+          <circle cx="140" cy="330" r="6" class="node"/>
+          <circle cx="640" cy="60" r="6" class="node"/>
+          <circle cx="640" cy="430" r="6" class="node"/>
+
+          <!-- NC push button: bar under the terminals, plunger above -->
+          <g class="pb" data-when="actuated">
+            <line x1="258" y1="157" x2="342" y2="157" class="sym"/>
+            <line x1="300" y1="157" x2="300" y2="118" class="sym"/>
+          </g>
+          <circle cx="268" cy="150" r="6" class="term"/>
+          <circle cx="332" cy="150" r="6" class="term"/>
+          <text x="300" y="104" class="lbl" text-anchor="middle">NC push button</text>
+          <rect x="246" y="110" width="108" height="80" rx="8" class="hit" data-act="hold"/>
+          <rect x="246" y="110" width="108" height="80" rx="8" class="hit-ring"/>
+
+          <!-- relay coil -->
+          <circle cx="460" cy="240" r="34" class="coil" data-when="energized"/>
+          <text x="460" y="240" class="lbl-in">CR</text>
+
+          <!-- light A -->
+          <circle cx="480" cy="60" r="34" class="lamp" data-when="always"/>
+          <text x="480" y="60" class="lamp-txt" data-when="always">A</text>
+
+          <!-- branch B: NO contact -->
+          <line x1="640" y1="200" x2="640" y2="220" class="bridge" data-when="energized"/>
+          <line x1="612" y1="200" x2="668" y2="200" class="sym"/>
+          <line x1="612" y1="220" x2="668" y2="220" class="sym"/>
+          <text x="600" y="216" class="lbl" text-anchor="end">NO</text>
+          <circle cx="640" cy="374" r="34" class="lamp" data-when="energized"/>
+          <text x="640" y="374" class="lamp-txt" data-when="energized">B</text>
+
+          <!-- branch C: NC contact -->
+          <line x1="820" y1="200" x2="820" y2="220" class="bridge" data-when="deenergized"/>
+          <line x1="792" y1="200" x2="848" y2="200" class="sym"/>
+          <line x1="792" y1="220" x2="848" y2="220" class="sym"/>
+          <line x1="806" y1="228" x2="834" y2="192" class="sym"/>
+          <text x="780" y="216" class="lbl" text-anchor="end">NC</text>
+          <circle cx="820" cy="374" r="34" class="lamp" data-when="deenergized"/>
+          <text x="820" y="374" class="lamp-txt" data-when="deenergized">C</text>
+        </svg>
+        <div class="sim-controls">
+          <button class="sim-btn" data-act="hold">Hold to press the NC button</button>
+          <div class="sim-chips">
+            <span class="sim-chip" data-when="actuated" data-on="Button: <b>pressed</b>" data-off="Button: <b>released</b>">Button: <b>released</b></span>
+            <span class="sim-chip" data-when="energized" data-on="Coil: <b>energized</b>" data-off="Coil: <b>de-energized</b>">Coil: <b>energized</b></span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2>Test the <span class="accent">Circuit</span></h2>
+        <p class="slide-intro">Press and hold the NC push button, either in the diagram or with the button below it, then let go. Compare what you see with your predictions.</p>
+        <div class="callout fragment fade-up">
+          When the button is <strong>released</strong>, it is closed, so the <span class="ctl">coil is energized</span>. The NO contact closes and the NC contact opens, so <strong>A and B</strong> are on and C is off.
+        </div>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap-sm);">
+          When the button is <strong>pressed</strong>, it opens, so the <span class="ctl">coil is de-energized</span>. The contacts return to their normal state, so <strong>A and C</strong> are on and B is off.
+        </div>
+        <div class="callout-result fragment fade-up" style="margin-top:var(--gap-sm);">
+          Light A is in series with both branches. Exactly one of the two contacts is always closed, so <strong>light A stays on</strong> in both states.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · REVIEW QUESTION 5 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:15:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What is the main advantage of ac relays over conventional switches? Explain briefly.","order":0,"responseTimeLimitMs":90000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Question 5 · Free Response</span>
+    <h2>Relays Versus <span class="accent">Switches</span></h2>
+    <div class="frq-box">
+      What is the main advantage of ac relays over conventional switches? Explain briefly.
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+// Interactive relay circuit simulator. Each .relay-sim root has one input:
+// data-input="toggle"  -> a toggle switch; clicking flips it (actuated = closed)
+// data-input="nc-push" -> a momentary NC push button; holding it opens it
+// The coil is energized whenever the input contact is closed. Elements carry
+// data-when="energized | deenergized | always | closed | actuated" and get .on
+// while that condition holds; chips with data-on/data-off swap their text.
+function initRelaySims(Reveal) {
+    document.querySelectorAll('.relay-sim').forEach(function (root) {
+        if (root.closest('#storyboard')) return;
+        var type = root.dataset.input;
+        var actuated = false;
+
+        root.querySelectorAll('path.w').forEach(function (wire) {
+            var flow = wire.cloneNode(false);
+            flow.classList.remove('w');
+            flow.classList.add('flow');
+            wire.after(flow);
+        });
+
+        function render() {
+            var closed = type === 'nc-push' ? !actuated : actuated;
+            var state = {
+                energized: closed,
+                deenergized: !closed,
+                always: true,
+                closed: closed,
+                actuated: actuated,
+            };
+            root.querySelectorAll('[data-when]').forEach(function (el) {
+                var on = !!state[el.dataset.when];
+                el.classList.toggle('on', on);
+                if (el.hasAttribute('data-on')) el.innerHTML = on ? el.dataset.on : el.dataset.off;
+            });
+            root.querySelectorAll('[data-label-on]').forEach(function (el) {
+                el.textContent = actuated ? el.dataset.labelOn : el.dataset.labelOff;
+            });
+        }
+
+        root.querySelectorAll('[data-act="toggle"]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                actuated = !actuated;
+                render();
+            });
+        });
+
+        root.querySelectorAll('[data-act="hold"]').forEach(function (el) {
+            el.addEventListener('pointerdown', function (e) {
+                e.preventDefault();
+                actuated = true;
+                render();
+            });
+            ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (name) {
+                el.addEventListener(name, function () {
+                    if (!actuated) return;
+                    actuated = false;
+                    render();
+                });
+            });
+        });
+
+        Reveal.on('slidechanged', function () {
+            actuated = false;
+            render();
+        });
+
+        render();
+    });
+}
+
+initSyncDeckReveal({
+    deckId: 'ac-relays-and-contactors',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        initRelaySims(Reveal);
+    },
+});
+</script>
+</body>
+</html>
