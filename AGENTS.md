@@ -2,7 +2,7 @@
 
 This repository contains HTML slide presentations built with **Reveal.js**, published via GitHub Pages. Shared runtime/plugin code is consumed from the `SyncDeck-Reveal` git submodule at `vendor/SyncDeck-Reveal/`.
 
-Presentation source folders now live under `Decks/`, while deployment remaps
+Presentation source folders live under `Decks/`, while deployment remaps
 their contents to the site root. For example, `Decks/AR1/...` is published as
 `/AR1/...`.
 
@@ -238,6 +238,7 @@ a stable short link.
 | Rule | Why |
 |------|-----|
 | `px` for all font/spacing tokens | Reveal scales slides via `transform: scale()`. `em` values also respond to Reveal's JS-computed base font-size (~28 px at 720 px viewport height), causing double-shrinking. `px` bypasses this. |
+| Contrast of at least 7:1 | Per WCAG guidelines, ensure sufficient contrast for all readers |
 | No `position` on `<section>` | Reveal sets `position: absolute` on sections to layer and fade them. Overriding with `position: relative` makes every slide after the first appear blank. |
 | Explicit CSS rules, not `--r-*` | `--r-background-color` etc. are only consumed by Reveal's bundled CSS theme files. Without one, those variables are ignored. |
 | `max-height: none` on `pre code` | Reveal's base CSS caps code blocks at 400 px. |
