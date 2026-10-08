@@ -1,0 +1,2070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="s4uep8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.1 Variables Explore</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Caveat:wght@500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — 4.1 Variables Explore
+   ============================================================ */
+
+:root {
+  /* Body text brighter than the shared theme's 0.6 alpha so prose
+     clears 7:1 on both the page and card backgrounds. */
+  --text-body: #b8cac7;
+  --text-soft: #a3b4b1;
+  --sky:       #74c0fc;
+  --board-side: 520px;
+}
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+.bullets li { color: var(--text-body); }
+
+/* ─── Semantic inline emphasis (consistent across the deck) ─────────
+   i.n  a name (parameter or variable), in code font, teal
+   i.v  a number value, gold
+   i.s  a string value, green
+   i.u  the special value undefined, sky blue
+   i.a  a tracing action (gets, look up, evaluate, assign), amber
+   i.c  a concept word (parameter, variable, argument), teal
+   i.g  an argument or value concept, gold
+   ─────────────────────────────────────────────────────────────── */
+.reveal i.n, .reveal i.v, .reveal i.s, .reveal i.u {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-weight: 500;
+}
+.reveal i.n { color: var(--teal); }
+.reveal i.v { color: var(--gold); }
+.reveal i.s { color: var(--green); }
+.reveal i.u { color: var(--sky); }
+.reveal i.a { font-style: normal; color: var(--amber); font-weight: 600; }
+.reveal i.c { font-style: normal; color: var(--teal); font-weight: 600; }
+.reveal i.g { font-style: normal; color: var(--gold); font-weight: 600; }
+
+/* ─── Syntax tokens (shared by trace boards and static code cards) ── */
+.tk-kw  { color: var(--amber); font-weight: 600; }
+.tk-nm  { color: var(--teal); }
+.tk-fn  { color: var(--text); font-weight: 600; }
+.tk-str { color: var(--green); }
+.tk-num { color: var(--gold); }
+.tk-p   { color: var(--text); }
+
+.code-card pre code { font-size: 24px; line-height: 1.6; }
+.code-card .code-body { padding: 16px 24px; }
+
+/* ─── Trace board layout ─────────────────────────────────────────── */
+.board-inner {
+  justify-content: flex-start !important;
+  padding: 36px 64px 40px !important;
+  gap: 18px;
+}
+.board-head h2 {
+  font-size: 46px;
+  margin-bottom: 8px;
+}
+.board-head .slide-tag { margin-bottom: 10px; }
+.board-prompt {
+  font-size: 24px !important;
+  line-height: 1.5 !important;
+  max-width: 1300px;
+}
+.board {
+  display: grid;
+  grid-template-columns: 1fr var(--board-side);
+  gap: 28px;
+  flex: 1;
+  min-height: 0;
+}
+.board.wide { grid-template-rows: minmax(0, 1fr) auto; row-gap: 18px; }
+.board > .board-main { grid-column: 1; grid-row: 1; }
+.board > .board-side { grid-column: 2; grid-row: 1; }
+.board > .work-panel { grid-column: 1 / -1; grid-row: 2; }
+.board.long .code-line { font-size: 22px; line-height: 1.45; margin: 1px -8px; }
+.board.long .trace-code .code-body { padding: 12px 20px; }
+
+.board-main {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+  min-height: 0;
+}
+.board-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
+/* Code lines */
+.trace-code .code-body { padding: 16px 20px; }
+.code-line {
+  display: flex;
+  gap: 14px;
+  padding: 2px 8px;
+  margin: 2px -8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 23px;
+  line-height: 1.6;
+  white-space: pre;
+  border: 1px solid transparent;
+  transition: background 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+.code-line .car {
+  flex: 0 0 auto;
+  width: 0.9em;
+  color: var(--amber);
+  font-weight: 700;
+}
+.code-line .ln {
+  flex: 0 0 auto;
+  width: 1.4em;
+  text-align: right;
+  color: var(--text-soft);
+  user-select: none;
+}
+.code-line.current {
+  background: rgba(255,212,59,0.12);
+  border-color: rgba(255,212,59,0.45);
+}
+.code-line.current .car::before { content: '\25B6'; }
+.code-line.current .ln { color: var(--amber); font-weight: 700; }
+.code-line.done .car::before { content: '\2713'; color: var(--teal); font-weight: 400; }
+.code-line.active-call {
+  border-color: rgba(255,212,59,0.45);
+  border-style: dashed;
+}
+.code-line.active-call .car::before {
+  content: '\25B7';
+  color: var(--amber);
+}
+
+/* TraceLift flaps */
+.flap {
+  display: inline-block;
+  padding: 0 6px;
+  margin: 0 1px;
+  border: 2px dashed rgba(0,201,177,0.7);
+  border-radius: 5px;
+  line-height: 1.3;
+  color: var(--teal);
+}
+.flap .flap-val { display: none; }
+.flap.lifted {
+  border-style: solid;
+  border-color: rgba(255,159,67,0.75);
+  background: rgba(255,159,67,0.12);
+}
+.flap.lifted .flap-name { display: none; }
+.flap.lifted .flap-val { display: inline; }
+
+/* Side panels */
+.panel {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,201,177,0.4);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.panel-hdr {
+  padding: 6px 16px;
+  background: rgba(0,201,177,0.12);
+  border-bottom: 1px solid rgba(0,201,177,0.4);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  text-align: center;
+}
+.mem-panel { flex: 1 1 auto; min-height: 150px; }
+.mem-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+.mem-empty, .con-empty {
+  font-size: 19px;
+  font-style: italic;
+  color: var(--text-soft);
+}
+.frame {
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+.frame.fn {
+  border: 2px solid rgba(255,212,59,0.55);
+  padding: 8px 12px 10px;
+  position: relative;
+}
+.frame-label {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.frame.fn > .frame-label { color: var(--amber); }
+.frame-status {
+  display: none;
+  font-size: 14px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(226,245,242,0.5);
+  color: var(--text-body);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.frame.closed { border-style: dashed; border-color: rgba(226,245,242,0.45); }
+.frame.closed > .frame-label { color: var(--text-soft); }
+.frame.closed .frame-status { display: inline-block; }
+.frame.closed::after {
+  /* the whiteboard "X" through a finished call's box */
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to top right, transparent calc(50% - 1px), rgba(226,245,242,0.22) calc(50% - 1px), rgba(226,245,242,0.22) calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(to bottom right, transparent calc(50% - 1px), rgba(226,245,242,0.22) calc(50% - 1px), rgba(226,245,242,0.22) calc(50% + 1px), transparent calc(50% + 1px));
+}
+.frame-cols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 30px;
+}
+.mem-col { min-width: 84px; }
+.mem-col-name {
+  font-family: var(--font-mono);
+  font-size: 21px;
+  color: var(--teal);
+  border-bottom: 2px solid rgba(226,245,242,0.55);
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+}
+.mem-val {
+  font-family: var(--font-mono);
+  font-size: 21px;
+  line-height: 1.4;
+}
+.mem-val.blank { height: 29px; }
+.mem-val.struck {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  color: var(--text-soft) !important;
+}
+.mv-num   { color: var(--gold); }
+.mv-str   { color: var(--green); }
+.mv-undef { color: var(--sky); }
+
+.con-panel { flex: 0 0 auto; }
+.con-body {
+  padding: 10px 16px;
+  min-height: 52px;
+  font-family: var(--font-mono);
+  font-size: 21px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.work-panel {
+  flex: 0 0 auto;
+  min-height: 96px;
+  border-left: 3px solid var(--amber);
+  background: rgba(255,212,59,0.05);
+  border-radius: 3px;
+  padding: 10px 16px;
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--text-body);
+}
+.work-panel:empty { visibility: hidden; }
+.board-main .trace-code { flex-shrink: 0; }
+.board-main .work-panel { overflow: hidden; }
+/* Large narration: under the program, or full width for long programs */
+.board-main .work-panel,
+.board > .work-panel {
+  min-height: 0;
+  padding: 16px 24px;
+  font-size: 27px;
+  line-height: 1.5;
+  border-left-width: 4px;
+}
+
+/* Exercise slides: swap the prompt once the check begins */
+section[data-trace-exercise] .during-check { display: none; }
+section[data-trace-exercise].is-checking .before-check { display: none; }
+section[data-trace-exercise].is-checking .during-check { display: block; }
+
+.trace-step { display: none !important; }
+
+/* ─── Static slide components ────────────────────────────────────── */
+.wb {
+  display: grid;
+  grid-template-columns: auto 260px;
+  grid-template-rows: auto auto;
+  gap: 0;
+  border: 2px solid rgba(226,245,242,0.55);
+  border-radius: 8px;
+  background: rgba(226,245,242,0.03);
+  width: max-content;
+  flex: 0 0 auto;
+}
+.wb > div { padding: 14px 18px; }
+.wb-label {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 8px;
+}
+.wb-prog { border-right: 2px solid rgba(226,245,242,0.55); }
+.wb-con { grid-column: 1 / span 2; border-top: 2px solid rgba(226,245,242,0.55); }
+.wb .code-line { font-size: 19px; }
+
+.scratch-wrap {
+  width: 400px;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.45));
+}
+.scratch {
+  /* torn scrap of lined notebook paper */
+  --rule: 48px;
+  position: relative;
+  transform: rotate(-2deg);
+  padding: 30px 28px 34px 76px;
+  background-color: #fbfaf3;
+  background-image:
+    linear-gradient(90deg, transparent 58px, #e8838a 58px, #e8838a 60px, transparent 60px),
+    repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--rule) - 2px), #a9c7e8 calc(var(--rule) - 2px), #a9c7e8 var(--rule));
+  background-position: 0 0, 0 30px;
+  background-repeat: no-repeat, repeat-y;
+  clip-path: polygon(0.0% 1.0%, 4.5% 0.5%, 9.1% 2.1%, 13.6% 0.2%, 18.2% 1.7%, 22.7% 1.2%, 27.3% 0.2%, 31.8% 1.6%, 36.4% 0.1%, 40.9% 1.4%, 45.5% 0.2%, 50.0% 0.3%, 54.5% 1.4%, 59.1% 2.6%, 63.6% 0.4%, 68.2% 0.7%, 72.7% 2.0%, 77.3% 3.0%, 81.8% 1.8%, 86.4% 1.3%, 90.9% 3.1%, 95.5% 0.1%, 100.0% 2.7%, 100.0% 99.0%, 95.5% 99.5%, 90.9% 99.6%, 86.4% 98.9%, 81.8% 97.1%, 77.3% 99.3%, 72.7% 97.9%, 68.2% 97.7%, 63.6% 98.7%, 59.1% 98.0%, 54.5% 99.8%, 50.0% 99.8%, 45.5% 99.3%, 40.9% 97.6%, 36.4% 98.5%, 31.8% 98.9%, 27.3% 97.9%, 22.7% 98.4%, 18.2% 98.9%, 13.6% 97.1%, 9.1% 97.5%, 4.5% 99.1%, 0.0% 97.9%);
+  font-family: 'Caveat', cursive;
+  font-size: 42px;
+  line-height: var(--rule);
+  color: #1f3a7a;
+}
+.scratch .sl { display: flex; justify-content: space-between; height: var(--rule); }
+.scratch .sn { color: #1f3a7a; font-weight: 700; }
+.scratch .sv { color: #1f3a7a; font-weight: 700; }
+.scratch-title {
+  height: var(--rule);
+  font-size: 34px;
+  color: #4d5a73;
+  font-weight: 500;
+}
+
+.mini-mem {
+  display: inline-block;
+  min-width: 160px;
+  font-family: var(--font-mono);
+}
+.mini-mem .mem-col-name { font-size: 26px; }
+
+.expr-table {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 14px 28px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+.expr-table .arrow { color: var(--amber); }
+
+.rule-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-left: 3px solid var(--teal);
+  border-radius: 3px;
+  padding: 12px 20px;
+}
+.rule-card .rule-when {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.rule-card p { font-size: 22px !important; line-height: 1.5 !important; }
+
+.exit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 28px;
+}
+.exit-grid .code-card pre code { font-size: 19px; line-height: 1.5; }
+.exit-grid .code-card .code-body { padding: 10px 18px; }
+.exit-q {
+  font-size: 19px !important;
+  line-height: 1.45 !important;
+  margin-bottom: 8px !important;
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 4 &middot; Lesson 4.1</span>
+        <h1 class="title-h1">Variables Explore</h1>
+        <p style="font-size:var(--body);max-width:1100px;line-height:1.6;margin-top:var(--gap);">We have used <i class="c">parameters</i> to give names to values passed into functions. That makes our functions more useful, because they can behave differently depending on the values they receive.</p>
+        <p style="font-size:var(--body);max-width:1100px;line-height:1.6;margin-top:var(--gap-sm);">Today we are going to <i class="a">become the computer</i> to see how giving names to values actually works.</p>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+      <aside class="notes">Do not begin with a formal definition of variable. Start from something students already know operationally: functions with parameters (Unit 3 lessons 11 and 12).</aside>
+    </section>
+
+    <!-- SLIDE 2 · THE WORKSPACE -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Setup</span>
+        <h2>Your Whiteboard Workspace</h2>
+        <div style="display:flex;gap:48px;align-items:flex-start;">
+          <div class="wb">
+            <div class="wb-prog">
+              <div class="wb-label">Program</div>
+              <div class="code-line context"><span class="car"></span><span class="ln">1</span><span data-hl>function cheer(name) {</span></div>
+              <div class="code-line current"><span class="car"></span><span class="ln">2</span><span data-hl>  console.log("Go " + [[name]] + "!");</span></div>
+              <div class="code-line context"><span class="car"></span><span class="ln">3</span><span data-hl>}</span></div>
+              <div class="code-line active-call"><span class="car"></span><span class="ln">4</span><span data-hl>cheer("Pumas");</span></div>
+            </div>
+            <div>
+              <div class="wb-label">Memory Trace</div>
+              <div class="mem-col" style="display:inline-block;"><div class="mem-col-name">name</div><div class="mem-val mv-str">"Pumas"</div></div>
+            </div>
+            <div class="wb-con">
+              <div class="wb-label">Console</div>
+              <div style="font-family:var(--font-mono);font-size:20px;color:var(--text);">Go Pumas!</div>
+            </div>
+          </div>
+          <ul class="bullets" style="flex:1;gap:18px;">
+            <li class="fragment fade-up">The <i class="a">pointer</i> sits beside the next line the program will run. When you move it past a line, write down what that line did.</li>
+            <li class="fragment fade-up">When a value changes, <i class="a">cross out</i> the old value and write the new one below it. Only the newest value counts.</li>
+            <li class="fragment fade-up">To use a name&rsquo;s value, <i class="a">lift its flap</i> and write the current value underneath.</li>
+          </ul>
+        </div>
+      </div>
+      <aside class="notes">Explain the physical model: the printed TraceLift sheet is the code, the magnet pointer shows the next line to run, the Memory Trace shows the values represented by names, and the flaps let students temporarily replace a name with its current value. Point out the dashed outline on line 4: that call is "paused" while the pointer is inside the function. Tell students: a real program only has the current value; we leave old values visible because we are tracing what happened.</aside>
+    </section>
+
+    <!-- SLIDE 3 · WHERE A PARAMETER GETS ITS VALUE -->
+    <section data-trace-board="cheer">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Round 1 &middot; Parameters Name Values</span>
+          <h2>Where a Parameter Gets Its Value</h2>
+          <p class="board-prompt">When this function runs, what does <i class="n">name</i> mean? Where does its value come from?</p>
+        </div>
+      </div>
+      <aside class="notes">Students have used parameters before. Use this to uncover the idea rather than introduce it as new vocabulary. Ask the prompt before stepping. AP connection: the AP CSP exam reference sheet writes assignment with an arrow, name &larr; "Pumas", read as "name gets Pumas." Introduce the arrow here and reuse it on the Assignment slide. Suggested language: "name is not the value 'Pumas'. It is a name that represents that value while this function is running."</aside>
+    </section>
+
+    <!-- SLIDE 4 · PARAMETER AND ARGUMENT -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Round 1 &middot; Parameters Name Values</span>
+        <h2>Parameter and Argument</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-lg);margin-top:var(--gap-sm);">
+          <div>
+            <div class="code-card"><div class="code-hdr"><span class="clang">definition</span></div><div class="code-body"><pre><code data-hl>function cheer(name) {</code></pre></div></div>
+            <p class="fragment fade-up" style="margin-top:var(--gap-sm);"><i class="n">name</i> is the <i class="c">parameter</i>. It is the name the function uses for a value.</p>
+          </div>
+          <div>
+            <div class="code-card"><div class="code-hdr"><span class="clang">call</span></div><div class="code-body"><pre><code data-hl>cheer("Pumas");</code></pre></div></div>
+            <p class="fragment fade-up" style="margin-top:var(--gap-sm);"><i class="s">"Pumas"</i> is the <i class="g">argument</i>. It is the value the call supplies.</p>
+          </div>
+        </div>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);max-width:1200px;display:flex;gap:48px;align-items:center;">
+          <div class="mini-mem">
+            <div class="mem-col"><div class="mem-col-name">name</div><div class="mem-val mv-str">"Pumas"</div></div>
+          </div>
+          <p>The function call supplies the starting value for the parameter. Read it as: <i class="n">name</i> <i class="a">gets</i> the value <i class="s">"Pumas"</i> when the function is called.</p>
+        </div>
+      </div>
+      <aside class="notes">Keep this practical. The goal is not a vocabulary lecture. Common misconception: "the parameter is the argument." Response: the argument supplies the value; the parameter is the name used inside the function.</aside>
+    </section>
+
+    <!-- SLIDE 5 · ROUND 1A -->
+    <section data-trace-board="r1a" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 1A</span>
+          <h2>A Named Value</h2>
+          <p class="board-prompt before-check">Trace this program on your whiteboard with your partner. When the pointer reaches the call on line 4, move it into the function and give <i class="n">score</i> its value.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Compare each step with your whiteboard.</p>
+        </div>
+      </div>
+      <aside class="notes">Have students move the pointer into the function after reaching the function call. The score flap exposes the whiteboard, where students write 10. No assignment yet; this round only establishes lookup and substitution. Optional if time is short.</aside>
+    </section>
+
+    <!-- SLIDE 6 · LOOK UP AND SUBSTITUTE -->
+    <section data-trace-board="dbl5">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Round 2 &middot; Parameters in Expressions</span>
+          <h2>Look Up, Substitute, Evaluate</h2>
+          <p class="board-prompt">When a name appears in an expression, we <i class="a">look up</i> its value, <i class="a">substitute</i> the value for the name, and then <i class="a">evaluate</i>.</p>
+        </div>
+      </div>
+      <aside class="notes">Key routine: Look up, Substitute, Evaluate. This routine will return later when variables appear in expressions, so name it clearly now.</aside>
+    </section>
+
+    <!-- SLIDE 7 · ROUND 2A -->
+    <section data-trace-board="r2a" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 2A</span>
+          <h2>A Parameter in an Expression</h2>
+          <p class="board-prompt before-check">Trace this program with your partner. Lift the flap, write the value, and then evaluate the expression.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Did you look up, substitute, and evaluate?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 8 · MULTIPLE PARAMETERS -->
+    <section data-trace-board="area52">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Round 3 &middot; Multiple Parameters</span>
+          <h2>More Than One Named Value</h2>
+          <p class="board-prompt">A function can have several parameters. Each one gets its own column in the Memory Trace.</p>
+        </div>
+      </div>
+      <aside class="notes">This introduces a memory table with multiple names before students encounter multiple var declarations. Watch for students matching arguments to parameters by position. This demo uses area(5, 2) so that it does not give away the answer to Round 3A.</aside>
+    </section>
+
+    <!-- SLIDE 9 · ROUND 3A -->
+    <section data-trace-board="r3a" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 3A</span>
+          <h2>Two Parameters</h2>
+          <p class="board-prompt before-check">Trace this program with your partner. Make sure each argument goes to the right parameter.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Which argument went to <i class="n">width</i>, and which went to <i class="n">height</i>?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 10 · BEYOND PARAMETERS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Beyond Parameters</span>
+        <h2>Naming a Value Ourselves</h2>
+        <div style="display:grid;grid-template-columns:1fr 420px;gap:var(--gap-lg);align-items:center;margin-top:var(--gap-sm);">
+          <div>
+            <p>Parameters are useful because a function can receive a value and give it a name. But what if the value does not come from a function call? What if we want to <i class="a">keep track</i> of a value while our program is running?</p>
+            <p class="fragment fade-up" data-fragment-index="0" style="margin-top:var(--gap);">Imagine the computer had a piece of scratch paper where it could write a name next to a value, and then use that name later.</p>
+            <p class="fragment fade-up" data-fragment-index="1" style="margin-top:var(--gap);">JavaScript gives us a way to create those named places. Each one is called a <i class="c">variable</i>.</p>
+            <div class="code-card fragment fade-up" data-fragment-index="2" style="margin-top:var(--gap);max-width:420px;"><div class="code-hdr"><span class="clang">javascript</span></div><div class="code-body"><pre><code data-hl>var score;</code></pre></div></div>
+          </div>
+          <div class="scratch-wrap fragment fade-up" data-fragment-index="0"><div class="scratch">
+            <div class="scratch-title">scratch paper</div>
+            <div class="sl"><span class="sn">score</span><span class="sv">10</span></div>
+            <div class="sl"><span class="sn">lives</span><span class="sv">3</span></div>
+            <div class="sl"><span class="sn">level</span><span class="sv">2</span></div>
+          </div></div>
+        </div>
+      </div>
+      <aside class="notes">Ask before revealing anything: "If parameters are names for values passed into a function, how could we use that same idea when we want the program itself to keep track of something?" Let students suggest examples like score, lives, clicks, temperature, name, or level. Then: "We can think of a variable as a named spot on the computer's scratch paper."</aside>
+    </section>
+
+    <!-- SLIDE 11 · VAR CREATES MEMORY -->
+    <section data-trace-board="var1">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Round 4 &middot; var Creates Memory</span>
+          <h2>Declaring a Variable</h2>
+          <p class="board-prompt">Read <i class="n">var score;</i> as &ldquo;create a variable named score.&rdquo; A <i class="c">variable</i> is a named place the program can use to represent a value.</p>
+        </div>
+      </div>
+      <aside class="notes">Now give the formal variable idea. Contrast gently with parameters. Parameter: the function definition creates the named value, and the function call supplies its starting value. var: creates the named place, but it still needs a value assigned. Point out that there is no function box here; this column belongs to the program itself.</aside>
+    </section>
+
+    <!-- SLIDE 12 · ASSIGNMENT -->
+    <section data-trace-board="assign">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Round 5 &middot; Assignment</span>
+          <h2>Assignment</h2>
+          <p class="board-prompt">Read <i class="n">score = 3;</i> as &ldquo;score <i class="a">gets</i> 3.&rdquo; The variable on the left gets the value from the right. On the AP exam, this same statement is written <i class="n">score &larr; 3</i>.</p>
+        </div>
+      </div>
+      <aside class="notes">Misconception: "= means both sides are equal." Response: read = as "gets." Evaluate the right side first, then store that result in the variable on the left. The AP reference sheet arrow points the direction the value moves.</aside>
+    </section>
+
+    <!-- SLIDE 13 · REASSIGNMENT -->
+    <section data-trace-board="reassign">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Round 5 &middot; Reassignment</span>
+          <h2>Reassignment</h2>
+          <p class="board-prompt">What happens to the value 3 when <i class="n">score</i> gets a new value?</p>
+        </div>
+      </div>
+      <aside class="notes">Misconception: "the crossed-out values are still stored." Response: the crossed-out values are our human trace history. Only the newest uncrossed value represents the program's current state.</aside>
+    </section>
+
+    <!-- SLIDE 14 · ROUND 5A -->
+    <section data-trace-board="r5a" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 5A</span>
+          <h2>Your First Variable</h2>
+          <p class="board-prompt before-check">Trace this program with your partner. Make a column when you see <i class="n">var</i>, and cross out old values as they change.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Only the newest uncrossed value is the current value.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 15 · ROUND 5B -->
+    <section data-trace-board="r5b" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 5B</span>
+          <h2>Two Variables</h2>
+          <p class="board-prompt before-check">Trace this program with your partner. Watch for when each column should be created.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Notice that a variable can hold a number and later hold a string.</p>
+        </div>
+      </div>
+      <aside class="notes">Optional if time is short.</aside>
+    </section>
+
+    <!-- SLIDE 16 · YOU DO IT: WRITE AND TRACE -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">You Do It &middot; Partners</span>
+        <h2>Write and Trace Your Own Program</h2>
+        <div style="display:grid;grid-template-columns:1fr 470px;gap:var(--gap-lg);align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            <div class="callout">
+              <h3 style="font-size:30px;">Partner A: the programmer</h3>
+              <p>Write a short program on the whiteboard using at least 2 <i class="c">variables</i>. Before your partner starts, secretly write down what you think the <i class="a">final memory</i> and the <i class="a">console output</i> will be.</p>
+            </div>
+            <div class="callout accent-amber">
+              <h3 style="font-size:30px;">Partner B: the computer</h3>
+              <p>Trace the program one line at a time with the pointer, a Memory Trace, and a console. Do not skip ahead.</p>
+            </div>
+            <p>When the trace is done, compare it with Partner A&rsquo;s prediction. If they disagree, find the <i class="a">first line</i> where they went different ways and decide together who was right. Then <i class="a">switch roles</i>.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            <div class="rule-card">
+              <div class="rule-when">Your program must</div>
+              <p>use at least two variables, reassign at least one of them, and use <i class="n">console.log</i> at least once.</p>
+            </div>
+            <div class="rule-card">
+              <div class="rule-when">Stick to what we know</div>
+              <p>Use <i class="n">var</i>, assignment, numbers, strings, and <i class="n">console.log</i>.</p>
+            </div>
+            <div class="code-card">
+              <div class="code-hdr"><span class="clang">example</span></div>
+              <div class="code-body"><pre><code data-hl>var pet;
+var age;
+pet = "Mochi";
+age = 3;
+console.log(pet);
+age = 4;
+console.log(age);</code></pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">About 6 minutes total: roughly 3 minutes per round, then switch. Programs of 5 to 8 lines are plenty. Circulate and look for: a column created only when its var runs, old values crossed out rather than erased, console output written only when the pointer moves past the console.log line. A good extension for fast pairs is to use a variable before it is assigned, which previews undefined. Expressions are deliberately off-limits here because "evaluate first, then assign" comes next.</aside>
+    </section>
+
+    <!-- SLIDE 17 · EVALUATE FIRST -->
+    <section data-trace-board="evalfirst">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Round 6 &middot; Expressions in Assignment</span>
+          <h2>Evaluate First, Then Assign</h2>
+          <p class="board-prompt">An <i class="c">expression</i> always evaluates to one value. When the right side is an expression, the computer works it out completely before anything is stored.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 18 · ROUND 6A -->
+    <section data-trace-board="r6a" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 6A</span>
+          <h2>Evaluate Then Assign</h2>
+          <p class="board-prompt before-check">Trace this program with your partner. Evaluate each right side first, then assign.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Evaluate first, then assign.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 19 · VALUES HAVE TYPES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Data Types</span>
+        <h2>Values Have Types</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-lg);margin-top:var(--gap-sm);">
+          <div class="callout">
+            <h3 style="color:var(--gold);">Numbers</h3>
+            <p style="font-family:var(--font-mono);font-size:30px;color:var(--gold);">3 &nbsp; 10 &nbsp; 42</p>
+            <p style="margin-top:8px;">So far, most of our values have been numbers.</p>
+          </div>
+          <div class="callout">
+            <h3 style="color:var(--green);">Strings</h3>
+            <p style="font-family:var(--font-mono);font-size:30px;color:var(--green);">"Pumas" &nbsp; "hello" &nbsp; "407"</p>
+            <p style="margin-top:8px;">A <i class="s">string</i> is a sequence of characters inside quotation marks. The quotes tell the computer to treat those characters as text.</p>
+          </div>
+        </div>
+        <p style="margin-top:var(--gap);max-width:1300px;">The kind of value is called its <i class="c">data type</i>. Numbers and strings are two data types we will use in JavaScript, and we have been using both since our very first trace.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-lg);margin-top:var(--gap);">
+          <p class="fragment fade-up"><i class="v">123</i> is a number, but <i class="s">"123"</i> is a string made of three characters.</p>
+          <p class="fragment fade-up"><i class="n">score</i> is the name of a variable, but <i class="s">"score"</i> is just the word score in a string.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 20 · ROUND 6B -->
+    <section data-trace-board="r6b" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 6B</span>
+          <h2>Numbers and Strings</h2>
+          <p class="board-prompt before-check">Trace this program with your partner. Pay close attention to the type of each value, and write strings with their quotes.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Which values are numbers, and which are strings?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 21 · USING THE VALUES WE STORE -->
+    <section data-trace-board="useval">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Round 7 &middot; Variables in Expressions</span>
+          <h2>Using the Values We Store</h2>
+          <p class="board-prompt">The <i class="n">score</i> on the right side behaves just like the parameter names from Round 2: <i class="a">look up</i>, <i class="a">substitute</i>, <i class="a">evaluate</i>, and then <i class="a">assign</i>.</p>
+        </div>
+      </div>
+      <aside class="notes">Explicitly connect this back to Round 2. Read the line as "score gets the value in score plus 10." Misconception: "score = score + 1 is impossible." Response: look up the current value of the score on the right first, substitute it, then evaluate and assign the new value to the score on the left.</aside>
+    </section>
+
+    <!-- SLIDE 22 · ROUND 7A -->
+    <section data-trace-board="r7a" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 7A</span>
+          <h2>Using the Current Value</h2>
+          <p class="board-prompt before-check">Trace this program with your partner. Every time you lift a flap, use the newest uncrossed value.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Look up, substitute, evaluate, assign.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 23 · ROUND 7B -->
+    <section data-trace-board="r7b" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 7B</span>
+          <h2>Count Up</h2>
+          <p class="board-prompt before-check">Trace this program with your partner. This pattern shows up constantly in real programs.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Each line uses the current value of <i class="n">count</i> to make the next one.</p>
+        </div>
+      </div>
+      <aside class="notes">Optional if time is short. Mention that this counting pattern will come back with loops.</aside>
+    </section>
+
+    <!-- SLIDE 24 · MULTIPLE VARIABLES -->
+    <section data-trace-board="twovars">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Round 8 &middot; Multiple Variables</span>
+          <h2>Keeping Track of Multiple Values</h2>
+          <p class="board-prompt">Each declaration creates another column. An assignment changes only the one variable on its left side.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 25 · ROUND 8A -->
+    <section data-trace-board="r8a" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 8A</span>
+          <h2>Score and Bonus</h2>
+          <p class="board-prompt before-check">Trace this program with your partner. Keep in mind that just using a variable&rsquo;s value does not change that variable.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Only the variable on the left of each assignment changes.</p>
+        </div>
+      </div>
+      <aside class="notes">score and bonus never appear in the same expression here on purpose: the point of this round is keeping two independent columns straight, and each assignment changes only its own variable. Copy, not connect comes next in 8B. Misconception: "using a variable removes its value." Response: looking up a value makes a temporary copy for the expression. The variable keeps its current value until assignment changes it.</aside>
+    </section>
+
+    <!-- SLIDE 26 · PREDICT: COPY -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Round 8 &middot; Predict</span>
+        <h2>What Is b at the End?</h2>
+        <div style="display:grid;grid-template-columns:420px 1fr;gap:var(--gap-lg);align-items:center;margin-top:var(--gap-sm);">
+          <div class="code-card"><div class="code-hdr"><span class="clang">javascript</span></div><div class="code-body"><pre><code data-hl>var a;
+var b;
+a = 5;
+b = a;
+a = 8;</code></pre></div></div>
+          <div class="frq-box">
+            <p>Before you trace it, predict the value of <i class="n">b</i> at the end of this program and write your prediction in the corner of your whiteboard. Then trace it as TraceLift Round 8B to see if you were right.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Have pairs commit to a prediction on their whiteboards before any tracing. Do not reveal the answer here; pairs trace Round 8B next and the check reveals it.</aside>
+    </section>
+
+    <!-- SLIDE 27 · ROUND 8B COPY -->
+    <section data-trace-board="r8b" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 8B</span>
+          <h2>Does b Change When a Changes?</h2>
+          <p class="board-prompt before-check">Trace this program with your partner and check your prediction.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Assignment <i class="a">copies</i> the current value; it does not <i class="a">connect</i> the two names.</p>
+        </div>
+      </div>
+      <aside class="notes">Misconception: "if b = a, changing a later changes b." Response: what value did a have when that assignment happened? That value was copied into b. Key phrase: copy, not connect.</aside>
+    </section>
+
+    <!-- SLIDE 28 · ROUND 8C -->
+    <section data-trace-board="r8c" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 8C</span>
+          <h2>Moving Information</h2>
+          <p class="board-prompt before-check">Trace this program with your partner. Write every line of console output.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Watch what happens to <i class="n">area</i> when <i class="n">width</i> changes.</p>
+        </div>
+      </div>
+      <aside class="notes">This round applies copy, not connect from 8B to an expression. Discussion prompt at the end: "When width changed, did area automatically change?" No. area changed only when another assignment statement executed. Spreadsheet users often expect the automatic update.</aside>
+    </section>
+
+    <!-- SLIDE 29 · PREDICT: SWAP -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Round 9 &middot; Predict</span>
+        <h2>Swapping Two Values</h2>
+        <div style="display:grid;grid-template-columns:560px 1fr;gap:var(--gap-lg);align-items:center;margin-top:var(--gap-sm);">
+          <div class="code-card"><div class="code-hdr"><span class="clang">javascript</span></div><div class="code-body"><pre><code data-hl>var a;
+var b;
+a = 5;
+b = 8;
+a = b;
+b = a;
+console.log("a is " + a);
+console.log("b is " + b);</code></pre></div></div>
+          <div class="frq-box">
+            <p>This program is supposed to make <i class="n">a</i> and <i class="n">b</i> <i class="a">trade values</i>, so that <i class="n">a</i> ends up as <i class="v">8</i> and <i class="n">b</i> ends up as <i class="v">5</i>. Does it work? Write your prediction in the corner of your whiteboard, then trace it as TraceLift Round 9A.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Most students predict the swap works. Collect predictions before tracing and do not reveal the answer here; the 9A check shows both variables ending at 8. Swapping two values is a classic AP CSP exam question.</aside>
+    </section>
+
+    <!-- SLIDE 30 · ROUND 9A -->
+    <section data-trace-board="r9a" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 9A</span>
+          <h2>Does the Swap Work?</h2>
+          <p class="board-prompt before-check">Trace this program with your partner and check your prediction. Use the newest value every time you lift a flap.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Watch what happens to the <i class="v">5</i> on line 5.</p>
+        </div>
+      </div>
+      <aside class="notes">The key moment is line 5: once a gets 8, the 5 is gone. Line 6 copies the current value of a, which is now 8. This is copy, not connect again: b = a copies whatever a holds at that moment.</aside>
+    </section>
+
+    <!-- SLIDE 31 · FIX THE SWAP -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">You Do It &middot; Partners</span>
+        <h2>Fix the Swap</h2>
+        <p style="max-width:1300px;">The swap failed because the <i class="v">5</i> was overwritten before anyone saved it. Work with your partner to <i class="a">rewrite the program</i> so that <i class="n">a</i> ends as <i class="v">8</i> and <i class="n">b</i> ends as <i class="v">5</i>.</p>
+        <div class="callout accent-amber fragment fade-up" style="margin-top:var(--gap);max-width:1300px;">
+          <h3>Think About It</h3>
+          <p>Before <i class="n">a</i> gets overwritten, <i class="a">where could we keep</i> its value until we need it?</p>
+        </div>
+        <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1300px;">When you have a fix, trace it on your whiteboard to prove it works.</p>
+      </div>
+      <aside class="notes">Give pairs a minute or two before revealing the question. Let pairs discover the extra variable themselves; if a pair is stuck, ask what we have used all lesson to remember a value. Some pairs may try a = 8; b = 5; with literal values; acknowledge that it works for these numbers, then ask whether it would still work if the program did not know the starting values ahead of time.</aside>
+    </section>
+
+    <!-- SLIDE 32 · ROUND 9B -->
+    <section data-trace-board="r9b" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Check &middot; TraceLift Round 9B</span>
+          <h2>One Way to Fix the Swap</h2>
+          <p class="board-prompt before-check">Here is one way to fix the swap. Does it match your fix? If yours is different, trace both and compare.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. <i class="n">temp</i> keeps a copy of <i class="v">5</i> safe while <i class="n">a</i> is overwritten.</p>
+        </div>
+      </div>
+      <aside class="notes">The order of the three assignments matters. If students wrote them in a different order, trace their version too: temp = b; b = a; a = temp; also works.</aside>
+    </section>
+
+    <!-- SLIDE 33 · ROUND 10A -->
+    <section data-trace-board="r10a" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 10A</span>
+          <h2>Pass a Variable&rsquo;s Value Into a Function</h2>
+          <p class="board-prompt before-check">Now the program has its own variables <em>and</em> calls a function. <i class="a">New rule:</i> draw a box in the Memory Trace for each function call, and cross the box out when the call is finished. The program starts running at line 4.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. <i class="n">playerScore</i> and <i class="n">score</i> are different names in different memory.</p>
+        </div>
+      </div>
+      <aside class="notes">This is where the call-box convention is introduced: until now parameter columns sat loose in the Memory Trace, but once the calling code has variables of its own, students need a way to keep the two kinds of memory apart. Model drawing the box on a whiteboard before pairs start. This round spirals back to parameters. The lesson plan had a demo slide with this exact program followed by the identical exercise, so they are combined: pairs trace first, then the check walkthrough carries the key idea. Different names are used deliberately so students clearly see a value move from one named place to another. Misconception: "if I pass playerScore into score, they become connected." Response: the current value is copied into the parameter; the two names remain separate.</aside>
+    </section>
+
+    <!-- SLIDE 34 · ROUND 11A -->
+    <section data-trace-board="r11a" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 11A</span>
+          <h2>Two Different Things Named score</h2>
+          <p class="board-prompt before-check">This program looks almost the same, but the variable and the parameter now share a name. Trace it with your partner. How many <i class="n">score</i> columns do you need?</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. The same name does not mean the same variable.</p>
+        </div>
+      </div>
+      <aside class="notes">Suggested wording: "The names look the same, but they belong to different parts of the program. The function parameter gets its own value for this function call." Avoid turning this into a full scope lecture unless useful. Optional if time is short.</aside>
+    </section>
+
+    <!-- SLIDE 35 · EACH CALL GETS ITS OWN MEMORY -->
+    <section data-trace-board="twocalls">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Round 11 &middot; Separate Storage</span>
+          <h2>Each Function Call Gets Its Own Memory</h2>
+          <p class="board-prompt">This function is called twice. Watch what happens to its memory box between the two calls.</p>
+        </div>
+      </div>
+      <aside class="notes">Key idea: each function call gets new parameter and local variable storage. When that call finishes, its temporary memory is done. Treat as an extension if the class is not ready for the conceptual load.</aside>
+    </section>
+
+    <!-- SLIDE 36 · PREDICT: DOES THE CALLER CHANGE -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Round 12 &middot; Predict</span>
+        <h2>Does the Caller Change?</h2>
+        <div style="display:grid;grid-template-columns:640px 1fr;gap:var(--gap-lg);align-items:center;margin-top:var(--gap-sm);">
+          <div class="code-card"><div class="code-hdr"><span class="clang">javascript</span></div><div class="code-body"><pre><code data-hl>function addBonus(score) {
+  score = score + 5;
+  console.log("Bonus score: " + score);
+}
+var score;
+score = 10;
+addBonus(score);
+console.log("Final score: " + score);</code></pre></div></div>
+          <div class="frq-box">
+            <p>The function changes its parameter <i class="n">score</i>. What is <i class="n">score</i> in the calling code after the function finishes? Write your prediction for what the last line prints in the corner of your whiteboard, then trace it as TraceLift Round 12A.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Have pairs commit to a prediction on their whiteboards before tracing. If students are overloaded or time is short, treat Round 12 as an extension or the opening of the next lesson.</aside>
+    </section>
+
+    <!-- SLIDE 37 · ROUND 12A -->
+    <section data-trace-board="r12a" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 12A</span>
+          <h2>Changing a Parameter</h2>
+          <p class="board-prompt before-check">Trace this program with your partner and check your prediction. Keep the two <i class="n">score</i> columns separate.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Which <i class="n">score</i> does each flap look up?</p>
+        </div>
+      </div>
+      <aside class="notes">Connect directly to Round 8B: copying a value does not create a permanent connection. Misconception: "changing the parameter should change the original variable." Response: trace both memory locations separately. The called function changes its parameter; the caller's variable still has its own value.</aside>
+    </section>
+
+    <!-- SLIDE 38 · OPTIONAL CHALLENGE -->
+    <section data-trace-board="challenge" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Optional Challenge &middot; TraceLift</span>
+          <h2>Parameters and Variables Together</h2>
+          <p class="board-prompt before-check">Trace this program with your partner. There are two different things named <i class="n">bonus</i>, so keep track of which memory box each one lives in.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Does <i class="n">playerScore</i> end up as 15?</p>
+        </div>
+      </div>
+      <aside class="notes">The two console.log lines (lines 5 and 12) were added to the plan's version so pairs can check themselves. Update the TraceLift sheet to match if you print it.</aside>
+    </section>
+
+    <!-- SLIDE 39 · UNDEFINED -->
+    <section data-trace-board="undef">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">A Variable Without a Value</span>
+          <h2>What Is in an Empty Column?</h2>
+          <p class="board-prompt">When we declare a variable, its Memory Trace column starts out blank. What do you think happens if the program uses it right away?</p>
+        </div>
+      </div>
+      <aside class="notes">Extension. Take a few predictions before stepping. Students often guess 0, an error, or nothing. The flap shows undefined, but the Memory Trace column stays blank on the whiteboard; blank means "nothing assigned yet."</aside>
+    </section>
+
+    <!-- SLIDE 40 · INITIALIZATION -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Declare and Initialize</span>
+        <h2>Initialization</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-lg);margin-top:var(--gap-sm);">
+          <div>
+            <div class="code-card"><div class="code-hdr"><span class="clang">two statements</span></div><div class="code-body"><pre><code data-hl>var score;
+score = 0;</code></pre></div></div>
+            <p style="margin-top:var(--gap-sm);">Between these two statements, <i class="n">score</i> has the value <i class="u">undefined</i>.</p>
+          </div>
+          <div class="fragment fade-up">
+            <div class="code-card"><div class="code-hdr"><span class="clang">one statement</span></div><div class="code-body"><pre><code data-hl>var score = 0;</code></pre></div></div>
+            <p style="margin-top:var(--gap-sm);">If we already know the starting value, we can <i class="a">declare</i> the variable and <i class="a">initialize</i> it at the same time.</p>
+          </div>
+        </div>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);max-width:1300px;">
+          <p>To <i class="a">declare</i> a variable means to create it with <i class="n">var</i>. <i class="a">Initialization</i> is the first assignment of a value to a variable. Today&rsquo;s TraceLift sheets keep the two steps separate so you can see each one happen.</p>
+        </div>
+      </div>
+      <aside class="notes">Also mention: if you call a function that takes a parameter and do not pass a value, that parameter also gets undefined. This slide and the previous one are extensions; skip them if time is short.</aside>
+    </section>
+
+    <!-- SLIDE 41 · ONE BIG IDEA -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:56px;">
+        <span class="slide-tag">Wrap-Up</span>
+        <h2>Programs Use Names to Represent Values</h2>
+        <p style="max-width:1300px;">We have now seen two ways those names are created.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-lg);margin-top:var(--gap);">
+          <div class="callout">
+            <h3>Parameters</h3>
+            <div class="code-card" style="margin-bottom:var(--gap-sm);"><div class="code-body"><pre><code data-hl>function cheer(name) { ... }
+cheer("Pumas");</code></pre></div></div>
+            <p>The function definition creates the name, and the <i class="g">argument</i> in the call supplies its starting value.</p>
+          </div>
+          <div class="callout fragment fade-up">
+            <h3>Variables</h3>
+            <div class="code-card" style="margin-bottom:var(--gap-sm);"><div class="code-body"><pre><code data-hl>var score;
+score = 10;</code></pre></div></div>
+            <p><i class="n">var</i> creates the name, and <i class="a">assignment</i> supplies or changes its value.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 42 · TRACING RULES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Wrap-Up</span>
+        <h2>Tracing Rules</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 28px;">
+          <div class="rule-card fragment fade-up"><div class="rule-when">When you see <i class="n">var</i></div><p>Create a new column in the Memory Trace.</p></div>
+          <div class="rule-card fragment fade-up"><div class="rule-when">When you see an assignment</div><p><i class="a">Evaluate</i> the right side, then store the result in the variable on the left.</p></div>
+          <div class="rule-card fragment fade-up"><div class="rule-when">When a name is inside an expression</div><p><i class="a">Look up</i> its current value, <i class="a">substitute</i> it, and <i class="a">evaluate</i>.</p></div>
+          <div class="rule-card fragment fade-up"><div class="rule-when">When you call a function</div><p>Evaluate the arguments, give the call its own memory box, and use those values to initialize the parameters.</p></div>
+        </div>
+        <div class="callout accent-amber fragment fade-up" style="margin-top:var(--gap);">
+          <p style="font-size:26px;color:var(--text);">Remember: copying a value does not create a permanent connection.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 43 · EXIT TICKET -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:43:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What is the final value of `score`?\n\n```javascript\nvar score;\nscore = 3;\nscore = score + 1;\nscore = \"Pumas: \" + score;\n```","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"`\"Pumas: 3\"`","isCorrect":false},{"id":"q1b","text":"`\"Pumas: 4\"`","isCorrect":true},{"id":"q1c","text":"`\"Pumas: score\"`","isCorrect":false},{"id":"q1d","text":"`4`","isCorrect":false}]},{"id":"q2","type":"free-response","text":"Why is `b` still `5` at the end of this program?\n\n```javascript\nvar a;\nvar b;\na = 5;\nb = a;\na = 8;\n```","order":1,"responseTimeLimitMs":120000},{"id":"q3","type":"multiple-choice","text":"What value does `points` receive, and are `playerScore` and `points` the same variable?\n\n```javascript\nfunction show(points) {\n  console.log(points);\n}\nvar playerScore;\nplayerScore = 7;\nshow(playerScore);\n```","order":2,"responseTimeLimitMs":60000,"options":[{"id":"q3a","text":"`points` gets `7`, and it is the same variable as `playerScore`.","isCorrect":false},{"id":"q3b","text":"`points` gets `7`, and it is a separate variable from `playerScore`.","isCorrect":true},{"id":"q3c","text":"`points` gets `undefined`, because nothing was assigned to it.","isCorrect":false},{"id":"q3d","text":"`points` gets the name `playerScore` instead of a value.","isCorrect":false}]},{"id":"q4","type":"multiple-choice","text":"What is `playerScore` after the function call?\n\n```javascript\nfunction change(points) {\n  points = points + 3;\n}\nvar playerScore;\nplayerScore = 7;\nchange(playerScore);\n```","order":3,"responseTimeLimitMs":45000,"options":[{"id":"q4a","text":"`7`","isCorrect":true},{"id":"q4b","text":"`10`","isCorrect":false},{"id":"q4c","text":"`3`","isCorrect":false},{"id":"q4d","text":"`undefined`","isCorrect":false}]}]}'>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Exit Ticket</span>
+        <h2 style="font-size:46px;margin-bottom:16px;">Show What You Know</h2>
+        <div class="exit-grid">
+          <div>
+            <p class="exit-q">1. What is the final value of <i class="n">score</i>?</p>
+            <div class="code-card"><div class="code-body"><pre><code data-hl>var score;
+score = 3;
+score = score + 1;
+score = "Pumas: " + score;</code></pre></div></div>
+          </div>
+          <div>
+            <p class="exit-q">2. Why is <i class="n">b</i> still <i class="v">5</i> at the end?</p>
+            <div class="code-card"><div class="code-body"><pre><code data-hl>var a;
+var b;
+a = 5;
+b = a;
+a = 8;</code></pre></div></div>
+          </div>
+          <div>
+            <p class="exit-q">3. What value does <i class="n">points</i> receive? Is it the same variable as <i class="n">playerScore</i>?</p>
+            <div class="code-card"><div class="code-body"><pre><code data-hl>function show(points) {
+  console.log(points);
+}
+var playerScore;
+playerScore = 7;
+show(playerScore);</code></pre></div></div>
+          </div>
+          <div>
+            <p class="exit-q">4. What is <i class="n">playerScore</i> after the call?</p>
+            <div class="code-card"><div class="code-body"><pre><code data-hl>function change(points) {
+  points = points + 3;
+}
+var playerScore;
+playerScore = 7;
+change(playerScore);</code></pre></div></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Expected: 1) "Pumas: 4". 2) b received the value of a when the assignment happened; changing a later did not change b. 3) points gets 7; they are separate variables. 4) 7 (points reached 10 inside the function).</aside>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+/* ================================================================
+   TRACE BOARDS
+   Each section[data-trace-board="key"] is rendered from TRACES[key]:
+   a numbered program (with TraceLift [[name]] flaps), a Memory Trace
+   with one box per function call, a console, and a narration panel.
+
+   Every step becomes one hidden Reveal fragment. The board state is
+   recomputed from scratch by folding steps 0..k, where k is the number
+   of visible step fragments, so back-navigation and host sync work
+   without extra bookkeeping.
+
+   Code tracing convention: `line` is the NEXT line to execute. A line's
+   effects (set / out) are applied on the step that moves the caret past
+   it. A step that keeps the caret on the same line is the human
+   "look up / substitute / evaluate" work before the line completes.
+
+   Step fields (all optional):
+     line   next line to run (persists until changed)
+     call   call-site line shown with a dashed "paused" outline
+     open   {id, label} start a function call's memory box
+     decl   ['name' | 'frame.name', ...] add empty columns
+     set    {'name' | 'frame.name': value} append a value
+     close  frame id: the call is finished (box crossed out)
+     out    console line
+     lift   {lineNo: [values per flap]}  ([] closes that line's flaps)
+     work   narration HTML for this step only
+   Trace option `workBelow: true` keeps narration under the program
+   even for a long (compact) program.
+   Trace option `flat: true` draws a call's columns without the call
+   box (Rounds 1-3, before the box convention is introduced in 10A).
+   Values: numbers, strings (shown with quotes), null = undefined.
+   ================================================================ */
+
+var TRACES = {
+  cheer: {
+    flat: true,
+    code: [
+      'function cheer(name) {',
+      '  console.log("Go " + [[name]] + "!");',
+      '}',
+      'cheer("Pumas");'
+    ],
+    start: 4,
+    steps: [
+      { line: 2, call: 4, open: { id: 'cheer', label: 'cheer call' }, set: { 'cheer.name': 'Pumas' },
+        work: 'The <i class=g>argument</i> <i class=s>"Pumas"</i> becomes the value of the <i class=c>parameter</i> <i class=n>name</i> for this call. <i class=n>name</i> <i class=a>gets</i> <i class=s>"Pumas"</i>, which the AP exam writes as <i class=n>name &larr; "Pumas"</i>.' },
+      { lift: { 2: ['Pumas'] },
+        work: '<i class=a>Look up</i> <i class=n>name</i>: it is <i class=s>"Pumas"</i>. With text, <i class=n>+</i> joins the pieces, so <i class=s>"Go "</i> + <i class=s>"Pumas"</i> + <i class=s>"!"</i> becomes <i class=s>"Go Pumas!"</i>.' },
+      { line: 3, out: 'Go Pumas!',
+        work: '<i class=n>console.log</i> shows <i class=s>Go Pumas!</i> in the console.' },
+      { line: 5, call: null, close: 'cheer',
+        work: 'The call is finished. <i class=n>name</i> is the parameter to the function. It got its value, <i class=s>"Pumas"</i>, from the argument in the function call.' }
+    ]
+  },
+
+  r1a: {
+    flat: true,
+    code: [
+      'function showScore(score) {',
+      '  console.log([[score]]);',
+      '}',
+      'showScore(10);'
+    ],
+    start: 4,
+    steps: [
+      { line: 2, call: 4, open: { id: 'f', label: 'showScore call' }, set: { 'f.score': 10 },
+        work: '<i class=n>score</i> <i class=a>gets</i> the value <i class=v>10</i> when <i class=n>showScore</i> is called.' },
+      { lift: { 2: [10] }, work: '<i class=a>Look up</i> <i class=n>score</i>: it is <i class=v>10</i>.' },
+      { line: 3, out: '10', work: 'The console shows <i class=v>10</i>.' },
+      { line: 5, call: null, close: 'f', work: 'The call is finished.' }
+    ]
+  },
+
+  dbl5: {
+    flat: true,
+    code: [
+      'function doubleScore(score) {',
+      '  console.log([[score]] * 2);',
+      '}',
+      'doubleScore(5);'
+    ],
+    start: 4,
+    steps: [
+      { line: 2, call: 4, open: { id: 'f', label: 'doubleScore call' }, set: { 'f.score': 5 },
+        work: 'The call supplies <i class=v>5</i>, so <i class=n>score</i> <i class=a>gets</i> <i class=v>5</i>.' },
+      { lift: { 2: [5] },
+        work: '<i class=a>Look up</i> <i class=n>score</i> and <i class=a>substitute</i>: the expression is now <i class=v>5 * 2</i>.' },
+      { work: '<i class=a>Evaluate</i>: <i class=v>5 * 2</i> is <i class=v>10</i>.' },
+      { line: 3, out: '10', work: 'The console shows <i class=v>10</i>.' },
+      { line: 5, call: null, close: 'f',
+        work: '<i class=a>Look up</i> &rarr; <i class=a>Substitute</i> &rarr; <i class=a>Evaluate</i>. We will use this routine all lesson.' }
+    ]
+  },
+
+  r2a: {
+    flat: true,
+    code: [
+      'function doubleScore(score) {',
+      '  console.log([[score]] * 2);',
+      '}',
+      'doubleScore(6);'
+    ],
+    start: 4,
+    steps: [
+      { line: 2, call: 4, open: { id: 'f', label: 'doubleScore call' }, set: { 'f.score': 6 },
+        work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>6</i>.' },
+      { lift: { 2: [6] }, work: '<i class=a>Look up</i> and <i class=a>substitute</i>: <i class=v>6 * 2</i>. <i class=a>Evaluate</i>: <i class=v>12</i>.' },
+      { line: 3, out: '12', work: 'The console shows <i class=v>12</i>.' },
+      { line: 5, call: null, close: 'f', work: 'The call is finished.' }
+    ]
+  },
+
+  area52: {
+    flat: true,
+    code: [
+      'function area(width, height) {',
+      '  console.log([[width]] * [[height]]);',
+      '}',
+      'area(5, 2);'
+    ],
+    start: 4,
+    steps: [
+      { line: 2, call: 4, open: { id: 'f', label: 'area call' }, set: { 'f.width': 5, 'f.height': 2 },
+        work: 'Arguments match parameters <i class=a>by position</i>. The first argument goes to the first parameter, so <i class=n>width</i> <i class=a>gets</i> <i class=v>5</i> and <i class=n>height</i> <i class=a>gets</i> <i class=v>2</i>.' },
+      { lift: { 2: [5, 2] }, work: '<i class=a>Look up</i> both names and <i class=a>substitute</i>: <i class=v>5 * 2</i>.' },
+      { work: '<i class=a>Evaluate</i>: <i class=v>5 * 2</i> is <i class=v>10</i>.' },
+      { line: 3, out: '10', work: 'The console shows <i class=v>10</i>.' },
+      { line: 5, call: null, close: 'f', work: 'The call is finished.' }
+    ]
+  },
+
+  r3a: {
+    flat: true,
+    code: [
+      'function area(width, height) {',
+      '  console.log([[width]] * [[height]]);',
+      '}',
+      'area(4, 3);'
+    ],
+    start: 4,
+    steps: [
+      { line: 2, call: 4, open: { id: 'f', label: 'area call' }, set: { 'f.width': 4, 'f.height': 3 },
+        work: 'By position: <i class=n>width</i> <i class=a>gets</i> <i class=v>4</i> and <i class=n>height</i> <i class=a>gets</i> <i class=v>3</i>.' },
+      { lift: { 2: [4, 3] }, work: '<i class=a>Substitute</i>: <i class=v>4 * 3</i>. <i class=a>Evaluate</i>: <i class=v>12</i>.' },
+      { line: 3, out: '12', work: 'The console shows <i class=v>12</i>.' },
+      { line: 5, call: null, close: 'f', work: 'The call is finished.' }
+    ]
+  },
+
+  var1: {
+    code: [
+      'var score;'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['score'],
+        work: '<i class=n>var</i> means make a new named place in memory so we create a column in our memory trace for <i class=n>score</i> but it does not have a value yet.' }
+    ]
+  },
+
+  assign: {
+    code: [
+      'var score;',
+      'score = 3;'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['score'], work: '<i class=n>var</i> creates an empty <i class=n>score</i> column.' },
+      { line: 3, set: { score: 3 },
+        work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>3</i>. Evaluate the right side, then store the value in the variable on the left.' }
+    ]
+  },
+
+  reassign: {
+    code: [
+      'var score;',
+      'score = 3;',
+      'score = 5;'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['score'], work: 'Create the <i class=n>score</i> column.' },
+      { line: 3, set: { score: 3 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>3</i>.' },
+      { line: 4, set: { score: 5 },
+        work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>5</i>. The program no longer has <i class=v>3</i>; we leave it crossed out only so we can see what happened. Only the newest uncrossed value counts.' }
+    ]
+  },
+
+  r5a: {
+    code: [
+      'var score;',
+      'score = 3;',
+      'score = 5;',
+      'score = 8;'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['score'], work: 'Create the <i class=n>score</i> column.' },
+      { line: 3, set: { score: 3 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>3</i>.' },
+      { line: 4, set: { score: 5 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>5</i>. Cross out the <i class=v>3</i>.' },
+      { line: 5, set: { score: 8 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>8</i>. The final value of <i class=n>score</i> is <i class=v>8</i>.' }
+    ]
+  },
+
+  undef: {
+    code: [
+      'var score;',
+      'console.log([[score]]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['score'], work: 'Create the <i class=n>score</i> column. It is blank.' },
+      { lift: { 2: [null] },
+        work: '<i class=a>Look up</i> <i class=n>score</i>. Nothing has been assigned, so JavaScript uses the special value <i class=u>undefined</i>, which means no value has been assigned yet.' },
+      { line: 3, out: 'undefined',
+        work: 'The console shows <i class=u>undefined</i>. A parameter that does not receive an argument is also <i class=u>undefined</i>.' }
+    ]
+  },
+
+  r5b: {
+    code: [
+      'var pizza;',
+      'pizza = 3;',
+      'var tacos;',
+      'pizza = "yum";',
+      'tacos = "the best";'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['pizza'], work: 'Create the <i class=n>pizza</i> column.' },
+      { line: 3, set: { pizza: 3 }, work: '<i class=n>pizza</i> <i class=a>gets</i> <i class=v>3</i>.' },
+      { line: 4, decl: ['tacos'], work: 'The <i class=n>tacos</i> column is created only now, when its <i class=n>var</i> runs.' },
+      { line: 5, set: { pizza: 'yum' },
+        work: '<i class=n>pizza</i> <i class=a>gets</i> <i class=s>"yum"</i>. A variable can hold a number and later hold a string.' },
+      { line: 6, set: { tacos: 'the best' }, work: '<i class=n>tacos</i> <i class=a>gets</i> <i class=s>"the best"</i>.' }
+    ]
+  },
+
+  evalfirst: {
+    code: [
+      'var score;',
+      'score = 3 + 4;'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['score'], work: 'Create the <i class=n>score</i> column.' },
+      { work: 'Step 1, <i class=a>evaluate</i> the right side: <i class=v>3 + 4</i> is <i class=v>7</i>.' },
+      { line: 3, set: { score: 7 }, work: 'Step 2, <i class=a>assign</i>: <i class=n>score</i> <i class=a>gets</i> <i class=v>7</i>. Evaluate first, then assign.' }
+    ]
+  },
+
+  r6a: {
+    code: [
+      'var score;',
+      'score = 3 + 4;',
+      'score = 10 - 2;',
+      'score = 5 * 3;'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['score'], work: 'Create the <i class=n>score</i> column.' },
+      { line: 3, set: { score: 7 }, work: '<i class=v>3 + 4</i> is <i class=v>7</i>, so <i class=n>score</i> <i class=a>gets</i> <i class=v>7</i>.' },
+      { line: 4, set: { score: 8 }, work: '<i class=v>10 - 2</i> is <i class=v>8</i>, so <i class=n>score</i> <i class=a>gets</i> <i class=v>8</i>.' },
+      { line: 5, set: { score: 15 }, work: '<i class=v>5 * 3</i> is <i class=v>15</i>, so <i class=n>score</i> <i class=a>gets</i> <i class=v>15</i>.' }
+    ]
+  },
+
+  r6b: {
+    code: [
+      'var first;',
+      'var second;',
+      'first = "to" + "day";',
+      'second = 4 - 1;',
+      'first = 3 * 3;',
+      'second = 4 + "now";'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['first'], work: 'Create the <i class=n>first</i> column.' },
+      { line: 3, decl: ['second'], work: 'Create the <i class=n>second</i> column.' },
+      { line: 4, set: { first: 'today' },
+        work: 'Both values are strings, so <i class=n>+</i> joins them: <i class=s>"to"</i> + <i class=s>"day"</i> is <i class=s>"today"</i>.' },
+      { line: 5, set: { second: 3 }, work: '<i class=v>4 - 1</i> is <i class=v>3</i>.' },
+      { line: 6, set: { first: 9 }, work: '<i class=v>3 * 3</i> is <i class=v>9</i>. Now <i class=n>first</i> holds a number instead of a string.' },
+      { line: 7, set: { second: '4now' },
+        work: 'One value is a string, so <i class=n>+</i> joins: <i class=v>4</i> + <i class=s>"now"</i> is <i class=s>"4now"</i>.' }
+    ]
+  },
+
+  useval: {
+    code: [
+      'var score;',
+      'score = 3;',
+      'score = [[score]] + 10;',
+      'console.log([[score]]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['score'], work: 'Create the <i class=n>score</i> column.' },
+      { line: 3, set: { score: 3 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>3</i>.' },
+      { lift: { 3: [3] },
+        work: '1. <i class=a>Look up</i> <i class=n>score</i>: it is <i class=v>3</i>. 2. <i class=a>Substitute</i>: the right side is now <i class=v>3 + 10</i>.' },
+      { work: '3. <i class=a>Evaluate</i>: <i class=v>3 + 10</i> is <i class=v>13</i>.' },
+      { line: 4, set: { score: 13 },
+        work: '4. <i class=a>Assign</i>: <i class=n>score</i> <i class=a>gets</i> <i class=v>13</i>.' },
+      { lift: { 4: [13] }, work: '<i class=a>Look up</i> <i class=n>score</i> again. Its current value is now <i class=v>13</i>, not <i class=v>3</i>.' },
+      { line: 5, out: '13', work: 'The console shows <i class=v>13</i>.' }
+    ]
+  },
+
+  r7a: {
+    code: [
+      'var score;',
+      'score = 3;',
+      'score = [[score]] + 10;',
+      'score = [[score]] * 2;',
+      'score = [[score]] - 4;',
+      'console.log("Final score: " + [[score]]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['score'], work: 'Create the <i class=n>score</i> column.' },
+      { line: 3, set: { score: 3 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>3</i>.' },
+      { lift: { 3: [3] }, work: '<i class=a>Look up</i> <i class=n>score</i>: <i class=v>3</i>. Evaluate <i class=v>3 + 10</i>.' },
+      { line: 4, set: { score: 13 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>13</i>.' },
+      { lift: { 4: [13] }, work: '<i class=a>Look up</i> the newest value: <i class=v>13</i>. Evaluate <i class=v>13 * 2</i>.' },
+      { line: 5, set: { score: 26 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>26</i>.' },
+      { lift: { 5: [26] }, work: '<i class=a>Look up</i>: <i class=v>26</i>. Evaluate <i class=v>26 - 4</i>.' },
+      { line: 6, set: { score: 22 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>22</i>.' },
+      { lift: { 6: [22] }, work: '<i class=a>Look up</i>: <i class=v>22</i>. Joining gives <i class=s>"Final score: 22"</i>.' },
+      { line: 7, out: 'Final score: 22', work: 'The final value of <i class=n>score</i> is <i class=v>22</i>.' }
+    ]
+  },
+
+  r7b: {
+    code: [
+      'var count;',
+      'count = 0;',
+      'count = [[count]] + 1;',
+      'count = [[count]] + 1;',
+      'count = [[count]] + 1;',
+      'console.log("Final count: " + [[count]]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['count'], work: 'Create the <i class=n>count</i> column.' },
+      { line: 3, set: { count: 0 }, work: '<i class=n>count</i> <i class=a>gets</i> <i class=v>0</i>.' },
+      { lift: { 3: [0] }, work: '<i class=v>0 + 1</i> is <i class=v>1</i>.' },
+      { line: 4, set: { count: 1 }, work: '<i class=n>count</i> <i class=a>gets</i> <i class=v>1</i>.' },
+      { lift: { 4: [1] }, work: '<i class=v>1 + 1</i> is <i class=v>2</i>.' },
+      { line: 5, set: { count: 2 }, work: '<i class=n>count</i> <i class=a>gets</i> <i class=v>2</i>.' },
+      { lift: { 5: [2] }, work: '<i class=v>2 + 1</i> is <i class=v>3</i>.' },
+      { line: 6, set: { count: 3 }, work: '<i class=n>count</i> <i class=a>gets</i> <i class=v>3</i>.' },
+      { lift: { 6: [3] }, work: 'Joining gives <i class=s>"Final count: 3"</i>.' },
+      { line: 7, out: 'Final count: 3', work: 'Each line used the current value of <i class=n>count</i> to make the next one.' }
+    ]
+  },
+
+  twovars: {
+    code: [
+      'var score;',
+      'var bonus;'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['score'], work: 'The first declaration creates the <i class=n>score</i> column.' },
+      { line: 3, decl: ['bonus'], work: 'The second declaration creates another column, <i class=n>bonus</i>.' }
+    ]
+  },
+
+  r8a: {
+    code: [
+      'var score;',
+      'var bonus;',
+      'score = 5;',
+      'bonus = 2;',
+      'score = [[score]] + 10;',
+      'bonus = [[bonus]] * 3;',
+      'score = [[score]] - 1;',
+      'console.log("Score: " + [[score]]);',
+      'console.log("Bonus: " + [[bonus]]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['score'], work: 'Create the <i class=n>score</i> column.' },
+      { line: 3, decl: ['bonus'], work: 'Create the <i class=n>bonus</i> column.' },
+      { line: 4, set: { score: 5 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>5</i>.' },
+      { line: 5, set: { bonus: 2 }, work: '<i class=n>bonus</i> <i class=a>gets</i> <i class=v>2</i>.' },
+      { lift: { 5: [5] }, work: '<i class=a>Look up</i> <i class=n>score</i>: <i class=v>5 + 10</i> is <i class=v>15</i>.' },
+      { line: 6, set: { score: 15 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>15</i>. The <i class=n>bonus</i> column does not change.' },
+      { lift: { 6: [2] }, work: '<i class=a>Look up</i> <i class=n>bonus</i>: <i class=v>2 * 3</i> is <i class=v>6</i>.' },
+      { line: 7, set: { bonus: 6 }, work: '<i class=n>bonus</i> <i class=a>gets</i> <i class=v>6</i>. Now only <i class=n>bonus</i> changed.' },
+      { lift: { 7: [15] }, work: '<i class=a>Look up</i> the newest <i class=n>score</i>: <i class=v>15 - 1</i> is <i class=v>14</i>.' },
+      { line: 8, set: { score: 14 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>14</i>.' },
+      { lift: { 8: [14] }, work: 'Joining gives <i class=s>"Score: 14"</i>.' },
+      { line: 9, out: 'Score: 14', work: 'The console shows <i class=s>Score: 14</i>.' },
+      { lift: { 9: [6] }, work: 'Joining gives <i class=s>"Bonus: 6"</i>.' },
+      { line: 10, out: 'Bonus: 6',
+        work: 'Each assignment changed only the variable on its left side. Final values: <i class=n>score</i> is <i class=v>14</i> and <i class=n>bonus</i> is <i class=v>6</i>.' }
+    ]
+  },
+
+  r8c: {
+    workBelow: true,
+    code: [
+      'var width;',
+      'var height;',
+      'var area;',
+      'width = 4;',
+      'height = 3;',
+      'area = [[width]] * [[height]];',
+      'console.log("Area: " + [[area]]);',
+      'width = 10;',
+      'console.log("Area: " + [[area]]);',
+      'area = [[width]] * [[height]];',
+      'console.log("Area: " + [[area]]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['width'], work: 'Create the <i class=n>width</i> column.' },
+      { line: 3, decl: ['height'], work: 'Create the <i class=n>height</i> column.' },
+      { line: 4, decl: ['area'], work: 'Create the <i class=n>area</i> column.' },
+      { line: 5, set: { width: 4 }, work: '<i class=n>width</i> <i class=a>gets</i> <i class=v>4</i>.' },
+      { line: 6, set: { height: 3 }, work: '<i class=n>height</i> <i class=a>gets</i> <i class=v>3</i>.' },
+      { lift: { 6: [4, 3] }, work: '<i class=v>4 * 3</i> is <i class=v>12</i>.' },
+      { line: 7, set: { area: 12 }, work: '<i class=n>area</i> <i class=a>gets</i> <i class=v>12</i>.' },
+      { lift: { 7: [12] }, work: '<i class=a>Look up</i> <i class=n>area</i>: <i class=v>12</i>.' },
+      { line: 8, out: 'Area: 12', work: 'The console shows <i class=s>Area: 12</i>.' },
+      { line: 9, set: { width: 10 }, work: '<i class=n>width</i> <i class=a>gets</i> <i class=v>10</i>. What should happen to <i class=n>area</i>?' },
+      { lift: { 9: [12] }, work: '<i class=a>Look up</i> <i class=n>area</i>. It is still <i class=v>12</i>.' },
+      { line: 10, out: 'Area: 12', work: 'The console shows <i class=s>Area: 12</i> again.' },
+      { lift: { 10: [10, 3] }, work: 'Now <i class=v>10 * 3</i> is <i class=v>30</i>.' },
+      { line: 11, set: { area: 30 }, work: '<i class=n>area</i> <i class=a>gets</i> <i class=v>30</i>.' },
+      { lift: { 11: [30] }, work: '<i class=a>Look up</i> <i class=n>area</i>: <i class=v>30</i>.' },
+      { line: 12, out: 'Area: 30',
+        work: 'When <i class=n>width</i> changed, did <i class=n>area</i> change automatically? No. <i class=n>area</i> changed only when another assignment statement ran.' }
+    ]
+  },
+
+  r8b: {
+    code: [
+      'var a;',
+      'var b;',
+      'a = 5;',
+      'b = [[a]];',
+      'a = 8;'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['a'], work: 'Create the <i class=n>a</i> column.' },
+      { line: 3, decl: ['b'], work: 'Create the <i class=n>b</i> column.' },
+      { line: 4, set: { a: 5 }, work: '<i class=n>a</i> <i class=a>gets</i> <i class=v>5</i>.' },
+      { lift: { 4: [5] }, work: '<i class=a>Look up</i> the current value of <i class=n>a</i>: <i class=v>5</i>.' },
+      { line: 5, set: { b: 5 }, work: '<i class=n>b</i> <i class=a>gets</i> <i class=v>5</i>. The value is <i class=a>copied</i>.' },
+      { line: 6, set: { a: 8 },
+        work: '<i class=n>a</i> <i class=a>gets</i> <i class=v>8</i>, but <i class=n>b</i> is still <i class=v>5</i>. <i class=n>b = a</i> used the value of <i class=n>a</i> at that moment. It did not permanently connect the two names.' }
+    ]
+  },
+
+  r9a: {
+    code: [
+      'var a;',
+      'var b;',
+      'a = 5;',
+      'b = 8;',
+      'a = [[b]];',
+      'b = [[a]];',
+      'console.log("a is " + [[a]]);',
+      'console.log("b is " + [[b]]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['a'], work: 'Create the <i class=n>a</i> column.' },
+      { line: 3, decl: ['b'], work: 'Create the <i class=n>b</i> column.' },
+      { line: 4, set: { a: 5 }, work: '<i class=n>a</i> <i class=a>gets</i> <i class=v>5</i>.' },
+      { line: 5, set: { b: 8 }, work: '<i class=n>b</i> <i class=a>gets</i> <i class=v>8</i>.' },
+      { lift: { 5: [8] }, work: '<i class=a>Look up</i> <i class=n>b</i>: <i class=v>8</i>.' },
+      { line: 6, set: { a: 8 }, work: '<i class=n>a</i> <i class=a>gets</i> <i class=v>8</i>. The old <i class=v>5</i> is crossed out. The program no longer has it anywhere.' },
+      { lift: { 6: [8] }, work: '<i class=a>Look up</i> <i class=n>a</i>. Its current value is <i class=v>8</i>, not <i class=v>5</i>.' },
+      { line: 7, set: { b: 8 }, work: '<i class=n>b</i> <i class=a>gets</i> <i class=v>8</i>. Both variables now hold <i class=v>8</i>.' },
+      { lift: { 7: [8] }, work: 'Joining gives <i class=s>"a is 8"</i>.' },
+      { line: 8, out: 'a is 8', work: 'The console shows <i class=s>a is 8</i>.' },
+      { lift: { 8: [8] }, work: 'Joining gives <i class=s>"b is 8"</i>.' },
+      { line: 9, out: 'b is 8',
+        work: 'The swap failed. When <i class=n>a</i> got <i class=v>8</i>, its <i class=v>5</i> was lost, so there was nothing left to copy into <i class=n>b</i>.' }
+    ]
+  },
+
+  r9b: {
+    workBelow: true,
+    code: [
+      'var a;',
+      'var b;',
+      'var temp;',
+      'a = 5;',
+      'b = 8;',
+      'temp = [[a]];',
+      'a = [[b]];',
+      'b = [[temp]];',
+      'console.log("a is " + [[a]]);',
+      'console.log("b is " + [[b]]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, decl: ['a'], work: 'Create the <i class=n>a</i> column.' },
+      { line: 3, decl: ['b'], work: 'Create the <i class=n>b</i> column.' },
+      { line: 4, decl: ['temp'], work: 'A third variable, <i class=n>temp</i>, will hold a value for safekeeping.' },
+      { line: 5, set: { a: 5 }, work: '<i class=n>a</i> <i class=a>gets</i> <i class=v>5</i>.' },
+      { line: 6, set: { b: 8 }, work: '<i class=n>b</i> <i class=a>gets</i> <i class=v>8</i>.' },
+      { lift: { 6: [5] }, work: '<i class=a>Look up</i> <i class=n>a</i>: <i class=v>5</i>.' },
+      { line: 7, set: { temp: 5 }, work: '<i class=n>temp</i> <i class=a>gets</i> a copy of <i class=v>5</i> before anything overwrites it.' },
+      { lift: { 7: [8] }, work: '<i class=a>Look up</i> <i class=n>b</i>: <i class=v>8</i>.' },
+      { line: 8, set: { a: 8 }, work: '<i class=n>a</i> <i class=a>gets</i> <i class=v>8</i>. Its <i class=v>5</i> is gone from <i class=n>a</i>, but a copy is safe in <i class=n>temp</i>.' },
+      { lift: { 8: [5] }, work: '<i class=a>Look up</i> <i class=n>temp</i>: <i class=v>5</i>.' },
+      { line: 9, set: { b: 5 }, work: '<i class=n>b</i> <i class=a>gets</i> <i class=v>5</i>. The values have traded places.' },
+      { lift: { 9: [8] }, work: 'Joining gives <i class=s>"a is 8"</i>.' },
+      { line: 10, out: 'a is 8', work: 'The console shows <i class=s>a is 8</i>.' },
+      { lift: { 10: [5] }, work: 'Joining gives <i class=s>"b is 5"</i>.' },
+      { line: 11, out: 'b is 5',
+        work: 'The swap worked. Because assignment copies and overwrites, we needed a third variable to remember one value while the other moved.' }
+    ]
+  },
+
+  r10a: {
+    code: [
+      'function showScore(score) {',
+      '  console.log([[score]]);',
+      '}',
+      'var playerScore;',
+      'playerScore = 10;',
+      'showScore([[playerScore]]);'
+    ],
+    start: 4,
+    mainLabel: 'Calling code',
+    steps: [
+      { line: 5, decl: ['playerScore'], work: 'The program starts at line 4. Create the <i class=n>playerScore</i> column.' },
+      { line: 6, set: { playerScore: 10 }, work: '<i class=n>playerScore</i> <i class=a>gets</i> <i class=v>10</i>.' },
+      { lift: { 6: [10] }, work: 'At the call, <i class=a>look up</i> <i class=n>playerScore</i>: <i class=v>10</i>. The argument is the value <i class=v>10</i>.' },
+      { line: 2, call: 6, open: { id: 'f', label: 'showScore call' }, set: { 'f.score': 10 },
+        work: 'Draw a box for this call. The value <i class=v>10</i> is <i class=a>copied</i> into the parameter <i class=n>score</i> inside it. <i class=n>playerScore</i> and <i class=n>score</i> are different names.' },
+      { call: 6, lift: { 2: [10] }, work: '<i class=a>Look up</i> <i class=n>score</i> in the function&rsquo;s box: <i class=v>10</i>.' },
+      { line: 3, call: 6, out: '10', work: 'The console shows <i class=v>10</i>.' },
+      { line: 7, call: null, close: 'f', work: 'The call is finished. A value moved from one named place to another.' }
+    ]
+  },
+
+  r11a: {
+    code: [
+      'function showScore(score) {',
+      '  console.log([[score]]);',
+      '}',
+      'var score;',
+      'score = 10;',
+      'showScore([[score]]);'
+    ],
+    start: 4,
+    mainLabel: 'Calling code',
+    steps: [
+      { line: 5, decl: ['score'], work: 'Create a <i class=n>score</i> column for the calling code.' },
+      { line: 6, set: { score: 10 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>10</i>.' },
+      { lift: { 6: [10] }, work: '<i class=a>Look up</i> the calling code&rsquo;s <i class=n>score</i>: <i class=v>10</i>.' },
+      { line: 2, call: 6, open: { id: 'f', label: 'showScore call' }, set: { 'f.score': 10 },
+        work: 'The call gets its own <i class=n>score</i> column. There are now two different things named <i class=n>score</i>, and each has its own value.' },
+      { call: 6, lift: { 2: [10] }, work: 'Inside the function, <i class=n>score</i> means the parameter in the function&rsquo;s box.' },
+      { line: 3, call: 6, out: '10', work: 'The console shows <i class=v>10</i>.' },
+      { line: 7, call: null, close: 'f',
+        work: 'The names look the same, but they belong to different parts of the program. The parameter got its own copy of the value for this call.' }
+    ]
+  },
+
+  twocalls: {
+    code: [
+      'function showScore(score) {',
+      '  var bonus;',
+      '  bonus = 5;',
+      '  console.log([[score]] + [[bonus]]);',
+      '}',
+      'showScore(10);',
+      'showScore(20);'
+    ],
+    start: 6,
+    steps: [
+      { line: 2, call: 6, open: { id: 'c1', label: 'showScore call #1' }, set: { 'c1.score': 10 },
+        work: 'The first call gets a box, and <i class=n>score</i> <i class=a>gets</i> <i class=v>10</i>.' },
+      { line: 3, call: 6, decl: ['c1.bonus'], work: 'A <i class=n>var</i> inside a function creates a column in that call&rsquo;s box.' },
+      { line: 4, call: 6, set: { 'c1.bonus': 5 }, work: '<i class=n>bonus</i> <i class=a>gets</i> <i class=v>5</i>.' },
+      { call: 6, lift: { 4: [10, 5] }, work: '<i class=v>10 + 5</i> is <i class=v>15</i>.' },
+      { line: 5, call: 6, out: '15', work: 'The console shows <i class=v>15</i>.' },
+      { line: 7, call: null, close: 'c1', work: 'The first call is finished, so its memory is done.' },
+      { line: 2, call: 7, open: { id: 'c2', label: 'showScore call #2' }, set: { 'c2.score': 20 }, lift: { 4: [] },
+        work: 'The second call starts with brand new storage. <i class=n>score</i> <i class=a>gets</i> <i class=v>20</i>, and <i class=n>bonus</i> does not exist yet.' },
+      { line: 3, call: 7, decl: ['c2.bonus'], work: 'A new, empty <i class=n>bonus</i> column for this call.' },
+      { line: 4, call: 7, set: { 'c2.bonus': 5 }, work: '<i class=n>bonus</i> <i class=a>gets</i> <i class=v>5</i>.' },
+      { call: 7, lift: { 4: [20, 5] }, work: '<i class=v>20 + 5</i> is <i class=v>25</i>.' },
+      { line: 5, call: 7, out: '25', work: 'The console shows <i class=v>25</i>.' },
+      { line: 8, call: null, close: 'c2',
+        work: 'Each function call gets new parameter and local variable storage. When that call finishes, its temporary memory is done.' }
+    ]
+  },
+
+  r12a: {
+    code: [
+      'function addBonus(score) {',
+      '  score = [[score]] + 5;',
+      '  console.log("Bonus score: " + [[score]]);',
+      '}',
+      'var score;',
+      'score = 10;',
+      'addBonus([[score]]);',
+      'console.log("Final score: " + [[score]]);'
+    ],
+    start: 5,
+    mainLabel: 'Calling code',
+    steps: [
+      { line: 6, decl: ['score'], work: 'Create the calling code&rsquo;s <i class=n>score</i> column.' },
+      { line: 7, set: { score: 10 }, work: '<i class=n>score</i> <i class=a>gets</i> <i class=v>10</i>.' },
+      { lift: { 7: [10] }, work: '<i class=a>Look up</i> <i class=n>score</i>: the argument is <i class=v>10</i>.' },
+      { line: 2, call: 7, open: { id: 'f', label: 'addBonus call' }, set: { 'f.score': 10 },
+        work: 'The function receives the value <i class=v>10</i> in its own <i class=n>score</i> parameter.' },
+      { call: 7, lift: { 2: [10] }, work: '<i class=a>Look up</i> the parameter: <i class=v>10 + 5</i> is <i class=v>15</i>.' },
+      { line: 3, call: 7, set: { 'f.score': 15 },
+        work: 'The parameter <i class=n>score</i> <i class=a>gets</i> <i class=v>15</i>. Only the <i class=n>score</i> in this call&rsquo;s box changes.' },
+      { call: 7, lift: { 3: [15] }, work: '<i class=a>Look up</i> the parameter: <i class=v>15</i>.' },
+      { line: 4, call: 7, out: 'Bonus score: 15', work: 'The console shows <i class=s>Bonus score: 15</i>.' },
+      { line: 8, call: null, close: 'f', work: 'The call is finished. Its box, and its <i class=n>score</i>, are done.' },
+      { lift: { 8: [10] }, work: '<i class=a>Look up</i> <i class=n>score</i> in the calling code. It is still <i class=v>10</i>.' },
+      { line: 9, out: 'Final score: 10',
+        work: 'The function received the value <i class=v>10</i>. Changing its parameter did not change the variable in the calling code.' }
+    ]
+  },
+
+  challenge: {
+    workBelow: true,
+    code: [
+      'function addBonus(score, bonus) {',
+      '  var total;',
+      '  total = [[score]] + [[bonus]];',
+      '  score = [[total]];',
+      '  console.log("Total: " + [[total]]);',
+      '}',
+      'var playerScore;',
+      'var bonus;',
+      'playerScore = 10;',
+      'bonus = 5;',
+      'addBonus([[playerScore]], [[bonus]]);',
+      'console.log("Player score: " + [[playerScore]]);'
+    ],
+    start: 7,
+    mainLabel: 'Calling code',
+    steps: [
+      { line: 8, decl: ['playerScore'], work: 'Create the <i class=n>playerScore</i> column.' },
+      { line: 9, decl: ['bonus'], work: 'Create the calling code&rsquo;s <i class=n>bonus</i> column.' },
+      { line: 10, set: { playerScore: 10 }, work: '<i class=n>playerScore</i> <i class=a>gets</i> <i class=v>10</i>.' },
+      { line: 11, set: { bonus: 5 }, work: '<i class=n>bonus</i> <i class=a>gets</i> <i class=v>5</i>.' },
+      { lift: { 11: [10, 5] }, work: '<i class=a>Look up</i> both arguments: <i class=v>10</i> and <i class=v>5</i>.' },
+      { line: 2, call: 11, open: { id: 'f', label: 'addBonus call' }, set: { 'f.score': 10, 'f.bonus': 5 },
+        work: 'By position, <i class=n>score</i> <i class=a>gets</i> <i class=v>10</i> and <i class=n>bonus</i> <i class=a>gets</i> <i class=v>5</i>. This <i class=n>bonus</i> is separate from the caller&rsquo;s.' },
+      { line: 3, call: 11, decl: ['f.total'], work: 'Create <i class=n>total</i> in the function&rsquo;s box.' },
+      { call: 11, lift: { 3: [10, 5] }, work: '<i class=v>10 + 5</i> is <i class=v>15</i>.' },
+      { line: 4, call: 11, set: { 'f.total': 15 }, work: '<i class=n>total</i> <i class=a>gets</i> <i class=v>15</i>.' },
+      { call: 11, lift: { 4: [15] }, work: '<i class=a>Look up</i> <i class=n>total</i>: <i class=v>15</i>.' },
+      { line: 5, call: 11, set: { 'f.score': 15 }, work: 'The parameter <i class=n>score</i> <i class=a>gets</i> <i class=v>15</i>.' },
+      { call: 11, lift: { 5: [15] }, work: 'Joining gives <i class=s>"Total: 15"</i>.' },
+      { line: 6, call: 11, out: 'Total: 15', work: 'The console shows <i class=s>Total: 15</i>.' },
+      { line: 12, call: null, close: 'f', work: 'The call is finished.' },
+      { lift: { 12: [10] }, work: '<i class=a>Look up</i> <i class=n>playerScore</i>. It is still <i class=v>10</i>.' },
+      { line: 13, out: 'Player score: 10',
+        work: 'Inside the call, <i class=n>score</i> became <i class=v>15</i>, but <i class=n>playerScore</i> never changed. Copying a value does not create a permanent connection.' }
+    ]
+  }
+};
+
+(function () {
+  var KEYWORDS = { 'function': 1, 'var': 1 };
+  var TOKEN_RE = /\[\[(\w+)\]\]|"[^"]*"|\b\d+(?:\.\d+)?\b|[A-Za-z_$][\w$]*|\s+|./g;
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function fmtValue(v) {
+    if (v === null) return { cls: 'mv-undef', text: 'undefined' };
+    if (typeof v === 'string') return { cls: 'mv-str', text: '"' + v + '"' };
+    return { cls: 'mv-num', text: String(v) };
+  }
+
+  // Highlight one line of the JavaScript subset used in this lesson.
+  // [[name]] becomes a TraceLift flap (numbered per line).
+  function highlight(src) {
+    var out = '';
+    var flapIdx = 0;
+    var m;
+    TOKEN_RE.lastIndex = 0;
+    while ((m = TOKEN_RE.exec(src)) !== null) {
+      var tok = m[0];
+      if (m[1]) {
+        out += '<span class="flap" data-flap="' + (flapIdx++) + '"><span class="flap-name">' +
+          esc(m[1]) + '</span><span class="flap-val"></span></span>';
+      } else if (tok.charAt(0) === '"') {
+        out += '<span class="tk-str">' + esc(tok) + '</span>';
+      } else if (/^\d/.test(tok)) {
+        out += '<span class="tk-num">' + tok + '</span>';
+      } else if (/^[A-Za-z_$]/.test(tok)) {
+        var rest = src.slice(TOKEN_RE.lastIndex);
+        if (KEYWORDS[tok]) out += '<span class="tk-kw">' + tok + '</span>';
+        else if (/^\s*\(/.test(rest) || tok === 'console') out += '<span class="tk-fn">' + tok + '</span>';
+        else out += '<span class="tk-nm">' + tok + '</span>';
+      } else if (/^\s+$/.test(tok)) {
+        out += tok;
+      } else {
+        out += '<span class="tk-p">' + esc(tok) + '</span>';
+      }
+    }
+    return out;
+  }
+
+  function el(tag, cls, html) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html != null) e.innerHTML = html;
+    return e;
+  }
+
+  function buildBoard(section) {
+    var data = TRACES[section.getAttribute('data-trace-board')];
+    if (!data) return;
+    var inner = section.querySelector('.slide-inner');
+
+    var board = el('div', 'board');
+    var codeCard = el('div', 'code-card trace-code');
+    codeCard.appendChild(el('div', 'panel-hdr', 'Program'));
+    var body = el('div', 'code-body');
+    data.code.forEach(function (src, i) {
+      var row = el('div', 'code-line');
+      row.setAttribute('data-ln', String(i + 1));
+      row.innerHTML = '<span class="car"></span><span class="ln">' + (i + 1) + '</span><span class="src">' + highlight(src) + '</span>';
+      body.appendChild(row);
+    });
+    codeCard.appendChild(body);
+    var main = el('div', 'board-main');
+    main.appendChild(codeCard);
+    board.appendChild(main);
+
+    var side = el('div', 'board-side');
+    var mem = el('div', 'panel mem-panel');
+    mem.appendChild(el('div', 'panel-hdr', 'Memory Trace'));
+    mem.appendChild(el('div', 'mem-body'));
+    var con = el('div', 'panel con-panel');
+    con.appendChild(el('div', 'panel-hdr', 'Console'));
+    con.appendChild(el('div', 'con-body'));
+    side.appendChild(mem);
+    side.appendChild(con);
+    // Narration goes under the program when it fits. Long programs get
+    // compact code and, unless the trace sets workBelow, a full-width
+    // narration row under the whole board.
+    var isLong = data.code.length > 9;
+    var isWide = isLong && !data.workBelow;
+    if (isLong) board.classList.add('long');
+    if (isWide) board.classList.add('wide');
+    (isWide ? board : main).appendChild(el('div', 'work-panel'));
+    board.appendChild(side);
+    inner.appendChild(board);
+
+    data.steps.forEach(function () {
+      var frag = el('span', 'fragment trace-step');
+      frag.setAttribute('aria-hidden', 'true');
+      inner.appendChild(frag);
+    });
+
+    // Lines the trace ever lands on (for done / pending styling).
+    data.named = {};
+    data.named[data.start] = true;
+    data.steps.forEach(function (s) { if (s.line) data.named[s.line] = true; });
+    data.hasCalls = data.steps.some(function (s) { return !!s.open; });
+  }
+
+  function computeState(data, k) {
+    var st = {
+      line: data.start, call: null, work: '',
+      frames: [{ id: 'main', label: data.mainLabel || null, fn: false, closed: false, cols: [] }],
+      out: [], lifts: {}, visited: {}
+    };
+    st.visited[data.start] = true;
+
+    function frame(id) {
+      for (var i = 0; i < st.frames.length; i++) if (st.frames[i].id === id) return st.frames[i];
+      return null;
+    }
+    function column(key) {
+      var dot = key.indexOf('.');
+      var f = frame(dot < 0 ? 'main' : key.slice(0, dot));
+      var name = dot < 0 ? key : key.slice(dot + 1);
+      for (var i = 0; i < f.cols.length; i++) if (f.cols[i].name === name) return f.cols[i];
+      var col = { name: name, vals: [] };
+      f.cols.push(col);
+      return col;
+    }
+
+    for (var i = 0; i < k && i < data.steps.length; i++) {
+      var s = data.steps[i];
+      if (s.open) st.frames.push({ id: s.open.id, label: s.open.label, fn: true, closed: false, cols: [] });
+      (s.decl || []).forEach(function (key) { column(key); });
+      if (s.set) Object.keys(s.set).forEach(function (key) { column(key).vals.push(s.set[key]); });
+      if (s.close) frame(s.close).closed = true;
+      if (s.out != null) st.out.push(s.out);
+      if (s.lift) Object.keys(s.lift).forEach(function (ln) { st.lifts[ln] = s.lift[ln]; });
+      if (s.line) { st.line = s.line; st.visited[s.line] = true; }
+      st.call = s.call || null;
+      st.work = s.work || '';
+    }
+    return st;
+  }
+
+  function render(section) {
+    var data = TRACES[section.getAttribute('data-trace-board')];
+    if (!data || !data.named) return;
+    var k = section.querySelectorAll('.trace-step.visible').length;
+    var st = computeState(data, k);
+
+    section.classList.toggle('is-checking', k > 0);
+
+    Array.prototype.forEach.call(section.querySelectorAll('.code-line[data-ln]'), function (row) {
+      var ln = Number(row.getAttribute('data-ln'));
+      row.classList.remove('current', 'done', 'pending', 'active-call', 'context');
+      if (ln === st.line) row.classList.add('current');
+      else if (ln === st.call) row.classList.add('active-call');
+      else if (st.visited[ln]) row.classList.add('done');
+      else if (data.named[ln]) row.classList.add('pending');
+      else row.classList.add('context');
+
+      var vals = st.lifts[ln] || [];
+      Array.prototype.forEach.call(row.querySelectorAll('.flap'), function (flap) {
+        var idx = Number(flap.getAttribute('data-flap'));
+        var valEl = flap.querySelector('.flap-val');
+        if (idx < vals.length) {
+          var f = fmtValue(vals[idx]);
+          valEl.className = 'flap-val ' + f.cls;
+          valEl.textContent = f.text;
+          flap.classList.add('lifted');
+        } else {
+          valEl.textContent = '';
+          flap.classList.remove('lifted');
+        }
+      });
+    });
+
+    var memBody = section.querySelector('.mem-body');
+    var html = '';
+    st.frames.forEach(function (f) {
+      if (!f.fn && !f.cols.length) return;
+      var boxed = f.fn && !data.flat;
+      var showLabel = boxed || (data.hasCalls && f.label && !data.flat);
+      html += '<div class="frame' + (boxed ? ' fn' : '') + (boxed && f.closed ? ' closed' : '') + '">';
+      if (showLabel) html += '<div class="frame-label">' + esc(f.label) + '<span class="frame-status">finished</span></div>';
+      html += '<div class="frame-cols">';
+      f.cols.forEach(function (col) {
+        html += '<div class="mem-col"><div class="mem-col-name">' + esc(col.name) + '</div>';
+        if (!col.vals.length) html += '<div class="mem-val blank"></div>';
+        col.vals.forEach(function (v, i) {
+          var fv = fmtValue(v);
+          html += '<div class="mem-val ' + fv.cls + (i < col.vals.length - 1 ? ' struck' : '') + '">' + esc(fv.text) + '</div>';
+        });
+        html += '</div>';
+      });
+      html += '</div></div>';
+    });
+    memBody.innerHTML = html || '<div class="mem-empty">Nothing in memory yet.</div>';
+
+    var conBody = section.querySelector('.con-body');
+    conBody.innerHTML = st.out.length
+      ? st.out.map(function (line) { return '<div>' + esc(line) + '</div>'; }).join('')
+      : '<div class="con-empty">No output yet.</div>';
+
+    section.querySelector('.work-panel').innerHTML = st.work;
+  }
+
+  function liveBoards() {
+    return Array.prototype.filter.call(
+      document.querySelectorAll('section[data-trace-board]'),
+      function (s) { return !s.closest('#storyboard'); }
+    );
+  }
+
+  // Build boards and highlight static code before Reveal scans fragments.
+  liveBoards().forEach(buildBoard);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-hl]'), function (node) {
+    node.innerHTML = node.textContent.split('\n').map(highlight).join('\n');
+  });
+  liveBoards().forEach(render);
+
+  window.renderTraceBoards = function () { liveBoards().forEach(render); };
+})();
+
+initSyncDeckReveal({
+  deckId: 'csp-4-1-variables-explore',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function (Reveal) {
+    ['fragmentshown', 'fragmenthidden', 'slidechanged', 'ready'].forEach(function (evt) {
+      Reveal.on(evt, window.renderTraceBoards);
+    });
+    window.renderTraceBoards();
+  },
+});
+</script>
+</body>
+</html>
