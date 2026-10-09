@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="175e3n5">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise 5: Electrical Distribution</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: AC Exercise 5 · Electrical Distribution
+   ============================================================ */
+
+/* Colour convention, used consistently:
+   power network / the grid           -> --result (cyan)
+   protection devices (fuse, breaker) -> --accent (green)
+   ratings / cautions / heat          -> --warn   (amber)
+   overcurrent / faults / short       -> --fault  (red)    */
+:root { --fault: #ff8a80; }
+.net   { color: var(--result); font-weight: 600; }
+.prot  { color: var(--accent); font-weight: 600; }
+.rate  { color: var(--warn);   font-weight: 600; }
+.fault { color: var(--fault);  font-weight: 600; }
+
+/* Cards (same shape as the EX4 application cards) */
+.type-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+.type-card .tc-name {
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--result);
+}
+.type-card .tc-body {
+  font-size: var(--small);
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 5px;
+}
+.type-card .tc-body strong { color: var(--text); }
+.card-row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }
+
+/* Figure helpers */
+.fig { margin: 0; text-align: center; }
+.fig-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); align-items: start; }
+
+/* Schematic symbols drawn as inline SVG */
+.sym-line { fill: none; stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.sym-fill { fill: var(--text); stroke: var(--text); stroke-width: 2.5; }
+.sym-table {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.sym-table > div {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--accent-border);
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+.sym-table > div:nth-last-child(-n+2) { border-bottom: none; }
+.sym-table .st-head {
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+.sym-table .st-name { font-size: var(--small); color: var(--text); background: var(--bg-card); }
+.sym-combo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 10px 16px;
+}
+.sym-combo .plus { font-family: var(--font-mono); font-size: 22px; color: var(--text-dim); }
+.sym-combo .sc-name { font-size: var(--small); color: var(--text-muted); margin-left: 12px; }
+
+/* Bimetal strip illustration (thermal breaker slide) */
+.bimetal svg { width: 100%; height: auto; display: block; }
+.bimetal .lbl { font-family: var(--font-mono); font-size: 15px; fill: var(--text-muted); }
+.bimetal .metal-a { fill: none; stroke: var(--warn); stroke-width: 12; stroke-linecap: butt; }
+.bimetal .metal-b { fill: none; stroke: #8b949e; stroke-width: 12; stroke-linecap: butt; }
+.bimetal .anchor { fill: #2a3440; stroke: rgba(230,247,234,0.5); stroke-width: 2; }
+.bimetal .contact { fill: var(--accent); }
+.bimetal .heat { fill: none; stroke: var(--fault); stroke-width: 2.5; stroke-linecap: round; opacity: 0.85; }
+
+/* Wide connection figure */
+.wide-fig { width: 100%; }
+
+/* MCQ fallback options */
+.mcq-opts { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; }
+.mcq-opts li {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.45;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+}
+.opt-key {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 22px;
+}
+.frq-box {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 22px 26px;
+  font-size: 28px;
+  color: var(--text);
+  line-height: 1.5;
+  max-width: 1150px;
+}
+
+/* ─── Interactive overcurrent protection simulator ─────────
+   Root: .prot-sim. The engine sets these conditions and any
+   element with data-when="<condition>" gets .on while it holds:
+     live, lamp, faultflow, faultclosed, fuse, breaker,
+     intact, blown, tripped, open, surging
+   .cond-show elements are hidden unless .on. Wires are path.w;
+   the JS clones each into a .flow overlay that animates.
+   ───────────────────────────────────────────────────────── */
+.prot-sim svg { width: 100%; height: auto; display: block; overflow: visible; }
+.prot-sim .cond-show:not(.on) { display: none; }
+.prot-sim .w, .prot-sim .flow, .prot-sim .sym {
+  fill: none;
+  stroke: rgba(230,247,234,0.45);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.2s ease, filter 0.2s ease;
+}
+.prot-sim .w.on { stroke: var(--result); filter: drop-shadow(0 0 4px rgba(94,234,212,0.55)); }
+.prot-sim.surging .w.on { stroke: var(--fault); filter: drop-shadow(0 0 7px rgba(255,138,128,0.9)); }
+.prot-sim .flow { opacity: 0; stroke: #ffffff; stroke-width: 2; stroke-dasharray: 3 15; }
+.prot-sim .flow.on { opacity: 0.85; animation: ac-slosh 1.2s ease-in-out infinite alternate; }
+.prot-sim.surging .flow.on { animation-duration: 0.25s; }
+@keyframes ac-slosh { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 36; } }
+
+.prot-sim .node { fill: rgba(230,247,234,0.75); }
+.prot-sim .term { fill: var(--bg); stroke: rgba(230,247,234,0.75); stroke-width: 2.5; }
+.prot-sim .lbl { font-family: var(--font-mono); font-size: 15px; fill: var(--text-muted); }
+.prot-sim .lbl-dev { font-family: var(--font-mono); font-size: 16px; font-weight: 700; fill: var(--accent); }
+
+/* Protection device */
+.prot-sim .fuse-body { fill: var(--bg); stroke: var(--accent); stroke-width: 3; transition: fill 0.2s ease; }
+.prot-sim .fuse-body.on { fill: rgba(255,138,128,0.18); }
+.prot-sim .element { stroke: var(--accent); stroke-width: 3; fill: none; stroke-linecap: round; }
+.prot-sim .element.melted { stroke: var(--fault); }
+.prot-sim .cb-arm { fill: none; stroke: var(--accent); stroke-width: 3.5; stroke-linecap: round; transform-box: view-box; transition: transform 0.18s ease; }
+.prot-sim .cb-arm.on { transform: rotate(-24deg); stroke: var(--fault); }
+.prot-sim .surge-halo { fill: rgba(255,138,128,0.22); opacity: 0; transition: opacity 0.15s ease; }
+.prot-sim .surge-halo.on { opacity: 1; }
+
+/* Fault switch blade */
+.prot-sim .blade { transform-box: view-box; transform: rotate(28deg); transition: transform 0.2s var(--ease); }
+.prot-sim .blade.on { transform: rotate(0deg); stroke: var(--fault); }
+
+/* Lamp */
+.prot-sim .lamp { fill: var(--bg); stroke: rgba(230,247,234,0.6); stroke-width: 3; transition: all 0.25s ease; }
+.prot-sim .lamp.on { fill: var(--warn); stroke: var(--warn); filter: drop-shadow(0 0 16px rgba(255,209,102,0.9)); }
+.prot-sim .lamp-x { stroke: rgba(230,247,234,0.6); stroke-width: 2.5; transition: stroke 0.25s ease; }
+.prot-sim .lamp-x.on { stroke: #0d1117; }
+
+.prot-sim .hit { fill: transparent; cursor: pointer; }
+.prot-sim .hit-ring { pointer-events: none; fill: none; stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 5 5; opacity: 0.55; }
+
+/* Controls + state readout */
+.sim-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: var(--gap-sm); }
+.seg { display: inline-flex; border: 1px solid var(--accent-border); border-radius: 8px; overflow: hidden; }
+.seg-btn {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+.seg-btn[aria-pressed="true"] { background: var(--accent); color: var(--bg); }
+.sim-btn {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--bg);
+  background: var(--warn);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+.sim-btn.restore { background: var(--accent); }
+.sim-btn.restore:not(.on) { display: none; }
+.sim-btn:active { transform: translateY(1px); }
+.sim-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: var(--gap-sm); }
+.sim-chip {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--text-dim);
+  padding: 6px 12px;
+  border: 1px solid rgba(230,247,234,0.15);
+  border-radius: 999px;
+  transition: all 0.2s ease;
+}
+.sim-chip b { color: var(--text-muted); font-weight: 700; }
+.sim-chip.on { color: var(--text); border-color: var(--accent-border); background: var(--accent-dim); }
+.sim-chip.on b { color: var(--accent); }
+.sim-chip.bad { border-color: rgba(255,138,128,0.45); background: rgba(255,138,128,0.1); color: var(--text); }
+.sim-chip.bad b { color: var(--fault); }
+.sim-chip.cond-show:not(.on) { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .prot-sim .flow.on { animation: none; }
+  .prot-sim .blade, .prot-sim .cb-arm { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(94,234,212,0.11),transparent 70%);"></div>
+  <div class="glow" style="width:400px;height:400px;bottom:-90px;right:10%;background:radial-gradient(circle,rgba(57,211,83,0.08),transparent 70%);"></div>
+
+  <div class="slide-inner slide-center">
+    <div class="trace-deco">
+      <svg viewBox="0 0 420 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- incoming line -->
+        <path d="M420 180 L300 180 L300 300" stroke="rgba(94,234,212,0.2)" stroke-width="1.5"/>
+        <!-- fuse -->
+        <rect x="284" y="300" width="32" height="90" rx="4" stroke="rgba(57,211,83,0.42)" stroke-width="2.5"/>
+        <line x1="300" y1="300" x2="300" y2="390" stroke="rgba(57,211,83,0.3)" stroke-width="1.5"/>
+        <path d="M300 390 L300 470" stroke="rgba(94,234,212,0.2)" stroke-width="1.5"/>
+        <!-- breaker arc between two terminals -->
+        <circle cx="300" cy="480" r="9" stroke="rgba(57,211,83,0.42)" stroke-width="2.5"/>
+        <circle cx="300" cy="590" r="9" stroke="rgba(57,211,83,0.42)" stroke-width="2.5"/>
+        <path d="M312 486 Q352 535 312 584" stroke="rgba(57,211,83,0.42)" stroke-width="2.5"/>
+        <path d="M300 599 L300 720 L420 720" stroke="rgba(94,234,212,0.2)" stroke-width="1.5"/>
+        <circle cx="300" cy="180" r="5" fill="rgba(94,234,212,0.45)"/>
+      </svg>
+    </div>
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; AC Circuits &nbsp;·&nbsp; Exercise 5</span>
+    <h1 class="title-h1"><span class="accent">Electrical</span> Distribution</h1>
+    <p class="subtitle">// The power network &nbsp;·&nbsp; Fuses &nbsp;·&nbsp; Circuit breakers &nbsp;·&nbsp; Electrical panels</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · LEARNING OUTCOMES & TOPICS COVERED -->
+<section>
+  <div class="glow" style="width:500px;height:500px;top:-80px;right:-100px;background:radial-gradient(circle,rgba(57,211,83,0.08),transparent 70%);"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Learning Outcomes &amp; Topics Covered</span>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-sm);">
+
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">After this section you will be able to <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li><strong>Define</strong> power network and distribution network.</li>
+          <li>Explain the <strong>principles of operation</strong> of fuses and circuit breakers.</li>
+          <li><strong>Troubleshoot</strong> fuses and circuit breakers.</li>
+          <li>Explain the principles of operation of <strong>electrical panels</strong>.</li>
+          <li><strong>Operate</strong> components of the AC/DC Training System: the fuse and the circuit breaker.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">Topics <span class="accent">covered</span></h3>
+        <div class="agenda-grid" style="grid-template-columns:1fr;margin-top:0;">
+          <a class="agenda-item" href="#/3"><span class="agenda-num">01</span><span class="agenda-text">The <strong>power network</strong> and distribution network</span></a>
+          <a class="agenda-item" href="#/7"><span class="agenda-num">02</span><span class="agenda-text"><strong>Fuses</strong></span></a>
+          <a class="agenda-item" href="#/9"><span class="agenda-num">03</span><span class="agenda-text"><strong>Circuit breakers</strong></span></a>
+          <a class="agenda-item" href="#/14"><span class="agenda-num">04</span><span class="agenda-text"><strong>Electrical panels</strong></span></a>
+          <a class="agenda-item" href="#/15"><span class="agenda-num">05</span><span class="agenda-text">Training system component: <strong>the fuse</strong></span></a>
+          <a class="agenda-item" href="#/16"><span class="agenda-num">06</span><span class="agenda-text">Training system component: <strong>the circuit breaker</strong> and test circuit</span></a>
+          <a class="agenda-item" href="#/18"><span class="agenda-num">07</span><span class="agenda-text"><strong>Review</strong> questions</span></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · THE POWER NETWORK -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Power Network · Topic 01</span>
+    <h2>From the Power Station to <span class="net">Your Outlet</span></h2>
+    <p class="slide-intro">A <span class="net">power network</span> is an interconnected network that delivers electricity to consumers. It is made of three basic networks that hand the power from one to the next.</p>
+    <figure class="fig">
+      <img class="c-img img-zoomable" src="EX5_Electrical_Distribution_Assets/fig66_power_network.png"
+           alt="Figure 66: A power network. Power generating stations, such as a wind turbine and a hydroelectric dam, feed a step-up transformer. AC transmission lines on tall towers carry the power to step-down transformers, which feed the distribution network and electrical power consumers such as houses and factories."
+           style="max-height:330px;margin:0 auto;">
+      <figcaption class="img-caption">Figure 66: Typical electrical power generation, transmission, and distribution network.</figcaption>
+    </figure>
+    <div class="card-row-3" style="margin-top:var(--gap);">
+      <div class="type-card fragment fade-up">
+        <span class="tc-name">1 · Generation network</span>
+        <p class="tc-body">The power stations that <strong>produce</strong> the electrical power.</p>
+      </div>
+      <div class="type-card fragment fade-up">
+        <span class="tc-name">2 · Transmission network</span>
+        <p class="tc-body">The long, high-voltage lines that <strong>carry</strong> power over great distances.</p>
+      </div>
+      <div class="type-card fragment fade-up">
+        <span class="tc-name">3 · Distribution network</span>
+        <p class="tc-body">The shorter lines that <strong>deliver</strong> power to homes and industry.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · THE GENERATION NETWORK -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Power Network · Topic 01 · Generation</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div>
+        <h2>The <span class="net">Generation</span> Network</h2>
+        <p class="slide-intro">The <span class="net">generation network</span> includes all of the power generating stations: fossil-fuel plants (mainly coal), hydropower plants, wind farms, and photovoltaic (solar) power stations. This part of the network produces the electrical power that is fed into the transmission lines.</p>
+        <div class="callout fragment fade-up">
+          Power stations are usually built <strong>near their power source</strong>, such as coal, water, wind, or sun. For that reason, and for security, they are often <strong>far from consumers</strong> in large population centers.
+        </div>
+      </div>
+
+      <figure class="fig">
+        <img class="photo-img img-zoomable" src="EX5_Electrical_Distribution_Assets/fig67_grand_coulee_dam.jpg"
+             alt="Figure 67: The Grand Coulee Dam spanning the Columbia River, with water spilling down its face and a small town along the river below."
+             style="max-height:560px;width:auto;margin:0 auto;">
+        <figcaption class="img-caption">Figure 67: The Grand Coulee Dam on the Columbia River, Washington, USA. Hydropower plants like this one supply thousands of consumers.</figcaption>
+      </figure>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · THE TRANSMISSION NETWORK -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Power Network · Topic 01 · Transmission</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div>
+        <h2>The <span class="net">Transmission</span> Network</h2>
+        <p class="slide-intro">The <span class="net">transmission network</span> includes all of the equipment needed to move power from the generation network to the distribution network. It is mostly made of transmission lines, and their length depends on how far away the power stations are.</p>
+        <div class="method-steps">
+          <div class="method-step fragment fade-up">At the input of the transmission network, <strong>step-up transformers</strong> increase the voltage of the incoming power.</div>
+          <div class="method-step fragment fade-up">A higher voltage <strong>minimizes the power lost</strong> across the long transmission lines.</div>
+          <div class="method-step fragment fade-up">That is why transmission lines often carry power at a <span class="rate">very high voltage</span>.</div>
+        </div>
+      </div>
+
+      <figure class="fig">
+        <img class="photo-img img-zoomable" src="EX5_Electrical_Distribution_Assets/fig68_transmission_lines.jpg"
+             alt="Figure 68: Rows of tall red and white steel transmission towers carrying high-voltage lines across a flat desert."
+             style="max-height:540px;width:auto;margin:0 auto;">
+        <figcaption class="img-caption">Figure 68: High-voltage transmission lines in the desert of Qatar.</figcaption>
+      </figure>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · THE DISTRIBUTION NETWORK -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Power Network · Topic 01 · Distribution</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div>
+        <h2>The <span class="net">Distribution</span> Network</h2>
+        <p class="slide-intro">The <span class="net">distribution network</span> includes all of the equipment needed to deliver power to consumers, whether they are residential or industrial. It is made of relatively short distribution lines.</p>
+        <div class="callout fragment fade-up">
+          At the input of the distribution network, <strong>step-down transformers</strong> decrease the voltage of the incoming power to a level more suitable for homes and industry. A <strong>substation</strong> like this one does that job.
+        </div>
+      </div>
+
+      <figure class="fig">
+        <img class="photo-img img-zoomable" src="EX5_Electrical_Distribution_Assets/fig69_substation.jpg"
+             alt="Figure 69: An outdoor transmission substation with steel frames, insulators, and high-voltage equipment under a blue sky."
+             style="max-height:540px;width:auto;margin:0 auto;">
+        <figcaption class="img-caption">Figure 69: A transmission substation lowers the high voltage from the transmission lines before the power is distributed.</figcaption>
+      </figure>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · FUSES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Fuses · Topic 02</span>
+    <h2>What Is a <span class="prot">Fuse?</span></h2>
+    <p class="slide-intro" style="max-width:1300px;">A <span class="prot">fuse</span> is basically a <strong>low-resistance resistor</strong> added in series with a circuit to prevent <span class="fault">overcurrents</span> and damage to the equipment. Most fuses are made of a metal wire that <strong>melts</strong> when the current flowing through it is too high.</p>
+    <figure class="fig" style="margin:var(--gap-sm) 0 var(--gap);">
+      <img class="photo-img img-zoomable" src="EX5_Electrical_Distribution_Assets/fig70_fuse.jpg"
+           alt="Figure 70: A glass cartridge fuse with metal end caps. A thin wire runs through the glass tube from one end cap to the other."
+           style="width:760px;margin:0 auto;">
+      <figcaption class="img-caption">Figure 70: Typical fuse. The thin wire inside connects one end cap to the other.</figcaption>
+    </figure>
+    <div class="callout-warn fragment fade-up" style="max-width:1300px;">
+      When the wire melts, the fuse is said to be <strong>blown</strong>, and current can no longer flow in the circuit. A blown fuse must be <strong>replaced</strong> before current can flow again.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · FUSE RATINGS AND SYMBOLS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Fuses · Topic 02 · Ratings and Symbols</span>
+    <div class="split split-60" style="align-items:center;">
+
+      <div>
+        <h2>Matching the <span class="rate">Current Rating</span></h2>
+        <p class="slide-intro">Fuses come in many types and shapes, and each has a <span class="rate">current rating</span>: the maximum current it can tolerate before it eventually blows. The rating of the fuse should match the maximum current rating of the equipment it protects.</p>
+        <div class="calc-col fragment fade-up" style="margin-bottom:var(--gap);">
+          <div class="col-label">Example</div>
+          <div class="yt-formula">A light bulb is rated for <span class="rate">1&nbsp;A</span>, so protect it with a fuse rated <strong>slightly above 1&nbsp;A</strong>.</div>
+          <div class="yt-result">If a malfunction pushes the current higher than normal, the fuse blows immediately and the bulb is saved.</div>
+        </div>
+        <div class="sym-table fragment fade-up" style="max-width:640px;">
+          <div class="st-head">Component</div><div class="st-head">Symbols</div>
+          <div class="st-name">Fuse</div>
+          <div style="background:var(--bg-card);">
+            <svg width="132" height="44" viewBox="0 0 120 40" role="img" aria-label="Fuse symbol: a rectangle with two inner vertical lines and leads on each end">
+              <line class="sym-line" x1="4" y1="20" x2="24" y2="20"/>
+              <rect class="sym-line" x="24" y="6" width="72" height="28"/>
+              <line class="sym-line" x1="36" y1="6" x2="36" y2="34"/>
+              <line class="sym-line" x1="84" y1="6" x2="84" y2="34"/>
+              <line class="sym-line" x1="96" y1="20" x2="116" y2="20"/>
+            </svg>
+            <svg width="132" height="44" viewBox="0 0 120 40" role="img" aria-label="Fuse symbol: a small rectangle with a line running straight through it">
+              <line class="sym-line" x1="4" y1="20" x2="116" y2="20"/>
+              <rect class="sym-line" x="32" y="11" width="56" height="18"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <figure class="fig">
+        <img class="photo-img img-zoomable" src="EX5_Electrical_Distribution_Assets/fig71_fuse_protection.jpg"
+             alt="Figure 71: A control panel with rows of fuse holders and contactors on DIN rails, wired with orange, yellow, and black wires."
+             style="max-height:560px;width:auto;margin:0 auto;">
+        <figcaption class="img-caption">Figure 71: Power circuits with fuse protection.</figcaption>
+      </figure>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · CIRCUIT BREAKERS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Circuit Breakers · Topic 03</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div>
+        <h2>What Is a <span class="prot">Circuit Breaker?</span></h2>
+        <p class="slide-intro">A <span class="prot">circuit breaker</span> is an <strong>automatically actuated electrical switch</strong> that opens a circuit to prevent undesirable operating conditions. Just like a fuse, it is added in series with a circuit to prevent <span class="fault">overcurrents</span> and damage to the equipment.</p>
+        <div class="callout-result fragment fade-up">
+          The main difference: a blown fuse must be <strong>replaced</strong>, but a tripped breaker only needs to be <strong>reset</strong>, usually with a button or a switch, after the cause of the trip is removed. Because a breaker can be used many times, it has a <strong>much longer service life</strong>.
+        </div>
+        <p class="slide-intro fragment fade-up" style="margin-top:var(--gap);margin-bottom:0;">The two most common types are <span class="prot">magnetic</span> and <span class="prot">thermal</span> circuit breakers. Many breakers combine both mechanisms, which makes them <span class="prot">thermal-magnetic</span> circuit breakers.</p>
+      </div>
+
+      <figure class="fig">
+        <img class="photo-img img-zoomable" src="EX5_Electrical_Distribution_Assets/fig72_circuit_breakers.jpg"
+             alt="Figure 72: A row of white modular circuit breakers with toggle levers mounted side by side in an electrical control panel."
+             style="max-height:520px;width:auto;margin:0 auto;">
+        <figcaption class="img-caption">Figure 72: Circuit breakers in an electrical control panel.</figcaption>
+      </figure>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · MAGNETIC CIRCUIT BREAKERS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Circuit Breakers · Topic 03 · Magnetic</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div>
+        <h2><span class="prot">Magnetic</span> Circuit Breakers</h2>
+        <p class="slide-intro">A magnetic circuit breaker uses a <strong>solenoid</strong>. The current flowing through the breaker also flows through the solenoid, which produces a magnetic field that acts on the breaker contact.</p>
+        <p class="slide-intro fragment fade-up" data-fragment-index="1">When the current reaches the breaker's <span class="rate">current rating</span>, the field becomes strong enough to <strong>open the contact</strong>. That opens the circuit and stops the current.</p>
+        <div class="calc-col fragment fade-up" data-fragment-index="2">
+          <div class="col-label">Example</div>
+          <div class="yt-formula">A kitchen oven is rated for <span class="rate">15&nbsp;A</span>, so protect it with a breaker rated <strong>slightly above 15&nbsp;A</strong>.</div>
+          <div class="yt-result">After the malfunction is fixed, the breaker can be reset.</div>
+        </div>
+      </div>
+
+      <div class="fig-pair">
+        <figure class="fig">
+          <img class="photo-img img-zoomable" src="EX5_Electrical_Distribution_Assets/fig73_contact_closed.jpg"
+               alt="Figure 73: Cutaway side view of a magnetic circuit breaker. A copper solenoid coil sits in the middle, and the contact on the right is closed."
+               style="width:100%;">
+          <figcaption class="img-caption">Figure 73: Contact in the closed state.</figcaption>
+        </figure>
+        <figure class="fig fragment fade-up" data-fragment-index="1">
+          <img class="photo-img img-zoomable" src="EX5_Electrical_Distribution_Assets/fig74_contact_open.jpg"
+               alt="Figure 74: The same cutaway view after the breaker has tripped. The lever has moved and the contact on the right has pulled away, leaving it open."
+               style="width:100%;">
+          <figcaption class="img-caption">Figure 74: Contact in the open state.</figcaption>
+        </figure>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · THERMAL CIRCUIT BREAKERS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Circuit Breakers · Topic 03 · Thermal</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div>
+        <h2><span class="prot">Thermal</span> Circuit Breakers</h2>
+        <p class="slide-intro">A thermal circuit breaker detects <span class="rate">temperature increases</span>. Its mechanism joins two metals that expand at different rates when heated. As the breaker heats up, one metal expands more than the other, which bends the strip and <strong>opens the contact</strong>.</p>
+        <p class="slide-intro fragment fade-up" data-fragment-index="1">This detects <span class="fault">overcurrents</span> because current flowing through any resistance produces heat, and <strong>the higher the current, the greater the heat</strong>.</p>
+        <div class="calc-col fragment fade-up" data-fragment-index="2">
+          <div class="col-label">Example: a breaker rated for 3&nbsp;A</div>
+          <div class="yt-formula">At <span class="rate">3&nbsp;A</span>, it stays cool enough to keep the circuit closed.</div>
+          <div class="yt-formula">Above 3&nbsp;A, it <strong>gradually</strong> heats up and eventually trips.</div>
+          <div class="yt-result">The more the current exceeds the rating, the faster it trips.</div>
+        </div>
+      </div>
+
+      <div class="bimetal">
+        <svg viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bimetal strip illustration. When cool, a straight two-layer strip touches a fixed contact. When heated by too much current, the top metal expands more, the strip bends downward, and the contact opens.">
+          <text x="40" y="34" class="lbl">BIMETAL STRIP</text>
+          <!-- fixed anchor -->
+          <rect class="anchor" x="40" y="120" width="60" height="110" rx="4"/>
+          <!-- fixed contact -->
+          <rect class="anchor" x="520" y="96" width="70" height="40" rx="4"/>
+          <rect class="contact" x="540" y="132" width="30" height="10"/>
+          <text x="555" y="80" class="lbl" text-anchor="middle">fixed contact</text>
+
+          <!-- cool: straight strip touching the contact -->
+          <g class="fragment fade-out" data-fragment-index="1">
+            <line class="metal-a" x1="100" y1="150" x2="560" y2="150"/>
+            <line class="metal-b" x1="100" y1="162" x2="560" y2="162"/>
+            <rect class="contact" x="540" y="142" width="30" height="8"/>
+            <text x="330" y="210" class="lbl" text-anchor="middle">cool: contact closed</text>
+          </g>
+
+          <!-- hot: strip bent down, contact open -->
+          <g class="fragment" data-fragment-index="1">
+            <path class="metal-a" d="M100,150 Q340,150 548,262"/>
+            <path class="metal-b" d="M100,162 Q336,162 542,272"/>
+            <g class="heat">
+              <path d="M220,96 q8,-12 0,-24 q-8,-12 0,-24"/>
+              <path d="M300,100 q8,-12 0,-24 q-8,-12 0,-24"/>
+              <path d="M380,110 q8,-12 0,-24 q-8,-12 0,-24"/>
+            </g>
+            <text x="330" y="330" class="lbl" text-anchor="middle" style="fill:var(--fault);">hot: strip bends, contact opens</text>
+          </g>
+
+          <!-- legend -->
+          <line class="metal-a" x1="40" y1="372" x2="74" y2="372"/>
+          <text x="84" y="377" class="lbl">metal that expands more</text>
+          <line class="metal-b" x1="330" y1="372" x2="364" y2="372"/>
+          <text x="374" y="377" class="lbl">metal that expands less</text>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · CIRCUIT BREAKER SYMBOLS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Circuit Breakers · Topic 03 · Symbols</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div>
+        <h2>Circuit Breaker <span class="prot">Symbols</span></h2>
+        <div class="sym-table">
+          <div class="st-head">Component</div><div class="st-head">Symbols</div>
+          <div class="st-name">Circuit breaker</div>
+          <div style="background:var(--bg-card);">
+            <svg width="120" height="50" viewBox="0 0 120 50" role="img" aria-label="Circuit breaker symbol: an arc above two small circles">
+              <circle class="sym-line" cx="16" cy="38" r="6"/>
+              <circle class="sym-line" cx="104" cy="38" r="6"/>
+              <path class="sym-line" d="M22,22 Q60,0 98,22"/>
+            </svg>
+            <svg width="120" height="40" viewBox="0 0 120 40" role="img" aria-label="Circuit breaker symbol: a switch blade angled up from a line, next to a small half circle">
+              <line class="sym-line" x1="4" y1="30" x2="34" y2="30"/>
+              <line class="sym-line" x1="34" y1="30" x2="84" y2="8"/>
+              <path class="sym-line" d="M90,30 A8,8 0 0 1 106,30"/>
+              <line class="sym-line" x1="90" y1="30" x2="116" y2="30"/>
+            </svg>
+          </div>
+          <div class="st-name">Thermal tripping</div>
+          <div style="background:var(--bg-card);">
+            <svg width="100" height="50" viewBox="0 0 96 50" role="img" aria-label="Thermal tripping symbol: two overlapping half circles">
+              <path class="sym-line" d="M4,26 H12 A13,13 0 0 1 38,26 A13,13 0 0 1 25,39"/><path class="sym-line" d="M51,13 A13,13 0 0 0 38,26 A13,13 0 0 0 51,39 A13,13 0 0 0 64,26 H90"/>
+            </svg>
+            <svg width="100" height="44" viewBox="0 0 100 44" role="img" aria-label="Thermal tripping symbol: a single raised rectangular step">
+              <path class="sym-line" d="M4,36 H30 V8 H68 V36 H96"/>
+            </svg>
+          </div>
+          <div class="st-name">Magnetic tripping</div>
+          <div style="background:var(--bg-card);">
+            <svg width="80" height="50" viewBox="0 0 74 50" role="img" aria-label="Magnetic tripping symbol: a zigzag">
+              <path class="sym-line" d="M4,24 H14 L28,6 L48,44 L60,24 H70"/>
+            </svg>
+            <svg width="80" height="50" viewBox="0 0 72 50" role="img" aria-label="Magnetic tripping symbol: a tall rectangle with leads on each side">
+              <line class="sym-line" x1="4" y1="25" x2="24" y2="25"/>
+              <rect class="sym-line" x="24" y="5" width="24" height="40"/>
+              <line class="sym-line" x1="48" y1="25" x2="68" y2="25"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="slide-intro">To draw a circuit breaker, start with the <strong>general circuit breaker symbol</strong>, then add the symbol for each mechanism that can trip it.</p>
+        <div class="sym-combo fragment fade-up" style="margin-bottom:var(--gap-sm);">
+          <svg width="96" height="40" viewBox="0 0 120 50" aria-hidden="true">
+            <circle class="sym-line" cx="16" cy="38" r="6"/><circle class="sym-line" cx="104" cy="38" r="6"/>
+            <path class="sym-line" d="M22,22 Q60,0 98,22"/>
+          </svg>
+          <span class="plus">+</span>
+          <svg width="64" height="44" viewBox="0 0 74 50" aria-hidden="true"><path class="sym-line" d="M4,24 H14 L28,6 L48,44 L60,24 H70"/></svg>
+          <span class="sc-name">= a <span class="prot">magnetic</span> circuit breaker</span>
+        </div>
+        <div class="sym-combo fragment fade-up" style="margin-bottom:var(--gap);">
+          <svg width="96" height="40" viewBox="0 0 120 50" aria-hidden="true">
+            <circle class="sym-line" cx="16" cy="38" r="6"/><circle class="sym-line" cx="104" cy="38" r="6"/>
+            <path class="sym-line" d="M22,22 Q60,0 98,22"/>
+          </svg>
+          <span class="plus">+</span>
+          <svg width="80" height="42" viewBox="0 0 96 50" aria-hidden="true">
+            <path class="sym-line" d="M4,26 H12 A13,13 0 0 1 38,26 A13,13 0 0 1 25,39"/><path class="sym-line" d="M51,13 A13,13 0 0 0 38,26 A13,13 0 0 0 51,39 A13,13 0 0 0 64,26 H90"/>
+          </svg>
+          <span class="plus">+</span>
+          <svg width="64" height="44" viewBox="0 0 74 50" aria-hidden="true"><path class="sym-line" d="M4,24 H14 L28,6 L48,44 L60,24 H70"/></svg>
+          <span class="sc-name">= a <span class="prot">thermal-magnetic</span> circuit breaker</span>
+        </div>
+        <p class="slide-intro fragment fade-up" style="margin-bottom:var(--gap-sm);">A breaker can use <strong>more than one</strong> tripping mechanism, so its symbol can carry more than one tripping symbol.</p>
+        <div class="fragment fade-up">
+          <p class="slide-intro" style="margin-bottom:var(--gap-sm);">In a schematic, the symbols are drawn <strong>one after another along the wire</strong>, in series. This is how the training system&rsquo;s <span class="prot">thermal-magnetic</span> breaker would be drawn:</p>
+          <div class="sym-combo" style="justify-content:center;">
+            <svg width="460" height="92" viewBox="0 0 430 86" role="img" aria-label="A thermal-magnetic circuit breaker drawn inline on a wire: the circuit breaker arc over two terminals, then the thermal tripping symbol, then the magnetic tripping symbol, all connected in series">
+              <line class="sym-line" x1="10" y1="50" x2="60" y2="50"/>
+              <circle class="sym-line" cx="66" cy="50" r="6"/>
+              <circle class="sym-line" cx="154" cy="50" r="6"/>
+              <path class="sym-line" d="M72,40 Q110,16 148,40"/>
+              <line class="sym-line" x1="160" y1="50" x2="190" y2="50"/>
+              <g transform="translate(186,24)">
+                <path class="sym-line" d="M4,26 H12 A13,13 0 0 1 38,26 A13,13 0 0 1 25,39"/><path class="sym-line" d="M51,13 A13,13 0 0 0 38,26 A13,13 0 0 0 51,39 A13,13 0 0 0 64,26 H90"/>
+              </g>
+              <line class="sym-line" x1="276" y1="50" x2="296" y2="50"/>
+              <path class="sym-line" d="M292,50 H306 L320,32 L340,70 L352,50 H420"/>
+              <text x="110" y="82" text-anchor="middle" style="font-family:var(--font-mono);font-size:13px;fill:var(--text-muted);">breaker</text>
+              <text x="228" y="82" text-anchor="middle" style="font-family:var(--font-mono);font-size:13px;fill:var(--text-muted);">thermal</text>
+              <text x="322" y="82" text-anchor="middle" style="font-family:var(--font-mono);font-size:13px;fill:var(--text-muted);">magnetic</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · FUSE VERSUS CIRCUIT BREAKER (INTERACTIVE) -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Fuses and Circuit Breakers · Try It</span>
+    <div class="split split-60" style="align-items:center;">
+
+      <div class="prot-sim">
+        <svg viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive circuit: an ac source feeds a lamp through a protection device, either a fuse or a circuit breaker. A fault switch can short-circuit the lamp.">
+          <!-- path through the source and the protection device -->
+          <path class="w" data-when="live" d="M130,196 V80 H330"/>
+          <path class="w" data-when="live" d="M450,80 H600"/>
+          <path class="w" data-when="live" d="M600,380 H130 V264"/>
+          <!-- lamp branch -->
+          <path class="w" data-when="lamp" d="M600,80 H760 V196"/>
+          <path class="w" data-when="lamp" d="M760,264 V380 H600"/>
+          <!-- fault (short-circuit) branch -->
+          <path class="w" data-when="faultflow" d="M600,80 V190"/>
+          <path class="w" data-when="faultflow" d="M600,270 V380"/>
+
+          <!-- ac source -->
+          <circle cx="130" cy="230" r="34" class="sym" style="fill:#0d1117;"/>
+          <path d="M110,230 q10,-18 20,0 t20,0" class="sym"/>
+          <text x="84" y="236" class="lbl" text-anchor="end">AC source</text>
+          <circle cx="600" cy="80" r="6" class="node"/>
+          <circle cx="600" cy="380" r="6" class="node"/>
+
+          <!-- protection device -->
+          <rect x="318" y="44" width="144" height="72" rx="12" class="surge-halo" data-when="surging"/>
+          <g class="cond-show" data-when="fuse">
+            <text x="390" y="30" class="lbl-dev" text-anchor="middle">Fuse</text>
+            <line x1="330" y1="80" x2="352" y2="80" class="sym"/>
+            <line x1="428" y1="80" x2="450" y2="80" class="sym"/>
+            <rect x="352" y="64" width="76" height="32" rx="6" class="fuse-body" data-when="blown"/>
+            <line x1="352" y1="80" x2="428" y2="80" class="element cond-show" data-when="intact"/>
+            <g class="cond-show" data-when="blown">
+              <path d="M352,80 H382 l4,-6" class="element melted"/>
+              <path d="M428,80 H398 l-4,6" class="element melted"/>
+            </g>
+          </g>
+          <g class="cond-show" data-when="breaker">
+            <text x="390" y="30" class="lbl-dev" text-anchor="middle">Circuit breaker</text>
+            <line x1="330" y1="80" x2="342" y2="80" class="sym"/>
+            <line x1="438" y1="80" x2="450" y2="80" class="sym"/>
+            <circle cx="348" cy="80" r="6" class="term"/>
+            <circle cx="432" cy="80" r="6" class="term"/>
+            <path d="M354,74 Q390,50 426,74" class="cb-arm" data-when="tripped" style="transform-origin:354px 74px;"/>
+          </g>
+
+          <!-- fault switch -->
+          <line x1="600" y1="196" x2="600" y2="262" class="sym blade" data-when="faultclosed" style="transform-origin:600px 196px;"/>
+          <circle cx="600" cy="196" r="6" class="term"/>
+          <circle cx="600" cy="264" r="6" class="term"/>
+          <text x="576" y="224" class="lbl" text-anchor="end">Fault</text>
+          <text x="576" y="244" class="lbl" text-anchor="end">switch</text>
+          <rect x="560" y="180" width="80" height="100" rx="8" class="hit" data-act="fault"/>
+          <rect x="560" y="180" width="80" height="100" rx="8" class="hit-ring"/>
+
+          <!-- lamp -->
+          <circle cx="760" cy="230" r="34" class="lamp" data-when="lamp"/>
+          <line x1="736" y1="206" x2="784" y2="254" class="lamp-x" data-when="lamp"/>
+          <line x1="784" y1="206" x2="736" y2="254" class="lamp-x" data-when="lamp"/>
+          <text x="806" y="236" class="lbl">Lamp</text>
+        </svg>
+
+        <div class="sim-controls">
+          <div class="seg" role="group" aria-label="Protection device">
+            <button class="seg-btn" data-device="fuse" aria-pressed="true">Fuse</button>
+            <button class="seg-btn" data-device="breaker" aria-pressed="false">Circuit breaker</button>
+          </div>
+          <button class="sim-btn" data-act="fault" data-label-off="Close the fault switch" data-label-on="Open the fault switch">Close the fault switch</button>
+          <button class="sim-btn restore" data-act="restore" data-when="open" data-label-fuse="Replace the fuse" data-label-breaker="Reset the breaker">Replace the fuse</button>
+        </div>
+        <div class="sim-chips">
+          <span class="sim-chip" data-chip="device">Fuse: <b>intact</b></span>
+          <span class="sim-chip" data-chip="lamp">Lamp: <b>on</b></span>
+          <span class="sim-chip cond-show" data-when="fuse" data-chip="count">Fuses used: <b>1</b></span>
+          <span class="sim-chip cond-show" data-when="breaker" data-chip="count">Times reset: <b>0</b></span>
+        </div>
+      </div>
+
+      <div>
+        <h2>Blow It, Trip It, <span class="prot">Fix It</span></h2>
+        <p class="slide-intro">Close the <span class="fault">fault switch</span> to short-circuit the lamp. With no load in its path, the current shoots up and the protection device opens the circuit.</p>
+        <p class="slide-intro">Try each device. Restore power <strong>while the fault is still closed</strong>, then again after you open it.</p>
+        <div class="callout-warn fragment fade-up">
+          <strong>Troubleshooting:</strong> a blown fuse or a tripped breaker means something drew too much current. Find and remove the cause first. Otherwise a new fuse blows, or the breaker trips again, right away.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · ELECTRICAL PANELS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Electrical Panels · Topic 04</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div>
+        <h2><span class="net">Electrical</span> Panels</h2>
+        <p class="slide-intro"><span class="net">Electrical panels</span>, also called distribution boards, are found throughout distribution networks. A panel is a metal enclosure that <strong>subdivides</strong> the incoming power into individual circuits, so each circuit can be controlled on its own. A house panel, for example, usually has a separate circuit for each room or area.</p>
+        <div class="method-steps">
+          <div class="method-step fragment fade-up">Most panels have a <strong>single input</strong> that a <span class="prot">main circuit breaker</span> can disconnect.</div>
+          <div class="method-step fragment fade-up">Each individual circuit has its own <span class="prot">circuit breaker or fuse</span> to protect against overcurrents.</div>
+          <div class="method-step fragment fade-up">The breakers also let one circuit be <strong>opened for maintenance</strong> or repair while the others stay on.</div>
+        </div>
+        <p class="slide-intro fragment fade-up" style="margin-top:var(--gap);margin-bottom:0;">Panels come in many sizes. Residential panels are fairly small, while panels in factories hold many components, controls, and switches.</p>
+      </div>
+
+      <div class="fig-pair" style="grid-template-columns:1.25fr 1fr;align-items:center;">
+        <figure class="fig">
+          <img class="photo-img img-zoomable" src="EX5_Electrical_Distribution_Assets/fig75_switchgear_panel.jpg"
+               alt="Figure 75: An open electrical panel cabinet in a power plant switchgear room, packed with terminal blocks, relays, and bundled wiring."
+               style="width:100%;">
+          <figcaption class="img-caption">Figure 75: Switchgear room panel at a power plant.</figcaption>
+        </figure>
+        <figure class="fig">
+          <img class="photo-img img-zoomable" src="EX5_Electrical_Distribution_Assets/fig76_factory_panel.jpg"
+               alt="Figure 76: A tall factory electrical panel with several rows of breakers, contactors, fuses, and terminal blocks, with thick cables entering at the bottom."
+               style="max-height:560px;width:auto;margin:0 auto;">
+          <figcaption class="img-caption">Figure 76: Electrical panel in a factory.</figcaption>
+        </figure>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · TRAINING SYSTEM COMPONENT: THE FUSE -->
+<section>
+  <div class="glow" style="width:480px;height:480px;bottom:-150px;right:-100px;background:radial-gradient(circle,rgba(255,209,102,0.06),transparent 70%);"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Training System Component: the Fuse · Topic 05</span>
+    <h2>The <span class="prot">Fuse</span> in the AC/DC Training System</h2>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-sm);">
+
+      <div class="calc-col">
+        <div class="col-label">Ratings</div>
+        <div class="yt-formula">Current rating: <strong style="color:var(--warn);">0.2&nbsp;A</strong></div>
+        <div class="yt-formula">Voltage rating: <strong style="color:var(--warn);">250&nbsp;V</strong></div>
+        <div class="yt-formula">Type: <span class="prot">slow blow</span></div>
+      </div>
+
+      <div>
+        <p class="slide-intro">A <span class="prot">slow-blow</span> fuse can handle an overcurrent or overvoltage condition <strong>for a certain time</strong> before it blows.</p>
+        <div class="callout fragment fade-up">
+          This fuse can carry up to <strong>0.2&nbsp;A</strong> at up to <strong>250&nbsp;V</strong> indefinitely. If either value is exceeded, the fuse will <strong>eventually</strong> blow, after some time rather than instantly.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 16 · TRAINING SYSTEM COMPONENT: THE CIRCUIT BREAKER -->
+<section>
+  <div class="glow" style="width:480px;height:480px;bottom:-150px;right:-100px;background:radial-gradient(circle,rgba(255,138,128,0.06),transparent 70%);"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Training System Component: the Circuit Breaker · Topic 06</span>
+    <h2>The <span class="prot">Circuit Breaker</span> and Test Circuit</h2>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-sm);">
+
+      <div>
+        <p class="slide-intro">The circuit breaker and test components are different from every other component in the training system. They run at the <span class="fault">ac power network voltage</span>, between 110&nbsp;V and 240&nbsp;V depending on your local network, instead of 24&nbsp;V.</p>
+        <p class="slide-intro">That higher voltage lets enough current flow to trip the breaker <strong>both thermally and magnetically</strong>. Because of the higher voltage and current, these terminals are large <strong>4&nbsp;mm</strong> terminals, so you must use the large 4&nbsp;mm leads instead of the miniature 2&nbsp;mm leads.</p>
+        <div class="warn-block fragment fade-up" style="font-size:var(--small);">
+          <span class="warn-label">Warning</span>
+          A high voltage is present in this part of the exercise. Do not make or modify banana jack connections with the power on.
+        </div>
+      </div>
+
+      <div class="calc-col">
+        <div class="col-label">Circuit breaker ratings</div>
+        <div class="yt-formula">Current rating: <strong style="color:var(--warn);">0.1&nbsp;A</strong></div>
+        <div class="yt-formula">Voltage rating: <strong style="color:var(--warn);">250&nbsp;V</strong></div>
+        <div class="yt-formula">Type: <span class="prot">thermal-magnetic</span></div>
+        <div class="yt-result">It trips when its temperature gets too high (thermal) or when its current gets too high (magnetic). Press the <strong>reset button</strong> to reset it.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 17 · CIRCUIT BREAKER TEST CONNECTION -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Training System Component: the Circuit Breaker · Topic 06 · Figure 77</span>
+    <h2>How the Test Circuit Is <span class="prot">Connected</span></h2>
+    <figure class="fig" style="margin-bottom:var(--gap);">
+      <img class="c-img wide-fig img-zoomable" src="EX5_Electrical_Distribution_Assets/fig77_cb_test_connection.png"
+           alt="Figure 77: From left to right: L (line), an NO push button, the circuit breaker, and the circuit-breaker terminal. Next come the load terminal, a load resistor, and the short-circuit terminal, which connects to N (neutral)."
+           >
+      <figcaption class="img-caption">Figure 77: Circuit breaker and test component connection.</figcaption>
+    </figure>
+    <div class="method-steps" style="max-width:1300px;">
+      <div class="method-step fragment fade-up">The circuit breaker connects to a <span class="fault">line wire</span> of the ac power network through an <strong>NO push button</strong>. The line is energized when the training system's power switch is set to <strong>I</strong>.</div>
+      <div class="method-step fragment fade-up">The test component is a <strong>load resistor</strong> connected to the <span class="net">neutral wire</span>.</div>
+      <div class="method-step fragment fade-up">Connect the <strong>circuit-breaker terminal</strong> to the <strong>load terminal</strong>, then press the NO push button. The network voltage is applied across the load resistor.</div>
+      <div class="method-step fragment fade-up">Connect the circuit-breaker terminal directly to the <strong>short-circuit terminal</strong> instead, then press the push button. The load resistor is bypassed, creating a <span class="fault">short circuit</span>.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 18 · REVIEW QUESTION 1 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:18:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which of the following are basic networks in a power network? Select all correct answers.","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"Control network","isCorrect":false},{"id":"q1b","text":"Distribution network","isCorrect":true},{"id":"q1c","text":"Generation network","isCorrect":true},{"id":"q1d","text":"Isolation network","isCorrect":false},{"id":"q1e","text":"Transmission network","isCorrect":true}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Question 1 · Select All That Apply</span>
+    <h2>The Basic Networks in a <span class="net">Power Network</span></h2>
+    <ul class="mcq-opts" style="max-width:900px;">
+      <li><span class="opt-key">A</span> Control network</li>
+      <li><span class="opt-key">B</span> Distribution network</li>
+      <li><span class="opt-key">C</span> Generation network</li>
+      <li><span class="opt-key">D</span> Isolation network</li>
+      <li><span class="opt-key">E</span> Transmission network</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 19 · REVIEW QUESTION 2 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:19:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Briefly define what a distribution network is.","order":0,"responseTimeLimitMs":90000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Question 2 · Free Response</span>
+    <h2>Define the <span class="net">Distribution Network</span></h2>
+    <div class="frq-box">
+      Briefly define what a distribution network is.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 20 · REVIEW QUESTION 3 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:20:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which one of the following is the definition of a fuse?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"A low-resistance resistor that can be added in series to a circuit in order to prevent overcurrents and damage to the equipment.","isCorrect":true},{"id":"q1b","text":"An automatically actuated electrical switch that allows a circuit to be opened in order to prevent undesirable operating conditions.","isCorrect":false},{"id":"q1c","text":"A common type of ac relay whose current rating is much higher than that of other types of relays.","isCorrect":false},{"id":"q1d","text":"Two inductors (coils of wire) wound around a common core of ferromagnetic material such as iron.","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Question 3</span>
+    <h2>Which Is the Definition of a <span class="prot">Fuse?</span></h2>
+    <ul class="mcq-opts" style="max-width:1200px;">
+      <li><span class="opt-key">A</span> A low-resistance resistor that can be added in series to a circuit in order to prevent overcurrents and damage to the equipment.</li>
+      <li><span class="opt-key">B</span> An automatically actuated electrical switch that allows a circuit to be opened in order to prevent undesirable operating conditions.</li>
+      <li><span class="opt-key">C</span> A common type of ac relay whose current rating is much higher than that of other types of relays.</li>
+      <li><span class="opt-key">D</span> Two inductors (coils of wire) wound around a common core of ferromagnetic material such as iron.</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 21 · REVIEW QUESTION 4 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:21:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which one of the following is the definition of a circuit breaker?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"A low-resistance resistor that can be added in series to a circuit in order to prevent overcurrents and damage to the equipment.","isCorrect":false},{"id":"q1b","text":"An automatically actuated electrical switch that allows a circuit to be opened in order to prevent undesirable operating conditions.","isCorrect":true},{"id":"q1c","text":"A common type of ac relay whose current rating is much higher than that of other types of relays.","isCorrect":false},{"id":"q1d","text":"Two inductors (coils of wire) wound around a common core of ferromagnetic material such as iron.","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Question 4</span>
+    <h2>Which Is the Definition of a <span class="prot">Circuit Breaker?</span></h2>
+    <ul class="mcq-opts" style="max-width:1200px;">
+      <li><span class="opt-key">A</span> A low-resistance resistor that can be added in series to a circuit in order to prevent overcurrents and damage to the equipment.</li>
+      <li><span class="opt-key">B</span> An automatically actuated electrical switch that allows a circuit to be opened in order to prevent undesirable operating conditions.</li>
+      <li><span class="opt-key">C</span> A common type of ac relay whose current rating is much higher than that of other types of relays.</li>
+      <li><span class="opt-key">D</span> Two inductors (coils of wire) wound around a common core of ferromagnetic material such as iron.</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 22 · REVIEW QUESTIONS 5 AND 6 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:22:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What is the condition for a **magnetic** circuit breaker to trip?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"When the current flowing through it is too low","isCorrect":false},{"id":"q1b","text":"When the current flowing through it is too high","isCorrect":true}]},{"id":"q2","type":"multiple-choice","text":"What is the condition for a **thermal** circuit breaker to trip?","order":1,"responseTimeLimitMs":30000,"options":[{"id":"q2a","text":"When the temperature inside is too low","isCorrect":false},{"id":"q2b","text":"When the temperature inside is too high","isCorrect":true}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Questions 5 and 6</span>
+    <h2>What Makes a Breaker <span class="prot">Trip?</span></h2>
+    <div class="split split-50 split-top">
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">5 · A <span class="prot">magnetic</span> circuit breaker trips &hellip;</h3>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> When the current flowing through it is too low</li>
+          <li><span class="opt-key">B</span> When the current flowing through it is too high</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">6 · A <span class="prot">thermal</span> circuit breaker trips &hellip;</h3>
+        <ul class="mcq-opts">
+          <li><span class="opt-key">A</span> When the temperature inside is too low</li>
+          <li><span class="opt-key">B</span> When the temperature inside is too high</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+// Interactive fuse / circuit-breaker simulator (adapted from the EX4 relay
+// simulator). Closing the fault switch shorts the lamp; after a brief
+// overcurrent surge the selected device opens the circuit. A blown fuse must
+// be replaced and a tripped breaker reset; restoring power while the fault is
+// still closed makes it open again. Elements carry data-when="<condition>"
+// and get .on while that condition holds.
+function initProtectionSims(Reveal) {
+    document.querySelectorAll('.prot-sim').forEach(function (root) {
+        if (root.closest('#storyboard')) return;
+        var SURGE_MS = 700;
+        var st;
+        var timer = null;
+
+        function reset() {
+            clearTimeout(timer);
+            st = { device: st ? st.device : 'fuse', fault: false, open: false, surging: false, fuses: 1, resets: 0 };
+        }
+
+        root.querySelectorAll('path.w').forEach(function (wire) {
+            var flow = wire.cloneNode(false);
+            flow.classList.remove('w');
+            flow.classList.add('flow');
+            wire.after(flow);
+        });
+
+        function render() {
+            var live = !st.open;
+            var isFuse = st.device === 'fuse';
+            var cond = {
+                live: live,
+                lamp: live && !st.fault,
+                faultflow: live && st.fault,
+                faultclosed: st.fault,
+                fuse: isFuse,
+                breaker: !isFuse,
+                intact: !st.open,
+                blown: isFuse && st.open,
+                tripped: !isFuse && st.open,
+                open: st.open,
+                surging: st.surging,
+            };
+            root.classList.toggle('surging', st.surging);
+            root.querySelectorAll('[data-when]').forEach(function (el) {
+                el.classList.toggle('on', !!cond[el.dataset.when]);
+            });
+            root.querySelectorAll('[data-label-on]').forEach(function (el) {
+                el.textContent = st.fault ? el.dataset.labelOn : el.dataset.labelOff;
+            });
+            root.querySelectorAll('[data-act="restore"]').forEach(function (el) {
+                el.textContent = isFuse ? el.dataset.labelFuse : el.dataset.labelBreaker;
+            });
+            root.querySelectorAll('[data-device]').forEach(function (el) {
+                el.setAttribute('aria-pressed', String(el.dataset.device === st.device));
+            });
+
+            var deviceChip = root.querySelector('[data-chip="device"]');
+            var name = isFuse ? 'Fuse' : 'Breaker';
+            var status = st.surging ? 'overcurrent!' : st.open ? (isFuse ? 'blown' : 'tripped') : (isFuse ? 'intact' : 'closed');
+            deviceChip.innerHTML = name + ': <b>' + status + '</b>';
+            deviceChip.classList.toggle('bad', st.open || st.surging);
+            deviceChip.classList.toggle('on', !st.open && !st.surging);
+
+            var lampChip = root.querySelector('[data-chip="lamp"]');
+            lampChip.innerHTML = 'Lamp: <b>' + (cond.lamp ? 'on' : 'off') + '</b>';
+            lampChip.classList.toggle('on', cond.lamp);
+
+            root.querySelectorAll('[data-chip="count"]').forEach(function (el) {
+                var fuseChip = el.dataset.when === 'fuse';
+                el.innerHTML = (fuseChip ? 'Fuses used: ' : 'Times reset: ') + '<b>' + (fuseChip ? st.fuses : st.resets) + '</b>';
+            });
+        }
+
+        // A closed fault on a live circuit causes a surge, then the device opens.
+        function checkFault() {
+            if (!st.fault || st.open || st.surging) return;
+            st.surging = true;
+            render();
+            clearTimeout(timer);
+            timer = setTimeout(function () {
+                st.surging = false;
+                st.open = true;
+                render();
+            }, SURGE_MS);
+        }
+
+        root.querySelectorAll('[data-act="fault"]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                if (st.surging) return;
+                st.fault = !st.fault;
+                render();
+                checkFault();
+            });
+        });
+
+        root.querySelectorAll('[data-act="restore"]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                if (!st.open) return;
+                st.open = false;
+                if (st.device === 'fuse') st.fuses += 1; else st.resets += 1;
+                render();
+                checkFault();
+            });
+        });
+
+        root.querySelectorAll('[data-device]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                if (st.device === el.dataset.device) return;
+                st.device = el.dataset.device;
+                reset();
+                render();
+            });
+        });
+
+        Reveal.on('slidechanged', function () {
+            st.device = 'fuse';
+            reset();
+            render();
+        });
+
+        reset();
+        render();
+    });
+}
+
+initSyncDeckReveal({
+    deckId: 'electrical-distribution',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        initProtectionSims(Reveal);
+    },
+});
+</script>
+</body>
+</html>
