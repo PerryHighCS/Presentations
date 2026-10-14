@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="tmdebi">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise 6: Troubleshooting Methods</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: AC Exercise 6 · Troubleshooting Methods
+   ============================================================ */
+
+/* Colour convention, used consistently:
+   troubleshooting steps / process     -> --accent (green)
+   voltmeter method / voltages         -> --result (cyan)
+   ohmmeter method / resistances       -> --ohm    (violet)
+   faults / unexpected values          -> --fault  (red)    */
+:root { --fault: #ff8a80; --ohm: #c4b5fd; }
+.step  { color: var(--accent); font-weight: 600; }
+.volt  { color: var(--result); font-weight: 600; }
+.ohm   { color: var(--ohm);    font-weight: 600; }
+.fault { color: var(--fault);  font-weight: 600; }
+
+/* Cards (same shape as the EX4 / EX5 cards) */
+.type-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+.type-card .tc-name {
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--result);
+}
+.type-card .tc-body {
+  font-size: var(--small);
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 5px;
+}
+.type-card .tc-body strong { color: var(--text); }
+.type-card.is-fault { border-color: rgba(255,138,128,0.35); }
+.type-card.is-fault .tc-name { color: var(--fault); }
+.type-card.is-ohm { border-color: rgba(196,181,253,0.35); }
+.type-card.is-ohm .tc-name { color: var(--ohm); }
+.card-row-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap); }
+.card-row-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap); }
+
+/* Four-step process cards */
+.step-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-top: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+.step-card .sc-num {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+.step-card .sc-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 10px 0 8px;
+  line-height: 1.25;
+}
+.step-card .sc-body { font-size: var(--small); color: var(--text-muted); line-height: 1.5; }
+
+/* Figure helpers */
+.fig { margin: 0; text-align: center; }
+
+/* Worked-example reading tables */
+.read-table { width: 100%; border-collapse: collapse; font-size: 22px; }
+.read-table th {
+  font-family: var(--font-mono);
+  font-size: var(--label);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--accent-border);
+  text-align: left;
+}
+.read-table td {
+  font-family: var(--font-mono);
+  padding: 7px 14px;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(57,211,83,0.1);
+}
+.read-table td:first-child { color: var(--text); }
+.read-table td.ok   { color: var(--result); }
+.read-table td.bad  { color: var(--fault); font-weight: 700; }
+.read-table td.na   { color: var(--text-dim); }
+
+/* MCQ fallback options and FRQ prompt boxes (as in EX5) */
+.mcq-opts { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; }
+.mcq-opts li {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  font-size: var(--body);
+  color: var(--text-muted);
+  line-height: 1.45;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+}
+.opt-key {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 22px;
+}
+.frq-box {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 22px 26px;
+  font-size: 28px;
+  color: var(--text);
+  line-height: 1.5;
+  max-width: 1150px;
+}
+
+/* ─── Interactive fault finder ─────────────────────────────
+   Root: .fault-sim (the whole split). The engine hides a random
+   fault in a 4-light series circuit; the root gets .mode-ohm
+   while the ohmmeter is selected. .only-volt / .only-ohm swap
+   the drawing and controls for each mode.
+   ───────────────────────────────────────────────────────── */
+.fault-sim svg { width: 100%; height: auto; display: block; overflow: visible; }
+.fault-sim.mode-ohm .only-volt,
+.fault-sim:not(.mode-ohm) .only-ohm { display: none; }
+.fault-sim .w, .fault-sim .sym {
+  fill: none;
+  stroke: rgba(230,247,234,0.55);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.fault-sim .term { fill: var(--bg); stroke: rgba(230,247,234,0.75); stroke-width: 2.5; }
+.fault-sim .dot  { fill: rgba(230,247,234,0.75); }
+.fault-sim .lbl  { font-family: var(--font-mono); font-size: 15px; fill: var(--text-muted); }
+.fault-sim .lbl-sm { font-family: var(--font-mono); font-size: 13px; fill: var(--text-dim); letter-spacing: 0.08em; }
+
+/* Lamps: --g (0..1) is set per lamp by the engine */
+.fault-sim .lamp { --g: 0; }
+.fault-sim .lamp-glow { fill: var(--warn); opacity: calc(var(--g) * 0.55); filter: blur(10px); transition: opacity 0.3s ease; }
+.fault-sim .lamp-body { fill: var(--warn); fill-opacity: var(--g); stroke: rgba(230,247,234,0.6); stroke-width: 3; transition: fill-opacity 0.3s ease; }
+.fault-sim .lamp-ray { stroke: rgba(230,247,234,0.6); stroke-width: 2.5; stroke-linecap: round; }
+.fault-sim .lamp.faulty .lamp-body { stroke: var(--fault); stroke-width: 4; }
+.fault-sim .lamp.faulty .lbl { fill: var(--fault); font-weight: 700; }
+
+/* Clickable probe targets */
+.fault-sim [data-probe] { cursor: pointer; }
+.fault-sim .pos circle { fill: var(--bg); stroke: var(--result); stroke-width: 2.5; transition: fill 0.15s ease; }
+.fault-sim .pos text { font-family: var(--font-mono); font-size: 15px; font-weight: 700; fill: var(--result); pointer-events: none; }
+.fault-sim .pos.sel circle { fill: var(--result); }
+.fault-sim .pos.sel text { fill: var(--bg); }
+.fault-sim .om circle { fill: var(--bg); stroke: var(--ohm); stroke-width: 2.5; transition: fill 0.15s ease; }
+.fault-sim .om text { font-family: var(--font-mono); font-size: 16px; font-weight: 700; fill: var(--ohm); pointer-events: none; }
+.fault-sim .om path { fill: none; stroke: var(--ohm); stroke-width: 2; opacity: 0.7; }
+.fault-sim .om.sel circle { fill: var(--ohm); }
+.fault-sim .om.sel text { fill: var(--bg); }
+.fault-sim .hit { fill: transparent; }
+
+/* Meter + leads */
+.fault-sim .meter { fill: var(--bg-card); stroke: var(--accent-border); stroke-width: 2; }
+.fault-sim .meter-name { font-family: var(--font-mono); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; fill: var(--text-dim); }
+.fault-sim .meter-read { font-family: var(--font-mono); font-size: 34px; font-weight: 700; fill: var(--text); }
+.fault-sim .lead { fill: none; stroke-width: 2.5; stroke-dasharray: 8 6; stroke-linecap: round; stroke-linejoin: round; }
+.fault-sim .lead-com { stroke: rgba(230,247,234,0.55); }
+.fault-sim .lead-pos { stroke: var(--result); }
+.fault-sim .jack-com { fill: #2a3440; stroke: rgba(230,247,234,0.6); stroke-width: 2; }
+.fault-sim .jack-pos { fill: #2a3440; stroke: var(--result); stroke-width: 2; }
+
+/* Controls */
+.sim-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: var(--gap-sm); }
+.ctl-label { font-family: var(--font-mono); font-size: 14px; color: var(--text-dim); letter-spacing: 0.06em; }
+.seg { display: inline-flex; border: 1px solid var(--accent-border); border-radius: 8px; overflow: hidden; }
+.seg-btn {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+.seg-btn[aria-pressed="true"] { background: var(--accent); color: var(--bg); }
+.seg.volt-seg .seg-btn[aria-pressed="true"] { background: var(--result); }
+.seg.ohm-seg  .seg-btn[aria-pressed="true"] { background: var(--ohm); }
+.seg.guess-seg .seg-btn[disabled] { cursor: default; opacity: 0.45; }
+.seg.guess-seg .seg-btn.right { background: var(--accent); color: var(--bg); opacity: 1; }
+.seg.guess-seg .seg-btn.wrong { background: rgba(255,138,128,0.18); color: var(--fault); }
+.sim-btn {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--bg);
+  background: var(--warn);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+.sim-btn:active { transform: translateY(1px); }
+.sim-chip {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--text-muted);
+  padding: 6px 12px;
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+}
+.sim-chip b { color: var(--accent); }
+
+/* Reading log */
+.log-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: var(--gap-sm) 0 var(--gap); }
+.log-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 17px; }
+.log-table th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 5px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--accent-border);
+}
+.log-table.v th { color: var(--result); }
+.log-table.o th { color: var(--ohm); }
+.log-table td { padding: 5px 8px; color: var(--text-muted); border-bottom: 1px solid rgba(57,211,83,0.1); white-space: nowrap; }
+.log-table td.meas { color: var(--text); font-weight: 700; }
+.sim-feedback {
+  min-height: 84px;
+  font-size: var(--small);
+  line-height: 1.5;
+  color: var(--text-muted);
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+  margin-top: var(--gap-sm);
+}
+.sim-feedback.right { color: var(--text); border-color: var(--accent); }
+.sim-feedback.wrong { color: var(--text); border-color: rgba(255,138,128,0.5); background: rgba(255,138,128,0.08); }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(94,234,212,0.11),transparent 70%);"></div>
+  <div class="glow" style="width:400px;height:400px;bottom:-90px;right:10%;background:radial-gradient(circle,rgba(196,181,253,0.08),transparent 70%);"></div>
+
+  <div class="slide-inner slide-center">
+    <div class="trace-deco">
+      <svg viewBox="0 0 420 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- series string of lights -->
+        <path d="M420 100 L370 100 L370 170" stroke="rgba(94,234,212,0.2)" stroke-width="1.5"/>
+        <circle cx="370" cy="210" r="36" stroke="rgba(255,209,102,0.4)" stroke-width="2.5"/>
+        <path d="M370 246 L370 300" stroke="rgba(94,234,212,0.2)" stroke-width="1.5"/>
+        <circle cx="370" cy="336" r="36" stroke="rgba(255,138,128,0.45)" stroke-width="2.5"/>
+        <path d="M345 311 L395 361 M395 311 L345 361" stroke="rgba(255,138,128,0.35)" stroke-width="2"/>
+        <path d="M370 372 L370 640" stroke="rgba(94,234,212,0.2)" stroke-width="1.5"/>
+        <circle cx="370" cy="676" r="36" stroke="rgba(255,209,102,0.4)" stroke-width="2.5"/>
+        <path d="M370 712 L370 800 L420 800" stroke="rgba(94,234,212,0.2)" stroke-width="1.5"/>
+        <!-- probe -->
+        <circle cx="370" cy="273" r="6" fill="rgba(94,234,212,0.55)"/>
+        <path d="M370 273 L250 273 L250 186" stroke="rgba(94,234,212,0.35)" stroke-width="1.5" stroke-dasharray="6 6"/>
+        <circle cx="250" cy="150" r="34" stroke="rgba(94,234,212,0.4)" stroke-width="2.5"/>
+        <text x="250" y="160" text-anchor="middle" fill="rgba(94,234,212,0.5)" font-family="JetBrains Mono, monospace" font-size="28">V</text>
+      </svg>
+    </div>
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; AC Circuits &nbsp;·&nbsp; Exercise 6</span>
+    <h1 class="title-h1"><span class="accent">Troubleshooting</span> Methods</h1>
+    <p class="subtitle">// Introduction to troubleshooting &nbsp;·&nbsp; The voltmeter method &nbsp;·&nbsp; The ohmmeter method</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · LEARNING OUTCOMES & TOPICS COVERED -->
+<section>
+  <div class="glow" style="width:500px;height:500px;top:-80px;right:-100px;background:radial-gradient(circle,rgba(57,211,83,0.08),transparent 70%);"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Learning Outcomes &amp; Topics Covered</span>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-sm);">
+
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">After this section you will be able to <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li><strong>Troubleshoot</strong> electrical circuits using the <span class="volt">voltmeter method</span>.</li>
+          <li><strong>Troubleshoot</strong> electrical circuits using the <span class="ohm">ohmmeter method</span>.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">Topics <span class="accent">covered</span></h3>
+        <div class="agenda-grid" style="grid-template-columns:1fr;margin-top:0;">
+          <a class="agenda-item" href="#/3"><span class="agenda-num">01</span><span class="agenda-text">Introduction to <strong>troubleshooting</strong></span></a>
+          <a class="agenda-item" href="#/6"><span class="agenda-num">02</span><span class="agenda-text">The <strong>voltmeter method</strong></span></a>
+          <a class="agenda-item" href="#/8"><span class="agenda-num">03</span><span class="agenda-text">The <strong>ohmmeter method</strong></span></a>
+          <a class="agenda-item" href="#/11"><span class="agenda-num">04</span><span class="agenda-text">Try it: <strong>find the fault</strong></span></a>
+          <a class="agenda-item" href="#/12"><span class="agenda-num">05</span><span class="agenda-text"><strong>Review</strong> questions</span></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · WHAT IS TROUBLESHOOTING? -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Introduction to Troubleshooting · Topic 01</span>
+    <h2>What Is <span class="step">Troubleshooting?</span></h2>
+    <p class="slide-intro" style="max-width:1300px;">The electrical circuits and components used in modern industries are subject to many kinds of <span class="fault">faults</span>. These abnormal conditions can seriously damage the equipment or, at the very least, stop the circuit from working for a while. Either way, faults are <strong>very costly</strong>.</p>
+    <div class="card-row-4">
+      <div class="type-card is-fault fragment fade-up">
+        <span class="tc-name">Short circuits</span>
+        <p class="tc-body">Current takes an unintended path with almost <strong>no resistance</strong>.</p>
+      </div>
+      <div class="type-card is-fault fragment fade-up">
+        <span class="tc-name">Open circuits</span>
+        <p class="tc-body">A break in the path means current <strong>cannot flow</strong> at all.</p>
+      </div>
+      <div class="type-card is-fault fragment fade-up">
+        <span class="tc-name">Overvoltages</span>
+        <p class="tc-body">A component receives <strong>more voltage</strong> than it is rated for.</p>
+      </div>
+      <div class="type-card is-fault fragment fade-up">
+        <span class="tc-name">Overcurrents</span>
+        <p class="tc-body">More current flows than the circuit was <strong>designed to carry</strong>.</p>
+      </div>
+    </div>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);max-width:1300px;">
+      Locating and removing the cause of an electrical problem <strong>rapidly and efficiently</strong> is called <span class="step">troubleshooting</span>. Its purpose is to repair or replace <strong>only the faulty components</strong>, in the least amount of time. To do that, you approach the fault <strong>logically and systematically</strong>, analyzing each symptom and each component in the circuit.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · THE FOUR STEPS OF TROUBLESHOOTING -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Introduction to Troubleshooting · Topic 01 · The Four Steps</span>
+    <h2>The Four Steps of <span class="step">Troubleshooting</span></h2>
+    <p class="slide-intro" style="max-width:1300px;">There are several troubleshooting approaches, but most of them are a variation of the same four steps.</p>
+    <div class="card-row-4">
+      <div class="step-card fragment fade-up">
+        <div class="sc-num">1</div>
+        <div class="sc-name">Observation</div>
+        <p class="sc-body">Watch the faulty circuit and identify <strong>all the symptoms</strong>. Many faults can be found without any testing, just by carefully observing how the circuit behaves.</p>
+      </div>
+      <div class="step-card fragment fade-up">
+        <div class="sc-num">2</div>
+        <div class="sc-name">Location of the faulty component(s)</div>
+        <p class="sc-body">Use logic to decide which component is faulty, applying the <span class="volt">voltmeter</span> or <span class="ohm">ohmmeter</span> method if needed. Check the parts that <strong>fail most often</strong> first.</p>
+      </div>
+      <div class="step-card fragment fade-up">
+        <div class="sc-num">3</div>
+        <div class="sc-name">Identification of the cause</div>
+        <p class="sc-body">Work out <strong>why</strong> the component failed. Replacing a component is useless if the cause of the fault is not fixed, because the new part will just fail again.</p>
+      </div>
+      <div class="step-card fragment fade-up">
+        <div class="sc-num">4</div>
+        <div class="sc-name">Reparation or replacement</div>
+        <p class="sc-body">Once the cause has been addressed, <strong>repair or replace</strong> the faulty component.</p>
+      </div>
+    </div>
+    <div class="callout-result fragment fade-up" style="margin-top:var(--gap-lg);max-width:1300px;">
+      You saw step 3 in action in Exercise 5: replacing a <strong>blown fuse</strong> while the short circuit is still there only blows the new fuse too.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · SAFETY WHILE TROUBLESHOOTING -->
+<section>
+  <div class="glow" style="width:480px;height:480px;bottom:-150px;right:-100px;background:radial-gradient(circle,rgba(255,138,128,0.07),transparent 70%);"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Introduction to Troubleshooting · Topic 01 · Safety</span>
+    <h2>Safety While <span class="fault">Troubleshooting</span></h2>
+    <div class="warn-block" style="max-width:1300px;margin-bottom:var(--gap-lg);">
+      <span class="warn-label">Warning</span>
+      <span style="font-size:30px;line-height:1.4;">When troubleshooting a faulty electrical circuit, <strong>never touch a live wire</strong>.</span>
+    </div>
+    <p class="slide-intro" style="max-width:1300px;">A faulty circuit does not behave the way its schematic says it should, so you cannot trust your expectations about which parts are safe.</p>
+    <div class="card-row-2" style="max-width:1300px;">
+      <div class="type-card is-fault fragment fade-up">
+        <span class="tc-name">Higher than expected</span>
+        <p class="tc-body">The voltages and currents in a faulty circuit can be <strong>higher than expected</strong>.</p>
+      </div>
+      <div class="type-card is-fault fragment fade-up">
+        <span class="tc-name">Live where it should be dead</span>
+        <p class="tc-body">Because of faulty connections, current can flow in parts of the circuit that <strong>should be dead</strong>. Touching them could give you a serious shock.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · THE VOLTMETER METHOD -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Voltmeter Method · Topic 02</span>
+    <div class="split split-50" style="align-items:center;">
+
+      <div>
+        <h2>The <span class="volt">Voltmeter</span> Method</h2>
+        <p class="slide-intro">The <span class="volt">voltmeter method</span> measures the voltage applied to each component in the circuit, with the <strong>power on</strong>, and looks for any <span class="fault">unexpected value</span>. This diagram applies it to four identical indicator lights connected in series.</p>
+        <div class="method-steps">
+          <div class="method-step fragment fade-up">A single voltmeter is used. Its negative lead stays on the <strong>negative terminal</strong> of the ac power source the whole time.</div>
+          <div class="method-step fragment fade-up">The positive lead moves along the circuit: first the <strong>power source</strong> itself (position 1, which is also the voltage applied to the first light), then positions 2, 3, and 4.</div>
+          <div class="method-step fragment fade-up">If the reading at a position is <span class="fault">unexpected</span>, the fault is <strong>between that position and the previous one</strong>.</div>
+        </div>
+      </div>
+
+      <figure class="fig">
+        <img class="c-img img-zoomable" src="EX6_Troubleshooting_Methods_Assets/fig82_voltmeter_method.png"
+             alt="Figure 82: A 24 V ac power source feeds four indicator lights connected in series across the top of the circuit. Dashed lines connect a single voltmeter to position 1 at the source, and to positions 2, 3, and 4 between the lights. The voltmeter's other lead is connected to the negative terminal of the source."
+             style="max-width:100%;margin:0 auto;">
+        <figcaption class="img-caption">Figure 82: The voltmeter method applied to an ac circuit containing four identical indicator lights connected in series.</figcaption>
+      </figure>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · VOLTMETER METHOD: WORKED EXAMPLE -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:7:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Expected readings are 24 V, 18 V, 12 V, 6 V. The measured readings are 24 V at position 1, 24 V at position 2, and 0 V at position 3. Where is the fault?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"Light 1","isCorrect":false},{"id":"q1b","text":"Light 2","isCorrect":true},{"id":"q1c","text":"Light 3","isCorrect":false},{"id":"q1d","text":"The power source","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">The Voltmeter Method · Topic 02 · Worked Example</span>
+    <h2>Reading the <span class="volt">Voltmeter</span> Results</h2>
+    <div class="split split-50 split-top">
+
+      <div>
+        <figure class="fig" style="margin-bottom:var(--gap);">
+          <img class="c-img img-zoomable" src="EX6_Troubleshooting_Methods_Assets/fig82_voltmeter_method.png"
+               alt="Figure 82 again: the 24 V source and four series lights, with voltmeter positions 1 to 4 marked."
+               style="max-height:260px;margin:0 auto;">
+        </figure>
+        <table class="read-table">
+          <thead><tr><th>Position</th><th>Expected</th><th>Measured</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>24 V</td><td class="ok fragment" data-fragment-index="2">24 V</td></tr>
+            <tr><td>2</td><td>18 V</td><td class="bad fragment" data-fragment-index="2">24 V</td></tr>
+            <tr><td>3</td><td>12 V</td><td class="bad fragment" data-fragment-index="2">0 V</td></tr>
+            <tr><td>4</td><td>6 V</td><td class="na fragment" data-fragment-index="2">not needed</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="method-steps">
+        <div class="method-step fragment fade-up" data-fragment-index="1"><strong>Expected:</strong> the four lights are identical, so the <span class="volt">24 V</span> drops <strong>equally</strong> across them, 6 V each. The reading should fall by 6 V at every position.</div>
+        <div class="method-step fragment fade-up" data-fragment-index="2"><strong>Measured:</strong> the readings in the table. Which light do you think is faulty?</div>
+        <div class="method-step fragment fade-up" data-fragment-index="3">The voltage <strong>does not drop</strong> between positions 1 and 2. That means <span class="fault">no current is flowing</span> in the circuit, so no light drops any voltage.</div>
+        <div class="method-step fragment fade-up" data-fragment-index="4">Position 3 reads <span class="fault">0 V</span> instead of 24 V, so the fault is <strong>between positions 2 and 3</strong>. Light 2 is faulty: its bulb is burned out, broken, or damaged in some way.</div>
+        <div class="method-step fragment fade-up" data-fragment-index="5">A faulty <strong>power supply</strong> would show up differently. Every position would read something far from 24 V, such as 0 V.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · THE OHMMETER METHOD -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Ohmmeter Method · Topic 03</span>
+    <div class="split split-60" style="align-items:center;">
+
+      <div>
+        <h2>The <span class="ohm">Ohmmeter</span> Method</h2>
+        <p class="slide-intro">The <span class="ohm">ohmmeter method</span> measures the resistance between the terminals of each component, which tests its <strong>continuity</strong>, and looks for any <span class="fault">unexpected value</span>. You can use several ohmmeters or move one ohmmeter from position to position.</p>
+        <div class="callout-warn fragment fade-up" style="margin-bottom:var(--gap);">
+          The <strong>power source is removed</strong> from the circuit before measuring resistance. An ohmmeter supplies its own small test current, so a live circuit gives false readings and can damage the meter.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="type-card is-fault fragment fade-up">
+            <span class="tc-name">Infinite resistance (&infin;&nbsp;&Omega;)</span>
+            <p class="tc-body">An <strong>open circuit</strong>. Current cannot flow through the component. A digital multimeter shows this as <strong>OL</strong> (overload) instead of a number.</p>
+          </div>
+          <div class="type-card is-fault fragment fade-up">
+            <span class="tc-name">Virtually 0&nbsp;&Omega;</span>
+            <p class="tc-body">A <strong>short circuit</strong>. Current flows freely through the component.</p>
+          </div>
+          <div class="type-card is-ohm fragment fade-up">
+            <span class="tc-name">Outside the tolerance</span>
+            <p class="tc-body">Real parts never measure exactly their rated value, so a small difference is normal. A reading <strong>outside the component&rsquo;s tolerance</strong> means it is <strong>defective</strong>, for example a 60&nbsp;&Omega; resistor that measures 100&nbsp;&Omega;.</p>
+          </div>
+        </div>
+      </div>
+
+      <figure class="fig">
+        <img class="c-img img-zoomable" src="EX6_Troubleshooting_Methods_Assets/fig83_ohmmeter_method.png"
+             alt="Figure 83: Four indicator lights connected in series. An ohmmeter labeled Ω1, Ω2, Ω3, or Ω4 is connected across the two terminals of each light. The power source has been removed, leaving two open terminals on the left."
+             style="max-height:600px;margin:0 auto;">
+        <figcaption class="img-caption">Figure 83: The ohmmeter method applied to the same circuit of four identical indicator lights.</figcaption>
+      </figure>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · OHMMETER METHOD: WORKED EXAMPLE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Ohmmeter Method · Topic 03 · Worked Example</span>
+    <h2>Reading the <span class="ohm">Ohmmeter</span> Results</h2>
+    <div class="split split-50 split-top">
+
+      <div>
+        <p class="slide-intro" style="margin-bottom:var(--gap-sm);">The lights are identical, so each one should measure the <strong>same resistance</strong>. These are the readings from the circuit in the diagram.</p>
+        <figure class="fig" style="margin-bottom:var(--gap);">
+          <img class="c-img img-zoomable" src="EX6_Troubleshooting_Methods_Assets/fig83_ohmmeter_method.png"
+               alt="Figure 83 again: four series lights with ohmmeters Ω1 to Ω4 connected across them, and the power source removed."
+               style="max-height:300px;margin:0 auto;">
+        </figure>
+        <table class="read-table" style="max-width:560px;">
+          <thead><tr><th>Ohmmeter</th><th>Expected</th><th>Measured</th></tr></thead>
+          <tbody>
+            <tr><td>&Omega;1</td><td>60 &Omega;</td><td class="ok">60 &Omega;</td></tr>
+            <tr><td>&Omega;2</td><td>60 &Omega;</td><td class="bad">&infin; &Omega;</td></tr>
+            <tr><td>&Omega;3</td><td>60 &Omega;</td><td class="ok">60 &Omega;</td></tr>
+            <tr><td>&Omega;4</td><td>60 &Omega;</td><td class="ok">60 &Omega;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <div class="method-steps">
+          <div class="method-step fragment fade-up">Three lights read the expected <span class="ohm">60&nbsp;&Omega;</span>, so they are fine.</div>
+          <div class="method-step fragment fade-up">Light 2 reads <span class="fault">infinite resistance</span>, so it does not allow current to flow. It is an <strong>open circuit</strong>.</div>
+        </div>
+        <div class="callout-result fragment fade-up" style="margin-top:var(--gap);">
+          Indicator light 2 is probably <strong>burned out</strong> and must be replaced. This matches what the voltmeter method found on the previous example.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · COMPARING THE TWO METHODS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Ohmmeter Method · Topic 03 · Comparing the Methods</span>
+    <h2>Comparing the Two Methods</h2>
+    <div class="card-row-2" style="max-width:1400px;">
+      <div class="type-card" style="padding:18px 22px;">
+        <span class="tc-name">Voltmeter method</span>
+        <p class="tc-body" style="font-size:var(--body);">The circuit is <span class="volt">powered on</span>. One meter stays connected to the source&rsquo;s negative terminal while the other lead moves along the circuit. It narrows the fault down to the section <strong>between two positions</strong> where the reading stops matching what you expect.</p>
+      </div>
+      <div class="type-card is-ohm" style="padding:18px 22px;">
+        <span class="tc-name">Ohmmeter method</span>
+        <p class="tc-body" style="font-size:var(--body);">The power source is <span class="ohm">removed</span>. Each component is tested <strong>on its own</strong>, and the reading tells you its condition: infinite for an open, about 0&nbsp;&Omega; for a short, or a wrong value for a defective part.</p>
+      </div>
+    </div>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);max-width:1400px;">
+      In the lab, you will troubleshoot the same fault <strong>with both methods</strong>. The <span class="ohm">ohmmeter</span> result should confirm the fault that the <span class="volt">voltmeter</span> found. When two independent methods agree, you can be confident before you replace anything.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · FIND THE FAULT (INTERACTIVE) -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Troubleshooting · Try It</span>
+    <div class="split split-60 split-top fault-sim">
+
+      <div>
+        <svg viewBox="0 0 900 480" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive circuit: a 24 V ac source feeds four indicator lights in series. A hidden fault is in one of the lights or in the source. Probe positions 1 to 4 with the voltmeter, or measure each light with the ohmmeter.">
+          <!-- wiring -->
+          <path class="w" d="M160,274 V150 H250"/>
+          <path class="w" d="M310,150 H420"/>
+          <path class="w" d="M480,150 H590"/>
+          <path class="w" d="M650,150 H760"/>
+          <path class="w" d="M820,150 H860 V450 H160 V346"/>
+
+          <!-- ac source (voltmeter mode) or open terminals (ohmmeter mode) -->
+          <g class="only-volt">
+            <circle cx="160" cy="310" r="36" class="sym" style="fill:var(--bg);"/>
+            <path d="M140,310 q10,-18 20,0 t20,0" class="sym"/>
+            <text x="112" y="304" class="lbl" text-anchor="end">AC source</text>
+            <text x="112" y="326" class="lbl" text-anchor="end">24 V</text>
+          </g>
+          <g class="only-ohm">
+            <circle cx="160" cy="280" r="7" class="term"/>
+            <circle cx="160" cy="340" r="7" class="term"/>
+            <text x="140" y="304" class="lbl" text-anchor="end">source</text>
+            <text x="140" y="326" class="lbl" text-anchor="end">removed</text>
+          </g>
+
+          <!-- lights -->
+          <g class="lamp" data-lamp="0">
+            <circle cx="280" cy="150" r="44" class="lamp-glow"/>
+            <circle cx="280" cy="150" r="30" class="lamp-body"/>
+            <path class="lamp-ray" d="M259,129 L251,121 M301,129 L309,121 M259,171 L251,179 M301,171 L309,179"/>
+            <text x="280" y="216" class="lbl" text-anchor="middle">Light 1</text>
+          </g>
+          <g class="lamp" data-lamp="1">
+            <circle cx="450" cy="150" r="44" class="lamp-glow"/>
+            <circle cx="450" cy="150" r="30" class="lamp-body"/>
+            <path class="lamp-ray" d="M429,129 L421,121 M471,129 L479,121 M429,171 L421,179 M471,171 L479,179"/>
+            <text x="450" y="216" class="lbl" text-anchor="middle">Light 2</text>
+          </g>
+          <g class="lamp" data-lamp="2">
+            <circle cx="620" cy="150" r="44" class="lamp-glow"/>
+            <circle cx="620" cy="150" r="30" class="lamp-body"/>
+            <path class="lamp-ray" d="M599,129 L591,121 M641,129 L649,121 M599,171 L591,179 M641,171 L649,179"/>
+            <text x="620" y="216" class="lbl" text-anchor="middle">Light 3</text>
+          </g>
+          <g class="lamp" data-lamp="3">
+            <circle cx="790" cy="150" r="44" class="lamp-glow"/>
+            <circle cx="790" cy="150" r="30" class="lamp-body"/>
+            <path class="lamp-ray" d="M769,129 L761,121 M811,129 L819,121 M769,171 L761,179 M811,171 L819,179"/>
+            <text x="790" y="216" class="lbl" text-anchor="middle">Light 4</text>
+          </g>
+
+          <!-- voltmeter mode: COM lead, probe lead, probe positions -->
+          <g class="only-volt">
+            <path class="lead lead-com" d="M520,290 V262 H220 V400 H171"/>
+            <circle cx="160" cy="400" r="11" class="term"/>
+            <text x="160" y="405" class="lbl" text-anchor="middle" style="font-weight:700;fill:var(--text);">&minus;</text>
+            <path class="lead lead-pos" data-lead d=""/>
+            <g class="pos" data-probe="v0" data-lead-d="M600,290 V246 H200 V210 H173"><circle cx="160" cy="210" r="13"/><text x="160" y="215" text-anchor="middle">1</text><circle class="hit" cx="160" cy="210" r="24"/></g>
+            <g class="pos" data-probe="v1" data-lead-d="M600,290 V246 H365 V163"><circle cx="365" cy="150" r="13"/><text x="365" y="155" text-anchor="middle">2</text><circle class="hit" cx="365" cy="150" r="24"/></g>
+            <g class="pos" data-probe="v2" data-lead-d="M600,290 V246 H535 V163"><circle cx="535" cy="150" r="13"/><text x="535" y="155" text-anchor="middle">3</text><circle class="hit" cx="535" cy="150" r="24"/></g>
+            <g class="pos" data-probe="v3" data-lead-d="M600,290 V246 H705 V163"><circle cx="705" cy="150" r="13"/><text x="705" y="155" text-anchor="middle">4</text><circle class="hit" cx="705" cy="150" r="24"/></g>
+          </g>
+
+          <!-- ohmmeter mode: one ohmmeter across each light, as in Figure 83 -->
+          <g class="only-ohm">
+            <g class="om" data-probe="o0"><path d="M258,60 H236 V150 M302,60 H324 V150"/><circle cx="236" cy="150" r="5" class="dot"/><circle cx="324" cy="150" r="5" class="dot"/><circle cx="280" cy="60" r="22"/><text x="280" y="66" text-anchor="middle">&Omega;1</text><rect class="hit" x="230" y="30" width="100" height="200" rx="10"/></g>
+            <g class="om" data-probe="o1"><path d="M428,60 H406 V150 M472,60 H494 V150"/><circle cx="406" cy="150" r="5" class="dot"/><circle cx="494" cy="150" r="5" class="dot"/><circle cx="450" cy="60" r="22"/><text x="450" y="66" text-anchor="middle">&Omega;2</text><rect class="hit" x="400" y="30" width="100" height="200" rx="10"/></g>
+            <g class="om" data-probe="o2"><path d="M598,60 H576 V150 M642,60 H664 V150"/><circle cx="576" cy="150" r="5" class="dot"/><circle cx="664" cy="150" r="5" class="dot"/><circle cx="620" cy="60" r="22"/><text x="620" y="66" text-anchor="middle">&Omega;3</text><rect class="hit" x="570" y="30" width="100" height="200" rx="10"/></g>
+            <g class="om" data-probe="o3"><path d="M768,60 H746 V150 M812,60 H834 V150"/><circle cx="746" cy="150" r="5" class="dot"/><circle cx="834" cy="150" r="5" class="dot"/><circle cx="790" cy="60" r="22"/><text x="790" y="66" text-anchor="middle">&Omega;4</text><rect class="hit" x="740" y="30" width="100" height="200" rx="10"/></g>
+          </g>
+
+          <!-- meter display -->
+          <rect x="460" y="290" width="200" height="100" rx="10" class="meter"/>
+          <circle cx="520" cy="290" r="7" class="jack-com only-volt"/>
+          <circle cx="600" cy="290" r="7" class="jack-pos only-volt"/>
+          <text x="560" y="322" class="meter-name" text-anchor="middle" data-meter-name>VOLTMETER</text>
+          <text x="560" y="368" class="meter-read" text-anchor="middle" data-meter-read>- - -</text>
+        </svg>
+
+        <div class="sim-controls">
+          <span class="ctl-label">Meter:</span>
+          <div class="seg" role="group" aria-label="Meter">
+            <button class="seg-btn" data-mode="volt" aria-pressed="true">Voltmeter (power on)</button>
+            <button class="seg-btn" data-mode="ohm" aria-pressed="false">Ohmmeter (source removed)</button>
+          </div>
+        </div>
+        <div class="sim-controls">
+          <span class="ctl-label only-volt">Probe position:</span>
+          <div class="seg volt-seg only-volt" role="group" aria-label="Voltmeter probe position">
+            <button class="seg-btn" data-probe="v0" aria-pressed="false">1</button>
+            <button class="seg-btn" data-probe="v1" aria-pressed="false">2</button>
+            <button class="seg-btn" data-probe="v2" aria-pressed="false">3</button>
+            <button class="seg-btn" data-probe="v3" aria-pressed="false">4</button>
+          </div>
+          <span class="ctl-label only-ohm">Measure light:</span>
+          <div class="seg ohm-seg only-ohm" role="group" aria-label="Ohmmeter light">
+            <button class="seg-btn" data-probe="o0" aria-pressed="false">&Omega;1</button>
+            <button class="seg-btn" data-probe="o1" aria-pressed="false">&Omega;2</button>
+            <button class="seg-btn" data-probe="o2" aria-pressed="false">&Omega;3</button>
+            <button class="seg-btn" data-probe="o3" aria-pressed="false">&Omega;4</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2>Find the <span class="fault">Fault</span></h2>
+        <p class="slide-intro" style="font-size:var(--small);margin-bottom:0;">A random fault is hidden in this circuit. <span class="step">Observe</span> the lights first, then take measurements and compare each one with its expected value. Try to find the fault with as few measurements as you can.</p>
+        <div class="log-pair">
+          <table class="log-table v">
+            <thead><tr><th>Pos.</th><th>Exp.</th><th>Meas.</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>24 V</td><td class="meas" data-log="v0">&ndash;</td></tr>
+              <tr><td>2</td><td>18 V</td><td class="meas" data-log="v1">&ndash;</td></tr>
+              <tr><td>3</td><td>12 V</td><td class="meas" data-log="v2">&ndash;</td></tr>
+              <tr><td>4</td><td>6 V</td><td class="meas" data-log="v3">&ndash;</td></tr>
+            </tbody>
+          </table>
+          <table class="log-table o">
+            <thead><tr><th>Light</th><th>Exp.</th><th>Meas.</th></tr></thead>
+            <tbody>
+              <tr><td>&Omega;1</td><td>60 &Omega;</td><td class="meas" data-log="o0">&ndash;</td></tr>
+              <tr><td>&Omega;2</td><td>60 &Omega;</td><td class="meas" data-log="o1">&ndash;</td></tr>
+              <tr><td>&Omega;3</td><td>60 &Omega;</td><td class="meas" data-log="o2">&ndash;</td></tr>
+              <tr><td>&Omega;4</td><td>60 &Omega;</td><td class="meas" data-log="o3">&ndash;</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <span class="ctl-label">Which component is faulty?</span>
+        <div class="seg guess-seg" role="group" aria-label="Faulty component" style="margin-top:8px;">
+          <button class="seg-btn" data-guess="0">Light 1</button>
+          <button class="seg-btn" data-guess="1">Light 2</button>
+          <button class="seg-btn" data-guess="2">Light 3</button>
+          <button class="seg-btn" data-guess="3">Light 4</button>
+          <button class="seg-btn" data-guess="source">Source</button>
+        </div>
+        <div class="sim-feedback" data-feedback aria-live="polite"></div>
+        <div class="sim-controls">
+          <button class="sim-btn" data-act="new">New fault</button>
+          <span class="sim-chip">Measurements: <b data-count>0</b></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · REVIEW QUESTION 1 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:12:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"In the context of electrical circuits, briefly describe what troubleshooting is.","order":0,"responseTimeLimitMs":90000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Question 1 · Free Response</span>
+    <h2>What Is <span class="step">Troubleshooting?</span></h2>
+    <div class="frq-box">
+      In the context of electrical circuits, briefly describe what troubleshooting is.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · REVIEW QUESTION 2 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:13:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which choice puts the four main steps of a general troubleshooting approach in the correct order?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Location of the faulty component(s) → Observation → Reparation or replacement of the faulty component(s) → Identification of the cause for the fault(s)","isCorrect":false},{"id":"q1b","text":"Observation → Location of the faulty component(s) → Identification of the cause for the fault(s) → Reparation or replacement of the faulty component(s)","isCorrect":true},{"id":"q1c","text":"Observation → Identification of the cause for the fault(s) → Reparation or replacement of the faulty component(s) → Location of the faulty component(s)","isCorrect":false},{"id":"q1d","text":"Identification of the cause for the fault(s) → Location of the faulty component(s) → Observation → Reparation or replacement of the faulty component(s)","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Question 2</span>
+    <h2>Order the Four <span class="step">Troubleshooting Steps</span></h2>
+    <p class="slide-intro">Which choice puts the four main steps of a general troubleshooting approach in the correct order?</p>
+    <ul class="mcq-opts" style="max-width:1400px;">
+      <li><span class="opt-key">A</span> Location of the faulty component(s) &rarr; Observation &rarr; Reparation or replacement of the faulty component(s) &rarr; Identification of the cause for the fault(s)</li>
+      <li><span class="opt-key">B</span> Observation &rarr; Location of the faulty component(s) &rarr; Identification of the cause for the fault(s) &rarr; Reparation or replacement of the faulty component(s)</li>
+      <li><span class="opt-key">C</span> Observation &rarr; Identification of the cause for the fault(s) &rarr; Reparation or replacement of the faulty component(s) &rarr; Location of the faulty component(s)</li>
+      <li><span class="opt-key">D</span> Identification of the cause for the fault(s) &rarr; Location of the faulty component(s) &rarr; Observation &rarr; Reparation or replacement of the faulty component(s)</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · REVIEW QUESTIONS 3 AND 4 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:14:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Briefly describe the **voltmeter** method of troubleshooting.","order":0,"responseTimeLimitMs":90000},{"id":"q2","type":"free-response","text":"Briefly describe the **ohmmeter** method of troubleshooting.","order":1,"responseTimeLimitMs":90000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Questions 3 and 4 · Free Response</span>
+    <h2>Describe Each <span class="step">Method</span></h2>
+    <div class="split split-50 split-top">
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">3 · The <span class="volt">voltmeter</span> method</h3>
+        <div class="frq-box">Briefly describe the voltmeter method of troubleshooting.</div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:var(--gap-sm);">4 · The <span class="ohm">ohmmeter</span> method</h3>
+        <div class="frq-box">Briefly describe the ohmmeter method of troubleshooting.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · REVIEW QUESTION 5 -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:15:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"The dc motor does not turn on when the NO push button is pressed. Using the ohmmeter readings, which component is faulty?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"NO push button","isCorrect":false},{"id":"q1b","text":"Relay coil (CR)","isCorrect":false},{"id":"q1c","text":"NO relay contact","isCorrect":false},{"id":"q1d","text":"Fuse","isCorrect":true},{"id":"q1e","text":"DC motor","isCorrect":false},{"id":"q1f","text":"NC relay contact","isCorrect":false},{"id":"q1g","text":"Indicator light","isCorrect":false}]},{"id":"q2","type":"free-response","text":"What is the most probable explanation for this fault, and how can you correct the problem? Explain briefly.","order":1,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Question 5 · Figure 92</span>
+    <h2>Locate the Fault with the <span class="ohm">Ohmmeter</span> Readings</h2>
+    <p class="slide-intro" style="font-size:var(--small);max-width:1400px;">The dc motor does not turn on when the dc power source is started and the NO push button is pressed. Using the ohmmeter readings, where is the fault? What is the most probable explanation for it, and how can you correct the problem?</p>
+    <div class="split split-top" style="grid-template-columns:1fr 1fr;align-items:start;">
+
+      <figure class="fig">
+        <img class="c-img img-zoomable" src="EX6_Troubleshooting_Methods_Assets/fig92_review_circuit.png"
+             alt="Figure 92: A 24 V dc power source. The left branch has an NO push button in series with relay coil CR. The middle branch has an NO contact of CR, a fuse, and a dc motor in series. The right branch has an NC contact of CR in series with an indicator light."
+             style="width:100%;">
+        <figcaption class="img-caption">Figure 92: Circuit for this review question. Left branch: NO push button and relay coil CR. Middle branch: NO relay contact, fuse, and dc motor. Right branch: NC relay contact and indicator light.</figcaption>
+      </figure>
+
+      <table class="read-table" style="font-size:18px;">
+        <thead><tr><th>Component</th><th>Measured</th></tr></thead>
+        <tbody>
+          <tr><td>NO push button (open)</td><td>&infin; &Omega;</td></tr>
+          <tr><td>NO push button (closed)</td><td>0.1 &Omega;</td></tr>
+          <tr><td>Relay coil CR</td><td>460 &Omega;</td></tr>
+          <tr><td>NO relay contact (coil energized)</td><td>0.1 &Omega;</td></tr>
+          <tr><td>NO relay contact (coil de-energized)</td><td>&infin; &Omega;</td></tr>
+          <tr><td>Fuse</td><td>&infin; &Omega;</td></tr>
+          <tr><td>DC motor</td><td>64 &Omega;</td></tr>
+          <tr><td>NC relay contact (coil energized)</td><td>&infin; &Omega;</td></tr>
+          <tr><td>NC relay contact (coil de-energized)</td><td>0.1 &Omega;</td></tr>
+          <tr><td>Indicator light</td><td>36 &Omega;</td></tr>
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+// Interactive fault finder. A random fault (one light open, shorted, or
+// reading too high or too low, or a dead source) is hidden in a 24 V series circuit of four
+// identical 60-ohm lights. In voltmeter mode the source is on: the lights glow
+// by their share of power and probing position k reads the voltage from the
+// left terminal of light k to the source's negative terminal. In ohmmeter mode
+// the source is removed and each light's resistance can be read. The student
+// then names the faulty component.
+function initFaultFinders(Reveal) {
+    document.querySelectorAll('.fault-sim').forEach(function (root) {
+        if (root.closest('#storyboard')) return;
+        var V_SRC = 24;
+        var R_LAMP = 60;
+        var N = 4;
+        var KINDS = ['open', 'short', 'high', 'low', 'dead'];
+        var bag = [];
+        var st;
+
+        function randInt(min, max) { return min + Math.floor(Math.random() * (max - min + 1)); }
+
+        // Resistance of a faulty light. High and low values stay well outside
+        // the 60-ohm rating so they read as clearly out of tolerance.
+        function faultOhms(kind) {
+            if (kind === 'open') return Infinity;
+            if (kind === 'short') return randInt(1, 3) / 10;
+            if (kind === 'high') return randInt(16, 36) * 5;   // 80 to 180 ohms
+            return randInt(3, 9) * 5;                          // 15 to 45 ohms
+        }
+
+        function sum(arr) { return arr.reduce(function (a, b) { return a + b; }, 0); }
+
+        function resistances() {
+            var r = [];
+            for (var k = 0; k < N; k++) r.push(R_LAMP);
+            if (st.fault.part !== 'source') r[st.fault.part] = st.fault.ohms;
+            return r;
+        }
+
+        function sourceVolts() { return st.fault.kind === 'dead' ? 0 : V_SRC; }
+
+        // Voltage from position k (left terminal of light k) to the source's negative terminal.
+        function positionVolts(k) {
+            var r = resistances();
+            var v = sourceVolts();
+            var open = r.indexOf(Infinity);
+            if (open !== -1) return k <= open ? v : 0;
+            return v - v * sum(r.slice(0, k)) / sum(r);
+        }
+
+        // Power in light k relative to a healthy circuit (1 = normal brightness).
+        function relativePower(k) {
+            var r = resistances();
+            if (r.indexOf(Infinity) !== -1) return 0;
+            var current = sourceVolts() / sum(r);
+            var normal = V_SRC / (N * R_LAMP);
+            return (current * current * r[k]) / (normal * normal * R_LAMP);
+        }
+
+        function format(probe) {
+            var k = +probe.slice(1);
+            if (probe[0] === 'v') return positionVolts(k).toFixed(1) + ' V';
+            var ohms = resistances()[k];
+            if (ohms === Infinity) return '∞ Ω';
+            return (ohms < 1 ? ohms.toFixed(1) : Math.round(ohms)) + ' Ω';
+        }
+
+        function explain() {
+            var f = st.fault;
+            if (f.part === 'source') {
+                return 'The power source is faulty. Every position reads 0 V, even though all four lights measure a normal 60 Ω.';
+            }
+            var name = 'Light ' + (f.part + 1);
+            if (f.kind === 'open') {
+                return name + ' is burned out (open). Its resistance is infinite, so no current flows anywhere in the series circuit and every light is dark. The voltage stays at 24 V up to that light and drops to 0 V after it.';
+            }
+            if (f.kind === 'short') {
+                return name + ' is shorted. Its resistance is virtually 0 Ω, so it drops no voltage and stays dark, while the other three lights share the full 24 V and glow brighter than normal.';
+            }
+            if (f.kind === 'high') {
+                return name + ' is defective. It measures ' + f.ohms + ' Ω, well above the expected 60 Ω, so it takes more than its share of the 24 V and glows brighter than the others. The current in the whole circuit drops, so the other three lights are dimmer than normal.';
+            }
+            return name + ' is defective. It measures ' + f.ohms + ' Ω, well below the expected 60 Ω, so it drops less than its share of the 24 V and glows dimmer than the others. The current in the whole circuit rises, so the other three lights are brighter than normal.';
+        }
+
+        function newFault() {
+            // Deal fault types from a shuffled bag so every five faults cover
+            // each type once. A refilled bag never starts with the type just seen.
+            var prevKind = st && st.fault.kind;
+            if (!bag.length) {
+                bag = KINDS.slice();
+                for (var i = bag.length - 1; i > 0; i--) {
+                    var j = randInt(0, i);
+                    var t = bag[i]; bag[i] = bag[j]; bag[j] = t;
+                }
+                if (bag[bag.length - 1] === prevKind) bag.unshift(bag.pop());
+            }
+            var kind = bag.pop();
+            var f = kind === 'dead'
+                ? { part: 'source', kind: 'dead' }
+                : { part: randInt(0, N - 1), kind: kind, ohms: faultOhms(kind) };
+            st = { fault: f, mode: 'volt', probe: null, log: {}, solved: false, wrong: {} , feedback: '', feedbackKind: '' };
+        }
+
+        function render() {
+            var ohmMode = st.mode === 'ohm';
+            root.classList.toggle('mode-ohm', ohmMode);
+
+            root.querySelectorAll('[data-lamp]').forEach(function (el) {
+                var k = +el.dataset.lamp;
+                var g = ohmMode ? 0 : Math.min(1, 0.6 * relativePower(k));
+                el.style.setProperty('--g', g.toFixed(3));
+                el.classList.toggle('faulty', !!(st.solved && st.fault.part === k));
+            });
+
+            root.querySelectorAll('[data-mode]').forEach(function (el) {
+                el.setAttribute('aria-pressed', String(el.dataset.mode === st.mode));
+            });
+            root.querySelectorAll('[data-probe]').forEach(function (el) {
+                var sel = el.dataset.probe === st.probe;
+                el.classList.toggle('sel', sel);
+                if (el.tagName === 'BUTTON') el.setAttribute('aria-pressed', String(sel));
+            });
+
+            var lead = root.querySelector('[data-lead]');
+            var target = st.probe && st.probe[0] === 'v' ? root.querySelector('g[data-probe="' + st.probe + '"]') : null;
+            lead.setAttribute('d', target ? target.dataset.leadD : '');
+
+            root.querySelector('[data-meter-name]').textContent = ohmMode ? 'OHMMETER' : 'VOLTMETER';
+            var showing = st.probe && st.probe[0] === (ohmMode ? 'o' : 'v');
+            root.querySelector('[data-meter-read]').textContent = showing ? st.log[st.probe] : '- - -';
+
+            root.querySelectorAll('[data-log]').forEach(function (el) {
+                el.textContent = st.log[el.dataset.log] || '–';
+            });
+            root.querySelector('[data-count]').textContent = Object.keys(st.log).length;
+
+            root.querySelectorAll('[data-guess]').forEach(function (el) {
+                var g = el.dataset.guess;
+                var isAnswer = String(st.fault.part) === g;
+                el.disabled = st.solved;
+                el.classList.toggle('right', st.solved && isAnswer);
+                el.classList.toggle('wrong', !!st.wrong[g]);
+            });
+
+            var fb = root.querySelector('[data-feedback]');
+            fb.textContent = st.feedback;
+            fb.classList.toggle('right', st.feedbackKind === 'right');
+            fb.classList.toggle('wrong', st.feedbackKind === 'wrong');
+        }
+
+        root.querySelectorAll('[data-mode]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                if (st.mode === el.dataset.mode) return;
+                st.mode = el.dataset.mode;
+                st.probe = null;
+                render();
+            });
+        });
+
+        root.querySelectorAll('[data-probe]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                st.probe = el.dataset.probe;
+                st.log[st.probe] = format(st.probe);
+                render();
+            });
+        });
+
+        root.querySelectorAll('[data-guess]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                if (st.solved) return;
+                var g = el.dataset.guess;
+                if (String(st.fault.part) === g) {
+                    st.solved = true;
+                    st.feedbackKind = 'right';
+                    st.feedback = 'Correct! ' + explain();
+                } else {
+                    st.wrong[g] = true;
+                    st.feedbackKind = 'wrong';
+                    st.feedback = 'Not quite. Compare each measured value with its expected value, and find where they first disagree.';
+                }
+                render();
+            });
+        });
+
+        root.querySelector('[data-act="new"]').addEventListener('click', function () {
+            newFault();
+            render();
+        });
+
+        Reveal.on('slidechanged', function () {
+            newFault();
+            render();
+        });
+
+        newFault();
+        render();
+    });
+}
+
+initSyncDeckReveal({
+    deckId: 'troubleshooting-methods',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        initFaultFinders(Reveal);
+    },
+});
+</script>
+</body>
+</html>
