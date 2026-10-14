@@ -197,6 +197,11 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
    instead.
 9. Give every Resonance question a `responseTimeLimitMs` unless the user explicitly asks for an
    untimed question.
+10. Put embedded activities (`data-activity-id`, e.g. Resonance) only on dedicated question
+   slides whose content is just the prompt and its options. A running activity covers the slide
+   for students, so never attach one to a teaching or worked-example slide (fragments, figures,
+   explanations) that students still need to see. If a content slide needs a check-in question,
+   give the question its own slide right after it.
 
 ## Reusable Activity Index
 
@@ -263,7 +268,7 @@ This applies uniformly to console output, variable assignment, and function-retu
 - **No em dashes (—).** Always substitute context-appropriate punctuation: colon for introductory/defining clauses, comma for parenthetical asides or conjunctions, semicolon for contrasting independent clauses, period for abrupt follow-up sentences.
 - **Sentences not fragments.** Avoid telegraphic style; write in full sentences for clarity and professionalism. Students may miss class and need to read the slides independently, so they should be as self-contained and clear as possible. Sentences and short paragraphs  improve readability and break up large blocks of text.
 - **Inline color emphasis over bullets.** Prefer prose sentences with key terms highlighted via a theme color span (e.g. `<span style="color:var(--phosphor);">`) over bullet lists. Check the deck's theme for available color tokens before writing spans. Color-pop the term or phrase that carries the weight of the sentence, not the whole sentence. Use `.bullets` lists only when the items are genuinely enumerable and parallel; otherwise, fold the ideas into sentences and let inline emphasis do the work of drawing the eye. Keep color usage semantically consistent within a deck: if one color is used for a concept (e.g. a keyword, a class name, an action), use that same color for the same concept throughout the presentation.
-- **Interactivity**: use Reveal's built-in interactivity features (fragments, nested sections, etc.) to pace the information flow and keep students engaged. Avoid overwhelming slides with too much information at once. Use syncdeck's embedded activities to encourage active learning and exploration.
+- **Interactivity**: use Reveal's built-in interactivity features (fragments, nested sections, etc.) to pace the information flow and keep students engaged. Avoid overwhelming slides with too much information at once. Use syncdeck's embedded activities to encourage active learning and exploration. Embedded activities hide the slide content while they run, so give each one its own question slide (see step 10 above).
 - **No clever paired-phrase slide titles.** Avoid the "X, Y" cutesy-contrast construction (e.g. "Three Stages, One Habit", "One STEP Bus, Not Four NOTs"). Prefer a direct, descriptive title that plainly states what the slide is about (e.g. "The Build Process", "The STEP Bus").
 
 ## Local Preview
