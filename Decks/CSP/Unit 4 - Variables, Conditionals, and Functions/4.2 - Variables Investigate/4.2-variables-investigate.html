@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="17lic7l">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.2 Variables Investigate</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES — 4.2 Variables Investigate
+   ============================================================ */
+
+:root {
+  /* Body text brighter than the shared theme's 0.6 alpha so prose
+     clears 7:1 on both the page and card backgrounds. */
+  --text-body: #b8cac7;
+}
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+.bullets li { color: var(--text-body); }
+.frq-box p { color: var(--text-body); }
+
+/* ─── Semantic inline emphasis (matches 4.1) ────────────────────────
+   i.n  a variable name, in code font, teal
+   i.v  a number value, gold
+   i.s  a string value, green
+   i.f  a command or function name, in code font, white
+   i.a  an action students take (run, predict, modify), amber
+   i.c  a concept word (variable, watcher, pattern), teal
+   ─────────────────────────────────────────────────────────────── */
+.reveal i.n, .reveal i.v, .reveal i.s, .reveal i.f {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-weight: 500;
+}
+.reveal i.n { color: var(--teal); }
+.reveal i.v { color: var(--gold); }
+.reveal i.s { color: var(--green); }
+.reveal i.f { color: var(--text); font-weight: 700; }
+.reveal i.a { font-style: normal; color: var(--amber); font-weight: 600; }
+.reveal i.c { font-style: normal; color: var(--teal); font-weight: 600; }
+
+/* ─── Syntax tokens for static code cards ───────────────────────── */
+.tk-kw  { color: var(--amber); font-weight: 600; }
+.tk-nm  { color: var(--teal); }
+.tk-fn  { color: var(--text); font-weight: 600; }
+.tk-str { color: var(--green); }
+.tk-num { color: var(--gold); }
+
+.code-card pre code { font-size: 26px; line-height: 1.6; max-height: none; }
+.code-card .code-body { padding: 18px 26px; }
+
+/* ─── Layout helpers ─────────────────────────────────────────────── */
+.top-inner { justify-content: flex-start !important; padding-top: 52px !important; }
+.media-split {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--gap-lg);
+  align-items: start;
+  margin-top: var(--gap-sm);
+}
+.media-split.even { grid-template-columns: 1fr 1fr; align-items: center; }
+.shot {
+  display: block;
+  border: 1px solid rgba(0,201,177,0.4);
+  border-radius: 6px;
+  background: #fff;
+  max-width: 100%;
+}
+.shot-caption {
+  margin-top: 8px;
+  font-size: var(--small) !important;
+  color: var(--text-body);
+  text-align: center;
+}
+.step-list p { font-size: 27px; line-height: 1.55; }
+.step-list p + p { margin-top: var(--gap); }
+/* Numbered steps use a hanging indent so wrapped lines align with the text */
+.step-list p:has(> .step-label) {
+  padding-left: 128px;
+  text-indent: -128px;
+}
+.step-label {
+  display: inline-block;
+  min-width: 128px;
+  text-indent: 0;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid var(--green);
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text);
+  margin-right: 18px;
+  vertical-align: middle;
+}
+.level-head { display: flex; align-items: center; margin-bottom: var(--gap); }
+.level-head h2 { margin: 0; }
+
+.prompt-big {
+  font-size: 46px !important;
+  line-height: 1.35 !important;
+  color: var(--text) !important;
+  max-width: 1200px;
+  text-align: center;
+}
+.def-card {
+  max-width: 1200px;
+  padding: 40px 52px;
+}
+.def-card p { font-size: 36px !important; line-height: 1.5 !important; color: var(--text) !important; }
+.def-term {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: var(--gap-sm);
+}
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+.result-row .arrow { color: var(--amber); }
+/* ─── Click-to-play GIF: poster frame until clicked ─────────────── */
+.gif-player {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.gif-player .shot { width: 100%; }
+.gif-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 120px;
+  height: 120px;
+  margin: -60px 0 0 -60px;
+  border-radius: 50%;
+  background: rgba(9,20,18,0.82);
+  border: 3px solid var(--amber);
+  transition: opacity 0.2s var(--ease);
+}
+.gif-play::before {
+  content: '';
+  position: absolute;
+  left: 46px;
+  top: 34px;
+  border-style: solid;
+  border-width: 26px 0 26px 40px;
+  border-color: transparent transparent transparent var(--amber);
+}
+.gif-player.playing .gif-play { opacity: 0; }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 4 &middot; Lesson 4.2</span>
+        <h1 class="title-h1">Variables Investigate</h1>
+        <p style="font-size:var(--body);max-width:1100px;line-height:1.6;margin-top:var(--gap);">Last lesson we traced <i class="c">variables</i> by hand. Today we will investigate working apps on Code.org to see how real programs use variables to <i class="a">store</i>, <i class="a">update</i>, and <i class="a">display</i> information.</p>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+      <aside class="notes">Computer Science Principles, Unit 4 Lesson 2. This lesson follows the TraceLift tracing work in 4.1, so students already have a mental model of var, assignment, and reassignment.</aside>
+    </section>
+
+    <!-- SLIDE 2 · WARM UP -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What does a variable do?","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Warm Up</span>
+        <p class="prompt-big">What does a <i class="c">variable</i> do?</p>
+        <p style="margin-top:var(--gap-lg);max-width:1000px;text-align:center;">Answer in your own words. Think about what you did with the Memory Trace in the last lesson.</p>
+      </div>
+      <aside class="notes">Collect responses, then share a few. Listen for ideas like "it stores a value," "it gives a name to a value," and "the value can change." Do not formalize the definition yet; the vocabulary slide at the end does that.</aside>
+    </section>
+
+    <!-- SLIDE 3 · GETTING STARTED -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Getting Started</span>
+        <h2>Variables Investigate</h2>
+        <div class="step-list" style="margin-top:var(--gap);">
+          <p><span class="step-label">Step 1</span><a href="https://learn.mycode.run/link/xncfx" target="_blank" rel="noopener"><i class="a">Open Lesson 4.2</i> on Code.org</a>.</p>
+          <p><span class="step-label">Step 2</span><i class="a">Open your Investigation Log</i> on Buzz. You will record your predictions and explanations there as we work through each level.</p>
+        </div>
+      </div>
+      <aside class="notes">Make sure everyone is on Lesson 2 (Variables Investigate), not Lesson 1. Students work in pairs on one app but each keeps their own Investigation Log.</aside>
+    </section>
+
+    <!-- SLIDE 4 · LEVEL 1 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <div class="level-head"><span class="level-badge">1</span><h2>Run and Predict</h2></div>
+        <div class="media-split">
+          <img class="shot" src="media/thermostat-v1.png" alt="Code.org Level 1: Home Thermostat App showing 70 F with a blue down arrow and a red up arrow, alongside the instructions" style="width:820px;">
+          <div class="step-list">
+            <p><i class="a">Run the app</i> and click on different parts of the screen to see what happens.</p>
+            <p>Then <i class="a">predict</i> what information is being stored in <i class="c">variables</i>. What is being stored, and what is being changed?</p>
+            <p>Write your predictions in your Investigation Log.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Students should notice that the number goes up and down by one each click. Push them to name the variable before they see the code: "There must be something that remembers the current temperature."</aside>
+    </section>
+
+    <!-- SLIDE 5 · LEVEL 2: READ AND EXPLAIN -->
+    <section>
+      <div class="slide-inner top-inner">
+        <div class="level-head"><span class="level-badge">2</span><h2>Read and Explain the Code</h2></div>
+        <div class="step-list" style="max-width:1300px;">
+          <p><span class="step-label">Step 1</span>Your teacher will <i class="a">assign</i> you to <i class="c">Section 1</i> or <i class="c">Section 2</i> of the code.</p>
+          <p class="fragment fade-up" data-fragment-index="0"><span class="step-label">Step 2</span><i class="a">Move to dot 2</i> on Code.org.</p>
+          <p class="fragment fade-up" data-fragment-index="1"><span class="step-label">Step 3</span><i class="a">Read</i> the code for your assigned section and make sure you understand how it works. Check your predictions from Level 1: which <i class="c">variables</i> did you guess correctly?</p>
+          <p class="fragment fade-up" data-fragment-index="2"><span class="step-label">Step 4</span>Make a group with partners who investigated the other section. Carefully <i class="a">explain</i> how your section works line by line, so your partners understand it without reading it themselves.</p>
+        </div>
+        <div class="callout fragment fade-up" data-fragment-index="2" style="margin:var(--gap-lg) 0 0 128px;max-width:1172px;">
+          <p>As you explain, read each assignment the same way we did in the last lesson. For example, <code style="white-space:nowrap;">tempF = tempF + 1</code> reads as &ldquo;<i class="n">tempF</i> <i class="a">gets</i> the value in <i class="n">tempF</i> plus <i class="v">1</i>.&rdquo;</p>
+        </div>
+      </div>
+      <aside class="notes">Jigsaw: assign half the pairs to Section 1 and half to Section 2. Then regroup so each new group has one expert per section.</aside>
+    </section>
+
+    <!-- SLIDE 6 · ADDING A WATCHER -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Debugging Tool</span>
+        <h2>Adding a Watcher</h2>
+        <div class="media-split">
+          <button type="button" class="gif-player" data-gif="media/add-watcher.gif" data-poster="media/add-watcher-poster.png" data-duration="22100" aria-label="Play the Add a Watcher animation" style="width:900px;">
+            <img class="shot" src="media/add-watcher-poster.png" alt="Animation of App Lab: typing tempF into the Watch panel, clicking plus, then running the app and clicking the arrows while the watched value updates">
+            <span class="gif-play" aria-hidden="true"></span>
+          </button>
+          <div class="step-list">
+            <p>A <i class="c">watcher</i> shows the current value of a variable while your app runs.</p>
+            <p class="fragment fade-up">In the <i class="a">Watch</i> panel at the bottom right, type a variable name like <i class="n">tempF</i> and click <i class="a">+</i>.</p>
+            <p class="fragment fade-up">Run the app and click the buttons. Watch the value change each time the variable gets a new value.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Point out that tempF shows "undefined" before the app runs, just like a declared but unassigned variable in our Memory Trace. The watcher is App Lab's version of the Memory Trace column.</aside>
+    </section>
+
+    <!-- SLIDE 7 · LEVEL 2: MODIFY -->
+    <section>
+      <div class="slide-inner top-inner">
+        <div class="level-head"><span class="level-badge">2</span><h2>Modify the Thermostat</h2></div>
+        <div class="step-list" style="max-width:1300px;">
+          <p><span class="step-label">Step 1</span><i class="a">Modify</i> the code so the temperature changes by <i class="v">2</i> degrees when the up and down arrows are clicked.</p>
+          <p class="fragment fade-up"><span class="step-label">Step 2</span><i class="a">Check</i> your work: add a <i class="c">watcher</i> for the temperature variable and run the app. Each click should change the watched value by exactly <i class="v">2</i>.</p>
+        </div>
+      </div>
+      <aside class="notes">Common mistake: students change only one button. Have them test both directions with the watcher visible.</aside>
+    </section>
+
+    <!-- SLIDE 8 · LEVEL 3: MATH.ROUND -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:8:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Move to dot 3 on Code.org. Look at lines 3, 15, and 28 in the code. How do you think `Math.round` works?","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner top-inner" style="padding-top:36px !important;">
+        <div class="level-head" style="margin-bottom:var(--gap-sm);"><span class="level-badge">3</span><h2>How Does Math.round Work?</h2></div>
+        <div class="media-split">
+          <img class="shot" src="media/thermostat-v3-code.png" alt="Block code for the thermostat app, 35 lines. Line 3: var tempC = Math.round((tempF - 32) * (5/9)). Lines 15 and 28 repeat the same Math.round calculation inside the down and up button events." style="height:700px;">
+          <div class="step-list">
+            <p><i class="a">Look through the code</i>. A new variable, <i class="n">tempC</i>, now stores the temperature in Celsius.</p>
+            <p>Give your best answer: how do you think <i class="f">Math.round</i> works? Check lines <i class="v">3</i>, <i class="v">15</i>, and <i class="v">28</i>.</p>
+            <div class="callout accent-green fragment fade-up" style="margin-top:var(--gap);">
+              <p><i class="f">Math.round</i> takes a number and gives back the <i class="c">nearest whole number</i>. When <i class="n">tempF</i> is <i class="v">70</i>, the expression evaluates to <i class="v">21.11&hellip;</i>, so <i class="n">tempC</i> gets <i class="v">21</i>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Collect guesses through the activity first, then reveal the explanation. Connect to "evaluate first, then assign": the whole right side, including Math.round, is evaluated to one value before tempC gets it. Ask why the same calculation appears three times (start value, down button, up button).</aside>
+    </section>
+
+    <!-- SLIDE 9 · LEVEL 4 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <div class="level-head"><span class="level-badge">4</span><h2>Celsius and Display Strings</h2></div>
+        <div class="media-split">
+          <img class="shot" src="media/thermostat-v4-app.png" alt="Home Thermostat App showing 70 F above 21 C, with down and up arrow buttons" style="height:620px;">
+          <div class="step-list">
+            <p><span class="step-label">Step 1</span><i class="a">Move to dot 4</i> on Code.org. <i class="a">Run the app</i> and discuss what changed from the last version.</p>
+            <p class="fragment fade-up"><span class="step-label">Step 2</span>Try <i class="a">deleting</i> just the <i class="f">Math.round</i> in lines <i class="v">3</i>, <i class="v">15</i>, and <i class="v">28</i>. What happens? Then <i class="a">add it back in</i>.</p>
+            <p class="fragment fade-up"><span class="step-label">Step 3</span><i class="a">Modify</i> the code so that <i class="a">no space</i> displays between the temperature and the unit, so the screen shows <i class="s">70F</i> and <i class="s">21C</i>.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Without Math.round, the Celsius display shows long decimals like 21.11111111111111 C, which shows students why the rounding is there. The space comes from the string " F" (space then F) being joined to the number. Students need to change the strings in the var lines and in both event handlers. If they only change line 4, the space comes back after the first click.</aside>
+    </section>
+
+    <!-- SLIDE 10 · LEVEL 5 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <div class="level-head"><span class="level-badge">5</span><h2>Run and Predict</h2></div>
+        <div class="step-list" style="max-width:1300px;">
+          <p><span class="step-label">Step 1</span><i class="a">Move to dot 5</i> on Code.org. <i class="a">Run the app</i> and look for what this version adds to the screen.</p>
+          <p class="fragment fade-up"><span class="step-label">Step 2</span><i class="a">Predict</i> what new information this version stores in <i class="c">variables</i>. Which of those values are strings, and which are numbers?</p>
+          <p class="fragment fade-up"><span class="step-label">Step 3</span>Write your predictions in your Investigation Log before you look at the code.</p>
+        </div>
+      </div>
+      <aside class="notes">Students should notice that the app now asks for or uses the user's name. That value is a string that comes from the user rather than from the program.</aside>
+    </section>
+
+    <!-- SLIDE 11 · LEVEL 6 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <div class="level-head"><span class="level-badge">6</span><h2>Reading Text with getText</h2></div>
+        <div class="step-list" style="max-width:1400px;">
+          <p><span class="step-label">Step 1</span><i class="a">Move to dot 6</i> on Code.org.</p>
+          <p class="fragment fade-up"><span class="step-label">Step 2</span><i class="a">Read</i> the code and discuss with your partner what has <i class="a">changed</i> and what has <i class="a">stayed the same</i>.</p>
+          <p class="fragment fade-up"><span class="step-label">Step 3</span><i class="a">Discuss</i> as a class: how does <i class="f">getText()</i> work?</p>
+          <div class="callout accent-green fragment fade-up" style="margin:var(--gap-sm) 0 0 128px;">
+            <p><i class="f">getText(&quot;id&quot;)</i> looks up the screen element with that id and gives back the text it holds <i class="c">right now</i>, as a string. We can store that string in a variable like <i class="n">userName</i>.</p>
+          </div>
+          <p class="fragment fade-up" style="margin-top:var(--gap);"><span class="step-label">Step 4</span><i class="a">Modify</i> the code: use <i class="c">string concatenation</i> to add an exclamation point <i class="s">"!"</i> to the end of the string stored in <i class="n">userName</i>. Concatenation joins two strings into one with the <i class="f">+</i> operator. When you are done, the screen should display:</p>
+          <img class="fragment fade-up shot" src="media/hi-lola.png" alt="App header reading Home Thermostat App, with a gray bar below that reads Hi, Lola!" style="width:560px;margin:var(--gap-sm) 0 0 128px;background:transparent;">
+        </div>
+      </div>
+      <aside class="notes">Hold the getText reveal until after the class discussion. For the modify, students should use string concatenation, such as userName = userName + "!"; or adding "!" when the string is built. Either is fine as long as the exclamation point ends up at the end.</aside>
+    </section>
+
+    <!-- SLIDE 12 · CODE PATTERNS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Patterns</span>
+        <h2>Code Patterns</h2>
+        <div class="step-list" style="max-width:1300px;margin-top:var(--gap-sm);">
+          <p>Programmers run into the same kinds of problems over and over, such as counting clicks or building a message out of smaller pieces. A <i class="c">code pattern</i> is a common, reusable way of solving one of those problems.</p>
+          <p class="fragment fade-up">You have already used patterns today without naming them. The thermostat buttons <i class="a">updated</i> a variable with each click, and the display <i class="a">joined</i> a number and a string to build what appeared on the screen.</p>
+          <p class="fragment fade-up">Once you can <i class="a">recognize</i> a pattern, you can reuse it in your own apps instead of solving the same problem from scratch. For each pattern, we will record its <i class="c">name</i>, its <i class="c">block code</i>, and its <i class="c">text code</i>.</p>
+        </div>
+      </div>
+      <aside class="notes">Frame patterns as a toolbox students will keep building through the unit. Ask: "Where in the thermostat app did we see the same kind of code more than once?" (The up and down buttons both update a variable and redisplay it.) The next two slides name the two patterns from today.</aside>
+    </section>
+
+    <!-- SLIDE 13 · COUNTER PATTERN WITH EVENT -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Pattern</span>
+        <h2>Counter Pattern with Event</h2>
+        <div class="media-split even">
+          <div>
+            <img class="shot" src="media/counter-pattern-blocks.png" alt="Block code: var myVar = 0; then onEvent id click function containing myVar = myVar + 1" style="width:100%;">
+            <p class="shot-caption">Block mode</p>
+          </div>
+          <div>
+            <div class="code-card"><div class="code-hdr"><span class="clang">text mode</span></div><div class="code-body"><pre><code><span class="tk-kw">var</span> <span class="tk-nm">myVar</span> = <span class="tk-num">0</span>;
+
+<span class="tk-fn">onEvent</span>(<span class="tk-str">"id"</span>, <span class="tk-str">"click"</span>, <span class="tk-kw">function</span>() {
+    <span class="tk-nm">myVar</span> = <span class="tk-nm">myVar</span> + <span class="tk-num">1</span>;
+});</code></pre></div></div>
+          </div>
+        </div>
+        <p class="fragment fade-up" style="margin-top:var(--gap-lg);max-width:1400px;">The variable is created <i class="a">once</i>, outside the event, so it keeps its value between clicks. Each click, <i class="n">myVar</i> <i class="a">gets</i> its current value plus <i class="v">1</i>. The thermostat buttons used this same pattern.</p>
+      </div>
+      <aside class="notes">Ask: what would happen if var myVar = 0 were moved inside the onEvent? (It would reset to 0 every click, so the counter would never go past 1.) Students should add this pattern to their pattern list or notes.</aside>
+    </section>
+
+    <!-- SLIDE 14 · VARIABLE WITH STRING CONCATENATION -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Pattern</span>
+        <h2>Variable with String Concatenation</h2>
+        <div class="media-split even" style="grid-template-columns:1.25fr 1fr;">
+          <div>
+            <img class="shot" src="media/concat-blocks.png" alt="Block code: var myString = rock; var myOtherString = roll; var myStory = myString + and + myOtherString" style="width:100%;">
+            <p class="shot-caption">Block mode</p>
+          </div>
+          <div>
+            <div class="code-card"><div class="code-hdr"><span class="clang">text mode</span></div><div class="code-body"><pre><code><span class="tk-kw">var</span> <span class="tk-nm">myString</span> = <span class="tk-str">"rock"</span>;
+<span class="tk-kw">var</span> <span class="tk-nm">myOtherString</span> = <span class="tk-str">"roll"</span>;
+
+<span class="tk-kw">var</span> <span class="tk-nm">myStory</span> = <span class="tk-nm">myString</span> +
+    <span class="tk-str">" and "</span> + <span class="tk-nm">myOtherString</span>;</code></pre></div></div>
+          </div>
+        </div>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);max-width:1400px;">
+          <p>The <i class="f">+</i> operator joins strings together. Look up each variable&rsquo;s current value, then join them in order:</p>
+          <div class="result-row" style="margin-top:var(--gap-sm);"><i class="n">myStory</i><span class="arrow">&larr;</span><i class="s">"rock and roll"</i></div>
+        </div>
+      </div>
+      <aside class="notes">Point out that the spaces come from the " and " string, not from the + operator. This connects directly to the Level 4 modify, where removing a space meant changing a string.</aside>
+    </section>
+
+    <!-- SLIDE 15 · REVIEW -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:14:0"
+      data-activity-options='{"presentationMode":"staged","questions":[{"id":"q1","type":"free-response","text":"What can be stored in a variable?","order":0,"responseTimeLimitMs":90000},{"id":"q2","type":"free-response","text":"Why is using a meaningful name for a variable important?","order":1,"responseTimeLimitMs":90000},{"id":"q3","type":"multiple-choice","text":"What value is stored in `snack`?\n\n```javascript\nvar first = \"hot\";\nvar second = \"dog\";\nvar snack = first + second;\n```","order":2,"responseTimeLimitMs":45000,"options":[{"id":"q3a","text":"`\"hot dog\"`","isCorrect":false},{"id":"q3b","text":"`\"hotdog\"`","isCorrect":true},{"id":"q3c","text":"`\"first + second\"`","isCorrect":false},{"id":"q3d","text":"`\"firstsecond\"`","isCorrect":false}]}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Review</span>
+        <p class="prompt-big">What can be stored in a <i class="c">variable</i>?</p>
+        <p class="prompt-big" style="margin-top:var(--gap);">Why is using a <i class="a">meaningful name</i> for the variable important?</p>
+      </div>
+      <aside class="notes">Expected ideas: numbers, strings, text a user typed (via getText), results of expressions like Math.round(...). Meaningful names like tempF and userName make the code readable for partners and your future self; myVar tells you nothing about what it stores. The third question checks the Level 4 lesson that + does not add spaces.</aside>
+    </section>
+
+    <!-- SLIDE 16 · VOCABULARY -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Vocabulary</span>
+        <div class="callout def-card">
+          <div class="def-term">Variable</div>
+          <p>A <i class="c">reference to a value</i> (or a value that results from evaluating an expression) that can be <i class="a">used repeatedly</i> throughout a program.</p>
+        </div>
+      </div>
+      <div class="glow" style="width:700px;height:700px;left:-200px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 68%);"></div>
+      <aside class="notes">This is the formal AP CSP definition. Have students copy it into their vocabulary list and compare it with their warm-up answer.</aside>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-4-2-variables-investigate',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+<script>
+// Click-to-play GIFs. Each GIF has no loop block, so it plays once and holds
+// its last frame. Clicking restarts it from the first frame; after
+// data-duration ms the play button returns. Leaving the slide shows the poster.
+(function () {
+  function reset(player, showPoster) {
+    clearTimeout(player._gifTimer);
+    player.classList.remove('playing');
+    if (showPoster) player.querySelector('img').src = player.dataset.poster;
+    player.setAttribute('aria-label', 'Play the animation');
+  }
+  document.addEventListener('click', function (e) {
+    var player = e.target.closest('.gif-player');
+    if (!player) return;
+    if (player.classList.contains('playing')) { reset(player, true); return; }
+    player.classList.add('playing');
+    player.querySelector('img').src = player.dataset.gif + '?t=' + Date.now();
+    player.setAttribute('aria-label', 'Stop the animation');
+    player._gifTimer = setTimeout(function () { reset(player, false); },
+      Number(player.dataset.duration) || 0);
+  });
+  window.addEventListener('load', function () {
+    if (window.Reveal && Reveal.on) {
+      Reveal.on('slidechanged', function () {
+        document.querySelectorAll('.gif-player').forEach(function (pl) { reset(pl, true); });
+      });
+    }
+  });
+})();
+</script>
+</body>
+</html>
