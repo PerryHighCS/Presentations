@@ -164,13 +164,17 @@ def main():
 
     # ── Activity instance keys ─────────────────────────────────────────
     keys = re.findall(r'data-activity-instance-key="([^"]+)"', html)
-    if keys:
-        print(f'OK  Instance keys ({len(keys)}): {keys}')
-    else:
+    activity_count = len(re.findall(r'data-activity-id="[^"]+"', html))
+    if activity_count == 0:
+        print('OK  Instance keys: no activity slides, none needed')
+    elif len(keys) < activity_count:
         warnings.append(
-            'No data-activity-instance-key attributes found. '
+            f'{activity_count} activity slide(s) but only {len(keys)} '
+            'data-activity-instance-key attribute(s). '
             'Add one per activity slide to prevent duplicate session creation.'
         )
+    else:
+        print(f'OK  Instance keys ({len(keys)}): {keys}')
 
     # ── Slide comment numbering ────────────────────────────────────────
     comments, mismatches = check_slide_numbering(html)
