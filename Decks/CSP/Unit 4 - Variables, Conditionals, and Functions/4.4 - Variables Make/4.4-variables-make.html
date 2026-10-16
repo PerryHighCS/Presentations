@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="14f3ioy">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.4 Variables Make</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: 4.4 Variables Make
+   ============================================================ */
+
+:root {
+  /* Body text brighter than the shared theme's 0.6 alpha so prose
+     clears 7:1 on both the page and card backgrounds. */
+  --text-body: #b8cac7;
+}
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+.frq-box p { color: var(--text-body); }
+
+/* ─── Semantic inline emphasis (matches 4.1 to 4.3) ─────────────────
+   i.n  a variable name or element id, in code font, teal
+   i.f  a command or function name, in code font, white
+   i.a  an action students take (open, plan, submit), amber
+   i.c  a concept word (input, output, event handler), teal
+   ─────────────────────────────────────────────────────────────── */
+.reveal i.n, .reveal i.f {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-weight: 500;
+}
+.reveal i.n { color: var(--teal); }
+.reveal i.f { color: var(--text); font-weight: 700; }
+.reveal i.a { font-style: normal; color: var(--amber); font-weight: 600; }
+.reveal i.c { font-style: normal; color: var(--teal); font-weight: 600; }
+
+/* ─── Layout helpers ─────────────────────────────────────────────── */
+.top-inner { justify-content: flex-start !important; padding-top: 52px !important; }
+.media-split {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--gap-lg);
+  align-items: start;
+  margin-top: var(--gap-sm);
+}
+.shot {
+  display: block;
+  border: 1px solid rgba(0,201,177,0.4);
+  border-radius: 6px;
+  background: #fff;
+  max-width: 100%;
+}
+.step-list p { font-size: 27px; line-height: 1.55; }
+.step-list p + p { margin-top: var(--gap); }
+.step-list p:has(> .step-label) {
+  padding-left: 128px;
+  text-indent: -128px;
+}
+.step-label {
+  display: inline-block;
+  min-width: 128px;
+  text-indent: 0;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.prose p { font-size: 26px; line-height: 1.55; }
+.prose p + p { margin-top: var(--gap); }
+.reveal .prose .bullets li { font-size: 26px; }
+
+.prompt-big {
+  font-size: 46px !important;
+  line-height: 1.35 !important;
+  color: var(--text) !important;
+  max-width: 1200px;
+  text-align: center;
+}
+
+/* ─── Element ID map: numbered badges on the app screenshot ─────── */
+.id-map {
+  position: relative;
+  width: 380px;
+  flex-shrink: 0;
+}
+.id-map .shot { width: 100%; }
+.id-dot {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  background: var(--amber);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 3px rgba(9,20,18,0.75);
+}
+.id-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap) var(--gap-lg);
+  align-content: start;
+}
+.id-legend .id-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.id-legend .id-num {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--amber);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.id-legend code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  color: var(--teal);
+  background: none;
+  padding: 0;
+}
+.id-legend p { font-size: 21px; line-height: 1.4; margin: 4px 0 0; }
+
+/* ─── Submission checklist ──────────────────────────────────────── */
+.checklist {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-sm) var(--gap);
+  margin-top: var(--gap);
+}
+.check-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+.check-box {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  margin-top: 4px;
+  border: 2px solid var(--teal);
+  border-radius: 4px;
+}
+.check-item h3 {
+  font-family: var(--font-mono);
+  font-size: 19px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin: 0 0 4px;
+}
+.check-item p { font-size: 21px; line-height: 1.45; margin: 0; }
+
+/* ─── Sentence starters with fill-in blanks ─────────────────────── */
+.starters {
+  list-style: none;
+  margin: var(--gap) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.reveal .starters li {
+  font-size: 26px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 12px 22px;
+}
+.blank {
+  display: inline-block;
+  min-width: 150px;
+  border-bottom: 2px solid var(--amber);
+  margin: 0 4px;
+  transform: translateY(-4px);
+}
+.submit-chip {
+  display: inline-block;
+  padding: 2px 14px;
+  border-radius: 6px;
+  background: #ffa62b;
+  color: #1a1206;
+  font-weight: 700;
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 4 &middot; Lesson 4.4</span>
+        <h1 class="title-h1">Variables Make</h1>
+        <p style="font-size:var(--body);max-width:1100px;line-height:1.6;margin-top:var(--gap);">Today you will <i class="a">build an app</i> from scratch, using <i class="c">variables</i> and <i class="c">event handlers</i> to keep track of what the user does.</p>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+      <aside class="notes">Computer Science Principles, Unit 4 Lesson 4. This is the Make lesson that closes out the variables sequence: Explore (4.1), Investigate (4.2), Practice (4.3), and now Make.</aside>
+    </section>
+
+    <!-- SLIDE 2 · THE PHOTO LIKER -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Variables Make</span>
+        <h2 style="margin-bottom:var(--gap);">The Photo Liker</h2>
+        <div class="media-split">
+          <img class="shot" src="media/photo-liker-app.png" alt="The Photo Liker app: a kitten photo, thumbs down and thumbs up buttons, a Likes: 0 counter, a comments box reading OMG soooo cute!, a New Comment text input, and a comment button" style="height:640px;background:transparent;border:0;">
+          <div class="prose" style="margin-top:var(--gap-lg);">
+            <p>Today you will write the code for the <i class="c">Photo Liker</i> app. The screen is already designed for you, and the starter code has comments to help you plan your program.</p>
+            <p>Users can <i class="a">like</i> or <i class="a">dislike</i> the photo and <i class="a">post comments</i> about it. Your code will keep track of the likes and the comments.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">This lesson only has one main level plus the submission. Students can work with a partner to try the app and plan, but each student builds and submits their own app.</aside>
+    </section>
+
+    <!-- SLIDE 3 · TRY THE APP -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 1</span>
+        <h2 style="margin-bottom:var(--gap);">Try the App</h2>
+        <div class="media-split">
+          <img class="shot" src="media/photo-liker-app.png" alt="The Photo Liker app with like, dislike, and comment controls" style="height:560px;background:transparent;border:0;">
+          <div class="prose">
+            <p>When you open the level, start by <i class="a">trying all of the buttons</i> and <i class="a">adding a comment</i> to the picture. Then discuss these questions with a partner.</p>
+            <ul class="bullets" style="margin-top:var(--gap);">
+              <li class="fragment fade-up">What does this app do?</li>
+              <li class="fragment fade-up">What are the <i class="c">inputs</i>?</li>
+              <li class="fragment fade-up">What are the <i class="c">outputs</i>?</li>
+              <li class="fragment fade-up">What is one piece of information that might be stored in a <i class="c">variable</i>?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Inputs: the up button, the down button, the comment text box, and the comment button. Outputs: the likes counter, the comment list, and the sounds. Listen for the number of likes and the number of comments as candidates for variables; those are exactly what the checklist asks for later.</aside>
+    </section>
+
+    <!-- SLIDE 4 · WHAT SHOULD BE STORED? -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:4:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What is one piece of information in the Photo Liker that might be stored in a variable? Explain why it needs to be stored.","order":0,"responseTimeLimitMs":90000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Check In</span>
+        <p class="prompt-big">What is one piece of information in the Photo Liker that might be stored in a <i class="c">variable</i>?</p>
+        <p style="margin-top:var(--gap-lg);max-width:1000px;text-align:center;font-size:var(--body);">Explain why the app needs to remember it.</p>
+      </div>
+      <aside class="notes">Collect answers and group them. The likes count must be remembered between clicks, so it needs a variable created at the top of the program, which connects back to the counter pattern and the global variable rule from 4.3.</aside>
+    </section>
+
+    <!-- SLIDE 5 · SCREEN ELEMENT IDS -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:44px !important;">
+        <span class="slide-tag">Step 2 &middot; Plan</span>
+        <h2 style="margin-bottom:var(--gap);">Screen Element IDs</h2>
+        <div style="display:flex;gap:var(--gap-lg);align-items:flex-start;">
+          <div class="id-map">
+            <img class="shot" src="media/photo-liker-app.png" alt="The Photo Liker app with numbered markers on each interactive element" style="background:transparent;border:0;">
+            <span class="id-dot" style="left:9.7%;top:63%;">1</span>
+            <span class="id-dot" style="left:21.8%;top:63%;">2</span>
+            <span class="id-dot" style="left:89%;top:69.7%;">3</span>
+            <span class="id-dot" style="left:12%;top:86%;">4</span>
+            <span class="id-dot" style="left:98%;top:78%;">5</span>
+            <span class="id-dot" style="left:65%;top:86%;">6</span>
+          </div>
+          <div class="prose" style="flex:1;">
+            <p>Every element on the screen already has an <i class="c">id</i>. Your <i class="f">onEvent</i> and <i class="f">setText</i> calls will use these names.</p>
+            <div class="id-legend" style="margin-top:var(--gap);">
+              <div class="id-item"><span class="id-num">1</span><div><code>downButton</code><p>An <i class="c">input</i> that removes a like.</p></div></div>
+              <div class="id-item"><span class="id-num">2</span><div><code>upButton</code><p>An <i class="c">input</i> that adds a like.</p></div></div>
+              <div class="id-item"><span class="id-num">3</span><div><code>likeCounterOutput</code><p>An <i class="c">output</i> that shows the likes.</p></div></div>
+              <div class="id-item"><span class="id-num">4</span><div><code>allCommentsOutput</code><p>An <i class="c">output</i> that shows every comment.</p></div></div>
+              <div class="id-item"><span class="id-num">5</span><div><code>newCommentInput</code><p>An <i class="c">input</i> where the user types a comment.</p></div></div>
+              <div class="id-item"><span class="id-num">6</span><div><code>commentButton</code><p>An <i class="c">input</i> that posts the comment.</p></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">These are the ids labeled on the activity guide. Point out that only the buttons need event handlers; the text input is read with getText when the comment button is clicked.</aside>
+    </section>
+
+    <!-- SLIDE 6 · MAKE THE PHOTO LIKER -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Do This</span>
+        <h2 style="margin-bottom:var(--gap);">Make the Photo Liker</h2>
+        <div class="media-split">
+          <img class="shot img-zoomable" src="media/activity-guide-plan.png" alt="Activity Guide page 1: Step 1, try using this app, and Step 2, plan, with a table for each event handler (element ID and description) and a table for each variable (name and what it stores)" style="height:620px;">
+          <div class="prose">
+            <p><i class="a">Use the activity guide to plan</i> your code before you start building. Fill in one row for each <i class="c">event handler</i> you will need and one row for each <i class="c">variable</i> you will create.</p>
+            <p class="fragment fade-up">Step 3 of the activity guide includes steps you can follow to <i class="a">build the app</i>, or you can use your own process.</p>
+            <p class="fragment fade-up">Remember the rules from last lesson: create each variable <i class="c">once</i>, <i class="c">at the top</i>, and <i class="c">outside</i> every <i class="f">onEvent</i>.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Check plans before students start coding. A good plan has three event handlers (upButton, downButton, commentButton) and at least two variables (likes and comments).</aside>
+    </section>
+
+    <!-- SLIDE 7 · CHECK YOUR WORK -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:44px !important;">
+        <span class="slide-tag">Before You Submit</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Check Your Work</h2>
+        <p style="font-size:var(--body);max-width:1350px;">Use this checklist to make sure your app is done <i class="a">before</i> you click <span class="submit-chip">Submit</span> on Code.org.</p>
+        <div class="checklist">
+          <div class="check-item"><span class="check-box"></span><div><h3>Event Handlers Created</h3><p>All required buttons have an <i class="f">onEvent</i>.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Variables</h3><p>Variables store the number of likes and comments, and they have clear, understandable names.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Event Handlers Written</h3><p>All necessary variables are updated inside the <i class="f">onEvent</i> blocks.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Output Information</h3><p>The screen shows the number of likes and total comments, and a sound plays when different buttons are clicked.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Runs Without Errors</h3><p>No errors are present in the code.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Coding Comments</h3><p>Comments correctly explain the purpose and function of every <i class="f">onEvent</i>.</p></div></div>
+        </div>
+      </div>
+      <aside class="notes">This is the same checklist as the activity guide. Have students check each item off on paper before they submit.</aside>
+    </section>
+
+    <!-- SLIDE 8 · CREATE PT WRITING PRACTICE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 5</span>
+        <h2 style="margin-bottom:var(--gap);">Create Performance Task Writing Practice</h2>
+        <p style="font-size:var(--body);max-width:1350px;">This question is based on the app you submitted. It is practice for the written part of the <i class="c">Create Performance Task</i>.</p>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1350px;">
+          <p style="font-size:30px;color:var(--text);">Explain how the design of your program&rsquo;s <i class="c">user interface</i> supports its <i class="c">functionality</i>. In your response, describe one feature of the interface and how it helps users interact with the program.</p>
+        </div>
+        <p style="font-size:var(--body);max-width:1350px;margin-top:var(--gap-lg);"><i class="a">Submit your completed activity guide</i> along with your completed app.</p>
+      </div>
+      <aside class="notes">The next slide has sentence starters for students who are not sure how to begin.</aside>
+    </section>
+
+    <!-- SLIDE 9 · SENTENCE STARTERS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 5</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Sentence Starters</h2>
+        <p style="font-size:var(--body);max-width:1350px;">These sentence starters may help you write your response. You can use or change some or all of them.</p>
+        <ul class="starters">
+          <li>One feature of my program&rsquo;s user interface that supports its functionality is<span class="blank"></span>.</li>
+          <li>This feature allows the user to<span class="blank"></span>.</li>
+          <li>For example, when the user interacts with<span class="blank"></span>, it<span class="blank"></span>.</li>
+          <li>This makes it easier for users to<span class="blank"></span>.</li>
+          <li>Additionally, the program provides feedback by<span class="blank"></span>.</li>
+        </ul>
+      </div>
+      <aside class="notes">A strong response names a specific element (such as the likes counter) and connects it to what the user can do and the feedback they get.</aside>
+    </section>
+
+    <!-- SLIDE 10 · GET STARTED -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Do This</span>
+        <h2 style="margin-bottom:var(--gap);">Get Started</h2>
+        <div class="step-list">
+          <p><span class="step-label">Step 1</span><a href="https://learn.mycode.run/link/xncml" target="_blank" rel="noopener"><i class="a">Open Lesson 4, Level 1</i> on Code.org</a>.</p>
+          <img class="shot" src="media/lesson-progress.png" alt="Code.org progress bar for Lesson 4: Variables Make, with Level 1 selected" style="width:315px;margin:8px 0 var(--gap) 128px;background:transparent;border:0;">
+          <p><span class="step-label">Step 2</span><i class="a">Try the app</i> and discuss the questions with a partner.</p>
+          <p><span class="step-label">Step 3</span><i class="a">Plan</i> your event handlers and variables in the activity guide.</p>
+          <p><span class="step-label">Step 4</span><i class="a">Build</i> the Photo Liker, then use the checklist before you <i class="a">submit</i>.</p>
+          <p><span class="step-label">Step 5</span><i class="a">Complete the writing practice</i> and submit your activity guide.</p>
+        </div>
+      </div>
+      <aside class="notes">This slide stays up while students work so they can see the order of the steps.</aside>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-4-4-variables-make',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
