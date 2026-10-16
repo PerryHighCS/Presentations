@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="14dks42">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.3 Variables Practice</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: 4.3 Variables Practice
+   ============================================================ */
+
+:root {
+  /* Body text brighter than the shared theme's 0.6 alpha so prose
+     clears 7:1 on both the page and card backgrounds. */
+  --text-body: #b8cac7;
+  /* Local variables get their own color so they never read as globals */
+  --local: #b9a4ff;
+}
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+
+/* ─── Semantic inline emphasis (matches 4.1 and 4.2) ────────────────
+   i.n  a variable name, in code font, teal
+   i.v  a number value, gold
+   i.s  a string value, green
+   i.f  a command or function name, in code font, white
+   i.a  an action students take (run, open, check), amber
+   i.c  a concept word (global variable, watcher), teal
+   i.l  the local-variable concept, purple
+   ─────────────────────────────────────────────────────────────── */
+.reveal i.n, .reveal i.v, .reveal i.s, .reveal i.f {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-weight: 500;
+}
+.reveal i.n { color: var(--teal); }
+.reveal i.v { color: var(--gold); }
+.reveal i.s { color: var(--green); }
+.reveal i.f { color: var(--text); font-weight: 700; }
+.reveal i.a { font-style: normal; color: var(--amber); font-weight: 600; }
+.reveal i.c { font-style: normal; color: var(--teal); font-weight: 600; }
+.reveal i.l { font-style: normal; color: var(--local); font-weight: 600; }
+
+/* ─── Syntax tokens for static code cards ───────────────────────── */
+.tk-kw  { color: var(--amber); font-weight: 600; }
+.tk-nm  { color: var(--teal); }
+.tk-fn  { color: var(--text); font-weight: 600; }
+.tk-str { color: var(--green); }
+.tk-num { color: var(--gold); }
+
+.code-card pre code { font-size: 24px; line-height: 1.6; max-height: none; }
+.code-card .code-body { padding: 18px 26px; }
+
+/* ─── Layout helpers ─────────────────────────────────────────────── */
+.top-inner { justify-content: flex-start !important; padding-top: 52px !important; }
+.media-split {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--gap-lg);
+  align-items: start;
+  margin-top: var(--gap-sm);
+}
+.shot {
+  display: block;
+  border: 1px solid rgba(0,201,177,0.4);
+  border-radius: 6px;
+  background: #fff;
+  max-width: 100%;
+}
+.step-list p { font-size: 27px; line-height: 1.55; }
+.step-list p + p { margin-top: var(--gap); }
+.step-list p:has(> .step-label) {
+  padding-left: 128px;
+  text-indent: -128px;
+}
+.step-label {
+  display: inline-block;
+  min-width: 128px;
+  text-indent: 0;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+/* ─── Debugging process grid (matches 3.6) ──────────────────────── */
+.process-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  width: 100%;
+}
+.process-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 22px 28px;
+}
+.process-card h3 {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+.process-card p { font-size: 23px; line-height: 1.5; margin: 0; }
+
+/* ─── Annotated screenshot: numbered highlight boxes ────────────── */
+.annotated {
+  position: relative;
+  width: 1000px;
+  flex-shrink: 0;
+}
+.annotated .shot { width: 100%; }
+.hl-box {
+  position: absolute;
+  border: 4px solid var(--amber);
+  border-radius: 8px;
+}
+/* Badges sit in empty parts of the screenshot so they never cover text */
+.hl-num {
+  position: absolute;
+  top: -58px;
+  left: calc(50% - 22px);
+  box-shadow: 0 0 0 3px rgba(9,20,18,0.7);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--amber);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.num-list p { font-size: 26px; line-height: 1.5; }
+.num-list p + p { margin-top: var(--gap); }
+.num-list .n-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--amber);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  margin-right: 10px;
+  vertical-align: 2px;
+}
+
+/* ─── Global vs. local comparison cards ─────────────────────────── */
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+  margin-top: var(--gap);
+}
+.compare-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.compare-card.local { border-color: rgba(185,164,255,0.45); }
+.compare-card h3 {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--teal);
+  margin: 0;
+}
+.compare-card.local h3 { color: var(--local); }
+.compare-card p { font-size: 23px; line-height: 1.5; margin: 0; }
+.compare-card .shot { margin-top: auto; }
+
+/* ─── Rule cards (create variables once, at the top, outside) ───── */
+.rule-split {
+  display: grid;
+  grid-template-columns: 1fr 640px;
+  gap: var(--gap-lg);
+  align-items: start;
+  margin-top: var(--gap);
+}
+.rule-list p { font-size: 25px; line-height: 1.5; }
+.rule-list p + p { margin-top: var(--gap); }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 4 &middot; Lesson 4.3</span>
+        <h1 class="title-h1">Variables Practice</h1>
+        <p style="font-size:var(--body);max-width:1100px;line-height:1.6;margin-top:var(--gap);">Today you will <i class="a">practice</i> writing code with <i class="c">variables</i> on Code.org, and you will use App Lab&rsquo;s <i class="c">debugging tools</i> to watch your variables change as your program runs.</p>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+      <aside class="notes">Computer Science Principles, Unit 4 Lesson 3. Students investigated the thermostat app in 4.2; today they write their own variable code in a set of practice levels.</aside>
+    </section>
+
+    <!-- SLIDE 2 · THE DEBUGGING PROCESS -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:44px !important;">
+        <span class="slide-tag">Review</span>
+        <h2 style="margin-bottom:var(--gap-sm);">The Debugging Process</h2>
+        <p style="font-size:var(--body);margin-bottom:var(--gap);max-width:1250px;"><i class="c">Debugging</i> is the process of finding and fixing problems in code. When something goes wrong today, work through these four stages.</p>
+        <div class="process-grid">
+          <div class="process-card">
+            <h3>1 &middot; Describe the Problem</h3>
+            <p>What do you expect the program to do? What does it actually do? Does the problem always happen?</p>
+          </div>
+          <div class="process-card">
+            <h3>2 &middot; Hunt for Bugs</h3>
+            <p>Are there warnings or errors? What did you change most recently? Explain your code to someone else, and look for code related to the problem.</p>
+          </div>
+          <div class="process-card">
+            <h3>3 &middot; Try Solutions</h3>
+            <p>Make one small change at a time so you can tell which change actually fixed the problem.</p>
+          </div>
+          <div class="process-card">
+            <h3>4 &middot; Document As You Go</h3>
+            <p>What have you learned? What strategies did you use? What questions do you still have?</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">This is the same four-stage process from Lesson 3.6. Keep it brief; the point is to remind students that they have a process before the new tools on the next slide.</aside>
+    </section>
+
+    <!-- SLIDE 3 · DEBUGGING SKILLS FOR TODAY -->
+    <section>
+      <div class="slide-inner top-inner" style="max-width:1560px;padding-top:44px !important;">
+        <span class="slide-tag">Debugging Tools</span>
+        <h2 style="margin-bottom:var(--gap);">Debugging Skills for Today</h2>
+        <div style="display:flex;gap:var(--gap-lg);align-items:flex-start;">
+          <div class="annotated">
+            <img class="shot" src="media/debug-tools.png" alt="App Lab with a program that declares myFavoriteNumber and myFavoriteFood, assigns 1 and pizza, and logs both. Below the code are the speed slider, the Debug Console showing the logged values, and the Watch panel showing myFavoriteNumber: 1 and myFavoriteFood: pizza.">
+            <div class="hl-box fragment fade-up" data-fragment-index="0" style="left:4.5%;top:79.5%;width:14.5%;height:6%;"><span class="hl-num">1</span></div>
+            <div class="hl-box fragment fade-up" data-fragment-index="1" style="left:0.5%;top:85.5%;width:70%;height:14%;"><span class="hl-num" style="top:calc(50% - 22px);left:auto;right:18px;">2</span></div>
+            <div class="hl-box fragment fade-up" data-fragment-index="2" style="left:70.8%;top:85.5%;width:29%;height:14%;"><span class="hl-num" style="top:-104px;">3</span></div>
+          </div>
+          <div class="num-list">
+            <p class="fragment fade-up" data-fragment-index="0"><span class="n-badge">1</span><i class="a">Slow down</i> your code with the <i class="c">speed slider</i> so you can see each line run.</p>
+            <p class="fragment fade-up" data-fragment-index="1"><span class="n-badge">2</span>Use <i class="f">console.log</i> to print values to the <i class="c">Debug Console</i>.</p>
+            <p class="fragment fade-up" data-fragment-index="2"><span class="n-badge">3</span>Add <i class="c">watchers</i> to see your variables change values while the program runs.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">The slider is the turtle-to-rabbit control above the console. console.log prints whatever is in the parentheses, so it is a quick way to check what a variable holds at a certain point. Watchers were introduced in 4.2 with the thermostat app.</aside>
+    </section>
+
+    <!-- SLIDE 4 · VARIABLES PRACTICE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Do This</span>
+        <h2 style="margin-bottom:var(--gap);">Variables Practice</h2>
+        <div class="media-split">
+          <img class="shot img-zoomable" src="media/level1-instructions.png" alt="Code.org Level 1 instructions: run the program and watch the variables change in the Watch area, discuss which lines create and which lines assign a variable, then change the values and run again. Below is the block code for myFavoriteNumber and myFavoriteFood." style="width:760px;">
+          <div class="step-list">
+            <p><span class="step-label">Step 1</span><a href="https://learn.mycode.run/link/xncmv" target="_blank" rel="noopener"><i class="a">Open Lesson 3, Level 1</i> on Code.org</a>.</p>
+            <img class="shot" src="media/lesson-progress.png" alt="Code.org progress bar for Lesson 3: Variables Practice, with Level 1 selected" style="width:505px;margin:0 0 0 128px;background:transparent;border:0;">
+            <p><span class="step-label">Step 2</span><i class="a">Complete Levels 1 through 7</i>. Use the debugging tools whenever your program does something you did not expect.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Students work through Levels 1-7 independently or in pairs. Pause the class for the video on the next slide once most students reach the levels that introduce events, since that is when local variable bugs start to appear.</aside>
+    </section>
+
+    <!-- SLIDE 5 · VIDEO: DEBUGGING GLOBAL VS. LOCAL VARIABLES -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:5:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=Vlj1_X474to"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Debugging Global vs. Local Variables</h2>
+        <p style="font-size:var(--small);margin-bottom:var(--gap);">A short Code.org video showing what goes wrong when a variable is created inside an event.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(0,201,177,0.06),transparent 70%);"></div>
+      <aside class="notes">The video walks through a clicker app where var is used inside the onEvent, so the counter never goes past 1. The next three slides unpack why.</aside>
+    </section>
+
+    <!-- SLIDE 6 · CREATE VARIABLES ONCE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Best Practice</span>
+        <h2>Where to Create Variables</h2>
+        <div class="rule-split">
+          <div class="rule-list">
+            <p>Use <i class="f">var</i> only <i class="a">once</i> for each variable. You do not need to create a variable twice, and doing so can cause errors.</p>
+            <p class="fragment fade-up">Create your variables <i class="a">at the top</i> of your program. This keeps your code organized and easier to read for you and for others.</p>
+            <p class="fragment fade-up">Create your variables <i class="a">outside</i> any function or <i class="f">onEvent()</i> block. Inside the event, update the variable without <i class="f">var</i>.</p>
+          </div>
+          <div class="code-card"><div class="code-hdr"><span class="clang">text mode</span></div><div class="code-body"><pre><code><span class="tk-kw">var</span> <span class="tk-nm">clicks</span> = <span class="tk-num">0</span>;
+
+<span class="tk-fn">onEvent</span>(<span class="tk-str">"button"</span>, <span class="tk-str">"click"</span>,
+  <span class="tk-kw">function</span>() {
+    <span class="tk-nm">clicks</span> = <span class="tk-nm">clicks</span> + <span class="tk-num">1</span>;
+    <span class="tk-fn">setProperty</span>(<span class="tk-str">"counter"</span>,
+      <span class="tk-str">"text"</span>, <span class="tk-nm">clicks</span>);
+});</code></pre></div></div>
+        </div>
+      </div>
+      <aside class="notes">Point at the code: var appears once, on the first line, outside the onEvent. Inside the event, clicks is only updated. This is the counter pattern from 4.2.</aside>
+    </section>
+
+    <!-- SLIDE 7 · GLOBAL VS. LOCAL VARIABLES -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:44px !important;">
+        <span class="slide-tag">Two Kinds of Variables</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Global vs. Local Variables</h2>
+        <p style="font-size:var(--body);max-width:1300px;">There are two kinds of variables, <i class="c">global</i> and <i class="l">local</i>. So far we have only used global variables.</p>
+        <div class="compare">
+          <div class="compare-card">
+            <h3>Global</h3>
+            <p>A global variable is <i class="c">permanent</i> and can be used anywhere in your code. It is created when <i class="f">var</i> is used <i class="a">outside</i> an <i class="f">onEvent()</i>.</p>
+            <img class="shot" src="media/global-clicks.png" alt="Block code: var clicks = 0 above an onEvent for button click that sets clicks = clicks + 1 and then sets the counter text to clicks" style="width:100%;">
+          </div>
+          <div class="compare-card local fragment fade-up">
+            <h3>Local</h3>
+            <p>A local variable is <i class="l">temporary</i> and can be used only in the part of the code where it was created, such as inside an <i class="f">onEvent()</i>. It is deleted once the event is done running. It is created when <i class="f">var</i> is used <i class="a">inside</i> an <i class="f">onEvent()</i>.</p>
+            <img class="shot" src="media/local-clicks.png" alt="Block code: an onEvent for button click containing var clicks = 1 and then setting the counter text to clicks" style="width:100%;">
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Ask: in the local example, what will the counter show after three clicks? (Always 1, because clicks is created fresh with the value 1 on every click and deleted afterward.)</aside>
+    </section>
+
+    <!-- SLIDE 8 · AVOIDING LOCAL VARIABLES -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:44px !important;">
+        <span class="slide-tag">Debugging</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Avoiding Local Variables</h2>
+        <p style="font-size:var(--body);max-width:1400px;">Local variables will be useful later, but for now they are most likely to cause confusion. The most common problem is <i class="a">accidentally using <i class="f">var</i></i> inside an <i class="f">onEvent()</i> or function, like this:</p>
+        <div class="media-split" style="grid-template-columns:620px 1fr;margin-top:var(--gap);">
+          <img class="shot" src="media/local-count-bug.png" alt="Block code: var count = 0 at the top, then an onEvent for button1 click containing var count = count + 1" style="width:620px;">
+          <div class="step-list">
+            <p class="fragment fade-up" style="font-size:25px;">It looks like there is only one variable here, but there are actually <i class="a">two</i>: a <i class="c">global</i> <i class="n">count</i> and a <i class="l">local</i> <i class="n">count</i>. Changing one has no effect on the other.</p>
+            <p class="fragment fade-up" style="font-size:25px;">To avoid this, do not use <i class="f">var</i> inside an <i class="f">onEvent()</i> or function. If you hit a tricky bug, <i class="a">check</i> whether you accidentally created a local variable.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">The global count stays 0 no matter how many times button1 is clicked, because each click updates a brand-new local count that disappears when the event ends. A watcher on count would show it never changing, which is a good clue.</aside>
+    </section>
+
+    <!-- SLIDE 9 · CHECK FOR UNDERSTANDING -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:9:0"
+      data-activity-options='{"presentationMode":"staged","questions":[{"id":"q1","type":"multiple-choice","text":"The button is clicked three times. What does the counter show?\n\n```javascript\nonEvent(\"button\", \"click\", function() {\n  var clicks = 1;\n  setProperty(\"counter\", \"text\", clicks);\n});\n```","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"`1`","isCorrect":true},{"id":"q1b","text":"`3`","isCorrect":false},{"id":"q1c","text":"`4`","isCorrect":false},{"id":"q1d","text":"Nothing, because `clicks` is undefined","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"`button1` is clicked three times. What value is stored in the **global** variable `count`?\n\n```javascript\nvar count = 0;\n\nonEvent(\"button1\", \"click\", function() {\n  var count = count + 1;\n});\n```","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"`0`","isCorrect":true},{"id":"q2b","text":"`1`","isCorrect":false},{"id":"q2c","text":"`3`","isCorrect":false},{"id":"q2d","text":"`undefined`","isCorrect":false}]},{"id":"q3","type":"multiple-choice","text":"Which change makes the program above count the clicks correctly?","order":2,"responseTimeLimitMs":45000,"options":[{"id":"q3a","text":"Remove `var` from the line inside the `onEvent`","isCorrect":true},{"id":"q3b","text":"Remove `var count = 0;` from the top","isCorrect":false},{"id":"q3c","text":"Move `var count = 0;` inside the `onEvent`","isCorrect":false},{"id":"q3d","text":"Change `count + 1` to `count + 3`","isCorrect":false}]}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Check for Understanding</span>
+        <h2>Global or Local?</h2>
+        <p style="font-size:var(--body);max-width:1100px;margin-top:var(--gap);">Answer three quick questions about where variables are created and what happens to their values.</p>
+      </div>
+      <aside class="notes">Q1: always 1, since the local clicks is recreated with 1 every click. Q2: the global count is still 0, because the event only changes a local count. Q3: removing var inside the event makes the line update the global count instead of creating a new local one.</aside>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-4-3-variables-practice',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
