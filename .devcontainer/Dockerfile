@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.59.1-noble
+FROM mcr.microsoft.com/playwright:v1.64.1-noble
 
 # Layer 1: Python runtime/tooling and pdfimage dependencies.
 RUN apt-get update \
