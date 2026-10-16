@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="qsx50y">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3 - More Gear Trains</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../DCCircuits/theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC: More Gear Trains
+   Color semantics used throughout this deck:
+     --accent (blue)   → key concept terms (idler, compound, backlash)
+     --warn   (yellow) → the driver gear / input side
+     --result (green)  → the driven gear / output side
+     --con    (coral)  → backlash gap and its drawbacks
+   ============================================================ */
+
+:root { --con: #ff8a80; }
+
+.lead {
+  font-size: var(--h3);
+  line-height: 1.45;
+  color: var(--text-muted);
+  max-width: 1200px;
+}
+.lead + .lead { margin-top: var(--gap); }
+
+.prose {
+  font-size: var(--body);
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 1250px;
+}
+.prose + .prose { margin-top: var(--gap-sm); }
+
+.driver-color { color: var(--warn); }
+.driven-color { color: var(--result); }
+.con-color    { color: var(--con); }
+
+/* Build-step slides: instructions on the left, kit render on the right */
+.build-img {
+  display: block;
+  width: 100%;
+  max-height: 640px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--accent-border), 0 6px 24px rgba(0,0,0,0.5);
+}
+.ask {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  padding: 18px 24px;
+  margin-top: var(--gap);
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text);
+}
+
+/* Discussion prompt card */
+.prompt-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  padding: 36px 44px;
+  max-width: 1250px;
+}
+.prompt-card .lead { max-width: none; }
+.prompt-hint {
+  font-size: var(--body);
+  color: var(--text-muted);
+  margin-top: var(--gap);
+}
+
+/* Images with overlaid labels (gear letters, idler, compound gear) */
+.label-fig {
+  position: relative;
+  margin: 0;
+}
+.label-fig img { display: block; width: 100%; border-radius: 8px; box-shadow: 0 0 0 1px var(--accent-border), 0 6px 24px rgba(0,0,0,0.5); }
+.leader-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.leader-layer line {
+  stroke: #e8f2ff;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.gear-letter, .fig-chip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text);
+  background: rgba(6,11,20,0.88);
+  border: 2px solid var(--accent);
+}
+.gear-letter {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+.gear-letter.driver { border-color: var(--warn); color: var(--warn); }
+.gear-letter.driven { border-color: var(--result); color: var(--result); }
+.fig-chip {
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 20px;
+  white-space: nowrap;
+  color: var(--accent);
+}
+
+/* Step list (tracing the compound train) */
+.trace-steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+.trace-steps li {
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text-muted);
+  padding-left: 22px;
+  border-left: 3px solid var(--accent-border);
+}
+
+/* Math display */
+.eq {
+  font-size: 30px;
+  color: var(--text);
+  line-height: 1.3;
+}
+.eq-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.eq-row + .eq-row { margin-top: 24px; }
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+}
+.frac > span:first-child {
+  border-bottom: 2px solid var(--text-muted);
+  padding: 0 10px 4px;
+}
+.frac > span:last-child { padding: 4px 10px 0; }
+.eq-op { color: var(--text-muted); }
+.eq-label {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  min-width: 150px;
+}
+.eq-text { font-size: var(--body); color: var(--text-muted); }
+.eq-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 12px;
+  padding: 30px 40px;
+  margin-top: var(--gap);
+  align-self: flex-start;
+}
+
+/* Two-card comparisons */
+.pair-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+  margin-top: var(--gap);
+  align-items: start;
+}
+.info-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-top: 4px solid var(--accent);
+  border-radius: 10px;
+  padding: 26px 30px;
+}
+.info-card.driver { border-top-color: var(--warn); }
+.info-card.driven { border-top-color: var(--result); }
+.info-card h3 { font-size: var(--h3); color: var(--accent); }
+.info-card.driver h3 { color: var(--warn); }
+.info-card.driven h3 { color: var(--result); }
+.info-card p {
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.info-card p + p { margin-top: var(--gap-sm); }
+.info-card img {
+  display: block;
+  width: 100%;
+  height: 230px;
+  object-fit: contain;
+  background: #46505f;
+  border-radius: 6px;
+  margin-bottom: var(--gap);
+}
+
+/* Backlash close-up */
+.backlash-panel {
+  margin: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 12px;
+  padding: 24px 28px 20px;
+}
+.backlash-diagram { display: block; width: 100%; height: auto; }
+.bl-body { stroke: rgba(6,11,20,0.6); stroke-width: 1.5; }
+.bl-dim { stroke: #ff8a80; stroke-width: 2.5; }
+.bl-lead { stroke: #ff8a80; stroke-width: 1.5; }
+.bl-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  fill: #ff8a80;
+  text-anchor: middle;
+}
+.bl-move-line { stroke: #e8f2ff; stroke-width: 2.5; }
+.bl-note {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  fill: rgba(232,242,255,0.8);
+  text-anchor: middle;
+}
+.bl-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  fill: #060b14;
+}
+.backlash-panel figcaption {
+  font-size: var(--small);
+  line-height: 1.45;
+  color: var(--text-muted);
+  margin-top: var(--gap-sm);
+}
+
+/* Same-ratio size comparison (slide 25) */
+.ratio-panel {
+  margin: var(--gap-lg) 0 0;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 12px;
+  padding: 22px 28px 18px;
+  max-width: 1250px;
+}
+.ratio-diagram { display: block; width: 100%; max-height: 370px; }
+.rg-gear { stroke: rgba(6,11,20,0.6); stroke-width: 1; }
+.rg-front { stroke: #060b14; stroke-width: 1.4; }
+.rg-hub { fill: #060b14; }
+.rg-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  fill: #e8f2ff;
+  text-anchor: middle;
+}
+.ratio-panel figcaption {
+  font-size: var(--small);
+  line-height: 1.45;
+  color: var(--text-muted);
+  margin-top: var(--gap-sm);
+}
+
+/* Why gear trains reason cards */
+.reason-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap);
+  margin-top: var(--gap);
+}
+.reason-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-top: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 26px 28px;
+}
+.reason-card h3 { font-size: 27px; color: var(--accent); }
+.reason-card p {
+  font-size: 21px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ============================================================
+     SLIDE 01 · TITLE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:700px;height:700px;background:radial-gradient(circle,rgba(77,255,176,0.08) 0%,transparent 70%);top:-240px;left:-200px;"></div>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(42,143,255,0.10) 0%,transparent 70%);bottom:-100px;right:10%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 2</span>
+    <h1 class="title-h1">More<br><span class="accent">Gear Trains</span></h1>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:860px;text-align:center;">Idler gears, compound gears, and why engineers chain many gears together.</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 02 · BUILD 1: SMALL AND LARGE GEAR
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split split-40">
+      <div>
+        <span class="slide-tag">Build 1</span>
+        <h2>A Small and a Large Gear</h2>
+        <p class="prose">Build a gear train on your MechRail with a <span class="accent">small gear</span> and a <span class="accent">large gear</span>.</p>
+        <p class="ask fragment fade-up">When you turn one gear clockwise, which way does the other gear turn?</p>
+        <p class="ask fragment fade-up">The large gear has 60 teeth and the small gear has 12 teeth. If you turn the large gear once, how many times does the small gear turn?</p>
+      </div>
+      <img class="build-img img-zoomable" src="More_Gear_Trains_Assets/small-large.jpg" alt="A small gear meshed with a large gear on a white MechRail">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 03 · BUILD 2: SMALL AND MEDIUM GEAR
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split split-40">
+      <div>
+        <span class="slide-tag">Build 2</span>
+        <h2>A Small and a Medium Gear</h2>
+        <p class="prose">Now build a gear train with a <span class="accent">small gear</span> and a <span class="accent">medium gear</span>.</p>
+        <p class="ask fragment fade-up">When you turn one gear clockwise, which way does the other gear turn?</p>
+        <p class="ask fragment fade-up">The medium gear has 36 teeth and the small gear has 12 teeth. If you turn the medium gear once, how many times does the small gear turn?</p>
+      </div>
+      <img class="build-img img-zoomable" src="More_Gear_Trains_Assets/small-medium.jpg" alt="A small gear meshed with a medium gear on a white MechRail">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 04 · BUILD 3: ADD A LARGE GEAR
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split split-40">
+      <div>
+        <span class="slide-tag">Build 3</span>
+        <h2>Add a Large Gear</h2>
+        <p class="prose">Add a <span class="accent">large gear</span> to your gear train so that it meshes with the medium gear.</p>
+        <p class="ask fragment fade-up">If you rotate the large gear clockwise, what direction does the medium gear turn? What direction does the small gear turn?</p>
+        <p class="ask fragment fade-up">The large gear has 60 teeth and the medium gear has 36. If you rotate the large gear once, how many times does the medium gear rotate?</p>
+      </div>
+      <img class="build-img img-zoomable" src="More_Gear_Trains_Assets/three-gear-train.jpg" alt="A three-gear train on a MechRail: a small gear meshed with a medium gear, which is meshed with a large gear">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 05 · WORKING THROUGH THE THREE-GEAR TRAIN
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Build 3</span>
+    <h2>Working Through the Three-Gear Train</h2>
+    <p class="prose">Follow the motion one mesh at a time, starting from the <span class="driver-color">large gear</span>.</p>
+    <div class="eq-panel">
+      <div class="eq eq-row">
+        <span class="eq-label">LARGE &rarr; MEDIUM</span>
+        <span>Ratio</span><span class="eq-op">=</span>
+        <span class="frac"><span class="driven-color">36</span><span class="driver-color">60</span></span><span class="eq-op">=</span>
+        <span class="frac"><span>3</span><span>5</span></span>
+        <span class="eq-text">so the medium gear turns <span class="frac"><span>5</span><span>3</span></span> &asymp; 1.67 times.</span>
+      </div>
+      <div class="eq eq-row fragment fade-up">
+        <span class="eq-label">MEDIUM &rarr; SMALL</span>
+        <span>Ratio</span><span class="eq-op">=</span>
+        <span class="frac"><span class="driven-color">12</span><span class="driver-color">36</span></span><span class="eq-op">=</span>
+        <span class="frac"><span>1</span><span>3</span></span>
+        <span class="eq-text">so the small gear turns 3 times for each medium turn.</span>
+      </div>
+      <div class="eq eq-row fragment fade-up">
+        <span class="eq-label">TOTAL</span>
+        <span>3 &middot;</span><span class="frac"><span>5</span><span>3</span></span><span class="eq-op">=</span>
+        <strong class="driven-color">5 turns</strong>
+        <span class="eq-text">of the small gear for one turn of the large gear.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 06 · DISCUSS: WHAT DOES THE MIDDLE GEAR DO?
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split split-60">
+      <div>
+        <span class="slide-tag">Discuss</span>
+        <h2>What Does the Middle Gear Do?</h2>
+        <div class="prompt-card">
+          <p class="lead">Think back to Build 1, when the large gear was connected directly to the small gear. If the large gear rotated once, how many times did the small gear rotate?</p>
+          <p class="lead fragment fade-up" style="margin-top:var(--gap-lg);">If we were building a device with this gear train, what purpose would the <span class="accent">middle gear</span> serve? Why would we include it?</p>
+        </div>
+      </div>
+      <img class="build-img img-zoomable" src="More_Gear_Trains_Assets/three-gear-train.jpg" alt="The three-gear train: small, medium, and large gears meshed in a row">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 07 · BUILD 4: CHECK OURSELVES
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split split-40">
+      <div>
+        <span class="slide-tag">Build 4 · Check Ourselves</span>
+        <h2>Add Another Small Gear</h2>
+        <p class="prose">Add a <span class="accent">small gear</span> that meshes with the large gear, so there is a small gear at each end of the train.</p>
+        <p class="ask fragment fade-up">If you rotate the new small gear once clockwise, how many times does the other small gear rotate? What direction does it rotate?</p>
+      </div>
+      <img class="build-img img-zoomable" src="More_Gear_Trains_Assets/four-gear-train.jpg" alt="A four-gear train: a small gear, a medium gear, a large gear, and another small gear meshed in a row">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 08 · BUILD 5: TWO GEARS ON ONE SHAFT
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split split-40">
+      <div>
+        <span class="slide-tag">Build 5 · A Different Direction</span>
+        <h2>Two Gears on One Shaft</h2>
+        <p class="prose">Let&rsquo;s try something a little different. Place a <span class="accent">small gear and a medium gear on the same shaft</span>, on opposite sides of the MechRail.</p>
+        <p class="prose">Make sure the standoff (non-toothed) side of each gear points toward the MechRail.</p>
+        <p class="ask fragment fade-up">If you rotate the medium gear once, how many times does the small gear rotate?</p>
+      </div>
+      <img class="build-img img-zoomable" src="More_Gear_Trains_Assets/compound-one-shaft.jpg" alt="Side view of a MechRail with a small gear above the rail and a medium gear below it, both on the same shaft">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 09 · BUILD 6: ADD A MEDIUM GEAR
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr 1.25fr;">
+      <div>
+        <span class="slide-tag">Build 6 · A Different Direction</span>
+        <h2>Add a Medium Gear</h2>
+        <p class="prose">Add another <span class="accent">medium gear</span> on a new shaft so that it meshes with the small gear.</p>
+        <p class="ask fragment fade-up">Try rotating one of the medium gears. Does the other one rotate at the same speed?</p>
+        <p class="ask fragment fade-up">Now rotate the other medium gear instead. Which one drives the other the fastest?</p>
+      </div>
+      <img class="build-img img-zoomable" src="More_Gear_Trains_Assets/compound-two-shafts.jpg" alt="Side view of two shafts on a MechRail. The first shaft has a small gear above the rail and a medium gear below. A second medium gear above the rail meshes with the small gear.">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 10 · BUILD 7: ADD A SMALL GEAR
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr 1.25fr;">
+      <div>
+        <span class="slide-tag">Build 7 · A Different Direction</span>
+        <h2>Add a Small Gear</h2>
+        <p class="prose">Add another <span class="accent">small gear</span> to the same shaft as the medium gear you just added, on the other side of the MechRail.</p>
+        <p class="prose">Make sure it <span class="con-color">does not mesh</span> with the medium gear on the other shaft, and check that everything still spins freely.</p>
+      </div>
+      <img class="build-img img-zoomable" src="More_Gear_Trains_Assets/compound-add-small.jpg" alt="Side view of the two-shaft build with a small gear added below the rail on the second shaft, clear of the medium gear on the first shaft">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 11 · BUILD 8: ADD ONE LAST MEDIUM GEAR
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr 1.25fr;">
+      <div>
+        <span class="slide-tag">Build 8 · A Different Direction</span>
+        <h2>Add One Last Medium Gear</h2>
+        <p class="prose">Add one last <span class="accent">medium gear</span> on a third shaft so that it meshes with the small gear you just added. You now have quite the gear train.</p>
+        <p class="ask fragment fade-up">Spin the medium gear you just added. Does the medium gear at the other end spin at the same speed?</p>
+        <p class="ask fragment fade-up">Earlier, a gear between two other gears didn&rsquo;t change the speed. It only changed the direction of rotation. Why is that not the case now?</p>
+      </div>
+      <img class="build-img img-zoomable" src="More_Gear_Trains_Assets/compound-train.jpg" alt="Side view of a three-shaft gear train on a MechRail, with gears above and below the rail">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 12 · COUNT THE ROTATIONS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">A Different Direction</span>
+    <h2>Count the Rotations</h2>
+    <p class="prose">Use masking tape to mark the <span class="accent">medium gears</span> so we can count rotations. We&rsquo;ll call the gears <span class="driver-color">A</span> through <span class="driven-color">E</span>, starting from gear A, the medium gear you added last.</p>
+    <figure class="label-fig">
+        <img src="More_Gear_Trains_Assets/compound-train.jpg" alt="Side view of the three-shaft gear train with gears labeled A through E. Gear A is the medium gear below the rail on the right shaft. Gear B is the small gear below the rail on the middle shaft, and gear C is the medium gear above the rail on that same shaft. Gear D is the small gear above the rail on the left shaft, and gear E is the medium gear below the rail on that same shaft.">
+        <span class="gear-letter" style="left:84.6%;top:63.9%;">A</span>
+        <span class="gear-letter" style="left:54.4%;top:57.2%;">B</span>
+        <span class="gear-letter" style="left:69.4%;top:11.1%;">C</span>
+        <span class="gear-letter" style="left:14.0%;top:18.8%;">D</span>
+        <span class="gear-letter" style="left:9.3%;top:69.2%;">E</span>
+      </figure>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 13 · TRACING THE COMPOUND TRAIN
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">A Different Direction</span>
+    <h2>Tracing the Gear Train</h2>
+    <div class="split split-top" style="grid-template-columns:1.1fr 1fr;flex:0 0 auto;">
+      <figure class="label-fig">
+        <img src="More_Gear_Trains_Assets/compound-train.jpg" alt="Side view of the three-shaft gear train with gears labeled A through E. Gear A is the medium gear below the rail on the right shaft. Gear B is the small gear below the rail on the middle shaft, and gear C is the medium gear above the rail on that same shaft. Gear D is the small gear above the rail on the left shaft, and gear E is the medium gear below the rail on that same shaft.">
+        <span class="gear-letter" style="left:84.6%;top:63.9%;">A</span>
+        <span class="gear-letter" style="left:54.4%;top:57.2%;">B</span>
+        <span class="gear-letter" style="left:69.4%;top:11.1%;">C</span>
+        <span class="gear-letter" style="left:14.0%;top:18.8%;">D</span>
+        <span class="gear-letter" style="left:9.3%;top:69.2%;">E</span>
+      </figure>
+      <ol class="trace-steps">
+        <li>When we rotate <span class="driver-color">gear A</span> (36 teeth) once, <span class="accent">gear B</span> (12 teeth) on the middle shaft rotates <strong>3 times</strong>.</li>
+        <li class="fragment fade-up"><span class="accent">Gear C</span> is on the same shaft as gear B, so it rotates at the same speed: <strong>3 times</strong>.</li>
+        <li class="fragment fade-up">Every time gear C rotates, it drives <span class="accent">gear D</span> to rotate 3 times. Gear D rotates 3 &times; 3 = <strong>9 times</strong>.</li>
+        <li class="fragment fade-up"><span class="driven-color">Gear E</span> is locked to gear D, so gear E rotates <strong>9 times</strong> for every rotation of gear A.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 14 · STAGE RATIOS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">A Different Direction</span>
+    <h2>Multiplying Stage Ratios</h2>
+    <p class="prose">A little more formally, each pair of meshing gears is a <span class="accent">stage</span>, and the total ratio is the product of the stage ratios.</p>
+    <div class="eq-panel">
+      <div class="eq eq-row">
+        <span class="eq-label">STAGE 1</span>
+        <span class="eq-text"><span class="driver-color">A</span> drives <span class="driven-color">B</span>:</span>
+        <span class="frac"><span class="driven-color">Driven</span><span class="driver-color">Driver</span></span><span class="eq-op">=</span>
+        <span class="frac"><span class="driven-color">12</span><span class="driver-color">36</span></span><span class="eq-op">=</span>
+        <span class="frac"><span>1</span><span>3</span></span>
+      </div>
+      <div class="eq eq-row fragment fade-up">
+        <span class="eq-label">STAGE 2</span>
+        <span class="eq-text"><span class="driver-color">C</span> drives <span class="driven-color">D</span>:</span>
+        <span class="frac"><span class="driven-color">Driven</span><span class="driver-color">Driver</span></span><span class="eq-op">=</span>
+        <span class="frac"><span class="driven-color">12</span><span class="driver-color">36</span></span><span class="eq-op">=</span>
+        <span class="frac"><span>1</span><span>3</span></span>
+      </div>
+      <div class="eq eq-row fragment fade-up">
+        <span class="eq-label">TOTAL</span>
+        <span>Stage 1 &middot; Stage 2</span><span class="eq-op">=</span>
+        <span class="frac"><span>1</span><span>3</span></span><span>&middot;</span><span class="frac"><span>1</span><span>3</span></span><span class="eq-op">=</span>
+        <strong class="accent"><span class="frac"><span>1</span><span>9</span></span></strong>
+      </div>
+    </div>
+    <p class="callout-result fragment fade-up" style="margin-top:var(--gap-lg);">With a total ratio of 1:9, gear E spins <strong>9 times faster</strong> than gear A, but with <strong>1/9 of the torque</strong>.</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 15 · TRY IT: REVERSE THE TRAIN
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Try It</span>
+    <h2>Run the Train Backward</h2>
+    <div class="split split-top" style="grid-template-columns:1.1fr 1fr;flex:0 0 auto;">
+      <figure class="label-fig">
+        <img src="More_Gear_Trains_Assets/compound-train.jpg" alt="Side view of the three-shaft gear train with gears labeled A through E. Gear A is the medium gear below the rail on the right shaft. Gear B is the small gear below the rail on the middle shaft, and gear C is the medium gear above the rail on that same shaft. Gear D is the small gear above the rail on the left shaft, and gear E is the medium gear below the rail on that same shaft.">
+        <span class="gear-letter" style="left:84.6%;top:63.9%;">A</span>
+        <span class="gear-letter" style="left:54.4%;top:57.2%;">B</span>
+        <span class="gear-letter" style="left:69.4%;top:11.1%;">C</span>
+        <span class="gear-letter" style="left:14.0%;top:18.8%;">D</span>
+        <span class="gear-letter" style="left:9.3%;top:69.2%;">E</span>
+      </figure>
+      <div class="prompt-card">
+        <p class="lead">Now make <span class="driver-color">gear E the driver</span>.</p>
+        <p class="lead">If E spins at 270 RPM, how fast will <span class="driven-color">gear A</span> rotate?</p>
+        <p class="lead">If E drives with a torque of 3 ft-lbs, what is the output torque at <span class="driven-color">gear A</span>?</p>
+        <p class="prompt-hint">Work it out with a partner before we look at the solution.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 16 · TRY IT: ANSWERS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Try It · Answers</span>
+    <h2>Run the Train Backward: Answers</h2>
+    <p class="prose">With <span class="driver-color">E</span> as the driver, every stage is flipped: small gears now drive medium gears.</p>
+    <div class="eq-panel">
+      <div class="eq eq-row">
+        <span class="eq-label">TOTAL RATIO</span>
+        <span class="frac"><span class="driven-color">36</span><span class="driver-color">12</span></span><span>&middot;</span>
+        <span class="frac"><span class="driven-color">36</span><span class="driver-color">12</span></span><span class="eq-op">=</span>
+        <span>3 &middot; 3</span><span class="eq-op">=</span><strong class="accent">9:1</strong>
+      </div>
+      <div class="eq eq-row fragment fade-up">
+        <span class="eq-label">SPEED OF A</span>
+        <span class="frac"><span class="driver-color">270 rpm</span><span>9</span></span><span class="eq-op">=</span>
+        <strong class="driven-color">30 rpm</strong>
+      </div>
+      <div class="eq eq-row fragment fade-up">
+        <span class="eq-label">TORQUE AT A</span>
+        <span>9 &middot; <span class="driver-color">3 ft-lbs</span></span><span class="eq-op">=</span>
+        <strong class="driven-color">27 ft-lbs</strong>
+      </div>
+    </div>
+    <p class="callout-result fragment fade-up" style="margin-top:var(--gap-lg);">Running the train backward makes gear A turn <strong>9 times slower</strong> than E, with <strong>9 times the torque</strong>.</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 17 · WHAT HAVE WE SEEN? DRIVER AND DRIVEN
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">What Have We Seen?</span>
+    <h2>Driver and Driven Gears</h2>
+    <p class="prose">We now have several different types of gears, and we need names for them so we can discuss them.</p>
+    <div class="pair-grid">
+      <div class="info-card driver">
+        <h3>Driver Gear</h3>
+        <p>The driver gear provides power to the system.</p>
+      </div>
+      <div class="info-card driven">
+        <h3>Driven Gear</h3>
+        <p>A driven gear gets its power from another gear.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 18 · IDLER GEARS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split split-50">
+      <div>
+        <span class="slide-tag">What Have We Seen?</span>
+        <h2>Idler Gears</h2>
+        <p class="prose">If a gear sits between a driver gear and a driven gear, it is called an <span class="accent">idler gear</span>. To idle means to not do productive work.</p>
+        <p class="ask fragment fade-up">Why do you think it would be called an idler gear?</p>
+      </div>
+      <figure class="label-fig">
+        <img src="More_Gear_Trains_Assets/three-gear-train.jpg" alt="The three-gear train with the medium gear in the middle labeled idler">
+        <svg class="leader-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="17" y1="64" x2="24" y2="46"/></svg>
+        <span class="fig-chip" style="left:16%;top:69%;">idler</span>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 19 · WHY "IDLER"?
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split split-50">
+      <div>
+        <span class="slide-tag">What Have We Seen?</span>
+        <h2>Why &ldquo;Idler&rdquo;?</h2>
+        <p class="prose">The <span class="accent">idler gear</span> idles between the driver and the driven gear. It keeps the spacing right and it reverses direction, but it <strong>doesn&rsquo;t affect the ratio</strong>.</p>
+        <p class="prose fragment fade-up">So while it is turning and moving, it isn&rsquo;t adding power or changing the mechanical advantage. It&rsquo;s just along for the ride, passing the motion through.</p>
+      </div>
+      <figure class="label-fig">
+        <img src="More_Gear_Trains_Assets/three-gear-train.jpg" alt="The three-gear train with the medium gear in the middle labeled idler">
+        <svg class="leader-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="17" y1="64" x2="24" y2="46"/></svg>
+        <span class="fig-chip" style="left:16%;top:69%;">idler</span>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 20 · COMPOUND GEARS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr 1.25fr;">
+      <div>
+        <span class="slide-tag">What Have We Seen?</span>
+        <h2>Compound Gears</h2>
+        <p class="prose">A <span class="accent">compound gear</span> is two or more gears rigidly fixed together so that they rotate together at the same speed.</p>
+        <p class="prose">In your build, the small gear and the medium gear sharing one shaft form a compound gear.</p>
+      </div>
+      <figure class="label-fig">
+        <img src="More_Gear_Trains_Assets/compound-two-shafts.jpg" alt="Side view of the two-shaft build. The small gear above the rail and the medium gear below the rail on the left shaft are labeled together as a compound gear.">
+        <svg class="leader-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="17" y1="17" x2="25" y2="24"/><line x1="9" y1="18" x2="10" y2="66"/></svg>
+        <span class="fig-chip" style="left:14%;top:11%;">compound gear</span>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 21 · SIMPLE VS COMPOUND GEAR TRAINS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">What Have We Seen?</span>
+    <h2>Simple and Compound Gear Trains</h2>
+    <div class="pair-grid">
+      <div class="info-card">
+        <img src="More_Gear_Trains_Assets/four-gear-train.jpg" alt="A simple gear train with four gears in a row, one gear per shaft">
+        <h3>Simple Gear Train</h3>
+        <p>A simple gear train is made of multiple gears where <strong>each shaft carries only one gear</strong>.</p>
+        <p>The total ratio is just <span class="driven-color">driven gear teeth</span> : <span class="driver-color">driver gear teeth</span>. The gears in between are idlers.</p>
+      </div>
+      <div class="info-card fragment fade-up">
+        <img src="More_Gear_Trains_Assets/compound-two-shafts.jpg" alt="A compound gear train where one shaft carries a small gear and a medium gear">
+        <h3>Compound Gear Train</h3>
+        <p>A compound gear train includes <strong>at least one shaft that carries multiple gears</strong> that rotate together.</p>
+        <p>The gear ratio is <span class="accent">multiplied</span> across each stage.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 22 · ONE MORE POINT
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:640px;height:640px;right:-180px;top:-200px;background:radial-gradient(circle,rgba(255,138,128,0.07),transparent 70%);"></div>
+  <div class="slide-inner">
+    <span class="slide-tag">Try It</span>
+    <h2>One More Point</h2>
+    <div class="prompt-card">
+      <p class="lead">With the gear trains you built, when you reverse direction with the <span class="driver-color">driver gear</span>, do the other gears instantly start turning the other way? Or is there a tiny delay, a little wiggle first?</p>
+      <p class="prompt-hint">Try it out.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 23 · BACKLASH
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split split-50">
+      <div>
+        <span class="slide-tag">Definition</span>
+        <h2>Backlash</h2>
+        <p class="prose"><span class="accent">Backlash</span> is the small gap between gear teeth that allows them to turn freely without binding.</p>
+        <p class="prose">It&rsquo;s the little play, or slop, you feel when gears change direction. When the <span class="driver-color">driver</span> reverses, its teeth have to cross the <span class="con-color">gap</span> before they push the <span class="driven-color">driven</span> gear the other way.</p>
+      </div>
+      <figure class="backlash-panel">
+        <svg class="backlash-diagram" viewBox="40 -46 360 226" role="img" aria-label="Close-up of meshing gear teeth. The driver teeth on top push against the right side of the driven teeth below. On the other side of each tooth there is a small gap, labeled backlash.">
+      <defs>
+        <clipPath id="bl-clip"><rect x="40" y="0" width="360" height="130" rx="10"/></clipPath>
+        <marker id="bl-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9Z" fill="#ff8a80"/></marker>
+        <marker id="bl-move" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9Z" fill="#e8f2ff"/></marker>
+      </defs>
+      <g clip-path="url(#bl-clip)">
+        <path d="M-120,10 L-120,40 L-128,40 L-116,80 L-96,80 L-84,40 L-48,40 L-36,80 L-16,80 L-4,40 L32,40 L44,80 L64,80 L76,40 L112,40 L124,80 L144,80 L156,40 L192,40 L204,80 L224,80 L236,40 L272,40 L284,80 L304,80 L316,40 L352,40 L364,80 L384,80 L396,40 L432,40 L444,80 L464,80 L476,40 L520,40 L520,10Z" fill="#ffd166" class="bl-body"/>
+        <path d="M-120,130 L-120,100 L-102,100 L-90,60 L-70,60 L-58,100 L-22,100 L-10,60 L10,60 L22,100 L58,100 L70,60 L90,60 L102,100 L138,100 L150,60 L170,60 L182,100 L218,100 L230,60 L250,60 L262,100 L298,100 L310,60 L330,60 L342,100 L378,100 L390,60 L410,60 L422,100 L520,100 L520,130Z" fill="#4dffb0" class="bl-body"/>
+      </g>
+      <line x1="173" y1="70" x2="201" y2="70" class="bl-dim" marker-start="url(#bl-arrow)" marker-end="url(#bl-arrow)"/>
+      <line x1="187" y1="70" x2="187" y2="148" class="bl-lead"/>
+      <text x="187" y="148" dy="14" class="bl-label">backlash</text>
+      <line x1="150" y1="-14" x2="290" y2="-14" class="bl-move-line" marker-end="url(#bl-move)"/>
+      <text x="220" y="-24" class="bl-note">driver pushes this way</text>
+      <text x="398" y="30" class="bl-tag" text-anchor="end">driver</text>
+      <text x="398" y="122" class="bl-tag bl-tag-driven" text-anchor="end">driven</text>
+    </svg>
+        <figcaption>A close-up of meshing teeth, unrolled flat. The driver&rsquo;s teeth press on one side of each driven tooth, leaving a gap on the other side.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 24 · WHY GEARS NEED BACKLASH
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Backlash</span>
+    <h2>Why Gears Need Backlash</h2>
+    <p class="lead">Gears need a little space between their teeth. If the teeth fit too tightly, <span class="accent">friction and heat</span> would lock them up.</p>
+    <p class="lead">That little space makes room for oil to lubricate the system, and it makes up for small errors from manufacturing.</p>
+    <p class="callout-warn fragment fade-up" style="margin-top:var(--gap-lg);max-width:1250px;font-size:var(--h3);line-height:1.45;"><strong>Too much backlash</strong> can make motion inaccurate, especially in systems that reverse direction often, like robots, 3D printers, and other CNC machines.</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 25 · WHY GEAR TRAINS? (DISCUSS)
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Discuss</span>
+    <h2>Why Gear Trains?</h2>
+    <div class="prompt-card">
+      <p class="lead">Why do you think engineers often use <span class="accent">many small gears</span> instead of just two large ones?</p>
+    </div>
+    <figure class="ratio-panel">
+      <svg class="ratio-diagram" viewBox="-40 -180 757 400" role="img" aria-label="Two gear systems drawn to the same scale, both with a 9 to 1 ratio. On the left, a small driver gear meshes with one very large driven gear. On the right, a compound train does the same job: a small driver turns a medium gear, a small gear on that same shaft turns a second medium gear. The compound train takes up far less space.">
+      <path d="M345.0,3.6 L344.9,4.8 L344.9,6.0 L338.1,7.4 L338.0,8.6 L337.9,9.8 L337.9,11.0 L344.5,13.1 L344.4,14.4 L344.3,15.6 L337.4,16.5 L337.3,17.8 L337.1,19.0 L337.0,20.2 L343.4,22.7 L343.3,23.9 L343.1,25.1 L336.2,25.7 L336.0,26.9 L335.7,28.1 L335.5,29.3 L341.8,32.1 L341.6,33.4 L341.3,34.6 L334.4,34.7 L334.1,35.9 L333.8,37.1 L333.5,38.3 L339.7,41.5 L339.4,42.7 L339.1,43.9 L332.1,43.6 L331.8,44.8 L331.4,46.0 L331.1,47.1 L337.0,50.7 L336.6,51.9 L336.2,53.1 L329.3,52.4 L328.9,53.5 L328.5,54.7 L328.1,55.9 L333.8,59.8 L333.3,60.9 L332.9,62.1 L326.0,61.0 L325.5,62.1 L325.1,63.2 L324.6,64.4 L330.1,68.6 L329.5,69.7 L329.0,70.9 L322.2,69.4 L321.7,70.5 L321.1,71.6 L320.6,72.7 L325.8,77.2 L325.2,78.3 L324.6,79.4 L318.0,77.5 L317.4,78.6 L316.7,79.7 L316.1,80.7 L321.1,85.6 L320.4,86.6 L319.8,87.7 L313.2,85.4 L312.6,86.4 L311.9,87.5 L311.2,88.5 L315.9,93.6 L315.2,94.6 L314.4,95.7 L308.0,93.0 L307.3,94.0 L306.6,95.0 L305.8,96.0 L310.2,101.4 L309.4,102.3 L308.7,103.3 L302.4,100.3 L301.6,101.3 L300.8,102.2 L300.0,103.1 L304.1,108.8 L303.3,109.7 L302.4,110.6 L296.4,107.3 L295.5,108.2 L294.7,109.0 L293.8,109.9 L297.6,115.8 L296.7,116.7 L295.8,117.6 L289.9,113.8 L289.0,114.7 L288.2,115.5 L287.3,116.4 L290.6,122.4 L289.7,123.3 L288.8,124.1 L283.1,120.0 L282.2,120.8 L281.3,121.6 L280.3,122.4 L283.3,128.7 L282.3,129.4 L281.4,130.2 L276.0,125.8 L275.0,126.6 L274.0,127.3 L273.0,128.0 L275.7,134.4 L274.6,135.2 L273.6,135.9 L268.5,131.2 L267.5,131.9 L266.4,132.6 L265.4,133.2 L267.7,139.8 L266.6,140.4 L265.6,141.1 L260.7,136.1 L259.7,136.7 L258.6,137.4 L257.5,138.0 L259.4,144.6 L258.3,145.2 L257.2,145.8 L252.7,140.6 L251.6,141.1 L250.5,141.7 L249.4,142.2 L250.9,149.0 L249.7,149.5 L248.6,150.1 L244.4,144.6 L243.2,145.1 L242.1,145.5 L241.0,146.0 L242.1,152.9 L240.9,153.3 L239.8,153.8 L235.9,148.1 L234.7,148.5 L233.5,148.9 L232.4,149.3 L233.1,156.2 L231.9,156.6 L230.7,157.0 L227.1,151.1 L226.0,151.4 L224.8,151.8 L223.6,152.1 L223.9,159.1 L222.7,159.4 L221.5,159.7 L218.3,153.5 L217.1,153.8 L215.9,154.1 L214.7,154.4 L214.6,161.3 L213.4,161.6 L212.1,161.8 L209.3,155.5 L208.1,155.7 L206.9,156.0 L205.7,156.2 L205.1,163.1 L203.9,163.3 L202.7,163.4 L200.2,157.0 L199.0,157.1 L197.8,157.3 L196.5,157.4 L195.6,164.3 L194.4,164.4 L193.1,164.5 L191.0,157.9 L189.8,157.9 L188.6,158.0 L187.4,158.1 L186.0,164.9 L184.8,164.9 L183.6,165.0 L181.8,158.2 L180.6,158.2 L179.4,158.2 L178.2,158.2 L176.4,165.0 L175.2,164.9 L174.0,164.9 L172.6,158.1 L171.4,158.0 L170.2,157.9 L169.0,157.9 L166.9,164.5 L165.6,164.4 L164.4,164.3 L163.5,157.4 L162.2,157.3 L161.0,157.1 L159.8,157.0 L157.3,163.4 L156.1,163.3 L154.9,163.1 L154.3,156.2 L153.1,156.0 L151.9,155.7 L150.7,155.5 L147.9,161.8 L146.6,161.6 L145.4,161.3 L145.3,154.4 L144.1,154.1 L142.9,153.8 L141.7,153.5 L138.5,159.7 L137.3,159.4 L136.1,159.1 L136.4,152.1 L135.2,151.8 L134.0,151.4 L132.9,151.1 L129.3,157.0 L128.1,156.6 L126.9,156.2 L127.6,149.3 L126.5,148.9 L125.3,148.5 L124.1,148.1 L120.2,153.8 L119.1,153.3 L117.9,152.9 L119.0,146.0 L117.9,145.5 L116.8,145.1 L115.6,144.6 L111.4,150.1 L110.3,149.5 L109.1,149.0 L110.6,142.2 L109.5,141.7 L108.4,141.1 L107.3,140.6 L102.8,145.8 L101.7,145.2 L100.6,144.6 L102.5,138.0 L101.4,137.4 L100.3,136.7 L99.3,136.1 L94.4,141.1 L93.4,140.4 L92.3,139.8 L94.6,133.2 L93.6,132.6 L92.5,131.9 L91.5,131.2 L86.4,135.9 L85.4,135.2 L84.3,134.4 L87.0,128.0 L86.0,127.3 L85.0,126.6 L84.0,125.8 L78.6,130.2 L77.7,129.4 L76.7,128.7 L79.7,122.4 L78.7,121.6 L77.8,120.8 L76.9,120.0 L71.2,124.1 L70.3,123.3 L69.4,122.4 L72.7,116.4 L71.8,115.5 L71.0,114.7 L70.1,113.8 L64.2,117.6 L63.3,116.7 L62.4,115.8 L66.2,109.9 L65.3,109.0 L64.5,108.2 L63.6,107.3 L57.6,110.6 L56.7,109.7 L55.9,108.8 L60.0,103.1 L59.2,102.2 L58.4,101.3 L57.6,100.3 L51.3,103.3 L50.6,102.3 L49.8,101.4 L54.2,96.0 L53.4,95.0 L52.7,94.0 L52.0,93.0 L45.6,95.7 L44.8,94.6 L44.1,93.6 L48.8,88.5 L48.1,87.5 L47.4,86.4 L46.8,85.4 L40.2,87.7 L39.6,86.6 L38.9,85.6 L43.9,80.7 L43.3,79.7 L42.6,78.6 L42.0,77.5 L35.4,79.4 L34.8,78.3 L34.2,77.2 L39.4,72.7 L38.9,71.6 L38.3,70.5 L37.8,69.4 L31.0,70.9 L30.5,69.7 L29.9,68.6 L35.4,64.4 L34.9,63.2 L34.5,62.1 L34.0,61.0 L27.1,62.1 L26.7,60.9 L26.2,59.8 L31.9,55.9 L31.5,54.7 L31.1,53.5 L30.7,52.4 L23.8,53.1 L23.4,51.9 L23.0,50.7 L28.9,47.1 L28.6,46.0 L28.2,44.8 L27.9,43.6 L20.9,43.9 L20.6,42.7 L20.3,41.5 L26.5,38.3 L26.2,37.1 L25.9,35.9 L25.6,34.7 L18.7,34.6 L18.4,33.4 L18.2,32.1 L24.5,29.3 L24.3,28.1 L24.0,26.9 L23.8,25.7 L16.9,25.1 L16.7,23.9 L16.6,22.7 L23.0,20.2 L22.9,19.0 L22.7,17.8 L22.6,16.5 L15.7,15.6 L15.6,14.4 L15.5,13.1 L22.1,11.0 L22.1,9.8 L22.0,8.6 L21.9,7.4 L15.1,6.0 L15.1,4.8 L15.0,3.6 L21.8,1.8 L21.8,0.6 L21.8,-0.6 L21.8,-1.8 L15.0,-3.6 L15.1,-4.8 L15.1,-6.0 L21.9,-7.4 L22.0,-8.6 L22.1,-9.8 L22.1,-11.0 L15.5,-13.1 L15.6,-14.4 L15.7,-15.6 L22.6,-16.5 L22.7,-17.8 L22.9,-19.0 L23.0,-20.2 L16.6,-22.7 L16.7,-23.9 L16.9,-25.1 L23.8,-25.7 L24.0,-26.9 L24.3,-28.1 L24.5,-29.3 L18.2,-32.1 L18.4,-33.4 L18.7,-34.6 L25.6,-34.7 L25.9,-35.9 L26.2,-37.1 L26.5,-38.3 L20.3,-41.5 L20.6,-42.7 L20.9,-43.9 L27.9,-43.6 L28.2,-44.8 L28.6,-46.0 L28.9,-47.1 L23.0,-50.7 L23.4,-51.9 L23.8,-53.1 L30.7,-52.4 L31.1,-53.5 L31.5,-54.7 L31.9,-55.9 L26.2,-59.8 L26.7,-60.9 L27.1,-62.1 L34.0,-61.0 L34.5,-62.1 L34.9,-63.2 L35.4,-64.4 L29.9,-68.6 L30.5,-69.7 L31.0,-70.9 L37.8,-69.4 L38.3,-70.5 L38.9,-71.6 L39.4,-72.7 L34.2,-77.2 L34.8,-78.3 L35.4,-79.4 L42.0,-77.5 L42.6,-78.6 L43.3,-79.7 L43.9,-80.7 L38.9,-85.6 L39.6,-86.6 L40.2,-87.7 L46.8,-85.4 L47.4,-86.4 L48.1,-87.5 L48.8,-88.5 L44.1,-93.6 L44.8,-94.6 L45.6,-95.7 L52.0,-93.0 L52.7,-94.0 L53.4,-95.0 L54.2,-96.0 L49.8,-101.4 L50.6,-102.3 L51.3,-103.3 L57.6,-100.3 L58.4,-101.3 L59.2,-102.2 L60.0,-103.1 L55.9,-108.8 L56.7,-109.7 L57.6,-110.6 L63.6,-107.3 L64.5,-108.2 L65.3,-109.0 L66.2,-109.9 L62.4,-115.8 L63.3,-116.7 L64.2,-117.6 L70.1,-113.8 L71.0,-114.7 L71.8,-115.5 L72.7,-116.4 L69.4,-122.4 L70.3,-123.3 L71.2,-124.1 L76.9,-120.0 L77.8,-120.8 L78.7,-121.6 L79.7,-122.4 L76.7,-128.7 L77.7,-129.4 L78.6,-130.2 L84.0,-125.8 L85.0,-126.6 L86.0,-127.3 L87.0,-128.0 L84.3,-134.4 L85.4,-135.2 L86.4,-135.9 L91.5,-131.2 L92.5,-131.9 L93.6,-132.6 L94.6,-133.2 L92.3,-139.8 L93.4,-140.4 L94.4,-141.1 L99.3,-136.1 L100.3,-136.7 L101.4,-137.4 L102.5,-138.0 L100.6,-144.6 L101.7,-145.2 L102.8,-145.8 L107.3,-140.6 L108.4,-141.1 L109.5,-141.7 L110.6,-142.2 L109.1,-149.0 L110.3,-149.5 L111.4,-150.1 L115.6,-144.6 L116.8,-145.1 L117.9,-145.5 L119.0,-146.0 L117.9,-152.9 L119.1,-153.3 L120.2,-153.8 L124.1,-148.1 L125.3,-148.5 L126.5,-148.9 L127.6,-149.3 L126.9,-156.2 L128.1,-156.6 L129.3,-157.0 L132.9,-151.1 L134.0,-151.4 L135.2,-151.8 L136.4,-152.1 L136.1,-159.1 L137.3,-159.4 L138.5,-159.7 L141.7,-153.5 L142.9,-153.8 L144.1,-154.1 L145.3,-154.4 L145.4,-161.3 L146.6,-161.6 L147.9,-161.8 L150.7,-155.5 L151.9,-155.7 L153.1,-156.0 L154.3,-156.2 L154.9,-163.1 L156.1,-163.3 L157.3,-163.4 L159.8,-157.0 L161.0,-157.1 L162.2,-157.3 L163.5,-157.4 L164.4,-164.3 L165.6,-164.4 L166.9,-164.5 L169.0,-157.9 L170.2,-157.9 L171.4,-158.0 L172.6,-158.1 L174.0,-164.9 L175.2,-164.9 L176.4,-165.0 L178.2,-158.2 L179.4,-158.2 L180.6,-158.2 L181.8,-158.2 L183.6,-165.0 L184.8,-164.9 L186.0,-164.9 L187.4,-158.1 L188.6,-158.0 L189.8,-157.9 L191.0,-157.9 L193.1,-164.5 L194.4,-164.4 L195.6,-164.3 L196.5,-157.4 L197.8,-157.3 L199.0,-157.1 L200.2,-157.0 L202.7,-163.4 L203.9,-163.3 L205.1,-163.1 L205.7,-156.2 L206.9,-156.0 L208.1,-155.7 L209.3,-155.5 L212.1,-161.8 L213.4,-161.6 L214.6,-161.3 L214.7,-154.4 L215.9,-154.1 L217.1,-153.8 L218.3,-153.5 L221.5,-159.7 L222.7,-159.4 L223.9,-159.1 L223.6,-152.1 L224.8,-151.8 L226.0,-151.4 L227.1,-151.1 L230.7,-157.0 L231.9,-156.6 L233.1,-156.2 L232.4,-149.3 L233.5,-148.9 L234.7,-148.5 L235.9,-148.1 L239.8,-153.8 L240.9,-153.3 L242.1,-152.9 L241.0,-146.0 L242.1,-145.5 L243.2,-145.1 L244.4,-144.6 L248.6,-150.1 L249.7,-149.5 L250.9,-149.0 L249.4,-142.2 L250.5,-141.7 L251.6,-141.1 L252.7,-140.6 L257.2,-145.8 L258.3,-145.2 L259.4,-144.6 L257.5,-138.0 L258.6,-137.4 L259.7,-136.7 L260.7,-136.1 L265.6,-141.1 L266.6,-140.4 L267.7,-139.8 L265.4,-133.2 L266.4,-132.6 L267.5,-131.9 L268.5,-131.2 L273.6,-135.9 L274.6,-135.2 L275.7,-134.4 L273.0,-128.0 L274.0,-127.3 L275.0,-126.6 L276.0,-125.8 L281.4,-130.2 L282.3,-129.4 L283.3,-128.7 L280.3,-122.4 L281.3,-121.6 L282.2,-120.8 L283.1,-120.0 L288.8,-124.1 L289.7,-123.3 L290.6,-122.4 L287.3,-116.4 L288.2,-115.5 L289.0,-114.7 L289.9,-113.8 L295.8,-117.6 L296.7,-116.7 L297.6,-115.8 L293.8,-109.9 L294.7,-109.0 L295.5,-108.2 L296.4,-107.3 L302.4,-110.6 L303.3,-109.7 L304.1,-108.8 L300.0,-103.1 L300.8,-102.2 L301.6,-101.3 L302.4,-100.3 L308.7,-103.3 L309.4,-102.3 L310.2,-101.4 L305.8,-96.0 L306.6,-95.0 L307.3,-94.0 L308.0,-93.0 L314.4,-95.7 L315.2,-94.6 L315.9,-93.6 L311.2,-88.5 L311.9,-87.5 L312.6,-86.4 L313.2,-85.4 L319.8,-87.7 L320.4,-86.6 L321.1,-85.6 L316.1,-80.7 L316.7,-79.7 L317.4,-78.6 L318.0,-77.5 L324.6,-79.4 L325.2,-78.3 L325.8,-77.2 L320.6,-72.7 L321.1,-71.6 L321.7,-70.5 L322.2,-69.4 L329.0,-70.9 L329.5,-69.7 L330.1,-68.6 L324.6,-64.4 L325.1,-63.2 L325.5,-62.1 L326.0,-61.0 L332.9,-62.1 L333.3,-60.9 L333.8,-59.8 L328.1,-55.9 L328.5,-54.7 L328.9,-53.5 L329.3,-52.4 L336.2,-53.1 L336.6,-51.9 L337.0,-50.7 L331.1,-47.1 L331.4,-46.0 L331.8,-44.8 L332.1,-43.6 L339.1,-43.9 L339.4,-42.7 L339.7,-41.5 L333.5,-38.3 L333.8,-37.1 L334.1,-35.9 L334.4,-34.7 L341.3,-34.6 L341.6,-33.4 L341.8,-32.1 L335.5,-29.3 L335.7,-28.1 L336.0,-26.9 L336.2,-25.7 L343.1,-25.1 L343.3,-23.9 L343.4,-22.7 L337.0,-20.2 L337.1,-19.0 L337.3,-17.8 L337.4,-16.5 L344.3,-15.6 L344.4,-14.4 L344.5,-13.1 L337.9,-11.0 L337.9,-9.8 L338.0,-8.6 L338.1,-7.4 L344.9,-6.0 L344.9,-4.8 L345.0,-3.6 L338.2,-1.8 L338.2,-0.6 L338.2,0.6 L338.2,1.8Z" fill="#4dffb0" class="rg-gear"/><circle cx="180.0" cy="0" r="10" class="rg-hub"/>
+      <path d="M21.0,-1.4 L21.0,0.0 L21.0,1.4 L14.1,2.2 L13.9,3.2 L13.6,4.2 L13.3,5.1 L18.9,9.2 L18.2,10.5 L17.4,11.7 L11.1,9.0 L10.4,9.7 L9.7,10.4 L9.0,11.1 L11.7,17.4 L10.5,18.2 L9.2,18.9 L5.1,13.3 L4.2,13.6 L3.2,13.9 L2.2,14.1 L1.4,21.0 L0.0,21.0 L-1.4,21.0 L-2.2,14.1 L-3.2,13.9 L-4.2,13.6 L-5.1,13.3 L-9.2,18.9 L-10.5,18.2 L-11.7,17.4 L-9.0,11.1 L-9.7,10.4 L-10.4,9.7 L-11.1,9.0 L-17.4,11.7 L-18.2,10.5 L-18.9,9.2 L-13.3,5.1 L-13.6,4.2 L-13.9,3.2 L-14.1,2.2 L-21.0,1.4 L-21.0,0.0 L-21.0,-1.4 L-14.1,-2.2 L-13.9,-3.2 L-13.6,-4.2 L-13.3,-5.1 L-18.9,-9.2 L-18.2,-10.5 L-17.4,-11.7 L-11.1,-9.0 L-10.4,-9.7 L-9.7,-10.4 L-9.0,-11.1 L-11.7,-17.4 L-10.5,-18.2 L-9.2,-18.9 L-5.1,-13.3 L-4.2,-13.6 L-3.2,-13.9 L-2.2,-14.1 L-1.4,-21.0 L-0.0,-21.0 L1.4,-21.0 L2.2,-14.1 L3.2,-13.9 L4.2,-13.6 L5.1,-13.3 L9.2,-18.9 L10.5,-18.2 L11.7,-17.4 L9.0,-11.1 L9.7,-10.4 L10.4,-9.7 L11.1,-9.0 L17.4,-11.7 L18.2,-10.5 L18.9,-9.2 L13.3,-5.1 L13.6,-4.2 L13.9,-3.2 L14.1,-2.2Z" fill="#ffd166" class="rg-gear"/><circle cx="0" cy="0" r="4" class="rg-hub"/>
+      <path d="M604.9,3.7 L604.8,5.0 L604.7,6.3 L597.8,7.0 L597.6,8.1 L597.4,9.3 L597.2,10.4 L603.4,13.5 L603.1,14.8 L602.7,16.0 L595.8,15.5 L595.4,16.6 L595.0,17.7 L594.6,18.8 L600.2,22.9 L599.7,24.1 L599.1,25.3 L592.4,23.6 L591.8,24.6 L591.2,25.6 L590.6,26.6 L595.4,31.6 L594.7,32.7 L593.9,33.7 L587.6,30.9 L586.9,31.9 L586.1,32.7 L585.3,33.6 L589.2,39.4 L588.3,40.3 L587.4,41.2 L581.6,37.3 L580.7,38.1 L579.9,38.9 L578.9,39.6 L581.7,45.9 L580.7,46.7 L579.6,47.4 L574.6,42.6 L573.6,43.2 L572.6,43.8 L571.6,44.4 L573.3,51.1 L572.1,51.7 L570.9,52.2 L566.8,46.6 L565.7,47.0 L564.6,47.4 L563.5,47.8 L564.0,54.7 L562.8,55.1 L561.5,55.4 L558.4,49.2 L557.3,49.4 L556.1,49.6 L555.0,49.8 L554.3,56.7 L553.0,56.8 L551.7,56.9 L549.8,50.2 L548.6,50.2 L547.4,50.2 L546.2,50.2 L544.3,56.9 L543.0,56.8 L541.7,56.7 L541.0,49.8 L539.9,49.6 L538.7,49.4 L537.6,49.2 L534.5,55.4 L533.2,55.1 L532.0,54.7 L532.5,47.8 L531.4,47.4 L530.3,47.0 L529.2,46.6 L525.1,52.2 L523.9,51.7 L522.7,51.1 L524.4,44.4 L523.4,43.8 L522.4,43.2 L521.4,42.6 L516.4,47.4 L515.3,46.7 L514.3,45.9 L517.1,39.6 L516.1,38.9 L515.3,38.1 L514.4,37.3 L508.6,41.2 L507.7,40.3 L506.8,39.4 L510.7,33.6 L509.9,32.7 L509.1,31.9 L508.4,30.9 L502.1,33.7 L501.3,32.7 L500.6,31.6 L505.4,26.6 L504.8,25.6 L504.2,24.6 L503.6,23.6 L496.9,25.3 L496.3,24.1 L495.8,22.9 L501.4,18.8 L501.0,17.7 L500.6,16.6 L500.2,15.5 L493.3,16.0 L492.9,14.8 L492.6,13.5 L498.8,10.4 L498.6,9.3 L498.4,8.1 L498.2,7.0 L491.3,6.3 L491.2,5.0 L491.1,3.7 L497.8,1.8 L497.8,0.6 L497.8,-0.6 L497.8,-1.8 L491.1,-3.7 L491.2,-5.0 L491.3,-6.3 L498.2,-7.0 L498.4,-8.1 L498.6,-9.3 L498.8,-10.4 L492.6,-13.5 L492.9,-14.8 L493.3,-16.0 L500.2,-15.5 L500.6,-16.6 L501.0,-17.7 L501.4,-18.8 L495.8,-22.9 L496.3,-24.1 L496.9,-25.3 L503.6,-23.6 L504.2,-24.6 L504.8,-25.6 L505.4,-26.6 L500.6,-31.6 L501.3,-32.7 L502.1,-33.7 L508.4,-30.9 L509.1,-31.9 L509.9,-32.7 L510.7,-33.6 L506.8,-39.4 L507.7,-40.3 L508.6,-41.2 L514.4,-37.3 L515.3,-38.1 L516.1,-38.9 L517.1,-39.6 L514.3,-45.9 L515.3,-46.7 L516.4,-47.4 L521.4,-42.6 L522.4,-43.2 L523.4,-43.8 L524.4,-44.4 L522.7,-51.1 L523.9,-51.7 L525.1,-52.2 L529.2,-46.6 L530.3,-47.0 L531.4,-47.4 L532.5,-47.8 L532.0,-54.7 L533.2,-55.1 L534.5,-55.4 L537.6,-49.2 L538.7,-49.4 L539.9,-49.6 L541.0,-49.8 L541.7,-56.7 L543.0,-56.8 L544.3,-56.9 L546.2,-50.2 L547.4,-50.2 L548.6,-50.2 L549.8,-50.2 L551.7,-56.9 L553.0,-56.8 L554.3,-56.7 L555.0,-49.8 L556.1,-49.6 L557.3,-49.4 L558.4,-49.2 L561.5,-55.4 L562.8,-55.1 L564.0,-54.7 L563.5,-47.8 L564.6,-47.4 L565.7,-47.0 L566.8,-46.6 L570.9,-52.2 L572.1,-51.7 L573.3,-51.1 L571.6,-44.4 L572.6,-43.8 L573.6,-43.2 L574.6,-42.6 L579.6,-47.4 L580.7,-46.7 L581.7,-45.9 L578.9,-39.6 L579.9,-38.9 L580.7,-38.1 L581.6,-37.3 L587.4,-41.2 L588.3,-40.3 L589.2,-39.4 L585.3,-33.6 L586.1,-32.7 L586.9,-31.9 L587.6,-30.9 L593.9,-33.7 L594.7,-32.7 L595.4,-31.6 L590.6,-26.6 L591.2,-25.6 L591.8,-24.6 L592.4,-23.6 L599.1,-25.3 L599.7,-24.1 L600.2,-22.9 L594.6,-18.8 L595.0,-17.7 L595.4,-16.6 L595.8,-15.5 L602.7,-16.0 L603.1,-14.8 L603.4,-13.5 L597.2,-10.4 L597.4,-9.3 L597.6,-8.1 L597.8,-7.0 L604.7,-6.3 L604.8,-5.0 L604.9,-3.7 L598.2,-1.8 L598.2,-0.6 L598.2,0.6 L598.2,1.8Z" fill="#2a8fff" class="rg-gear"/>
+      <path d="M497.0,-1.4 L497.0,0.0 L497.0,1.4 L490.1,2.2 L489.9,3.2 L489.6,4.2 L489.3,5.1 L494.9,9.2 L494.2,10.5 L493.4,11.7 L487.1,9.0 L486.4,9.7 L485.7,10.4 L485.0,11.1 L487.7,17.4 L486.5,18.2 L485.2,18.9 L481.1,13.3 L480.2,13.6 L479.2,13.9 L478.2,14.1 L477.4,21.0 L476.0,21.0 L474.6,21.0 L473.8,14.1 L472.8,13.9 L471.8,13.6 L470.9,13.3 L466.8,18.9 L465.5,18.2 L464.3,17.4 L467.0,11.1 L466.3,10.4 L465.6,9.7 L464.9,9.0 L458.6,11.7 L457.8,10.5 L457.1,9.2 L462.7,5.1 L462.4,4.2 L462.1,3.2 L461.9,2.2 L455.0,1.4 L455.0,0.0 L455.0,-1.4 L461.9,-2.2 L462.1,-3.2 L462.4,-4.2 L462.7,-5.1 L457.1,-9.2 L457.8,-10.5 L458.6,-11.7 L464.9,-9.0 L465.6,-9.7 L466.3,-10.4 L467.0,-11.1 L464.3,-17.4 L465.5,-18.2 L466.8,-18.9 L470.9,-13.3 L471.8,-13.6 L472.8,-13.9 L473.8,-14.1 L474.6,-21.0 L476.0,-21.0 L477.4,-21.0 L478.2,-14.1 L479.2,-13.9 L480.2,-13.6 L481.1,-13.3 L485.2,-18.9 L486.5,-18.2 L487.7,-17.4 L485.0,-11.1 L485.7,-10.4 L486.4,-9.7 L487.1,-9.0 L493.4,-11.7 L494.2,-10.5 L494.9,-9.2 L489.3,-5.1 L489.6,-4.2 L489.9,-3.2 L490.1,-2.2Z" fill="#ffd166" class="rg-gear"/><circle cx="476.0" cy="0" r="4" class="rg-hub"/>
+      <path d="M676.9,3.7 L676.8,5.0 L676.7,6.3 L669.8,7.0 L669.6,8.1 L669.4,9.3 L669.2,10.4 L675.4,13.5 L675.1,14.8 L674.7,16.0 L667.8,15.5 L667.4,16.6 L667.0,17.7 L666.6,18.8 L672.2,22.9 L671.7,24.1 L671.1,25.3 L664.4,23.6 L663.8,24.6 L663.2,25.6 L662.6,26.6 L667.4,31.6 L666.7,32.7 L665.9,33.7 L659.6,30.9 L658.9,31.9 L658.1,32.7 L657.3,33.6 L661.2,39.4 L660.3,40.3 L659.4,41.2 L653.6,37.3 L652.7,38.1 L651.9,38.9 L650.9,39.6 L653.7,45.9 L652.7,46.7 L651.6,47.4 L646.6,42.6 L645.6,43.2 L644.6,43.8 L643.6,44.4 L645.3,51.1 L644.1,51.7 L642.9,52.2 L638.8,46.6 L637.7,47.0 L636.6,47.4 L635.5,47.8 L636.0,54.7 L634.8,55.1 L633.5,55.4 L630.4,49.2 L629.3,49.4 L628.1,49.6 L627.0,49.8 L626.3,56.7 L625.0,56.8 L623.7,56.9 L621.8,50.2 L620.6,50.2 L619.4,50.2 L618.2,50.2 L616.3,56.9 L615.0,56.8 L613.7,56.7 L613.0,49.8 L611.9,49.6 L610.7,49.4 L609.6,49.2 L606.5,55.4 L605.2,55.1 L604.0,54.7 L604.5,47.8 L603.4,47.4 L602.3,47.0 L601.2,46.6 L597.1,52.2 L595.9,51.7 L594.7,51.1 L596.4,44.4 L595.4,43.8 L594.4,43.2 L593.4,42.6 L588.4,47.4 L587.3,46.7 L586.3,45.9 L589.1,39.6 L588.1,38.9 L587.3,38.1 L586.4,37.3 L580.6,41.2 L579.7,40.3 L578.8,39.4 L582.7,33.6 L581.9,32.7 L581.1,31.9 L580.4,30.9 L574.1,33.7 L573.3,32.7 L572.6,31.6 L577.4,26.6 L576.8,25.6 L576.2,24.6 L575.6,23.6 L568.9,25.3 L568.3,24.1 L567.8,22.9 L573.4,18.8 L573.0,17.7 L572.6,16.6 L572.2,15.5 L565.3,16.0 L564.9,14.8 L564.6,13.5 L570.8,10.4 L570.6,9.3 L570.4,8.1 L570.2,7.0 L563.3,6.3 L563.2,5.0 L563.1,3.7 L569.8,1.8 L569.8,0.6 L569.8,-0.6 L569.8,-1.8 L563.1,-3.7 L563.2,-5.0 L563.3,-6.3 L570.2,-7.0 L570.4,-8.1 L570.6,-9.3 L570.8,-10.4 L564.6,-13.5 L564.9,-14.8 L565.3,-16.0 L572.2,-15.5 L572.6,-16.6 L573.0,-17.7 L573.4,-18.8 L567.8,-22.9 L568.3,-24.1 L568.9,-25.3 L575.6,-23.6 L576.2,-24.6 L576.8,-25.6 L577.4,-26.6 L572.6,-31.6 L573.3,-32.7 L574.1,-33.7 L580.4,-30.9 L581.1,-31.9 L581.9,-32.7 L582.7,-33.6 L578.8,-39.4 L579.7,-40.3 L580.6,-41.2 L586.4,-37.3 L587.3,-38.1 L588.1,-38.9 L589.1,-39.6 L586.3,-45.9 L587.3,-46.7 L588.4,-47.4 L593.4,-42.6 L594.4,-43.2 L595.4,-43.8 L596.4,-44.4 L594.7,-51.1 L595.9,-51.7 L597.1,-52.2 L601.2,-46.6 L602.3,-47.0 L603.4,-47.4 L604.5,-47.8 L604.0,-54.7 L605.2,-55.1 L606.5,-55.4 L609.6,-49.2 L610.7,-49.4 L611.9,-49.6 L613.0,-49.8 L613.7,-56.7 L615.0,-56.8 L616.3,-56.9 L618.2,-50.2 L619.4,-50.2 L620.6,-50.2 L621.8,-50.2 L623.7,-56.9 L625.0,-56.8 L626.3,-56.7 L627.0,-49.8 L628.1,-49.6 L629.3,-49.4 L630.4,-49.2 L633.5,-55.4 L634.8,-55.1 L636.0,-54.7 L635.5,-47.8 L636.6,-47.4 L637.7,-47.0 L638.8,-46.6 L642.9,-52.2 L644.1,-51.7 L645.3,-51.1 L643.6,-44.4 L644.6,-43.8 L645.6,-43.2 L646.6,-42.6 L651.6,-47.4 L652.7,-46.7 L653.7,-45.9 L650.9,-39.6 L651.9,-38.9 L652.7,-38.1 L653.6,-37.3 L659.4,-41.2 L660.3,-40.3 L661.2,-39.4 L657.3,-33.6 L658.1,-32.7 L658.9,-31.9 L659.6,-30.9 L665.9,-33.7 L666.7,-32.7 L667.4,-31.6 L662.6,-26.6 L663.2,-25.6 L663.8,-24.6 L664.4,-23.6 L671.1,-25.3 L671.7,-24.1 L672.2,-22.9 L666.6,-18.8 L667.0,-17.7 L667.4,-16.6 L667.8,-15.5 L674.7,-16.0 L675.1,-14.8 L675.4,-13.5 L669.2,-10.4 L669.4,-9.3 L669.6,-8.1 L669.8,-7.0 L676.7,-6.3 L676.8,-5.0 L676.9,-3.7 L670.2,-1.8 L670.2,-0.6 L670.2,0.6 L670.2,1.8Z" fill="#4dffb0" class="rg-gear rg-front"/><circle cx="620.0" cy="0" r="6" class="rg-hub"/>
+      <path d="M569.0,-1.4 L569.0,0.0 L569.0,1.4 L562.1,2.2 L561.9,3.2 L561.6,4.2 L561.3,5.1 L566.9,9.2 L566.2,10.5 L565.4,11.7 L559.1,9.0 L558.4,9.7 L557.7,10.4 L557.0,11.1 L559.7,17.4 L558.5,18.2 L557.2,18.9 L553.1,13.3 L552.2,13.6 L551.2,13.9 L550.2,14.1 L549.4,21.0 L548.0,21.0 L546.6,21.0 L545.8,14.1 L544.8,13.9 L543.8,13.6 L542.9,13.3 L538.8,18.9 L537.5,18.2 L536.3,17.4 L539.0,11.1 L538.3,10.4 L537.6,9.7 L536.9,9.0 L530.6,11.7 L529.8,10.5 L529.1,9.2 L534.7,5.1 L534.4,4.2 L534.1,3.2 L533.9,2.2 L527.0,1.4 L527.0,0.0 L527.0,-1.4 L533.9,-2.2 L534.1,-3.2 L534.4,-4.2 L534.7,-5.1 L529.1,-9.2 L529.8,-10.5 L530.6,-11.7 L536.9,-9.0 L537.6,-9.7 L538.3,-10.4 L539.0,-11.1 L536.3,-17.4 L537.5,-18.2 L538.8,-18.9 L542.9,-13.3 L543.8,-13.6 L544.8,-13.9 L545.8,-14.1 L546.6,-21.0 L548.0,-21.0 L549.4,-21.0 L550.2,-14.1 L551.2,-13.9 L552.2,-13.6 L553.1,-13.3 L557.2,-18.9 L558.5,-18.2 L559.7,-17.4 L557.0,-11.1 L557.7,-10.4 L558.4,-9.7 L559.1,-9.0 L565.4,-11.7 L566.2,-10.5 L566.9,-9.2 L561.3,-5.1 L561.6,-4.2 L561.9,-3.2 L562.1,-2.2Z" fill="#1f6fd1" class="rg-gear rg-front"/><circle cx="548.0" cy="0" r="4" class="rg-hub"/>
+      <text x="162" y="200" class="rg-title">Two gears: 9:1</text>
+      <text x="566" y="200" class="rg-title">Compound train: 9:1</text>
+    </svg>
+      <figcaption>Both gear systems are drawn to the same scale.</figcaption>
+    </figure>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 26 · WHY GEAR TRAINS? REASONS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Wrap-Up</span>
+    <h2>Why Gear Trains?</h2>
+    <div class="reason-grid">
+      <div class="reason-card">
+        <h3>Space and Size</h3>
+        <p>Big gears need wide diameters to reach high ratios, which takes up too much space. Several small stages fit the same ratio into a compact area.</p>
+      </div>
+      <div class="reason-card fragment fade-up">
+        <h3>Higher Total Ratios</h3>
+        <p>Each stage multiplies the effect of the last. A 4:1 stage and a 3:1 stage give a 12:1 total without one massive gear.</p>
+      </div>
+      <div class="reason-card fragment fade-up">
+        <h3>Smoother Motion</h3>
+        <p>Each stage changes the speed gradually instead of all at once, which helps reduce shock, vibration, and slipping.</p>
+      </div>
+      <div class="reason-card fragment fade-up">
+        <h3>Practical Manufacturing</h3>
+        <p>Small gears are easier and cheaper to make. Large gears need more material, tooling, and precision.</p>
+      </div>
+      <div class="reason-card fragment fade-up">
+        <h3>Less Backlash and Stress</h3>
+        <p>Smaller gears can mesh more precisely. Spreading the load over several gears reduces wear on individual teeth.</p>
+      </div>
+      <div class="reason-card fragment fade-up">
+        <h3>Flexible Design</h3>
+        <p>Engineers can swap one stage to adjust the speed without rebuilding everything, which makes fine-tuning easy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+</div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'more-gear-trains',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
