@@ -202,6 +202,13 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
    for students, so never attach one to a teaching or worked-example slide (fragments, figures,
    explanations) that students still need to see. If a content slide needs a check-in question,
    give the question its own slide right after it.
+11. **Vary the position of the correct answer** in every multiple-choice question (Resonance
+   `options` arrays, fallback `.mcq-opts` lists, and any printed answer choices). Never leave the
+   correct option first by default; across a deck's questions the correct answers must land in
+   varied, unpredictable positions (A, B, C, D), so students cannot learn a pattern. Keep option
+   `id`s in display order (`q1a`, `q1b`, ...) after reordering, and refer to answers by content,
+   not letter, in speaker notes. When editing an existing deck, check its MCQs for this and fix
+   any where the correct answers share a position.
 
 ## Reusable Activity Index
 
