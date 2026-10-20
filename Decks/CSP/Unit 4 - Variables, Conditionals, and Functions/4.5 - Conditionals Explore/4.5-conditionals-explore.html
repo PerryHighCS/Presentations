@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1my5b3q">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.5 Conditionals Explore</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: 4.5 Conditionals Explore
+   ============================================================ */
+
+:root {
+  /* Body text brighter than the shared theme's 0.6 alpha so prose
+     clears 7:1 on both the page and card backgrounds. */
+  --text-body: #b8cac7;
+  --text-soft: #a3b4b1;
+  /* Boolean values: violet. true is a filled chip, false is outlined. */
+  --bool:        #b197fc;
+  --bool-tint:   rgba(177,151,252,0.10);
+  --bool-glow:   rgba(177,151,252,0.55);
+}
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+/* JetBrains Mono draws <= == != && as ligatures; students need to see
+   the exact characters they will write, so turn ligatures off. */
+.reveal, .reveal * { font-variant-ligatures: none; }
+.frq-box p { color: var(--text-body); }
+
+/* ─── Semantic inline emphasis (extends 4.1 to 4.4) ─────────────────
+   i.n  a variable name, in code font, teal
+   i.v  a number value, gold
+   i.s  a string value, green
+   i.b  a Boolean value or the word Boolean, violet
+   i.o  an operator or operator concept, white
+   i.a  an action students take (look up, substitute, evaluate), amber
+   i.c  a concept word (condition, boundary, truth table), teal
+   ─────────────────────────────────────────────────────────────── */
+.reveal i.n, .reveal i.v, .reveal i.s {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-weight: 500;
+}
+.reveal i.n { color: var(--teal); }
+.reveal i.v { color: var(--gold); }
+.reveal i.s { color: var(--green); }
+.reveal i.b { font-style: normal; color: var(--bool); font-weight: 600; }
+.reveal i.o { font-style: normal; color: var(--text); font-weight: 700; }
+.reveal i.a { font-style: normal; color: var(--amber); font-weight: 600; }
+.reveal i.c { font-style: normal; color: var(--teal); font-weight: 600; }
+
+/* ─── Expression tokens ──────────────────────────────────────────── */
+.tk-num  { color: var(--gold); }
+.tk-str  { color: var(--green); }
+.tk-nm   { color: var(--teal); }
+.tk-bool { color: var(--bool); font-weight: 700; }
+.tk-op   { color: var(--text); font-weight: 700; }
+.expr, .rexpr, .plain {
+  font-family: var(--font-mono);
+  white-space: pre;
+}
+.plain { color: var(--text); }
+
+/* ─── Value chips ────────────────────────────────────────────────── */
+.chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1.35;
+  padding: 1px 14px;
+  border: 2px solid;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+.chip.sm { font-size: 20px; padding: 0 12px; }
+.chip.lg { font-size: 40px; padding: 2px 22px; border-width: 3px; }
+.chip.t   { background: var(--bool); border-color: var(--bool); color: #091412; }
+.chip.f   { background: var(--bg); border-color: var(--bool); color: var(--bool); }
+.chip.num { color: var(--gold);  border-color: rgba(255,159,67,0.6);  background: rgba(255,159,67,0.08); }
+.chip.str { color: var(--green); border-color: rgba(105,219,124,0.6); background: rgba(105,219,124,0.08); }
+
+/* ─── Layout helpers ─────────────────────────────────────────────── */
+.top-inner { justify-content: flex-start !important; padding-top: 52px !important; }
+.reveal .top-inner h2 { margin-bottom: var(--gap); }
+.lead { font-size: 27px !important; line-height: 1.55 !important; max-width: 1300px; }
+.prose p { font-size: 26px; line-height: 1.55; }
+.prose p + p, .prose p + .steps, .prose .q-box + p { margin-top: var(--gap); }
+.prompt-big {
+  font-size: 46px !important;
+  line-height: 1.35 !important;
+  color: var(--text) !important;
+  max-width: 1200px;
+  text-align: center;
+}
+.q-box {
+  font-size: 30px !important;
+  line-height: 1.45 !important;
+  color: var(--text) !important;
+  background: var(--bg-card);
+  border-left: 4px solid var(--teal);
+  border-radius: 3px;
+  padding: 16px 22px;
+}
+.steps p {
+  font-size: 25px;
+  line-height: 1.45;
+  padding-left: 52px;
+  position: relative;
+}
+.steps p + p { margin-top: 14px; }
+.step-n {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--amber);
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.q-letter { color: var(--amber); font-family: var(--font-mono); margin-right: 8px; }
+
+/* ─── Types of values ────────────────────────────────────────────── */
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap);
+  margin-top: var(--gap-lg);
+}
+.type-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-top: 4px solid;
+  border-radius: 6px;
+  padding: 22px 26px;
+}
+.type-card.num  { border-top-color: var(--gold); }
+.type-card.str  { border-top-color: var(--green); }
+.type-card.bool { border-top-color: var(--bool); }
+.type-card h3 { font-size: var(--h3); margin-bottom: 10px; }
+.type-card.num h3  { color: var(--gold); }
+.type-card.str h3  { color: var(--green); }
+.type-card.bool h3 { color: var(--bool); }
+.type-card p { font-size: 23px; line-height: 1.45; min-height: 100px; }
+.chips { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+.chips .chip { font-size: 28px; }
+
+/* ─── Big "evaluates to" line ────────────────────────────────────── */
+.big-eval {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.big-eval .rexpr { font-size: 52px; }
+.eval-arrow {
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+.big-eval.sm { gap: 18px; }
+.big-eval.sm .rexpr { font-size: 32px; }
+.big-eval.sm .eval-arrow { font-size: 16px; }
+.tk-examples { display: flex; flex-direction: column; gap: var(--gap-lg); margin-top: var(--gap); }
+
+/* ─── Reduce stack: one line per step, like students write it ──── */
+.reduce {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  column-gap: 26px;
+  row-gap: 12px;
+  align-items: center;
+  margin-top: var(--gap);
+}
+.rstep { display: contents; }
+.rlabel {
+  justify-self: end;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.reduce .rexpr { font-size: 32px; }
+.reduce.lg .rexpr { font-size: 42px; }
+/* display: contents drops the box, so fade each part of a fragment step */
+.reveal .rstep.fragment > * { opacity: 0; transition: opacity 0.55s var(--ease); }
+.reveal .rstep.fragment.visible > * { opacity: 1; }
+.reveal .rstep.fragment { opacity: 1 !important; visibility: visible !important; }
+
+/* ─── Tables ─────────────────────────────────────────────────────── */
+.reveal table.xt { border-collapse: collapse; margin: var(--gap) 0 0; }
+.reveal table.xt th {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teal);
+  padding: 8px 18px;
+  border-bottom: 2px solid rgba(226,245,242,0.55);
+  text-align: center;
+}
+.reveal table.xt td {
+  font-size: 24px;
+  color: var(--text);
+  padding: 10px 18px;
+  height: 64px;
+  text-align: center;
+  border-bottom: 1px solid var(--teal-border);
+}
+.reveal table.xt td .expr { font-size: 26px; }
+.reveal table.xt td { white-space: nowrap; }
+.reveal table.xt.tests td, .reveal table.xt.tests th { padding-left: 12px; padding-right: 12px; }
+.reveal table.xt.drill td:first-child { text-align: left; }
+.reveal table.xt.drill td { padding: 8px 26px; height: 60px; }
+.reveal table.xt.wide-cells td { padding: 10px 40px; font-size: 30px; }
+.reveal table.xt.wide-cells td .plain { font-size: 32px; }
+.reveal table.xt.wide td { padding: 10px 40px; }
+.reveal table.xt.truth td { padding: 10px 36px; }
+.reveal table.xt tr.boundary td { background: rgba(255,212,59,0.06); }
+.reveal table.xt.ops { margin: 0; }
+.reveal table.xt.ops td { height: auto; font-size: 22px; text-align: left; padding: 10px 14px; color: var(--text-body); }
+.reveal table.xt.ops td:nth-child(odd) { font-family: var(--font-mono); font-size: 30px; text-align: center; color: var(--text); }
+
+/* ─── Logical operator cards ─────────────────────────────────────── */
+.op-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); margin-top: var(--gap-lg); }
+.op-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 6px;
+  padding: 20px 26px;
+}
+.op-sym { font-family: var(--font-mono); font-size: 52px; font-weight: 700; color: var(--text); margin-right: 16px; }
+.op-name { font-family: var(--font-mono); font-size: 22px; letter-spacing: 0.14em; color: var(--teal); }
+.op-card p { font-size: 23px; margin-top: 8px; }
+
+/* ─── Memory trace (same visual as 4.1) ──────────────────────────── */
+.panel {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,201,177,0.4);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.panel-hdr {
+  padding: 6px 16px;
+  background: rgba(0,201,177,0.12);
+  border-bottom: 1px solid rgba(0,201,177,0.4);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  text-align: center;
+}
+.mem-body { padding: 14px 18px 18px; }
+.frame-cols { display: flex; flex-wrap: wrap; gap: 8px 34px; }
+.mem-col { min-width: 96px; }
+.mem-col-name {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  color: var(--teal);
+  border-bottom: 2px solid rgba(226,245,242,0.55);
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+}
+.mem-val { font-family: var(--font-mono); font-size: 26px; line-height: 1.4; }
+.mem-val.blank { height: 36px; }
+.mv-num { color: var(--gold); }
+
+/* ─── Flowcharts ─────────────────────────────────────────────────────
+   Drawn on a fixed px stage and scaled as a whole with transform.
+   Highlight overlays (.hl, .fc-box-hl) are fragments that light up the
+   one branch the current test follows.                              */
+.fc-wrap { position: relative; flex-shrink: 0; }
+.fc { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.fc svg { position: absolute; left: 0; top: 0; overflow: visible; }
+.fc .shape { fill: var(--bg-card); stroke: rgba(0,201,177,0.8); stroke-width: 3; }
+.fc .arrow { stroke: rgba(226,245,242,0.65); stroke-width: 3; fill: none; }
+.fc .arrow-head { fill: rgba(226,245,242,0.65); }
+.fc .arrow-hl { stroke: var(--bool); stroke-width: 7; fill: none; }
+.fc .arrow-hl-head { fill: var(--bool); }
+.fc .hl { filter: drop-shadow(0 0 8px var(--bool-glow)); }
+.fc .c { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; }
+.fc-cond { font-family: var(--font-mono); font-weight: 600; }
+.fc-sub { font-family: var(--font-mono); font-size: 25px; }
+.fc-res { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.fc-res-lbl { font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-soft); }
+.fc-res .chip { font-size: 26px; }
+.fc-box {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px 16px;
+  font-size: 25px;
+  line-height: 1.3;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 2px solid rgba(226,245,242,0.55);
+  border-radius: 8px;
+}
+.fc-box-new { border-color: var(--amber); color: var(--amber); font-weight: 600; }
+.fc-box-hl {
+  position: absolute;
+  border: 4px solid var(--bool);
+  border-radius: 8px;
+  background: var(--bool-tint);
+  box-shadow: 0 0 24px var(--bool-glow);
+  pointer-events: none;
+}
+.fc-tags { position: absolute; display: flex; justify-content: center; gap: 10px; }
+.fc-tags .tag {
+  font-family: var(--font-mono);
+  font-size: 23px;
+  color: var(--amber);
+  border: 1px solid var(--amber-border);
+  background: rgba(255,212,59,0.07);
+  border-radius: 999px;
+  padding: 2px 12px;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal .rstep.fragment > * { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 4 &middot; Lesson 4.5</span>
+        <h1 class="title-h1">Conditionals Explore</h1>
+        <p style="font-size:var(--body);max-width:1100px;line-height:1.6;margin-top:var(--gap);">Today you will learn how a program uses a <i class="b">true</i> or <i class="b">false</i> value to <i class="a">make a decision</i>. You will work through every example on paper with a partner.</p>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(177,151,252,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 70%);"></div>
+      <aside class="notes">Unit 4 Lesson 5. This is the Explore lesson for conditionals, run unplugged. Students work on paper handouts instead of the Digital Manipulatives slides, so they only need a pencil. Hand out each page as the deck reaches it. Full JavaScript if/else syntax comes in the next lesson; today is about the idea of selection.</aside>
+    </section>
+
+    <!-- SLIDE 2 · WARM UP -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Warm Up</span>
+        <p class="prompt-big">Imagine you need to decide what to wear to an event. What are <i class="a">two pieces of information</i> you would want to know?</p>
+        <p class="fragment fade-up" style="margin-top:var(--gap-lg);max-width:1050px;text-align:center;font-size:30px;">With a partner, describe how you would <i class="a">use that information</i> to make your decision.</p>
+      </div>
+      <aside class="notes">Give partners about two minutes. Collect a few answers on the board, such as the temperature, whether it is raining, whether the event is formal, or whether it is indoors or outdoors. Push for a rule: "If it is below 50 degrees, I wear a jacket." Each piece of information is something a program would store in a variable, and each rule is a decision. Save the board notes: students return to this idea on the last handout to build their own flowchart. Handout: no space needed here; this is spoken.</aside>
+    </section>
+
+    <!-- SLIDE 3 · TYPES OF VALUES -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Boolean Expressions</span>
+        <h2>Three Types of Values</h2>
+        <p class="lead">Programs store information as different <i class="c">types</i> of values. So far you have used numbers and strings. Today you will add a third type.</p>
+        <div class="type-grid">
+          <div class="type-card num">
+            <h3>Numbers</h3>
+            <p>Numbers are made of the digits 0 through 9 and have <i class="a">no quotes</i>.</p>
+            <div class="chips"><span class="chip num">22</span><span class="chip num">9</span><span class="chip num">548</span><span class="chip num">123</span></div>
+          </div>
+          <div class="type-card str">
+            <h3>Strings</h3>
+            <p>Strings can hold any characters, and they always go <i class="a">inside double quotes</i>.</p>
+            <div class="chips"><span class="chip str">"hi"</span><span class="chip str">"hi there"</span><span class="chip str">"c u l8r"</span><span class="chip str">"123"</span></div>
+          </div>
+          <div class="type-card bool fragment fade-up">
+            <h3>Booleans</h3>
+            <p>A <i class="b">Boolean</i> value can only ever be <i class="b">true</i> or <i class="b">false</i>, with <i class="a">no quotes</i>.</p>
+            <div class="chips"><span class="chip t">true</span><span class="chip f">false</span></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">The colors match the earlier Unit 4 decks: numbers are gold and strings are green. Booleans get their own color, violet, for the rest of this lesson: true is a filled violet chip and false is an outlined violet chip. Point out "123": it looks like a number, but the quotes make it a string. Booleans are named after George Boole, who worked out the math of true and false in the 1800s. Handout: the paper is not printed in color, so students label types with words instead.</aside>
+    </section>
+
+    <!-- SLIDE 4 · CHECK THE DATA TYPE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Your Turn &middot; Handout 1</span>
+        <h2>Check the Data Type</h2>
+        <div class="split split-top" style="grid-template-columns:1fr 520px;">
+          <div class="prose">
+            <p>On your handout, <i class="a">label each value</i> as a number, a string, or a Boolean. Look closely: <i class="c">quotation marks matter</i>.</p>
+            <p class="fragment fade-up" data-fragment-index="4">The last value is the tricky one. The word false inside quotes is just text, so it is a <i class="s">string</i>, not the Boolean value <i class="b">false</i>.</p>
+          </div>
+          <table class="xt wide-cells"><thead><tr><th>Value</th><th>Data type</th></tr></thead><tbody><tr><td><span class="plain">22</span></td><td><span class="fragment" data-fragment-index="0"><i class="v">number</i></span></td></tr><tr><td><span class="plain">&quot;22&quot;</span></td><td><span class="fragment" data-fragment-index="1"><i class="s">string</i></span></td></tr><tr><td><span class="plain">true</span></td><td><span class="fragment" data-fragment-index="2"><i class="b">Boolean</i></span></td></tr><tr><td><span class="plain">&quot;false&quot;</span></td><td><span class="fragment" data-fragment-index="3"><i class="s">string</i></span></td></tr></tbody></table>
+        </div>
+      </div>
+      <aside class="notes">Give students a minute to label all four before revealing. Reveal one row per click. Misconception: if a student calls "false" a Boolean, point to the quotation marks and ask which type always has quotes. Handout 1, part 1: a two-column table with the four values and blank type cells.</aside>
+    </section>
+
+    <!-- SLIDE 5 · BOOLEAN EXPRESSIONS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Boolean Expressions</span>
+        <h2>Comparison Operators</h2>
+        <p class="lead">A <i class="c">Boolean expression</i> is an expression that evaluates to <i class="b">true</i> or <i class="b">false</i>. A <i class="o">comparison operator</i> is your clue to <i class="a">stop and evaluate</i> for a Boolean value.</p>
+        <div class="split" style="grid-template-columns:auto 1fr;margin-top:var(--gap);">
+          <div class="big-eval">
+            <span class="rexpr"><span class="tk-num">3</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span></span>
+            <span class="fragment fade-up eval-arrow">evaluates to</span>
+            <span class="fragment fade-up"><span class="chip t lg">true</span></span>
+          </div>
+          <table class="xt ops">
+            <tbody>
+              <tr><td><i class="o">&lt;</i></td><td>less than</td><td><i class="o">&lt;=</i></td><td>less than or equal to</td></tr>
+              <tr><td><i class="o">&gt;</i></td><td>greater than</td><td><i class="o">&gt;=</i></td><td>greater than or equal to</td></tr>
+              <tr><td><i class="o">==</i></td><td>equal to</td><td><i class="o">!=</i></td><td>not equal to</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <aside class="notes">Read 3 &lt; 8 aloud as a question: "Is 3 less than 8?" The answer is yes, so the expression evaluates to true. Stress that == is two equal signs: it asks whether two values are equal. It does not assign a value the way = does with a variable. Handout 1 lists all six operators at the top of part 2.</aside>
+    </section>
+
+    <!-- SLIDE 6 · REDUCE THEN COMPARE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Boolean Expressions</span>
+        <h2>Reduce, Then Compare</h2>
+        <p class="lead">Before you can compare, <i class="a">each side</i> of the comparison operator must be <i class="a">reduced to one value</i>. Then the comparison turns those two values into one Boolean.</p>
+        <div class="reduce lg"><div class="rstep"><span class="rlabel">start</span><span class="rexpr"><span class="tk-num">3</span> <span class="tk-op">+</span> <span class="tk-num">6</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span></span></div><div class="rstep fragment" data-fragment-index="0"><span class="rlabel">reduce each side</span><span class="rexpr"><span class="tk-num">9</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span></span></div><div class="rstep fragment" data-fragment-index="1"><span class="rlabel">compare</span><span class="rexpr"><span class="chip f lg">false</span></span></div></div>
+        <p class="fragment fade-up" data-fragment-index="2" style="margin-top:var(--gap);">The right side is already a single value, so only the left side needed work. Since 9 is not less than 8, the expression evaluates to <i class="b">false</i>.</p>
+      </div>
+      <aside class="notes">Model this one slowly. Students should write each reduction on its own line, the same way the slide does. Support move: have students underline the comparison operator first and write each reduced side underneath it.</aside>
+    </section>
+
+    <!-- SLIDE 7 · REDUCE THEN COMPARE PRACTICE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Your Turn &middot; Handout 1</span>
+        <h2>Reduce Each Side, Then Compare</h2>
+        <p class="lead">For each expression, <i class="a">reduce the left side</i> and <i class="a">the right side</i> to one value, then <i class="a">compare</i>. Work alone first, then compare your reasoning with a partner.</p>
+        <table class="xt drill"><thead><tr><th>Expression</th><th>Left value</th><th>Right value</th><th>true or false</th></tr></thead><tbody><tr><td><span class="expr"><span class="tk-num">6</span> <span class="tk-op">-</span> <span class="tk-num">3</span> <span class="tk-op">&lt;</span> <span class="tk-num">4</span> <span class="tk-op">+</span> <span class="tk-num">1</span></span></td><td><span class="fragment" data-fragment-index="0"><i class="v">3</i></span></td><td><span class="fragment" data-fragment-index="0"><i class="v">5</i></span></td><td><span class="fragment" data-fragment-index="0"><span class="chip t">true</span></span></td></tr><tr><td><span class="expr"><span class="tk-num">12</span> <span class="tk-op">/</span> <span class="tk-num">6</span> <span class="tk-op">&gt;</span> <span class="tk-num">3</span> <span class="tk-op">-</span> <span class="tk-num">0</span></span></td><td><span class="fragment" data-fragment-index="1"><i class="v">2</i></span></td><td><span class="fragment" data-fragment-index="1"><i class="v">3</i></span></td><td><span class="fragment" data-fragment-index="1"><span class="chip f">false</span></span></td></tr><tr><td><span class="expr"><span class="tk-op">(</span><span class="tk-num">7</span> <span class="tk-op">-</span> <span class="tk-num">3</span><span class="tk-op">)</span> <span class="tk-op">*</span> <span class="tk-num">3</span> <span class="tk-op">&lt;=</span> <span class="tk-num">10</span></span></td><td><span class="fragment" data-fragment-index="2"><i class="v">12</i></span></td><td><span class="fragment" data-fragment-index="2"><i class="v">10</i></span></td><td><span class="fragment" data-fragment-index="2"><span class="chip f">false</span></span></td></tr><tr><td><span class="expr"><span class="tk-num">9</span> <span class="tk-op">+</span> <span class="tk-num">5</span> <span class="tk-op">==</span> <span class="tk-num">4</span> <span class="tk-op">+</span> <span class="tk-num">10</span></span></td><td><span class="fragment" data-fragment-index="3"><i class="v">14</i></span></td><td><span class="fragment" data-fragment-index="3"><i class="v">14</i></span></td><td><span class="fragment" data-fragment-index="3"><span class="chip t">true</span></span></td></tr><tr><td><span class="expr"><span class="tk-num">10</span> <span class="tk-op">-</span> <span class="tk-num">4</span> <span class="tk-op">!=</span> <span class="tk-num">2</span> <span class="tk-op">*</span> <span class="tk-num">3</span></span></td><td><span class="fragment" data-fragment-index="4"><i class="v">6</i></span></td><td><span class="fragment" data-fragment-index="4"><i class="v">6</i></span></td><td><span class="fragment" data-fragment-index="4"><span class="chip f">false</span></span></td></tr></tbody></table>
+        <p class="fragment fade-up" data-fragment-index="5" style="margin-top:var(--gap-sm);">In the last row both sides are 6. The operator <i class="o">!=</i> asks whether they are <i class="c">not equal</i>, and they are equal, so the answer is <i class="b">false</i>.</p>
+      </div>
+      <aside class="notes">Reveal one row per click after students finish. Watch the third row: parentheses first, so (7 - 3) * 3 is 12, not 7 - 9. The != row is new compared with the original manipulatives; students often say "true" because they see two matching sides. Have them read it aloud: "Is 6 not equal to 6?" Handout 1, part 2: this table with blank Left value, Right value, and true or false cells (five rows, including the != row).</aside>
+    </section>
+
+    <!-- SLIDE 8 · VARIABLES IN EXPRESSIONS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Boolean Expressions</span>
+        <h2>Variables in Expressions</h2>
+        <div class="split split-top" style="grid-template-columns:1fr 330px;">
+          <div>
+            <p class="lead">Any value in an expression can be a <i class="c">variable</i>. <i class="a">Look up</i> each variable in the memory trace and <i class="a">substitute</i> its value before you reduce.</p>
+            <div class="reduce lg"><div class="rstep"><span class="rlabel">start</span><span class="rexpr"><span class="tk-nm">lives</span> <span class="tk-op">+</span> <span class="tk-num">4</span> <span class="tk-op">&lt;</span> <span class="tk-nm">score</span> <span class="tk-op">-</span> <span class="tk-num">1</span></span></div><div class="rstep fragment" data-fragment-index="0"><span class="rlabel">substitute</span><span class="rexpr"><span class="tk-num">5</span> <span class="tk-op">+</span> <span class="tk-num">4</span> <span class="tk-op">&lt;</span> <span class="tk-num">10</span> <span class="tk-op">-</span> <span class="tk-num">1</span></span></div><div class="rstep fragment" data-fragment-index="1"><span class="rlabel">reduce each side</span><span class="rexpr"><span class="tk-num">9</span> <span class="tk-op">&lt;</span> <span class="tk-num">9</span></span></div><div class="rstep fragment" data-fragment-index="2"><span class="rlabel">compare</span><span class="rexpr"><span class="chip f lg">false</span></span></div></div>
+          </div>
+          <div class="panel mem-panel"><div class="panel-hdr">Memory</div><div class="mem-body"><div class="frame-cols"><div class="mem-col"><div class="mem-col-name">lives</div><div class="mem-val mv-num">5</div></div><div class="mem-col"><div class="mem-col-name">score</div><div class="mem-val mv-num">10</div></div></div></div></div>
+        </div>
+        <p class="fragment fade-up" data-fragment-index="3">Both sides reduce to 9. Nine is <i class="c">equal to</i> 9, but it is not <i class="c">less than</i> 9, so the result is <i class="b">false</i>.</p>
+      </div>
+      <aside class="notes">This uses the same memory trace columns from 4.1: the variable name sits above the line and its current value sits below it. A value that lands exactly on the boundary is worth slowing down for, because students often answer true when both sides match.</aside>
+    </section>
+
+    <!-- SLIDE 9 · SUBSTITUTE THE VARIABLE VALUES -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Your Turn &middot; Handout 1</span>
+        <h2>Substitute the Variable Values</h2>
+        <div class="split split-top" style="grid-template-columns:1fr 330px;">
+          <div>
+            <p class="lead">Evaluate <span class="tk-nm">score</span> <span class="tk-op">+</span> <span class="tk-nm">bonus</span> <span class="tk-op">&gt;</span> <span class="tk-num">9</span>. On your handout, show the <i class="a">substitution</i>, the <i class="a">reduced comparison</i>, and the <i class="a">final Boolean value</i>.</p>
+            <div class="reduce lg"><div class="rstep fragment" data-fragment-index="0"><span class="rlabel">substitute</span><span class="rexpr"><span class="tk-num">5</span> <span class="tk-op">+</span> <span class="tk-num">4</span> <span class="tk-op">&gt;</span> <span class="tk-num">9</span></span></div><div class="rstep fragment" data-fragment-index="1"><span class="rlabel">reduce</span><span class="rexpr"><span class="tk-num">9</span> <span class="tk-op">&gt;</span> <span class="tk-num">9</span></span></div><div class="rstep fragment" data-fragment-index="2"><span class="rlabel">compare</span><span class="rexpr"><span class="chip f lg">false</span></span></div></div>
+          </div>
+          <div class="panel mem-panel"><div class="panel-hdr">Memory</div><div class="mem-body"><div class="frame-cols"><div class="mem-col"><div class="mem-col-name">score</div><div class="mem-val mv-num">5</div></div><div class="mem-col"><div class="mem-col-name">bonus</div><div class="mem-val mv-num">4</div></div></div></div></div>
+        </div>
+        <div class="callout accent-amber fragment fade-up" data-fragment-index="3" style="margin-top:var(--gap-sm);">
+          <p><b>Partner checkpoint:</b> Why does <i class="o">&gt;</i> give a different result from <i class="o">&gt;=</i> when both sides equal 9? <span class="fragment" data-fragment-index="4">Because <span class="tk-num">9</span> <span class="tk-op">&gt;=</span> <span class="tk-num">9</span> is <i class="b">true</i>: the <i class="o">&gt;=</i> operator <i class="c">includes</i> the case where the two sides are equal.</span></p>
+        </div>
+      </div>
+      <aside class="notes">Students finish this on paper before you reveal. The partner checkpoint is the main idea of the slide: &gt; and &gt;= only disagree when the two sides are equal. Handout 1, part 3: the variable values, the expression, three lines to show the work, and the partner checkpoint question.</aside>
+    </section>
+
+    <!-- SLIDE 10 · MAKING A DECISION -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Making Decisions</span>
+        <h2>Making a Decision</h2>
+        <div class="split split-top" style="grid-template-columns:1fr 330px;">
+          <div class="prose">
+            <p class="q-box">Can I go to the movies? I&rsquo;m allowed to go if it is <i class="c">before 8 o&rsquo;clock</i>.</p>
+            <p class="fragment fade-up" data-fragment-index="0">What information do I need to know to answer this question? I need to know the <i class="c">time</i>. That is a number, so I will store it in a variable named <i class="n">time</i>.</p>
+            <p class="fragment fade-up" data-fragment-index="1">For these examples, <i class="n">time</i> is the hour in the evening: <i class="v">7</i> means 7 p.m., <i class="v">8</i> means 8 p.m., and <i class="v">9</i> means 9 p.m.</p>
+            <p class="fragment fade-up" data-fragment-index="2">A <i class="c">conditional</i> uses a Boolean expression to <i class="a">choose which action runs</i>. Exactly one of the actions happens, never both.</p>
+          </div>
+          <div class="fragment fade-up" data-fragment-index="0"><div class="panel mem-panel"><div class="panel-hdr">Memory</div><div class="mem-body"><div class="frame-cols"><div class="mem-col"><div class="mem-col-name">time</div><div class="mem-val blank"></div></div></div></div></div></div>
+        </div>
+      </div>
+      <aside class="notes">Ask the question first and let students name the variable before you reveal it. Then ask what type it is: a number. Handout 2, part 1 starts with the variable name and data type blanks.</aside>
+    </section>
+
+    <!-- SLIDE 11 · THE MOVIE FLOWCHART -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Making Decisions</span>
+        <h2>Drawing a Flowchart</h2>
+        <div class="split split-top" style="grid-template-columns:820px 1fr;">
+          <div class="fc-wrap" role="img" aria-label="Flowchart: if time &lt; 8 is true, Go to the movies.; if false, Stay home." style="width:820px;height:474px;"><div class="fc" style="width:820px;height:474px;transform:scale(1);"><svg width="820" height="474" viewBox="0 0 820 474" aria-hidden="true"><polygon class="shape fragment" data-fragment-index="0" points="410,10 660,110 410,210 160,110"/><g class="fragment" data-fragment-index="1"><line class="arrow" x1="160" y1="110" x2="160" y2="348"/><polygon class="arrow-head" points="150,344 170,344 160,360"/></g><g class="fragment" data-fragment-index="2"><line class="arrow" x1="660" y1="110" x2="660" y2="348"/><polygon class="arrow-head" points="650,344 670,344 660,360"/></g></svg><div class="fc-cond c fragment" data-fragment-index="0" style="left:410px;top:86px;font-size:30px;"><span class="tk-nm">time</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span></div><div class="fc-pill c fragment" data-fragment-index="1" style="left:160px;top:240px;"><span class="chip t sm">true</span></div><div class="fc-pill c fragment" data-fragment-index="2" style="left:660px;top:240px;"><span class="chip f sm">false</span></div><div class="fc-box fragment" data-fragment-index="1" style="left:10px;top:360px;width:300px;height:110px;">Go to the movies.</div><div class="fc-box fragment" data-fragment-index="2" style="left:510px;top:360px;width:300px;height:110px;">Stay home.</div></div></div>
+          <div class="prose">
+            <p>A <i class="c">flowchart</i> shows the steps of a decision as a picture.</p>
+            <p class="fragment fade-up" data-fragment-index="0">The <i class="c">diamond</i> holds the condition, which is a Boolean expression.</p>
+            <p class="fragment fade-up" data-fragment-index="1">When the condition is <i class="b">true</i>, follow the true branch to its <i class="c">action</i>.</p>
+            <p class="fragment fade-up" data-fragment-index="2">When it is <i class="b">false</i>, follow the false branch. Every branch needs a <i class="a">label</i>.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Build the flowchart one piece at a time while students draw the same thing on their own handout. The true and false branches may be swapped left and right, as long as they are labeled. Handout 2, part 1: a blank drawing area. Do not pre-draw the diamond or boxes; students draw the whole flowchart themselves.</aside>
+    </section>
+
+    <!-- SLIDE 12 · TRACE TIME = 7 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Making Decisions</span>
+        <h2>Follow the Flowchart</h2>
+        <div class="split split-top" style="grid-template-columns:820px 1fr;">
+          <div class="fc-wrap" role="img" aria-label="Flowchart: if time &lt; 8 is true, Go to the movies.; if false, Stay home." style="width:820px;height:474px;"><div class="fc" style="width:820px;height:474px;transform:scale(1);"><svg width="820" height="474" viewBox="0 0 820 474" aria-hidden="true"><polygon class="shape" points="410,10 660,110 410,210 160,110"/><g class=""><line class="arrow" x1="160" y1="110" x2="160" y2="348"/><polygon class="arrow-head" points="150,344 170,344 160,360"/></g><g class=""><line class="arrow" x1="660" y1="110" x2="660" y2="348"/><polygon class="arrow-head" points="650,344 670,344 660,360"/></g><g class="hl fragment" data-fragment-index="3"><line class="arrow-hl" x1="160" y1="110" x2="160" y2="348"/><polygon class="arrow-hl-head" points="150,344 170,344 160,360"/></g></svg><div class="fc-cond c" style="left:410px;top:86px;font-size:30px;"><span class="tk-nm">time</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span></div><div class="fc-sub c fragment" data-fragment-index="1" style="left:410px;top:128px;"><span class="tk-num">7</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span></div><div class="fc-res c fragment" data-fragment-index="2" style="left:410px;top:262px;"><span class="fc-res-lbl">evaluates to</span><span class="chip t">true</span></div><div class="fc-pill c" style="left:160px;top:240px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:660px;top:240px;"><span class="chip f sm">false</span></div><div class="fc-box" style="left:10px;top:360px;width:300px;height:110px;">Go to the movies.</div><div class="fc-box" style="left:510px;top:360px;width:300px;height:110px;">Stay home.</div><div class="fc-box-hl fragment" data-fragment-index="3" style="left:10px;top:360px;width:300px;height:110px;"></div></div></div>
+          <div>
+            <div class="panel mem-panel"><div class="panel-hdr">Memory</div><div class="mem-body"><div class="frame-cols"><div class="mem-col"><div class="mem-col-name">time</div><div class="mem-val mv-num fragment" data-fragment-index="0">7</div></div></div></div></div>
+            <div class="steps" style="margin-top:var(--gap);">
+              <p class="fragment fade-up" data-fragment-index="0"><span class="step-n">1</span><i class="a">Look up</i> <i class="n">time</i>. It stores <i class="v">7</i>.</p>
+              <p class="fragment fade-up" data-fragment-index="1"><span class="step-n">2</span><i class="a">Substitute</i> 7 into the condition.</p>
+              <p class="fragment fade-up" data-fragment-index="2"><span class="step-n">3</span><i class="a">Evaluate</i>: 7 is less than 8, so the result is <i class="b">true</i>.</p>
+              <p class="fragment fade-up" data-fragment-index="3"><span class="step-n">4</span><i class="a">Follow</i> only the <i class="b">true</i> branch.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Model the full trace once. The habit to build: look up, substitute, evaluate, then follow exactly one branch. If students ever trace both branches, ask them what the single current Boolean result is; only the branch with that label runs.</aside>
+    </section>
+
+    <!-- SLIDE 13 · TRACE THE OTHER TIMES -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Your Turn &middot; Handout 2</span>
+        <h2>Trace the Other Times</h2>
+        <div class="split split-top" style="grid-template-columns:820px 1fr;">
+          <div class="fc-wrap" role="img" aria-label="Flowchart: if time &lt; 8 is true, Go to the movies.; if false, Stay home." style="width:820px;height:474px;"><div class="fc" style="width:820px;height:474px;transform:scale(1);"><svg width="820" height="474" viewBox="0 0 820 474" aria-hidden="true"><polygon class="shape" points="410,10 660,110 410,210 160,110"/><g class=""><line class="arrow" x1="160" y1="110" x2="160" y2="348"/><polygon class="arrow-head" points="150,344 170,344 160,360"/></g><g class=""><line class="arrow" x1="660" y1="110" x2="660" y2="348"/><polygon class="arrow-head" points="650,344 670,344 660,360"/></g></svg><div class="fc-cond c" style="left:410px;top:86px;font-size:30px;"><span class="tk-nm">time</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span></div><div class="fc-pill c" style="left:160px;top:240px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:660px;top:240px;"><span class="chip f sm">false</span></div><div class="fc-box" style="left:10px;top:360px;width:300px;height:110px;">Go to the movies.</div><div class="fc-box" style="left:510px;top:360px;width:300px;height:110px;">Stay home.</div></div></div>
+          <div class="prose">
+            <p>With your partner, <i class="a">trace the flowchart</i> for <i class="n">time</i> = <i class="v">8</i> and for <i class="n">time</i> = <i class="v">9</i>. For each test, write the <i class="a">substituted comparison</i>, the <i class="a">Boolean result</i>, and the <i class="a">action</i>.</p>
+            <p>Take turns: one partner traces out loud and the other checks.</p>
+            <p class="callout accent-amber" style="margin-top:var(--gap);">Why does testing <i class="n">time</i> = <i class="v">8</i> matter for this rule?</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Give partners two or three minutes. Circulate and listen for the 8 case. Handout 2, part 1: a test table with columns time, substituted comparison, true or false, and action, with rows for 7, 8, and 9, followed by the "Why does time = 8 matter?" question.</aside>
+    </section>
+
+    <!-- SLIDE 14 · CHECK THE MOVIE TESTS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Making Decisions</span>
+        <h2>Check the Movie Tests</h2>
+        <div class="split split-top" style="grid-template-columns:697px 1fr;">
+          <div class="fc-wrap" role="img" aria-label="Flowchart: if time &lt; 8 is true, Go to the movies.; if false, Stay home." style="width:697px;height:453.9px;"><div class="fc" style="width:820px;height:534px;transform:scale(0.85);"><svg width="820" height="534" viewBox="0 0 820 534" aria-hidden="true"><polygon class="shape" points="410,10 660,110 410,210 160,110"/><g class=""><line class="arrow" x1="160" y1="110" x2="160" y2="348"/><polygon class="arrow-head" points="150,344 170,344 160,360"/></g><g class=""><line class="arrow" x1="660" y1="110" x2="660" y2="348"/><polygon class="arrow-head" points="650,344 670,344 660,360"/></g></svg><div class="fc-cond c" style="left:410px;top:86px;font-size:30px;"><span class="tk-nm">time</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span></div><div class="fc-pill c" style="left:160px;top:240px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:660px;top:240px;"><span class="chip f sm">false</span></div><div class="fc-box" style="left:10px;top:360px;width:300px;height:110px;">Go to the movies.</div><div class="fc-box" style="left:510px;top:360px;width:300px;height:110px;">Stay home.</div><div class="fc-tags" style="left:10px;top:484px;width:300px;"><span class="tag fragment" data-fragment-index="0">time = 7</span></div><div class="fc-tags" style="left:510px;top:484px;width:300px;"><span class="tag fragment" data-fragment-index="1">time = 8</span><span class="tag fragment" data-fragment-index="2">time = 9</span></div></div></div>
+          <div>
+            <table class="xt tests"><thead><tr><th>time</th><th>comparison</th><th>result</th><th>action</th></tr></thead><tbody><tr><td><i class="v">7</i></td><td><span class="fragment" data-fragment-index="0"><span class="expr"><span class="tk-num">7</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span></span></span></td><td><span class="fragment" data-fragment-index="0"><span class="chip t">true</span></span></td><td><span class="fragment" data-fragment-index="0">Go to the movies.</span></td></tr><tr class="boundary"><td><i class="v">8</i></td><td><span class="fragment" data-fragment-index="1"><span class="expr"><span class="tk-num">8</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span></span></span></td><td><span class="fragment" data-fragment-index="1"><span class="chip f">false</span></span></td><td><span class="fragment" data-fragment-index="1">Stay home.</span></td></tr><tr><td><i class="v">9</i></td><td><span class="fragment" data-fragment-index="2"><span class="expr"><span class="tk-num">9</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span></span></span></td><td><span class="fragment" data-fragment-index="2"><span class="chip f">false</span></span></td><td><span class="fragment" data-fragment-index="2">Stay home.</span></td></tr></tbody></table>
+            <p class="fragment fade-up" data-fragment-index="3" style="margin-top:var(--gap);">Eight is not <i class="c">before</i> 8, so <span class="tk-num">8</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span> is <i class="b">false</i> and you stay home. The time <i class="v">8</i> sits <i class="c">exactly on the boundary</i> of the rule.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Reveal one test per click; each tag shows which branch that test reached. Ask: which tests reached the true branch, and which reached the false branch? Every branch of a flowchart should be reached by at least one test.</aside>
+    </section>
+
+    <!-- SLIDE 15 · TESTING THE BOUNDARY -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Making Decisions</span>
+        <h2>Testing the Boundary</h2>
+        <p class="lead">The boundary value <i class="v">8</i> is the only test that tells <span class="tk-nm">time</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span> apart from <span class="tk-nm">time</span> <span class="tk-op">&lt;=</span> <span class="tk-num">8</span>. At 7 and at 9, both conditions give the same answer.</p>
+        <div class="two-col" style="margin-top:var(--gap);">
+          <div class="callout">
+            <h3><span class="expr"><span class="tk-nm">time</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span></span></h3>
+            <div class="reduce "><div class="rstep"><span class="rlabel">substitute</span><span class="rexpr"><span class="tk-num">8</span> <span class="tk-op">&lt;</span> <span class="tk-num">8</span></span></div><div class="rstep fragment" data-fragment-index="0"><span class="rlabel">compare</span><span class="rexpr"><span class="chip f">false</span></span></div></div>
+            <p class="fragment fade-up" data-fragment-index="0" style="margin-top:var(--gap-sm);">You <i class="a">stay home</i>. This matches the rule, because 8 o&rsquo;clock is not before 8.</p>
+          </div>
+          <div class="callout accent-red">
+            <h3><span class="expr"><span class="tk-nm">time</span> <span class="tk-op">&lt;=</span> <span class="tk-num">8</span></span></h3>
+            <div class="reduce "><div class="rstep"><span class="rlabel">substitute</span><span class="rexpr"><span class="tk-num">8</span> <span class="tk-op">&lt;=</span> <span class="tk-num">8</span></span></div><div class="rstep fragment" data-fragment-index="1"><span class="rlabel">compare</span><span class="rexpr"><span class="chip t">true</span></span></div></div>
+            <p class="fragment fade-up" data-fragment-index="1" style="margin-top:var(--gap-sm);">You <i class="a">go to the movies</i>. This breaks the rule, because <i class="o">&lt;=</i> includes 8.</p>
+          </div>
+        </div>
+        <p class="fragment fade-up" data-fragment-index="2" style="margin-top:var(--gap);">When you test a condition, always include a value <i class="c">right on the boundary</i>. That is where a wrong operator shows up.</p>
+      </div>
+      <aside class="notes">This is the answer to the handout question "Why does time = 8 matter?" Listen for "before 8 excludes 8." Testing at the boundary is a habit students will use every time they test code.</aside>
+    </section>
+
+    <!-- SLIDE 16 · TEST A GAME RULE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Your Turn &middot; Handout 2</span>
+        <h2>Test a Game Rule</h2>
+        <div class="split split-top" style="grid-template-columns:1fr 480px;">
+          <div class="prose">
+            <p class="q-box">Have I won the game? I win when my <i class="c">score</i> times my <i class="c">lives</i> is <i class="c">greater than 10</i>.</p>
+            <div class="steps">
+              <p><span class="step-n">1</span><i class="a">Name the variables</i> you need to know.</p>
+              <p><span class="step-n">2</span><i class="a">Write the condition</i> as a Boolean expression.</p>
+              <p><span class="step-n">3</span><i class="a">Draw a flowchart</i> with labeled branches and an action on each branch.</p>
+              <p><span class="step-n">4</span><i class="a">Trace each test</i> and record the product, the Boolean result, and the outcome.</p>
+            </div>
+          </div>
+          <table class="xt tests"><thead><tr><th>Test</th><th>score</th><th>lives</th></tr></thead><tbody><tr><td>1</td><td><i class="v">3</i></td><td><i class="v">3</i></td></tr><tr><td>2</td><td><i class="v">1</i></td><td><i class="v">10</i></td></tr><tr><td>3</td><td><i class="v">4</i></td><td><i class="v">3</i></td></tr></tbody></table>
+        </div>
+      </div>
+      <aside class="notes">Partners swap roles each test: one traces aloud and the other checks. The third test is a winning case; the original deck had no winning test. Handout 2, part 2: a blank line for the condition, a blank drawing area for the flowchart, and a test table with columns score, lives, product, true or false, and win or not yet. End with the partner checkpoint: point to a test that reaches each possible outcome.</aside>
+    </section>
+
+    <!-- SLIDE 17 · CHECK THE GAME TESTS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Making Decisions</span>
+        <h2>Check the Game Tests</h2>
+        <div class="split split-top" style="grid-template-columns:697px 1fr;">
+          <div class="fc-wrap" role="img" aria-label="Flowchart: if score * lives &gt; 10 is true, I won the game!; if false, I haven&amp;rsquo;t won yet." style="width:697px;height:453.9px;"><div class="fc" style="width:820px;height:534px;transform:scale(0.85);"><svg width="820" height="534" viewBox="0 0 820 534" aria-hidden="true"><polygon class="shape" points="410,10 660,110 410,210 160,110"/><g class=""><line class="arrow" x1="160" y1="110" x2="160" y2="348"/><polygon class="arrow-head" points="150,344 170,344 160,360"/></g><g class=""><line class="arrow" x1="660" y1="110" x2="660" y2="348"/><polygon class="arrow-head" points="650,344 670,344 660,360"/></g></svg><div class="fc-cond c" style="left:410px;top:86px;font-size:30px;"><span class="tk-nm">score</span> <span class="tk-op">*</span> <span class="tk-nm">lives</span> <span class="tk-op">&gt;</span> <span class="tk-num">10</span></div><div class="fc-pill c" style="left:160px;top:240px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:660px;top:240px;"><span class="chip f sm">false</span></div><div class="fc-box" style="left:10px;top:360px;width:300px;height:110px;">I won the game!</div><div class="fc-box" style="left:510px;top:360px;width:300px;height:110px;">I haven&rsquo;t won yet.</div><div class="fc-tags" style="left:10px;top:484px;width:300px;"><span class="tag fragment" data-fragment-index="2">Test 3</span></div><div class="fc-tags" style="left:510px;top:484px;width:300px;"><span class="tag fragment" data-fragment-index="0">Test 1</span><span class="tag fragment" data-fragment-index="1">Test 2</span></div></div></div>
+          <div>
+            <table class="xt tests"><thead><tr><th>score</th><th>lives</th><th>reduced</th><th>result</th><th>outcome</th></tr></thead><tbody><tr><td><i class="v">3</i></td><td><i class="v">3</i></td><td><span class="fragment" data-fragment-index="0"><span class="expr"><span class="tk-num">9</span> <span class="tk-op">&gt;</span> <span class="tk-num">10</span></span></span></td><td><span class="fragment" data-fragment-index="0"><span class="chip f">false</span></span></td><td><span class="fragment" data-fragment-index="0">not yet</span></td></tr><tr class="boundary"><td><i class="v">1</i></td><td><i class="v">10</i></td><td><span class="fragment" data-fragment-index="1"><span class="expr"><span class="tk-num">10</span> <span class="tk-op">&gt;</span> <span class="tk-num">10</span></span></span></td><td><span class="fragment" data-fragment-index="1"><span class="chip f">false</span></span></td><td><span class="fragment" data-fragment-index="1">not yet</span></td></tr><tr><td><i class="v">4</i></td><td><i class="v">3</i></td><td><span class="fragment" data-fragment-index="2"><span class="expr"><span class="tk-num">12</span> <span class="tk-op">&gt;</span> <span class="tk-num">10</span></span></span></td><td><span class="fragment" data-fragment-index="2"><span class="chip t">true</span></span></td><td><span class="fragment" data-fragment-index="2">win</span></td></tr></tbody></table>
+            <p class="fragment fade-up" data-fragment-index="3" style="margin-top:var(--gap);">Test 2 lands <i class="c">exactly on the boundary</i>. A product of 10 is not <i class="c">greater than</i> 10, so it does not win.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Check the condition first: score * lives > 10. Reveal one test per click. Tests 1 and 2 reach the false branch and Test 3 reaches the true branch, which answers the partner checkpoint. The product of 10 in Test 2 is the boundary again: "greater than 10" excludes 10.</aside>
+    </section>
+
+    <!-- SLIDE 18 · COMPARING AGES -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Your Turn &middot; Handout 3</span>
+        <h2>Comparing Ages</h2>
+        <div class="split split-top" style="grid-template-columns:1fr 480px;">
+          <div class="prose">
+            <p class="q-box">Is my dog older than me when its age is converted to human years? In this simple model, one dog year equals <i class="c">seven</i> human years.</p>
+            <div class="steps">
+              <p><span class="step-n">1</span><i class="a">Name the two variables</i> and describe what each one stores.</p>
+              <p><span class="step-n">2</span><i class="a">Write the Boolean expression</i> that answers the question.</p>
+              <p><span class="step-n">3</span><i class="a">Draw a flowchart</i> with labeled branches and an outcome on each branch.</p>
+              <p><span class="step-n">4</span><i class="a">Trace each test</i> with your partner.</p>
+            </div>
+          </div>
+          <table class="xt tests"><thead><tr><th>Test</th><th>dogAge</th><th>myAge</th></tr></thead><tbody><tr><td>1</td><td><i class="v">2</i></td><td><i class="v">15</i></td></tr><tr><td>2</td><td><i class="v">3</i></td><td><i class="v">15</i></td></tr><tr><td>3</td><td><i class="v">2</i></td><td><i class="v">14</i></td></tr></tbody></table>
+        </div>
+      </div>
+      <aside class="notes">This one has more to figure out: two variables, and a calculation on one side of the comparison. Let partners struggle a little before helping. Hint if needed: which side of the comparison should get multiplied by 7? Handout 3: lines for the two variables, a line for the expression, a blank drawing area, and a test table with columns dogAge, myAge, reduced comparison, and true or false.</aside>
+    </section>
+
+    <!-- SLIDE 19 · CHECK THE AGE TESTS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Making Decisions</span>
+        <h2>Check the Age Tests</h2>
+        <div class="split split-top" style="grid-template-columns:697px 1fr;">
+          <div class="fc-wrap" role="img" aria-label="Flowchart: if dogAge * 7 &gt; myAge is true, My dog is older than me.; if false, I am older than my dog." style="width:697px;height:453.9px;"><div class="fc" style="width:820px;height:534px;transform:scale(0.85);"><svg width="820" height="534" viewBox="0 0 820 534" aria-hidden="true"><polygon class="shape" points="410,10 660,110 410,210 160,110"/><g class=""><line class="arrow" x1="160" y1="110" x2="160" y2="348"/><polygon class="arrow-head" points="150,344 170,344 160,360"/></g><g class=""><line class="arrow" x1="660" y1="110" x2="660" y2="348"/><polygon class="arrow-head" points="650,344 670,344 660,360"/></g></svg><div class="fc-cond c" style="left:410px;top:86px;font-size:30px;"><span class="tk-nm">dogAge</span> <span class="tk-op">*</span> <span class="tk-num">7</span> <span class="tk-op">&gt;</span> <span class="tk-nm">myAge</span></div><div class="fc-pill c" style="left:160px;top:240px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:660px;top:240px;"><span class="chip f sm">false</span></div><div class="fc-box" style="left:10px;top:360px;width:300px;height:110px;">My dog is older than me.</div><div class="fc-box" style="left:510px;top:360px;width:300px;height:110px;">I am older than my dog.</div><div class="fc-tags" style="left:10px;top:484px;width:300px;"><span class="tag fragment" data-fragment-index="1">Test 2</span></div><div class="fc-tags" style="left:510px;top:484px;width:300px;"><span class="tag fragment" data-fragment-index="0">Test 1</span><span class="tag fragment" data-fragment-index="2">Test 3</span></div></div></div>
+          <div>
+            <p style="margin-bottom:var(--gap-sm);"><i class="n">dogAge</i> stores the dog&rsquo;s actual age in years, and <i class="n">myAge</i> stores my age in years.</p>
+            <table class="xt tests"><thead><tr><th>dogAge</th><th>myAge</th><th>reduced</th><th>result</th></tr></thead><tbody><tr><td><i class="v">2</i></td><td><i class="v">15</i></td><td><span class="fragment" data-fragment-index="0"><span class="expr"><span class="tk-num">14</span> <span class="tk-op">&gt;</span> <span class="tk-num">15</span></span></span></td><td><span class="fragment" data-fragment-index="0"><span class="chip f">false</span></span></td></tr><tr><td><i class="v">3</i></td><td><i class="v">15</i></td><td><span class="fragment" data-fragment-index="1"><span class="expr"><span class="tk-num">21</span> <span class="tk-op">&gt;</span> <span class="tk-num">15</span></span></span></td><td><span class="fragment" data-fragment-index="1"><span class="chip t">true</span></span></td></tr><tr class="boundary"><td><i class="v">2</i></td><td><i class="v">14</i></td><td><span class="fragment" data-fragment-index="2"><span class="expr"><span class="tk-num">14</span> <span class="tk-op">&gt;</span> <span class="tk-num">14</span></span></span></td><td><span class="fragment" data-fragment-index="2"><span class="chip f">false</span></span></td></tr></tbody></table>
+            <p class="fragment fade-up" data-fragment-index="3" style="margin-top:var(--gap);">Look at Test 3. The flowchart says <i class="a">I am older than my dog</i>. Is that true?</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Check the variables and the expression first. Students may also write myAge &lt; dogAge * 7, which is equivalent; have them read it aloud to confirm. Reveal one test per click. Leave the Test 3 question hanging for the next slide.</aside>
+    </section>
+
+    <!-- SLIDE 20 · COVER EVERY FALSE CASE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Making Decisions</span>
+        <h2>Cover Every False Case</h2>
+        <div class="split split-top" style="grid-template-columns:697px 1fr;">
+          <div class="fc-wrap" role="img" aria-label="Flowchart: if dogAge * 7 &gt; myAge is true, My dog is older than me.; if false, I am older than my dog." style="width:697px;height:402.9px;"><div class="fc" style="width:820px;height:474px;transform:scale(0.85);"><svg width="820" height="474" viewBox="0 0 820 474" aria-hidden="true"><polygon class="shape" points="410,10 660,110 410,210 160,110"/><g class=""><line class="arrow" x1="160" y1="110" x2="160" y2="348"/><polygon class="arrow-head" points="150,344 170,344 160,360"/></g><g class=""><line class="arrow" x1="660" y1="110" x2="660" y2="348"/><polygon class="arrow-head" points="650,344 670,344 660,360"/></g></svg><div class="fc-cond c" style="left:410px;top:86px;font-size:30px;"><span class="tk-nm">dogAge</span> <span class="tk-op">*</span> <span class="tk-num">7</span> <span class="tk-op">&gt;</span> <span class="tk-nm">myAge</span></div><div class="fc-pill c" style="left:160px;top:240px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:660px;top:240px;"><span class="chip f sm">false</span></div><div class="fc-box" style="left:10px;top:360px;width:300px;height:110px;">My dog is older than me.</div><div class="fc-box" style="left:510px;top:360px;width:300px;height:110px;">I am older than my dog.</div><div class="fc-box fc-box-new fragment" data-fragment-index="2" style="left:510px;top:360px;width:300px;height:110px;">My dog is the same age as me or younger.</div></div></div>
+          <div class="prose">
+            <p>In Test 3 the dog is 2, which is 14 in human years, and I am 14. Since <span class="tk-num">14</span> <span class="tk-op">&gt;</span> <span class="tk-num">14</span> is <i class="b">false</i>, the flowchart follows the false branch.</p>
+            <p class="fragment fade-up" data-fragment-index="0">But we are the <i class="c">same age</i>, so &ldquo;I am older than my dog&rdquo; is <i class="a">not correct</i>.</p>
+            <p class="fragment fade-up" data-fragment-index="1">The false branch runs for <i class="c">every</i> case where the condition is false. Here that means the dog is younger <i class="c">or</i> the same age.</p>
+            <p class="fragment fade-up" data-fragment-index="2">A better false outcome covers both: <i class="a">My dog is the same age as me or younger.</i></p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">The handout asks: when the condition is false, could the ages be equal? Have partners revise the false outcome on their own flowchart. Also mention that seven dog years per human year is a classroom simplification, not real biology. Handout 3 ends with this question and lines for the revised false outcome.</aside>
+    </section>
+
+    <!-- SLIDE 21 · DECISIONS WITH TWO CONDITIONS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Combining Conditions</span>
+        <h2>Decisions With Two Conditions</h2>
+        <div class="split split-top" style="grid-template-columns:1fr 360px;">
+          <div class="prose">
+            <p class="q-box">Can I adopt a cat? I can if I have <i class="c">40 dollars</i> AND I am <i class="c">over 14 years old</i>.</p>
+            <p class="fragment fade-up" data-fragment-index="0">This time I need <i class="c">two</i> pieces of information: how much money I have and how old I am. I will store them in <i class="n">money</i> and <i class="n">age</i>.</p>
+            <p class="fragment fade-up" data-fragment-index="1">With a partner, discuss how the flowchart might be set up. What will each Boolean expression compare?</p>
+            <p class="fragment fade-up" data-fragment-index="2">One way is to ask <i class="a">one question at a time</i>. First check the money, and only if that passes, check the age.</p>
+          </div>
+          <div class="fragment fade-up" data-fragment-index="0"><div class="panel mem-panel"><div class="panel-hdr">Memory</div><div class="mem-body"><div class="frame-cols"><div class="mem-col"><div class="mem-col-name">money</div><div class="mem-val blank"></div></div><div class="mem-col"><div class="mem-col-name">age</div><div class="mem-val blank"></div></div></div></div></div></div>
+        </div>
+      </div>
+      <aside class="notes">Ask for two separate decisions: one about money and one about age. Let partners sketch an idea before you reveal the two-diamond flowchart on the next slide. Accept money == 40 if students propose it. That is the original condition, and it is deliberately not quite right. Do not fix it yet; students discover the problem later with the $50 test.</aside>
+    </section>
+
+    <!-- SLIDE 22 · TRACE TWO DECISIONS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Combining Conditions</span>
+        <h2>Trace Two Decisions</h2>
+        <div class="split split-top" style="grid-template-columns:850px 1fr;">
+          <div class="fc-wrap" role="img" aria-label="Flowchart with two decisions: money == 40, then age &gt; 14" style="width:850px;height:504.9px;"><div class="fc" style="width:1000px;height:594px;transform:scale(0.85);"><svg width="1000" height="594" viewBox="0 0 1000 594" aria-hidden="true"><polygon class="shape" points="420,10 650,90 420,170 190,90"/><polygon class="shape" points="420,240 650,320 420,400 190,320"/><line class="arrow" x1="420" y1="170" x2="420" y2="228"/><polygon class="arrow-head" points="410,224 430,224 420,240"/><line class="arrow" x1="420" y1="400" x2="420" y2="478"/><polygon class="arrow-head" points="410,474 430,474 420,490"/><path class="arrow" d="M650 90 H880 V263"/><polygon class="arrow-head" points="870,259 890,259 880,275"/><line class="arrow" x1="650" y1="320" x2="748" y2="320"/><polygon class="arrow-head" points="744,310 744,330 760,320"/><g class="hl fragment" data-fragment-index="2"><line class="arrow-hl" x1="420" y1="170" x2="420" y2="228"/><polygon class="arrow-hl-head" points="410,224 430,224 420,240"/></g><g class="hl fragment" data-fragment-index="5"><line class="arrow-hl" x1="420" y1="400" x2="420" y2="478"/><polygon class="arrow-hl-head" points="410,474 430,474 420,490"/></g></svg><div class="fc-cond c" style="left:420px;top:70px;font-size:30px;"><span class="tk-nm">money</span> <span class="tk-op">==</span> <span class="tk-num">40</span></div><div class="fc-sub c fragment" data-fragment-index="0" style="left:420px;top:114px;"><span class="tk-num">40</span> <span class="tk-op">==</span> <span class="tk-num">40</span></div><div class="fc-res c fragment" data-fragment-index="1" style="left:98px;top:90px;"><span class="fc-res-lbl">evaluates to</span><span class="chip t">true</span></div><div class="fc-cond c" style="left:420px;top:300px;font-size:30px;"><span class="tk-nm">age</span> <span class="tk-op">&gt;</span> <span class="tk-num">14</span></div><div class="fc-sub c fragment" data-fragment-index="3" style="left:420px;top:344px;"><span class="tk-num">15</span> <span class="tk-op">&gt;</span> <span class="tk-num">14</span></div><div class="fc-res c fragment" data-fragment-index="4" style="left:98px;top:320px;"><span class="fc-res-lbl">evaluates to</span><span class="chip t">true</span></div><div class="fc-pill c" style="left:420px;top:205px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:420px;top:445px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:765px;top:90px;"><span class="chip f sm">false</span></div><div class="fc-pill c" style="left:705px;top:320px;"><span class="chip f sm">false</span></div><div class="fc-box" style="left:270px;top:490px;width:300px;height:100px;">I can adopt a cat!</div><div class="fc-box" style="left:760px;top:275px;width:240px;height:90px;">I can&rsquo;t adopt a cat.</div><div class="fc-box-hl fragment" data-fragment-index="5" style="left:270px;top:490px;width:300px;height:100px;"></div></div></div>
+          <div>
+            <p style="margin-bottom:var(--gap-sm);">Let&rsquo;s try it. I am <i class="v">15</i> years old and I have <i class="v">$40</i>.</p>
+            <div class="panel mem-panel"><div class="panel-hdr">Memory</div><div class="mem-body"><div class="frame-cols"><div class="mem-col"><div class="mem-col-name">money</div><div class="mem-val mv-num">40</div></div><div class="mem-col"><div class="mem-col-name">age</div><div class="mem-val mv-num">15</div></div></div></div></div>
+            <p class="fragment fade-up" data-fragment-index="5" style="margin-top:var(--gap);">Both decisions were <i class="b">true</i>, so I can adopt a cat. If <i class="c">either</i> decision were false, I would end up at &ldquo;I can&rsquo;t adopt a cat.&rdquo;</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Trace one decision at a time: substitute, evaluate, follow the branch, then do the same for the second diamond. Both false branches lead to the same outcome. Ask: what would happen with $40 and age 14? The first diamond is true, the second is false, so the answer is no. Next question: could we ask both questions in one diamond?</aside>
+    </section>
+
+    <!-- SLIDE 23 · VIDEO: BOOLEAN EXPRESSIONS -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:23:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=y3rCKJNOwpA"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Boolean Expressions</h2>
+        <p style="font-size:var(--small);margin-bottom:var(--gap);">A short Code.org video about Boolean expressions and George Boole, whose work on true and false logic gave the Boolean type its name.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(177,151,252,0.07),transparent 70%);"></div>
+      <aside class="notes">Code.org, "CS Principles: Conditionals - Part 1 Boolean Expressions." Students watch on the projector; no devices are needed. Afterward, connect the video to the cat problem: a Boolean value is a type of information, so Boolean values can be combined with each other, too.</aside>
+    </section>
+
+    <!-- SLIDE 24 · LOGICAL OPERATORS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Combining Conditions</span>
+        <h2>Logical Operators</h2>
+        <p class="lead">Boolean values are a type of information, so they can be used in a Boolean expression too. <i class="o">Logical operators</i> combine or change Boolean values.</p>
+        <div class="op-grid">
+          <div class="op-card"><span class="op-sym">&amp;&amp;</span><span class="op-name">AND</span><p>True only when <i class="c">both</i> sides are true.</p></div>
+          <div class="op-card"><span class="op-sym">||</span><span class="op-name">OR</span><p>True when <i class="c">at least one</i> side is true.</p></div>
+          <div class="op-card"><span class="op-sym">!</span><span class="op-name">NOT</span><p>Flips a Boolean to its <i class="c">opposite</i>.</p></div>
+        </div>
+        <div class="big-eval fragment fade-up" style="margin-top:var(--gap-lg);">
+          <span class="rexpr"><span class="tk-bool">true</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-bool">false</span></span>
+          <span class="eval-arrow">evaluates to</span>
+          <span><span class="chip f lg">false</span></span>
+        </div>
+      </div>
+      <aside class="notes">Read && as "and", || as "or", and ! as "not." On most keyboards the | key is above Enter. For true && false: the expression claims that both values are true, and one of them is not, so the result is false. The next three slides build each truth table.</aside>
+    </section>
+
+    <!-- SLIDE 25 · THE AND TABLE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Combining Conditions</span>
+        <h2>The AND Truth Table</h2>
+        <div class="split split-top" style="grid-template-columns:560px 1fr;">
+          <table class="xt truth"><thead><tr><th>A</th><th>B</th><th>A &amp;&amp; B</th></tr></thead><tbody><tr><td><span class="chip t">true</span></td><td><span class="chip t">true</span></td><td><span class="fragment" data-fragment-index="0"><span class="chip t">true</span></span></td></tr><tr><td><span class="chip t">true</span></td><td><span class="chip f">false</span></td><td><span class="fragment" data-fragment-index="1"><span class="chip f">false</span></span></td></tr><tr><td><span class="chip f">false</span></td><td><span class="chip t">true</span></td><td><span class="fragment" data-fragment-index="2"><span class="chip f">false</span></span></td></tr><tr><td><span class="chip f">false</span></td><td><span class="chip f">false</span></td><td><span class="fragment" data-fragment-index="3"><span class="chip f">false</span></span></td></tr></tbody></table>
+          <div class="prose">
+            <p>A <i class="c">truth table</i> lists every possible pair of Boolean values and the result for each pair. Fill in the AND column on your handout as we go.</p>
+            <div class="callout fragment fade-up" data-fragment-index="4" style="margin-top:var(--gap);">
+              <h3>&amp;&amp; AND</h3>
+              <p><i class="c">Both</i> sides must be <i class="b">true</i> for the whole expression to be <i class="b">true</i>. One false side makes it false.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Reveal one row per click, asking the class for each answer first. Connect back to the cat: to adopt, the money check AND the age check both have to pass. Handout 4, part 1: one combined truth table with columns A, B, A && B, and A || B.</aside>
+    </section>
+
+    <!-- SLIDE 26 · THE OR TABLE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Your Turn &middot; Handout 4</span>
+        <h2>The OR Truth Table</h2>
+        <div class="split split-top" style="grid-template-columns:560px 1fr;">
+          <table class="xt truth"><thead><tr><th>A</th><th>B</th><th>A || B</th></tr></thead><tbody><tr><td><span class="chip t">true</span></td><td><span class="chip t">true</span></td><td><span class="fragment" data-fragment-index="0"><span class="chip t">true</span></span></td></tr><tr><td><span class="chip t">true</span></td><td><span class="chip f">false</span></td><td><span class="fragment" data-fragment-index="1"><span class="chip t">true</span></span></td></tr><tr><td><span class="chip f">false</span></td><td><span class="chip t">true</span></td><td><span class="fragment" data-fragment-index="2"><span class="chip t">true</span></span></td></tr><tr><td><span class="chip f">false</span></td><td><span class="chip f">false</span></td><td><span class="fragment" data-fragment-index="3"><span class="chip f">false</span></span></td></tr></tbody></table>
+          <div class="prose">
+            <p>With your partner, <i class="a">predict</i> each result in the OR column of your handout before we check.</p>
+            <div class="callout fragment fade-up" data-fragment-index="4" style="margin-top:var(--gap);">
+              <h3>|| OR</h3>
+              <p>If <i class="c">at least one</i> side is <i class="b">true</i>, the whole expression is <i class="b">true</i>. That <i class="c">includes</i> the row where both sides are true.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Give partners a minute to predict. The first row is the one to watch. In everyday speech "or" often means "one or the other but not both," so some students will predict false for true || true. If they do, return to the first row: in programming, OR is true whenever at least one side is true.</aside>
+    </section>
+
+    <!-- SLIDE 27 · THE NOT TABLE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Combining Conditions</span>
+        <h2>The NOT Truth Table</h2>
+        <div class="split split-top" style="grid-template-columns:420px 1fr;">
+          <table class="xt truth"><thead><tr><th>A</th><th>!A</th></tr></thead><tbody><tr><td><span class="chip t">true</span></td><td><span class="fragment" data-fragment-index="0"><span class="chip f">false</span></span></td></tr><tr><td><span class="chip f">false</span></td><td><span class="fragment" data-fragment-index="1"><span class="chip t">true</span></span></td></tr></tbody></table>
+          <div>
+            <p class="lead">The NOT table is short. <i class="o">!</i> works on just <i class="c">one</i> Boolean value and gives back its <i class="c">opposite</i>.</p>
+            <p class="fragment fade-up" data-fragment-index="2" style="margin-top:var(--gap);">When <i class="o">!</i> comes before parentheses, <i class="a">evaluate inside the parentheses first</i>:</p>
+            <div class="reduce "><div class="rstep fragment" data-fragment-index="2"><span class="rlabel">start</span><span class="rexpr"><span class="tk-op">!</span><span class="tk-op">(</span><span class="tk-num">3</span> <span class="tk-op">&gt;</span> <span class="tk-num">5</span><span class="tk-op">)</span></span></div><div class="rstep fragment" data-fragment-index="3"><span class="rlabel">compare inside</span><span class="rexpr"><span class="tk-op">!</span><span class="tk-bool">false</span></span></div><div class="rstep fragment" data-fragment-index="4"><span class="rlabel">flip</span><span class="rexpr"><span class="chip t lg">true</span></span></div></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Handout 4, part 1 ends with !true and !false blanks. The parentheses example shows that NOT is applied after the comparison inside is reduced.</aside>
+    </section>
+
+    <!-- SLIDE 28 · REDUCE THEN COMBINE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Combining Conditions</span>
+        <h2>Reduce, Then Combine</h2>
+        <p class="lead">Each side of a logical operator must be <i class="a">reduced to one Boolean value</i> first. Then use the truth table to <i class="a">combine</i> them into one result.</p>
+        <div class="two-col" style="margin-top:var(--gap);">
+          <div class="reduce "><div class="rstep"><span class="rlabel">start</span><span class="rexpr"><span class="tk-op">(</span><span class="tk-num">7</span> <span class="tk-op">-</span> <span class="tk-num">3</span> <span class="tk-op">&gt;</span> <span class="tk-num">2</span><span class="tk-op">)</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-op">(</span><span class="tk-num">6</span> <span class="tk-op">&lt;</span> <span class="tk-num">5</span><span class="tk-op">)</span></span></div><div class="rstep fragment" data-fragment-index="0"><span class="rlabel">reduce</span><span class="rexpr"><span class="tk-op">(</span><span class="tk-num">4</span> <span class="tk-op">&gt;</span> <span class="tk-num">2</span><span class="tk-op">)</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-op">(</span><span class="tk-num">6</span> <span class="tk-op">&lt;</span> <span class="tk-num">5</span><span class="tk-op">)</span></span></div><div class="rstep fragment" data-fragment-index="1"><span class="rlabel">compare</span><span class="rexpr"><span class="tk-bool">true</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-bool">false</span></span></div><div class="rstep fragment" data-fragment-index="2"><span class="rlabel">combine</span><span class="rexpr"><span class="chip f lg">false</span></span></div></div>
+          <div class="reduce "><div class="rstep fragment" data-fragment-index="3"><span class="rlabel">start</span><span class="rexpr"><span class="tk-num">10</span> <span class="tk-op">/</span> <span class="tk-num">2</span> <span class="tk-op">==</span> <span class="tk-num">5</span> <span class="tk-op">||</span> <span class="tk-num">3</span> <span class="tk-op">&gt;</span> <span class="tk-num">4</span></span></div><div class="rstep fragment" data-fragment-index="4"><span class="rlabel">reduce</span><span class="rexpr"><span class="tk-num">5</span> <span class="tk-op">==</span> <span class="tk-num">5</span> <span class="tk-op">||</span> <span class="tk-num">3</span> <span class="tk-op">&gt;</span> <span class="tk-num">4</span></span></div><div class="rstep fragment" data-fragment-index="5"><span class="rlabel">compare</span><span class="rexpr"><span class="tk-bool">true</span> <span class="tk-op">||</span> <span class="tk-bool">false</span></span></div><div class="rstep fragment" data-fragment-index="6"><span class="rlabel">combine</span><span class="rexpr"><span class="chip t lg">true</span></span></div></div>
+        </div>
+      </div>
+      <aside class="notes">Comparison operators are evaluated before logical operators, so each comparison becomes a single Boolean before && or || combines them. The parentheses on the left example are optional, but they make the two sides easy to see.</aside>
+    </section>
+
+    <!-- SLIDE 29 · ONE DECISION -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Combining Conditions</span>
+        <h2>Combine the Cat Rule Into One Decision</h2>
+        <div class="split split-top" style="grid-template-columns:900px 1fr;">
+          <div class="fc-wrap" role="img" aria-label="Flowchart: if money == 40 &amp;&amp; age &gt; 14 is true, I can adopt a cat!; if false, I can&amp;rsquo;t adopt a cat." style="width:900px;height:474px;"><div class="fc" style="width:900px;height:474px;transform:scale(1);"><svg width="900" height="474" viewBox="0 0 900 474" aria-hidden="true"><polygon class="shape" points="450,10 750,110 450,210 150,110"/><g class=""><line class="arrow" x1="150" y1="110" x2="150" y2="348"/><polygon class="arrow-head" points="140,344 160,344 150,360"/></g><g class=""><line class="arrow" x1="750" y1="110" x2="750" y2="348"/><polygon class="arrow-head" points="740,344 760,344 750,360"/></g><g class="hl fragment" data-fragment-index="3"><line class="arrow-hl" x1="150" y1="110" x2="150" y2="348"/><polygon class="arrow-hl-head" points="140,344 160,344 150,360"/></g></svg><div class="fc-cond c" style="left:450px;top:86px;font-size:26px;"><span class="tk-nm">money</span> <span class="tk-op">==</span> <span class="tk-num">40</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-nm">age</span> <span class="tk-op">&gt;</span> <span class="tk-num">14</span></div><div class="fc-sub c fragment" data-fragment-index="0" style="left:450px;top:128px;"><span class="tk-num">40</span> <span class="tk-op">==</span> <span class="tk-num">40</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-num">15</span> <span class="tk-op">&gt;</span> <span class="tk-num">14</span></div><div class="fc-sub c fragment" data-fragment-index="1" style="left:450px;top:162px;"><span class="tk-bool">true</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-bool">true</span></div><div class="fc-res c fragment" data-fragment-index="2" style="left:450px;top:262px;"><span class="fc-res-lbl">evaluates to</span><span class="chip t">true</span></div><div class="fc-pill c" style="left:150px;top:240px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:750px;top:240px;"><span class="chip f sm">false</span></div><div class="fc-box" style="left:0px;top:360px;width:300px;height:110px;">I can adopt a cat!</div><div class="fc-box" style="left:600px;top:360px;width:300px;height:110px;">I can&rsquo;t adopt a cat.</div><div class="fc-box-hl fragment" data-fragment-index="3" style="left:0px;top:360px;width:300px;height:110px;"></div></div></div>
+          <div>
+            <p style="margin-bottom:var(--gap-sm);">I am <i class="v">15</i> and I have <i class="v">$40</i>.</p>
+            <div class="panel mem-panel"><div class="panel-hdr">Memory</div><div class="mem-body"><div class="frame-cols"><div class="mem-col"><div class="mem-col-name">money</div><div class="mem-val mv-num">40</div></div><div class="mem-col"><div class="mem-col-name">age</div><div class="mem-val mv-num">15</div></div></div></div></div>
+            <p class="fragment fade-up" data-fragment-index="3" style="margin-top:var(--gap);">The two diamonds became <i class="c">one</i> condition joined by <i class="o">&amp;&amp;</i>. It gives the same answer as the two-decision flowchart.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Trace it the same way as before: substitute both variables, reduce each comparison, then use the AND table. Point back to the two-diamond version: the && does the job of chaining the second diamond onto the true branch of the first.</aside>
+    </section>
+
+    <!-- SLIDE 30 · TEST THE CAT RULE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Your Turn &middot; Handout 4</span>
+        <h2>Test the Cat Rule</h2>
+        <p class="lead">With your partner, test the condition <span class="tk-nm">money</span> <span class="tk-op">==</span> <span class="tk-num">40</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-nm">age</span> <span class="tk-op">&gt;</span> <span class="tk-num">14</span> for each row. Evaluate each comparison, then <i class="a">combine</i> them with the AND table.</p>
+        <table class="xt tests wide"><thead><tr><th>money</th><th>age</th><th>money == 40</th><th>age &gt; 14</th><th>combined</th></tr></thead><tbody><tr><td><i class="v">40</i></td><td><i class="v">15</i></td><td><span class="fragment" data-fragment-index="0"><span class="chip t">true</span></span></td><td><span class="fragment" data-fragment-index="0"><span class="chip t">true</span></span></td><td><span class="fragment" data-fragment-index="0"><span class="chip t">true</span></span></td></tr><tr><td><i class="v">50</i></td><td><i class="v">15</i></td><td><span class="fragment" data-fragment-index="1"><span class="chip f">false</span></span></td><td><span class="fragment" data-fragment-index="1"><span class="chip t">true</span></span></td><td><span class="fragment" data-fragment-index="1"><span class="chip f">false</span></span></td></tr><tr><td><i class="v">40</i></td><td><i class="v">14</i></td><td><span class="fragment" data-fragment-index="2"><span class="chip t">true</span></span></td><td><span class="fragment" data-fragment-index="2"><span class="chip f">false</span></span></td><td><span class="fragment" data-fragment-index="2"><span class="chip f">false</span></span></td></tr><tr><td><i class="v">39</i></td><td><i class="v">17</i></td><td><span class="fragment" data-fragment-index="3"><span class="chip f">false</span></span></td><td><span class="fragment" data-fragment-index="3"><span class="chip t">true</span></span></td><td><span class="fragment" data-fragment-index="3"><span class="chip f">false</span></span></td></tr></tbody></table>
+        <p class="fragment fade-up" data-fragment-index="4" style="margin-top:var(--gap);">Look at the second row. With <i class="v">$50</i>, the combined result is <i class="b">false</i>. That means the rule says I <i class="a">cannot</i> adopt a cat.</p>
+      </div>
+      <aside class="notes">Students fill the table before you reveal. Reveal one row per click. The $50 row is the deliberate trap: students should record what == 40 actually does, even if it feels wrong. Handout 4, part 2: this table with blank comparison and combined cells, followed by the $50 question.</aside>
+    </section>
+
+    <!-- SLIDE 31 · WHAT HAPPENS WITH $50 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Combining Conditions</span>
+        <h2>What Happens With $50?</h2>
+        <div class="prose" style="max-width:1300px;">
+          <p>The condition <span class="tk-nm">money</span> <span class="tk-op">==</span> <span class="tk-num">40</span> is only <i class="b">true</i> when money is <i class="c">exactly</i> 40. With $50, <span class="tk-num">50</span> <span class="tk-op">==</span> <span class="tk-num">40</span> is <i class="b">false</i>, so the rule turns me away.</p>
+          <p class="fragment fade-up" data-fragment-index="0">Is that what we meant? No. Having 40 dollars means having <i class="c">enough</i> money, so $50 should be fine. We meant <i class="a">at least $40</i>.</p>
+          <p class="fragment fade-up" data-fragment-index="1">Which comparison operator means &ldquo;at least&rdquo;? On your handout, <i class="a">revise the condition</i>.</p>
+        </div>
+        <div class="big-eval fragment fade-up" data-fragment-index="2" style="margin-top:var(--gap-lg);">
+          <span class="rexpr"><span class="tk-nm">money</span> <span class="tk-op">&gt;=</span> <span class="tk-num">40</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-nm">age</span> <span class="tk-op">&gt;</span> <span class="tk-num">14</span></span>
+        </div>
+        <p class="fragment fade-up" data-fragment-index="3" style="margin-top:var(--gap);">The &ldquo;over 14&rdquo; part was already right: <span class="tk-nm">age</span> <span class="tk-op">&gt;</span> <span class="tk-num">14</span> excludes 14, just as the rule does.</p>
+      </div>
+      <aside class="notes">Give partners a moment to answer "Is that what we meant?" before revealing. Then have them write the revised condition before you show it. Listen for the difference between "exactly 40" and "at least 40," and between "over 14" and "14 or older." The handout has lines for the explanation and for the revised condition.</aside>
+    </section>
+
+    <!-- SLIDE 32 · RETEST THE REVISED RULE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Your Turn &middot; Handout 4</span>
+        <h2>Retest the Revised Rule</h2>
+        <div class="split split-top" style="grid-template-columns:900px 1fr;">
+          <div class="fc-wrap" role="img" aria-label="Flowchart: if money &gt;= 40 &amp;&amp; age &gt; 14 is true, I can adopt a cat!; if false, I can&amp;rsquo;t adopt a cat." style="width:900px;height:474px;"><div class="fc" style="width:900px;height:474px;transform:scale(1);"><svg width="900" height="474" viewBox="0 0 900 474" aria-hidden="true"><polygon class="shape" points="450,10 750,110 450,210 150,110"/><g class=""><line class="arrow" x1="150" y1="110" x2="150" y2="348"/><polygon class="arrow-head" points="140,344 160,344 150,360"/></g><g class=""><line class="arrow" x1="750" y1="110" x2="750" y2="348"/><polygon class="arrow-head" points="740,344 760,344 750,360"/></g><g class="hl fragment" data-fragment-index="3"><line class="arrow-hl" x1="150" y1="110" x2="150" y2="348"/><polygon class="arrow-hl-head" points="140,344 160,344 150,360"/></g></svg><div class="fc-cond c" style="left:450px;top:86px;font-size:26px;"><span class="tk-nm">money</span> <span class="tk-op">&gt;=</span> <span class="tk-num">40</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-nm">age</span> <span class="tk-op">&gt;</span> <span class="tk-num">14</span></div><div class="fc-sub c fragment" data-fragment-index="0" style="left:450px;top:128px;"><span class="tk-num">50</span> <span class="tk-op">&gt;=</span> <span class="tk-num">40</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-num">15</span> <span class="tk-op">&gt;</span> <span class="tk-num">14</span></div><div class="fc-sub c fragment" data-fragment-index="1" style="left:450px;top:162px;"><span class="tk-bool">true</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-bool">true</span></div><div class="fc-res c fragment" data-fragment-index="2" style="left:450px;top:262px;"><span class="fc-res-lbl">evaluates to</span><span class="chip t">true</span></div><div class="fc-pill c" style="left:150px;top:240px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:750px;top:240px;"><span class="chip f sm">false</span></div><div class="fc-box" style="left:0px;top:360px;width:300px;height:110px;">I can adopt a cat!</div><div class="fc-box" style="left:600px;top:360px;width:300px;height:110px;">I can&rsquo;t adopt a cat.</div><div class="fc-box-hl fragment" data-fragment-index="3" style="left:0px;top:360px;width:300px;height:110px;"></div></div></div>
+          <div>
+            <p style="margin-bottom:var(--gap-sm);">Partner check: trace the <i class="v">$50</i> case again with the revised condition.</p>
+            <div class="panel mem-panel"><div class="panel-hdr">Memory</div><div class="mem-body"><div class="frame-cols"><div class="mem-col"><div class="mem-col-name">money</div><div class="mem-val mv-num">50</div></div><div class="mem-col"><div class="mem-col-name">age</div><div class="mem-val mv-num">15</div></div></div></div></div>
+            <p class="fragment fade-up" data-fragment-index="4" style="margin-top:var(--gap);">Now $50 gets a cat. The other three rows do not change: $40 and 15 still passes, and the other two still fail.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Have one partner trace while the other checks, then reveal. Ask students to re-check the 39 and 17 row with >= 40: 39 >= 40 is still false, so it still fails, as it should. Handout 4 ends with this partner check.</aside>
+    </section>
+
+    <!-- SLIDE 33 · YOUR OWN DECISION -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Your Turn &middot; Handout 5</span>
+        <h2>Your Own Decision</h2>
+        <div class="split split-top" style="grid-template-columns:1fr 540px;">
+          <div class="prose">
+            <p>Go back to the warm-up about <i class="c">what to wear to an event</i>. Choose a decision with two possible outcomes.</p>
+            <div class="steps">
+              <p><span class="step-n">1</span><i class="a">Name the variables</i> you need and write what each one stores.</p>
+              <p><span class="step-n">2</span><i class="a">Write the condition</i> as a Boolean expression in the diamond.</p>
+              <p><span class="step-n">3</span><i class="a">Label</i> the true and false branches and write an outcome on each one.</p>
+              <p><span class="step-n">4</span><i class="a">Test</i> your flowchart with a partner: choose one input that follows <i class="c">each</i> branch.</p>
+            </div>
+          </div>
+          <div>
+            <div class="callout accent-purple">
+              <h3>Challenge</h3>
+              <p>Use <i class="o">&amp;&amp;</i>, <i class="o">||</i>, or <i class="o">!</i> in your condition, or add a second decision. Make sure some test reaches <i class="c">every</i> outcome.</p>
+            </div>
+            <div class="callout" style="margin-top:var(--gap);">
+              <h3>Check Your Flowchart</h3>
+              <p>Named variables, a Boolean condition, labeled branches, a matching outcome on each branch, and a test for each branch.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">This is the independent transfer task. Responses vary. A complete flowchart has named variables, a Boolean condition, labeled branches, matching actions, and tests that reach both outcomes. Early finishers take the challenge. Handout 5: lines for the decision and the variables, a blank drawing area, and a test table with columns input values, Boolean result, and outcome.</aside>
+    </section>
+
+    <!-- SLIDE 34 · KEY TAKEAWAYS: COMPARISONS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Wrap Up</span>
+        <h2>Key Takeaways: Comparisons</h2>
+        <div class="split split-top" style="grid-template-columns:1fr 540px;">
+          <div class="prose">
+            <p>A <i class="b">Boolean</i> value is a data type that is either <i class="b">true</i> or <i class="b">false</i>.</p>
+            <p>The comparison operators <i class="o">&lt;</i>, <i class="o">&gt;</i>, <i class="o">&lt;=</i>, <i class="o">&gt;=</i>, <i class="o">==</i>, and <i class="o">!=</i> signal a <i class="c">Boolean expression</i>.</p>
+            <p>Each side of the comparison is <i class="a">reduced to a single value</i>, and then the two values are <i class="a">compared</i> to produce <i class="b">true</i> or <i class="b">false</i>.</p>
+            <p>Always <i class="a">test the boundary</i>, where the two sides are equal.</p>
+          </div>
+          <div class="tk-examples">
+            <div class="big-eval sm"><span class="rexpr"><span class="tk-num">10</span> <span class="tk-op">&lt;</span> <span class="tk-num">2</span></span><span class="eval-arrow">evaluates to</span><span class="chip f">false</span></div>
+            <div class="big-eval sm"><span class="rexpr"><span class="tk-num">4</span> <span class="tk-op">==</span> <span class="tk-num">4</span></span><span class="eval-arrow">evaluates to</span><span class="chip t">true</span></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Ask students to restate each takeaway in their own words before moving on.</aside>
+    </section>
+
+    <!-- SLIDE 35 · KEY TAKEAWAYS: DECISIONS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Wrap Up</span>
+        <h2>Key Takeaways: Decisions</h2>
+        <div class="split split-top" style="grid-template-columns:1fr 540px;">
+          <div class="prose">
+            <p>The <i class="o">logical operators</i> <i class="o">&amp;&amp;</i>, <i class="o">||</i>, and <i class="o">!</i> (AND, OR, NOT) combine or change Boolean values. Each side is reduced to a single Boolean first.</p>
+            <p>A <i class="c">truth table</i> shows how the reduced values combine into one Boolean result.</p>
+            <p>A <i class="c">conditional</i> uses that single Boolean value to <i class="a">choose which action runs</i>, and a <i class="c">flowchart</i> shows the steps of that decision.</p>
+          </div>
+          <div class="tk-examples">
+            <div class="big-eval sm"><span class="rexpr"><span class="tk-bool">true</span> <span class="tk-op">&amp;&amp;</span> <span class="tk-bool">false</span></span><span class="eval-arrow">evaluates to</span><span class="chip f">false</span></div>
+            <div class="big-eval sm"><span class="rexpr"><span class="tk-bool">true</span> <span class="tk-op">||</span> <span class="tk-bool">false</span></span><span class="eval-arrow">evaluates to</span><span class="chip t">true</span></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Listen for students to name comparing and deciding as two related but separate steps: a comparison produces a Boolean value, and a conditional uses that value to choose an action. Handout (end of lesson, if time allows): a reflection question, "Can a computer evaluate an expression to something between true and false? How could you write an expression to deal with a maybe answer?" and a vocabulary matching set: Boolean expression, logical operator, &&, ||, !, And, Or, Not.</aside>
+    </section>
+
+    <!-- SLIDE 36 · EXIT TICKET -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Exit Ticket &middot; Handout 5</span>
+        <h2>Exit Ticket</h2>
+        <p class="lead">Work <i class="a">independently</i>. An event lets a person in if they <i class="c">have a ticket</i> OR they are <i class="c">on the guest list</i>.</p>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1300px;">
+          <p style="font-size:28px;color:var(--text);margin-bottom:var(--gap-sm);">Let <i class="n">hasTicket</i> = <i class="b">false</i> and <i class="n">onList</i> = <i class="b">true</i>.</p>
+          <p style="font-size:28px;"><b class="q-letter">a.</b> Write the condition using <i class="o">||</i>.</p>
+          <p style="font-size:28px;"><b class="q-letter">b.</b> Substitute the values and evaluate it.</p>
+          <p style="font-size:28px;"><b class="q-letter">c.</b> If the rule used <i class="o">&amp;&amp;</i> instead, would entry be allowed? Explain.</p>
+        </div>
+      </div>
+      <aside class="notes">Answer key (do not reveal): a. hasTicket || onList. b. false || true evaluates to true, so entry is allowed. c. No: false && true evaluates to false, because AND needs both values to be true. Score out of 3, one point per part. A score below 3 points to the concept to revisit before the coding lesson. Collect Handout 5.</aside>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-4-5-conditionals-explore',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
