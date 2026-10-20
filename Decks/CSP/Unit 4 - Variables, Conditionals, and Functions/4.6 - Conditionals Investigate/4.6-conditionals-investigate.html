@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1cfeijl">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.6 Conditionals Investigate</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: 4.6 Conditionals Investigate
+   ============================================================ */
+
+:root {
+  /* Body text brighter than the shared theme's 0.6 alpha so prose
+     clears 7:1 on both the page and card backgrounds. */
+  --text-body: #b8cac7;
+  --text-soft: #a3b4b1;
+  /* Boolean values: violet. true is a filled chip, false is outlined. */
+  --bool:        #b197fc;
+  --bool-tint:   rgba(177,151,252,0.10);
+  --bool-glow:   rgba(177,151,252,0.55);
+}
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+/* JetBrains Mono draws <= == != && as ligatures; students need to see
+   the exact characters they will write, so turn ligatures off. */
+.reveal, .reveal * { font-variant-ligatures: none; }
+.frq-box p { color: var(--text-body); }
+
+/* ─── Semantic inline emphasis (extends 4.1 to 4.4) ─────────────────
+   i.n  a variable name, in code font, teal
+   i.v  a number value, gold
+   i.s  a string value, green
+   i.b  a Boolean value or the word Boolean, violet
+   i.o  an operator or operator concept, white
+   i.a  an action students take (look up, substitute, evaluate), amber
+   i.c  a concept word (condition, boundary, truth table), teal
+   ─────────────────────────────────────────────────────────────── */
+.reveal i.n, .reveal i.v, .reveal i.s {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-weight: 500;
+}
+.reveal i.n { color: var(--teal); }
+.reveal i.v { color: var(--gold); }
+.reveal i.s { color: var(--green); }
+.reveal i.b { font-style: normal; color: var(--bool); font-weight: 600; }
+.reveal i.o { font-style: normal; color: var(--text); font-weight: 700; }
+.reveal i.a { font-style: normal; color: var(--amber); font-weight: 600; }
+.reveal i.c { font-style: normal; color: var(--teal); font-weight: 600; }
+
+/* ─── Expression tokens ──────────────────────────────────────────── */
+.tk-num  { color: var(--gold); }
+.tk-str  { color: var(--green); }
+.tk-nm   { color: var(--teal); }
+.tk-bool { color: var(--bool); font-weight: 700; }
+.tk-op   { color: var(--text); font-weight: 700; }
+.expr, .rexpr, .plain {
+  font-family: var(--font-mono);
+  white-space: pre;
+}
+.plain { color: var(--text); }
+
+/* ─── Value chips ────────────────────────────────────────────────── */
+.chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1.35;
+  padding: 1px 14px;
+  border: 2px solid;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+.chip.sm { font-size: 20px; padding: 0 12px; }
+.chip.lg { font-size: 40px; padding: 2px 22px; border-width: 3px; }
+.chip.t   { background: var(--bool); border-color: var(--bool); color: #091412; }
+.chip.f   { background: var(--bg); border-color: var(--bool); color: var(--bool); }
+.chip.num { color: var(--gold);  border-color: rgba(255,159,67,0.6);  background: rgba(255,159,67,0.08); }
+.chip.str { color: var(--green); border-color: rgba(105,219,124,0.6); background: rgba(105,219,124,0.08); }
+
+/* ─── Layout helpers ─────────────────────────────────────────────── */
+.top-inner { justify-content: flex-start !important; padding-top: 52px !important; }
+.reveal .top-inner h2 { margin-bottom: var(--gap); }
+.lead { font-size: 27px !important; line-height: 1.55 !important; max-width: 1300px; }
+.prose p { font-size: 26px; line-height: 1.55; }
+.prose p + p, .prose p + .steps, .prose .q-box + p { margin-top: var(--gap); }
+.prompt-big {
+  font-size: 46px !important;
+  line-height: 1.35 !important;
+  color: var(--text) !important;
+  max-width: 1200px;
+  text-align: center;
+}
+.q-box {
+  font-size: 30px !important;
+  line-height: 1.45 !important;
+  color: var(--text) !important;
+  background: var(--bg-card);
+  border-left: 4px solid var(--teal);
+  border-radius: 3px;
+  padding: 16px 22px;
+}
+.steps p {
+  font-size: 25px;
+  line-height: 1.45;
+  padding-left: 52px;
+  position: relative;
+}
+.steps p + p { margin-top: 14px; }
+.step-n {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--amber);
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.q-letter { color: var(--amber); font-family: var(--font-mono); margin-right: 8px; }
+
+/* ─── Big "evaluates to" line ────────────────────────────────────── */
+.big-eval {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.big-eval .rexpr { font-size: 52px; }
+.eval-arrow {
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+.big-eval.sm { gap: 18px; }
+.big-eval.sm .rexpr { font-size: 32px; }
+.big-eval.sm .eval-arrow { font-size: 16px; }
+.tk-examples { display: flex; flex-direction: column; gap: var(--gap-lg); margin-top: var(--gap); }
+
+/* ─── Reduce stack: one line per step, like students write it ──── */
+.reduce {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  column-gap: 26px;
+  row-gap: 12px;
+  align-items: center;
+  margin-top: var(--gap);
+}
+.rstep { display: contents; }
+.rlabel {
+  justify-self: end;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.reduce .rexpr { font-size: 32px; }
+.reduce.lg .rexpr { font-size: 42px; }
+/* .aligned: split each line into left side | operator | right side so the
+   operator stays in one column and each reduced side sits under its side */
+.reduce.aligned { grid-template-columns: max-content max-content max-content max-content; column-gap: 0; }
+.reduce.aligned .rlabel { margin-right: 26px; }
+.reduce.aligned .rl, .reduce.aligned .rr { justify-self: center; }
+.reduce.aligned .ro { justify-self: center; padding: 0 0.6ch; }
+.reduce.aligned .rfull { grid-column: 2 / span 3; justify-self: center; }
+/* display: contents drops the box, so fade each part of a fragment step */
+.reveal .rstep.fragment > * { opacity: 0; transition: opacity 0.55s var(--ease); }
+.reveal .rstep.fragment.visible > * { opacity: 1; }
+.reveal .rstep.fragment { opacity: 1 !important; visibility: visible !important; }
+
+/* ─── Tables ─────────────────────────────────────────────────────── */
+.reveal table.xt { border-collapse: collapse; margin: var(--gap) 0 0; }
+.reveal table.xt th {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teal);
+  padding: 8px 18px;
+  border-bottom: 2px solid rgba(226,245,242,0.55);
+  text-align: center;
+}
+.reveal table.xt td {
+  font-size: 24px;
+  color: var(--text);
+  padding: 10px 18px;
+  height: 64px;
+  text-align: center;
+  border-bottom: 1px solid var(--teal-border);
+}
+.reveal table.xt td .expr { font-size: 26px; }
+.reveal table.xt td { white-space: nowrap; }
+.reveal table.xt.tests td, .reveal table.xt.tests th { padding-left: 12px; padding-right: 12px; }
+.reveal table.xt.drill td:first-child { text-align: left; }
+.reveal table.xt.drill td { padding: 8px 26px; height: 60px; }
+.reveal table.xt.wide-cells td { padding: 10px 40px; font-size: 30px; }
+.reveal table.xt.wide-cells td .plain { font-size: 32px; }
+.reveal table.xt.wide td { padding: 10px 40px; }
+.reveal table.xt.truth td { padding: 10px 36px; }
+.reveal table.xt tr.boundary td { background: rgba(255,212,59,0.06); }
+.reveal table.xt.ops { margin: 0; }
+.reveal table.xt.ops td { height: auto; font-size: 22px; text-align: left; padding: 10px 14px; color: var(--text-body); }
+.reveal table.xt.ops td:nth-child(odd) { font-family: var(--font-mono); font-size: 30px; text-align: center; color: var(--text); }
+
+/* ─── Memory trace (same visual as 4.1) ──────────────────────────── */
+.panel {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,201,177,0.4);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.panel-hdr {
+  padding: 6px 16px;
+  background: rgba(0,201,177,0.12);
+  border-bottom: 1px solid rgba(0,201,177,0.4);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  text-align: center;
+}
+.mem-body { padding: 14px 18px 18px; }
+.frame-cols { display: flex; flex-wrap: wrap; gap: 8px 34px; }
+.mem-col { min-width: 96px; }
+.mem-col-name {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  color: var(--teal);
+  border-bottom: 2px solid rgba(226,245,242,0.55);
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+}
+.mem-val { font-family: var(--font-mono); font-size: 26px; line-height: 1.4; }
+.mem-val.blank { height: 36px; }
+.mv-num { color: var(--gold); }
+.mv-bool { color: var(--bool); font-weight: 700; }
+
+/* ─── Flowcharts ─────────────────────────────────────────────────────
+   Drawn on a fixed px stage and scaled as a whole with transform.
+   Highlight overlays (.hl, .fc-box-hl) are fragments that light up the
+   one branch the current test follows.                              */
+.fc-wrap { position: relative; flex-shrink: 0; }
+.fc { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.fc svg { position: absolute; left: 0; top: 0; overflow: visible; }
+.fc .shape { fill: var(--bg-card); stroke: rgba(0,201,177,0.8); stroke-width: 3; }
+.fc .arrow { stroke: rgba(226,245,242,0.65); stroke-width: 3; fill: none; }
+.fc .arrow-head { fill: rgba(226,245,242,0.65); }
+.fc .arrow-hl { stroke: var(--bool); stroke-width: 7; fill: none; }
+.fc .arrow-hl-head { fill: var(--bool); }
+.fc .hl { filter: drop-shadow(0 0 8px var(--bool-glow)); }
+.fc .c { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; }
+.fc-cond { font-family: var(--font-mono); font-weight: 600; }
+.fc-sub { font-family: var(--font-mono); font-size: 25px; }
+.fc-res { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.fc-res-lbl { font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-soft); }
+.fc-res .chip { font-size: 26px; }
+.fc-box {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px 16px;
+  font-size: 25px;
+  line-height: 1.3;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 2px solid rgba(226,245,242,0.55);
+  border-radius: 8px;
+}
+.fc-box-new { border-color: var(--amber); color: var(--amber); font-weight: 600; }
+.fc-box-hl {
+  position: absolute;
+  border: 4px solid var(--bool);
+  border-radius: 8px;
+  background: var(--bool-tint);
+  box-shadow: 0 0 24px var(--bool-glow);
+  pointer-events: none;
+}
+.fc-tags { position: absolute; display: flex; justify-content: center; gap: 10px; }
+.fc-tags .tag {
+  font-family: var(--font-mono);
+  font-size: 23px;
+  color: var(--amber);
+  border: 1px solid var(--amber-border);
+  background: rgba(255,212,59,0.07);
+  border-radius: 999px;
+  padding: 2px 12px;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal .rstep.fragment > * { transition: none; }
+}
+
+/* ─── 4.6 additions ─────────────────────────────────────────────── */
+.reveal i.f { font-style: normal; font-family: var(--font-mono); font-size: 0.92em; color: var(--text); font-weight: 700; }
+.tk-kw { color: var(--amber); font-weight: 600; }
+.tk-fn { color: var(--text); font-weight: 600; }
+.cm { color: rgba(226,245,242,0.55); font-style: italic; }
+.nw { white-space: nowrap; font-family: var(--font-mono); }
+.code-card .code-body pre { font-size: 22px; }
+.code-card.code-sm .code-body pre { font-size: 19px; white-space: pre-wrap; }
+.code-body .ln { display: inline-block; width: 2.6ch; margin-right: 1.2ch; text-align: right; color: var(--text-dim); }
+.code-img { display: block; background: #fff; border-radius: 6px; padding: 10px; box-sizing: border-box; }
+.img-stack { display: flex; flex-direction: column; gap: 14px; }
+.say { font-size: 30px !important; color: var(--text) !important; background: var(--bg-card); border-left: 4px solid var(--teal); padding: 12px 20px; border-radius: 3px; }
+.say + .say { margin-top: var(--gap); }
+.wi-labels { display: flex; gap: 20px; margin-top: 14px; font-family: var(--font-mono); font-size: 22px; }
+.wi-when { color: var(--teal); }
+.wi-if { color: var(--amber); }
+.sections { display: flex; flex-direction: column; gap: 14px; }
+.sec { display: grid; grid-template-columns: 150px 1fr; column-gap: 16px; background: var(--bg-card); border: 1px solid var(--teal-border); border-radius: 6px; padding: 14px 20px; }
+.sec-n { font-weight: 700; color: var(--amber); font-size: 24px; grid-row: span 2; align-self: center; }
+.sec-l { font-family: var(--font-mono); color: var(--teal); font-size: 22px; }
+.sec-d { color: var(--text-body); font-size: 20px; }
+.steps-lg { margin-top: var(--gap); }
+/* roomier text for slides with short instructions */
+.reveal .prose p { font-size: 28px; line-height: 1.5; }
+.reveal .slide-inner > p:not(.lead):not(.prompt-big) { font-size: 28px; line-height: 1.5; }
+.reveal .callout p { font-size: 27px; line-height: 1.5; }
+.reveal .callout h3 { font-size: 30px; }
+.code-card:not(.code-sm) .code-body pre { font-size: 24px; }
+.reveal p.lead-lg { font-size: 32px !important; line-height: 1.5 !important; }
+.sections .sec-n { font-size: 28px; }
+.sections .sec-l { font-size: 26px; }
+.sections .sec-d { font-size: 22px; }
+.sections .sec { padding: 18px 22px; }
+.steps-lg p { font-size: 34px; line-height: 1.45; padding-left: 70px; }
+.steps-lg p + p { margin-top: var(--gap); }
+.steps-lg .step-n { width: 46px; height: 46px; font-size: 24px; top: 4px; }
+.trace3 { display: flex; flex-direction: column; gap: 18px; }
+.trace3 h3 { font-family: var(--font-mono); font-size: 20px; color: var(--amber); margin-bottom: 0; }
+.trace3 .reduce { margin-top: 4px; row-gap: 4px; }
+.trace3 .reduce .rexpr { font-size: 24px; }
+.trace3 { gap: 12px; }
+
+/* Long division for MOD */
+.ldiv {
+  display: grid;
+  grid-template-columns: 70px 150px auto;
+  grid-template-rows: 64px 70px 60px 60px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 52px;
+  color: var(--text);
+  justify-self: center;
+}
+.ld-q   { grid-column: 2; grid-row: 1; text-align: right; padding-right: 22px; color: var(--text-soft); }
+.ld-div { grid-column: 1; grid-row: 2; text-align: right; padding-right: 12px; color: var(--gold); }
+.ld-num { grid-column: 2; grid-row: 2; text-align: right; padding-right: 22px; color: var(--gold); border-left: 4px solid var(--text); border-top: 4px solid var(--text); border-top-left-radius: 14px; }
+.ld-sub { grid-column: 2; grid-row: 3; text-align: right; padding-right: 22px; border-bottom: 3px solid var(--text-soft); }
+.ld-rem { grid-column: 2; grid-row: 4; text-align: right; padding-right: 22px; color: var(--text-soft); }
+.ld-qn { position: relative; }
+/* "r 2" hangs past the right edge so the 3 stays above the 7 */
+.ld-r { margin-right: -4ch; white-space: nowrap; color: var(--amber); font-weight: 700; }
+.ld-note { grid-column: 3; grid-row: 1; font-family: var(--font-body); font-size: 26px; color: var(--amber); white-space: nowrap; padding-left: 150px; }
+.ld-note b { color: var(--amber); font-family: var(--font-mono); }
+
+/* ─── Flowchart builder ───────────────────────────────────────────────
+   Drop slots sit on a flowchart stage; chips come from a shuffled bank.
+   Click a chip then a slot (or drag). Correct placements lock in; wrong
+   ones shake. Engine: initFlowchartBuilders() in the trailing script.  */
+.fcb-left { display: grid; gap: 40px; align-items: start; margin-top: var(--gap); }
+.fcb-left .fc-wrap { justify-self: center; }
+.fcb-side { display: grid; grid-template-columns: auto 1fr; gap: var(--gap-lg); align-items: start; margin-top: var(--gap); }
+.fcb-below { display: flex; flex-direction: column; gap: 14px; margin-top: var(--gap-sm); }
+.fcb-panel { display: flex; flex-direction: column; gap: 14px; }
+.fcb-status { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.fcb-status .badge { font-size: var(--small); }
+.fcb-complete { color: var(--green); font-weight: 700; font-size: 22px; }
+.fcb-reset { all: unset; cursor: pointer; font-family: var(--font-mono); font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-soft); border: 1px solid var(--teal-border); border-radius: 999px; padding: 4px 12px; }
+.fcb-reset:hover { color: var(--text); border-color: var(--teal); }
+.reveal p.fcb-help { font-size: 18px; color: var(--text-soft); }
+.fcb-bank { display: flex; flex-wrap: wrap; gap: 10px; }
+.fcb-chip {
+  all: unset;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 20px;
+  line-height: 1.3;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 2px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  transition: opacity 0.25s var(--ease), transform 0.15s var(--ease), border-color 0.2s var(--ease);
+}
+.fcb-chip:hover { border-color: var(--teal); }
+.fcb-chip.selected { border-color: var(--amber); background: rgba(255,212,59,0.1); transform: translateY(-2px); }
+.fcb-chip.used { display: none; }
+.fcb-chip.dragging { opacity: 0.35; }
+.fcb-ghost { position: fixed; z-index: 10000; pointer-events: none; transform-origin: 0 0; margin: 0; border-color: var(--amber); box-shadow: 0 12px 28px rgba(0,0,0,0.5); cursor: grabbing; }
+.fcb-in { display: inline; }
+.fcb-chip .lc, .fcb-slot .lc { display: block; white-space: nowrap; }
+.fcb-slot {
+  all: unset;
+  position: absolute;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 20px;
+  line-height: 1.3;
+  color: var(--text);
+  border: 2px dashed rgba(255,212,59,0.55);
+  border-radius: 8px;
+  background: rgba(255,212,59,0.04);
+  padding: 4px 8px;
+}
+.fcb-slot.fcb-out { font-family: var(--font-body); font-size: 21px; background: var(--bg-card); }
+.fcb-slot:hover:not(.filled), .fcb-slot.drag-over { border-color: var(--amber); background: rgba(255,212,59,0.12); }
+.fcb-ph { color: rgba(255,212,59,0.7); font-size: 26px; font-weight: 700; }
+.fcb-slot.filled { cursor: default; border: 2px solid var(--green); background: rgba(105,219,124,0.10); }
+.fcb-slot.fcb-out.filled { border-color: var(--green); background: rgba(105,219,124,0.10); }
+.fcb-slot .mc-badge {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #04150f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+  animation: mc-badge-pop 0.6s var(--ease) both;
+  z-index: 2;
+}
+.fcb-slot .mc-badge.fcb-x { background: var(--red); color: #1a0505; }
+.fcb-slot.wrong { border-color: var(--red); background: rgba(255,107,107,0.12); animation: mc-shake 0.4s var(--ease); }
+.fcb-slot b, .fcb-chip b { color: var(--gold); font-family: var(--font-mono); }
+
+/* ─── Matching Pairs activity (Slide 6) ──────────────────────────────
+   Shared click-to-select mixed-grid engine, see
+   .agent/knowledge/html5-activities-index.md and CSP 2.4 / 2.5. ─── */
+.match-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: 100%;
+}
+.match-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.match-status .badge { font-size: var(--small); }
+.match-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap-sm) var(--gap);
+  width: 100%;
+}
+.match-card {
+  all: unset;
+  position: relative;
+  cursor: pointer;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 96px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: var(--small);
+  line-height: 1.4;
+  color: var(--text-muted);
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.15s var(--ease);
+}
+.match-card.match-card-term { font-family: var(--font-mono); font-weight: 700; color: var(--text); font-size: var(--body); }
+.match-card:hover:not(.mc-matched) { border-color: rgba(0,201,177,0.5); }
+.match-card.mc-selected {
+  border-color: var(--teal);
+  background: var(--teal-glow);
+  box-shadow: 0 0 0 1px rgba(0,201,177,0.35) inset;
+}
+.match-card.mc-matched {
+  cursor: default;
+  border: 2px solid var(--green);
+  background: rgba(105,219,124,0.16);
+  color: var(--text);
+  box-shadow: 0 0 0 1px rgba(105,219,124,0.3) inset, 0 10px 24px rgba(0,0,0,0.3);
+}
+.match-card.match-card-term.mc-matched { color: var(--green); }
+.match-card.mc-matched .mc-badge {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #04150f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+  animation: mc-badge-pop 0.6s var(--ease) both;
+}
+@keyframes mc-badge-pop {
+  0%   { transform: scale(0.2) rotate(-12deg); opacity: 0; }
+  40%  { transform: scale(1.3) rotate(10deg);  opacity: 1; }
+  58%  { transform: scale(0.88) rotate(-6deg);             }
+  72%  { transform: scale(1.12) rotate(4deg);              }
+  86%  { transform: scale(0.96) rotate(-1deg);             }
+  100% { transform: scale(1) rotate(0deg);     opacity: 1; }
+}
+.match-card.mc-wrong {
+  border-color: var(--red);
+  background: rgba(255,107,107,0.08);
+  animation: mc-shake 0.4s var(--ease);
+}
+@keyframes mc-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.match-complete { font-size: var(--body); color: var(--green); font-weight: 600; }
+
+/* Perfect-score overlay: big enough to read from across the room */
+.match-perfect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4,12,11,0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease);
+}
+.match-perfect-overlay.visible { opacity: 1; pointer-events: auto; cursor: pointer; }
+.match-perfect-badge { display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0; }
+.match-perfect-overlay.visible .match-perfect-badge { animation: match-perfect-pop 0.7s var(--ease) both; }
+.match-perfect-check {
+  font-size: 220px;
+  line-height: 1;
+  color: var(--green);
+  filter: drop-shadow(0 0 46px rgba(105,219,124,0.55));
+}
+.match-perfect-text {
+  font-family: var(--font-display);
+  font-size: 84px;
+  font-weight: 700;
+  color: var(--text);
+  text-shadow: 0 0 34px rgba(0,201,177,0.45);
+}
+.match-perfect-hint {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+@keyframes match-perfect-pop {
+  0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  75%  { transform: scale(0.96) rotate(-1deg);             }
+  100% { transform: scale(1) rotate(0deg);    opacity: 1; }
+}
+.badge-pulse-complete {
+  background: rgba(105,219,124,0.18);
+  border-color: rgba(105,219,124,0.6);
+  color: var(--green);
+  animation: badge-pulse-glow 1.6s ease-in-out infinite;
+}
+@keyframes badge-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(105,219,124,0.5); }
+  50%      { box-shadow: 0 0 16px 5px rgba(105,219,124,0.45); }
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 4 &middot; Lesson 4.6</span>
+        <h1 class="title-h1">Conditionals Investigate</h1>
+        <p style="font-size:var(--body);max-width:1100px;line-height:1.6;margin-top:var(--gap);">Today you will read and modify the <i class="c">Lemon Squeeze</i> app to see how <i class="a">if</i>, <i class="a">if-else</i>, and <i class="a">if-else-if</i> statements let a program make decisions.</p>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(177,151,252,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 70%);"></div>
+      <aside class="notes">Unit 4 Lesson 6. Students investigate four versions of the Lemon Squeeze app with a partner. Each investigation follows the same rhythm: watch a short video, play the app, read the new code, then modify it. Students need their devices for the Code.org levels.</aside>
+    </section>
+
+    <!-- SLIDE 2 · WARM UP: THE WATER PARK -->
+    <section
+      id="fcb-waterpark" data-fcb>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Warm Up</span>
+        <h2>The Water Park Ride</h2>
+        <p class="lead">A water park lets a visitor on a ride if they are <i class="c">48 or more inches tall</i> OR they are <i class="c">14 years old or older</i>. Build the flowchart for this decision.</p>
+        <div class="fcb fcb-left" data-fcb-root data-prevent-swipe data-fcb-total="5" style="grid-template-columns:300px 1fr;"><div class="fcb-panel"><div class="fcb-status"><span class="badge" data-fcb-score>0 of 5 correct</span><span class="badge badge-amber" data-fcb-attempts>0 attempts</span><span class="fcb-complete" data-fcb-complete hidden>Flowchart complete!</span><button type="button" class="fcb-reset" data-fcb-reset>Start over</button></div><p class="fcb-help">Drag a card to the spot where it belongs, or click a card and then click the spot.</p><div class="fcb-bank" data-fcb-bank><button type="button" class="fcb-chip" data-chip="h48"><span class="fcb-in"><span class="tk-nm">height</span> <span class="tk-op">&gt;=</span> <span class="tk-num">48</span></span></button><button type="button" class="fcb-chip" data-chip="a14"><span class="fcb-in"><span class="tk-nm">age</span> <span class="tk-op">&gt;=</span> <span class="tk-num">14</span></span></button><button type="button" class="fcb-chip" data-chip="or"><span class="fcb-in"><span class="tk-op">||</span></span></button><button type="button" class="fcb-chip" data-chip="and"><span class="fcb-in"><span class="tk-op">&amp;&amp;</span></span></button><button type="button" class="fcb-chip" data-chip="h48x"><span class="fcb-in"><span class="tk-nm">height</span> <span class="tk-op">&gt;</span> <span class="tk-num">48</span></span></button><button type="button" class="fcb-chip" data-chip="a14x"><span class="fcb-in"><span class="tk-nm">age</span> <span class="tk-op">&gt;</span> <span class="tk-num">14</span></span></button><button type="button" class="fcb-chip" data-chip="ride"><span class="fcb-in">Let them on the ride.</span></button><button type="button" class="fcb-chip" data-chip="noride"><span class="fcb-in">They can&rsquo;t ride yet.</span></button></div></div><div class="fc-wrap" role="img" aria-label="Water park flowchart with empty slots" style="width:949.76px;height:490.56px;"><div class="fc" style="width:848px;height:438px;transform:scale(1.12);"><svg width="848" height="438" viewBox="0 0 848 438" aria-hidden="true"><polygon class="shape" points="250,12 490,147 250,282 10,147"/><line class="arrow" x1="490" y1="147" x2="558" y2="147"/><polygon class="arrow-head" points="554,137 554,157 570,147"/><line class="arrow" x1="250" y1="282" x2="250" y2="334"/><polygon class="arrow-head" points="240,330 260,330 250,346"/></svg><div class="fc-pill c" style="left:530px;top:147px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:250px;top:314px;"><span class="chip f sm">false</span></div><button type="button" class="fcb-slot fcb-cond" data-accept="h48,a14" style="left:145px;top:64px;width:210px;height:50px;" aria-label="Empty condition slot"><span class="fcb-ph">?</span></button><button type="button" class="fcb-slot fcb-cond" data-accept="or" style="left:210px;top:124px;width:80px;height:46px;" aria-label="Empty condition slot"><span class="fcb-ph">?</span></button><button type="button" class="fcb-slot fcb-cond" data-accept="h48,a14" style="left:145px;top:180px;width:210px;height:50px;" aria-label="Empty condition slot"><span class="fcb-ph">?</span></button><button type="button" class="fcb-slot fcb-out" data-accept="ride" style="left:570px;top:105px;width:270px;height:84px;" aria-label="Empty outcome slot"><span class="fcb-ph">?</span></button><button type="button" class="fcb-slot fcb-out" data-accept="noride" style="left:115px;top:346px;width:270px;height:84px;" aria-label="Empty outcome slot"><span class="fcb-ph">?</span></button></div></div></div>
+      </div>
+      <div class="match-perfect-overlay" data-fcb-overlay aria-hidden="true">
+        <div class="match-perfect-badge">
+          <span class="match-perfect-check">&#10003;</span>
+          <span class="match-perfect-text">Perfect Flowchart!</span>
+          <span class="match-perfect-hint">Every card on the first try. Click to see your flowchart</span>
+        </div>
+      </div>
+      <aside class="notes">Students build this on their own device: three cards go in the diamond (two comparisons and a logical operator) and one in each outcome. The distractors test the boundary: "48 or more" means height &gt;= 48, not height &gt; 48, and "14 or older" means age &gt;= 14. The two comparisons may go in either order. Debrief: why OR and not AND? A 10-year-old who is 50 inches tall can ride. This reviews 4.5 before students read real if statements today.</aside>
+    </section>
+
+    <!-- SLIDE 3 · WHEN OR IF -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">When or If?</span>
+        <h2>Is It Really a Condition?</h2>
+        <p class="lead lead-lg">In everyday conversation, people switch between the words <i class="c">&ldquo;when&rdquo;</i> and <i class="c">&ldquo;if&rdquo;</i> without thinking about it.</p>
+        <div class="two-col" style="margin-top:var(--gap-lg);">
+          <div class="say-col"><p class="say">&ldquo;When the user clicks the button...&rdquo;</p><p class="say">&ldquo;When the user has more than 100 points...&rdquo;</p></div>
+          <div class="say-col"><p class="say">&ldquo;If the user clicks the button...&rdquo;</p><p class="say">&ldquo;If the user has more than 100 points...&rdquo;</p></div>
+        </div>
+        <p class="fragment fade-up" data-fragment-index="0" style="margin-top:var(--gap-lg);">In a program, these two words describe <i class="a">different code</i>. Which of these sentences describes an event, and which describes a decision?</p>
+      </div>
+      <aside class="notes">Ask students which sentences sound like an event (something the user does) and which sound like a decision (something the program checks). The next slide gives the rule we will use for the rest of the unit.</aside>
+    </section>
+
+    <!-- SLIDE 4 · WHEN MEANS ONEVENT, IF MEANS CONDITIONAL -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">When or If?</span>
+        <h2>Our Rule for When and If</h2>
+        <div class="split split-top" style="grid-template-columns:1fr 640px;">
+          <div class="prose">
+            <p><i class="a">&ldquo;When&rdquo;</i> means there is an <i class="f">onEvent</i> that responds to user input. The app does something <i class="c">when</i> the user clicks.</p>
+            <p class="fragment fade-up" data-fragment-index="0"><i class="a">&ldquo;If&rdquo;</i> means there is a <i class="c">conditional statement</i> that decides which code runs. The app does something <i class="c">if</i> a Boolean expression evaluates to <i class="b">true</i>.</p>
+            <p class="fragment fade-up" data-fragment-index="1">Many programs use both: <i class="c">when</i> the button is clicked, the app checks <i class="c">if</i> the player has enough points.</p>
+          </div>
+          <div>
+            <div class="code-card "><div class="code-hdr"><span class="clang">When and If</span></div><div class="code-body"><pre><code><span class="tk-fn">onEvent</span>(<span class="tk-str">"button"</span>, <span class="tk-str">"click"</span>, <span class="tk-kw">function</span>() {
+  <span class="tk-kw">if</span> (<span class="tk-nm">score</span> &gt; <span class="tk-num">100</span>) {
+    <span class="tk-fn">setText</span>(<span class="tk-str">"message"</span>, <span class="tk-str">"You win!"</span>);
+  }
+});</code></pre></div></div>
+            <div class="wi-labels"><span class="wi-when">when: the onEvent</span><span class="wi-if fragment" data-fragment-index="0">if: the conditional</span></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">The App Lab model from the Code.org lesson: "when" the buttons are clicked, the app is deciding "if" something should happen. Hold students to this vocabulary for the rest of the lesson.</aside>
+    </section>
+
+    <!-- SLIDE 5 · PREDICT: LEVEL 1 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Predict</span>
+        <h2>Let&rsquo;s Look at Some Conditions</h2>
+        <div class="steps steps-lg">
+          <p><span class="step-n">1</span><a href="https://learn.mycode.run/link/xncww" target="_blank" rel="noopener"><i class="a">Open Lesson 6, Level 1</i> on Code.org</a>.</p>
+          <p><span class="step-n">2</span>The program asks three questions that use the information stored in the <i class="c">variables</i> at the top.</p>
+          <p><span class="step-n">3</span><i class="a">Read the code</i> and <i class="a">predict the output</i>: which of the three questions will show <i class="b">true</i>? Then run the code to check your prediction.</p>
+        </div>
+      </div>
+      <aside class="notes">Code.org collects the prediction in Level 1. Answer: Questions 2 and 3. Q1 is the boundary trap: (fruitServings &gt; 3) with fruitServings = 3 is false. Q3 shows that OR only needs one true side.</aside>
+    </section>
+
+    <!-- SLIDE 6 · VIDEO: IF STATEMENTS -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:6:0"
+      data-activity-options='{"sourceUrl":"https://youtu.be/0oG3Wck2fRU"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">If Statements</h2>
+        <p style="font-size:var(--small);margin-bottom:var(--gap);">A short Code.org video about how an if statement runs code only when its condition is true.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(177,151,252,0.07),transparent 70%);"></div>
+      <aside class="notes">Code.org, "CSP: Conditionals pt 2A - if statements." Next, students investigate the first version of Lemon Squeeze.</aside>
+    </section>
+
+    <!-- SLIDE 7 · LEMON SQUEEZE PART 1 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Lemon Squeeze Pt 1 &middot; Level 2</span>
+        <h2>Investigate the Lemon Squeeze App</h2>
+        <div class="split split-top" style="grid-template-columns:1fr 470px;">
+          <div class="steps steps-lg">
+            <p><span class="step-n">1</span><i class="a">Open Level 2</i> and play the game at least once.</p>
+            <p><span class="step-n">2</span>Your teacher will assign your pair <i class="c">one</i> code section.</p>
+            <p><span class="step-n">3</span><i class="a">Read the code</i> in your section carefully. Make sure you understand how each line works.</p>
+          </div>
+          <div class="sections">
+            <div class="sec"><span class="sec-n">Section 1</span><span class="sec-l">lines 1 to 13</span><span class="sec-d">variables and the play button</span></div>
+            <div class="sec"><span class="sec-n">Section 2</span><span class="sec-l">lines 16 to 30</span><span class="sec-d">touching a lemon</span></div>
+            <div class="sec"><span class="sec-n">Section 3</span><span class="sec-l">lines 33 to 53</span><span class="sec-d">touching a lime</span></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Form pairs and assign each pair a section, spreading the pairs so each section has about a third of the class. Students stay on Level 2 for the next three slides.</aside>
+    </section>
+
+    <!-- SLIDE 8 · LEMON SQUEEZE PART 1: DISCUSS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Lemon Squeeze Pt 1 &middot; Level 2</span>
+        <h2>Share Your Section</h2>
+        <p class="lead lead-lg">Find partners from the <i class="c">two other sections</i>. Take turns, and make sure every section gets explained.</p>
+        <div class="steps steps-lg" style="margin-top:var(--gap);">
+          <p class="fragment fade-up" data-fragment-index="0"><span class="step-n">1</span><i class="a">Explain</i> what your section does.</p>
+          <p class="fragment fade-up" data-fragment-index="1"><span class="step-n">2</span><i class="a">Call out</i> any lines of code you thought were interesting or confusing.</p>
+          <p class="fragment fade-up" data-fragment-index="2"><span class="step-n">3</span><i class="a">Ask good questions</i> about how their sections work, such as &ldquo;I don&rsquo;t understand this line,&rdquo; &ldquo;What does this command do?&rdquo; or &ldquo;Could your section have been written another way?&rdquo;</p>
+        </div>
+      </div>
+      <aside class="notes">Listen for Section 3 groups noticing the if statement that ends the game. That sets up the modify task.</aside>
+    </section>
+
+    <!-- SLIDE 9 · LEMON SQUEEZE PART 1: MODIFY -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Lemon Squeeze Pt 1 &middot; Level 2</span>
+        <h2>Fix the Game Over Check</h2>
+        <p class="lead lead-lg">Right now the game <i class="a">keeps going</i> when the player has 0 lives. <i class="a">Fix this problem.</i></p>
+        <div class="callout accent-amber fragment fade-up" style="margin-top:var(--gap-lg);max-width:1100px;">
+          <h3>Hint</h3>
+          <p>Look at the if statement at the end of the lime event handler. Read its condition aloud with <i class="n">lives</i> = <i class="v">0</i>. Does it evaluate to <i class="b">true</i>?</p>
+        </div>
+      </div>
+      <aside class="notes">The starter code has if (lives &lt; 0), so with 0 lives the condition 0 &lt; 0 is false and the game continues. Fix: lives &lt;= 0 (or lives == 0). This is the boundary idea from 4.5 in real code.</aside>
+    </section>
+
+    <!-- SLIDE 10 · VIDEO: IF-ELSE STATEMENTS -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:10:0"
+      data-activity-options='{"sourceUrl":"https://youtu.be/ZIL_3YRD14s"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">If-Else Statements</h2>
+        <p style="font-size:var(--small);margin-bottom:var(--gap);">A short Code.org video about if-else statements, which choose between two blocks of code.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(177,151,252,0.07),transparent 70%);"></div>
+      <aside class="notes">Code.org, "CSP: Conditionals pt 2B - if/else statements."</aside>
+    </section>
+
+    <!-- SLIDE 11 · LEMON SQUEEZE PART 2 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Lemon Squeeze Pt 2 &middot; Level 3</span>
+        <h2>A New Operator</h2>
+        <p class="lead lead-lg"><i class="a">Open Level 3</i> and play the game at least once. Notice what is different about the <i class="c">end game screen</i>.</p>
+        <div style="margin-top:var(--gap);"><img class="code-img img-zoomable " src="media/mod-even-odd-blocks.png" alt="// the MOD operator &quot;%&quot; - divides two numbers and returns the remainder
+// in this case - if a number divide by two has a remainder of zero, it&#x27;s an even number
+if (score % 2 == 0) {
+  setText(&quot;evenOddLabel&quot;, &quot;You collected an EVEN number of lemons.&quot;);
+} else {
+  setText(&quot;evenOddLabel&quot;, &quot;You collected an ODD number of lemons.&quot;);
+}" style="width:1296px;"></div>
+        <p class="fragment fade-up" data-fragment-index="0" style="margin-top:var(--gap);">With a partner, discuss how you think the <i class="c">MOD operator</i> <i class="o">%</i> works. This code is on lines 53 to 59, though your line numbers might be a little different.</p>
+      </div>
+      <aside class="notes">Let pairs guess before explaining. Many will notice the comment. The next slides define MOD and practice it.</aside>
+    </section>
+
+    <!-- SLIDE 12 · THE MOD OPERATOR -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">If-Else and MOD</span>
+        <h2>The MOD Operator</h2>
+        <p class="lead lead-lg">The <i class="c">MOD operator</i> <i class="o">%</i> gives the <i class="a">remainder</i> that is left over after one number is divided by another.</p>
+        <div class="big-eval" style="margin-top:var(--gap-lg);"><span class="rexpr"><span class="tk-num">3</span> <span class="tk-op">%</span> <span class="tk-num">2</span></span></div>
+        <p class="fragment fade-up" data-fragment-index="0" style="margin-top:var(--gap);font-size:30px;">2 goes into 3 <i class="c">one time</i>, with <i class="a">1 left over</i>.</p>
+        <div class="big-eval fragment fade-up" data-fragment-index="1" style="margin-top:var(--gap);"><span class="rexpr"><span class="tk-num">3</span> <span class="tk-op">%</span> <span class="tk-num">2</span></span><span class="eval-arrow">evaluates to</span><span class="rexpr"><span class="tk-num">1</span></span></div>
+      </div>
+      <aside class="notes">Read % as "mod." The answer is the remainder, not the quotient: 3 / 2 is 1 remainder 1, and the 1 left over is the answer.</aside>
+    </section>
+
+    <!-- SLIDE 13 · MOD PRACTICE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">If-Else and MOD</span>
+        <h2>Practice With MOD</h2>
+        <div class="split" style="grid-template-columns:1fr 1fr;align-items:center;">
+          <div>
+            <div class="big-eval"><span class="rexpr"><span class="tk-num">17</span> <span class="tk-op">%</span> <span class="tk-num">5</span></span></div>
+            <p class="fragment fade-up" data-fragment-index="0" style="margin-top:var(--gap);font-size:30px;">Divide 17 by 5 the way you would on paper.</p>
+            <div class="big-eval fragment fade-up" data-fragment-index="5" style="margin-top:var(--gap-lg);"><span class="rexpr"><span class="tk-num">17</span> <span class="tk-op">%</span> <span class="tk-num">5</span></span><span class="eval-arrow">evaluates to</span><span class="rexpr"><span class="tk-num">2</span></span></div>
+          </div>
+          <div class="ldiv">
+          <span class="ld-q"><span class="ld-qn fragment" data-fragment-index="1">3<span class="ld-r fragment" data-fragment-index="4">&nbsp;r&nbsp;2</span></span></span>
+          <span class="ld-note fragment" data-fragment-index="4">&larr; <b>2</b> is the answer</span>
+          <span class="ld-div">5</span><span class="ld-num">17</span>
+          <span class="ld-sub fragment" data-fragment-index="2">&minus;15</span>
+          <span class="ld-rem fragment" data-fragment-index="3">2</span>
+        </div>
+        </div>
+      </div>
+      <aside class="notes">5 goes into 17 three times (15), with 2 left over, so 17 / 5 is 3 r 2. The 3 is the quotient and does not matter for MOD; the remainder 2 is the answer.</aside>
+    </section>
+
+    <!-- SLIDE 14 · MOD CHECK -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:14:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does `14 % 4` evaluate to?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"`3`","isCorrect":false},{"id":"q1b","text":"`3.5`","isCorrect":false},{"id":"q1c","text":"`2`","isCorrect":true},{"id":"q1d","text":"`0`","isCorrect":false}]}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Check In</span>
+        <p class="prompt-big">What does <span class="nw"><span class="tk-num">14</span> <span class="tk-op">%</span> <span class="tk-num">4</span></span> evaluate to?</p>
+      </div>
+      <aside class="notes">4 goes into 14 three times (12) with 2 left over, so 14 % 4 is 2. Students who answer 3 gave the quotient; 3.5 is plain division.</aside>
+    </section>
+
+    <!-- SLIDE 15 · WHEN IS MOD USEFUL -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">If-Else and MOD</span>
+        <h2>When Is MOD Useful?</h2>
+        <div class="steps steps-lg">
+          <p class="fragment fade-up" data-fragment-index="0"><span class="step-n">1</span>Deciding if a number is <i class="c">even or odd</i>. If you divide a number by 2 and there is no remainder, the number is even: <span class="nw"><span class="tk-nm">score</span> <span class="tk-op">%</span> <span class="tk-num">2</span> <span class="tk-op">==</span> <span class="tk-num">0</span></span>.</p>
+          <p class="fragment fade-up" data-fragment-index="1"><span class="step-n">2</span>Checking whether one number is <i class="c">divisible</i> by another: <span class="nw"><span class="tk-nm">lemons</span> <span class="tk-op">%</span> <span class="tk-num">5</span> <span class="tk-op">==</span> <span class="tk-num">0</span></span> is <i class="b">true</i> for 5, 10, 15, and so on.</p>
+          <p class="fragment fade-up" data-fragment-index="2"><span class="step-n">3</span>Doing something <i class="c">every n times</i>, like every third click: <span class="nw"><span class="tk-nm">clicks</span> <span class="tk-op">%</span> <span class="tk-num">3</span> <span class="tk-op">==</span> <span class="tk-num">0</span></span>.</p>
+        </div>
+      </div>
+      <aside class="notes">The second example sets up the Level 3 modify task on the next slide.</aside>
+    </section>
+
+    <!-- SLIDE 16 · LEMON SQUEEZE PART 2: MODIFY -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Lemon Squeeze Pt 2 &middot; Level 3</span>
+        <h2>Lemon Juice by the Cup</h2>
+        <p class="lead lead-lg">It takes <i class="c">5 lemons</i> to make 1 cup of lemon juice. Instead of telling the user whether they collected an even or odd number of lemons, <i class="a">modify the program</i> to tell them:</p>
+        <div class="steps steps-lg" style="margin-top:var(--gap);">
+          <p><span class="step-n">1</span>&ldquo;You collected enough lemons for an EXACT number of cups of lemon juice&rdquo; if they collected a <i class="c">multiple of 5</i>.</p>
+          <p><span class="step-n">2</span>&ldquo;The amount of lemons you collected does NOT make an exact number of cups of lemon juice&rdquo; if they did not.</p>
+        </div>
+      </div>
+      <aside class="notes">Change score % 2 == 0 to score % 5 == 0 and update both messages.</aside>
+    </section>
+
+    <!-- SLIDE 17 · VIDEO: IF-ELSE-IF STATEMENTS -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:17:0"
+      data-activity-options='{"sourceUrl":"https://youtu.be/aFssCTE5hs8"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">If-Else-If Statements</h2>
+        <p style="font-size:var(--small);margin-bottom:var(--gap);">A short Code.org video about if-else-if statements, which check several conditions in order.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(177,151,252,0.07),transparent 70%);"></div>
+      <aside class="notes">Code.org, "CSP: Conditionals pt 2C - if/else if statements."</aside>
+    </section>
+
+    <!-- SLIDE 18 · LEMON SQUEEZE PART 3 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Lemon Squeeze Pt 3 &middot; Level 4</span>
+        <h2>What Changed?</h2>
+        <div class="steps steps-lg">
+          <p><span class="step-n">1</span><i class="a">Open Level 4</i> and play the game at least once.</p>
+          <p><span class="step-n">2</span>Discuss with a partner what has <i class="c">changed</i> in how the game works.</p>
+          <p><span class="step-n">3</span><i class="a">Find the if-else-if statement</i> that was added to the program.</p>
+        </div>
+      </div>
+      <aside class="notes">The lemon shrinks as the score goes up. The if-else-if is inside the lemon mouseover event handler.</aside>
+    </section>
+
+    <!-- SLIDE 19 · LEMON SIZE FLOWCHART -->
+    <section
+      id="fcb-lemon" data-fcb>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Lemon Squeeze Pt 3 &middot; Level 4</span>
+        <h2>Flowchart the Lemon Size</h2>
+        <p class="lead">Use the code in Level 4 to build a flowchart for the <i class="c">if-else-if</i> statement that sets the lemon&rsquo;s size.</p>
+        <div class="fcb fcb-left" data-fcb-root data-prevent-swipe data-fcb-total="5" style="grid-template-columns:300px 1fr;"><div class="fcb-panel"><div class="fcb-status"><span class="badge" data-fcb-score>0 of 5 correct</span><span class="badge badge-amber" data-fcb-attempts>0 attempts</span><span class="fcb-complete" data-fcb-complete hidden>Flowchart complete!</span><button type="button" class="fcb-reset" data-fcb-reset>Start over</button></div><p class="fcb-help">Drag a card to the spot where it belongs, or click a card and then click the spot.</p><div class="fcb-bank" data-fcb-bank><button type="button" class="fcb-chip" data-chip="s10"><span class="fcb-in"><span class="tk-nm">score</span> <span class="tk-op">&gt;</span> <span class="tk-num">10</span></span></button><button type="button" class="fcb-chip" data-chip="s5"><span class="fcb-in"><span class="tk-nm">score</span> <span class="tk-op">&gt;</span> <span class="tk-num">5</span></span></button><button type="button" class="fcb-chip" data-chip="s15"><span class="fcb-in"><span class="tk-nm">score</span> <span class="tk-op">&gt;</span> <span class="tk-num">15</span></span></button><button type="button" class="fcb-chip" data-chip="s5x"><span class="fcb-in"><span class="tk-nm">score</span> <span class="tk-op">&lt;</span> <span class="tk-num">5</span></span></button><button type="button" class="fcb-chip" data-chip="big60"><span class="fcb-in">Lemon size <b>60</b> by <b>60</b></span></button><button type="button" class="fcb-chip" data-chip="big100"><span class="fcb-in">Lemon size <b>100</b> by <b>100</b></span></button><button type="button" class="fcb-chip" data-chip="big140"><span class="fcb-in">Lemon size <b>140</b> by <b>140</b></span></button><button type="button" class="fcb-chip" data-chip="big20"><span class="fcb-in">Lemon size <b>20</b> by <b>20</b></span></button></div></div><div class="fc-wrap" role="img" aria-label="If-else-if flowchart for the lemon size with empty slots" style="width:943.92px;height:565.44px;"><div class="fc" style="width:828px;height:496px;transform:scale(1.14);"><svg width="828" height="496" viewBox="0 0 828 496" aria-hidden="true"><polygon class="shape" points="230,12 440,78 230,144 20,78"/><line class="arrow" x1="440" y1="78" x2="508" y2="78"/><polygon class="arrow-head" points="504,68 504,88 520,78"/><line class="arrow" x1="230" y1="144" x2="230" y2="196"/><polygon class="arrow-head" points="220,192 240,192 230,208"/><polygon class="shape" points="230,208 440,274 230,340 20,274"/><line class="arrow" x1="440" y1="274" x2="508" y2="274"/><polygon class="arrow-head" points="504,264 504,284 520,274"/><line class="arrow" x1="230" y1="340" x2="230" y2="392"/><polygon class="arrow-head" points="220,388 240,388 230,404"/></svg><div class="fc-pill c" style="left:480px;top:78px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:230px;top:176px;"><span class="chip f sm">false</span></div><button type="button" class="fcb-slot fcb-cond" data-accept="s10" style="left:99px;top:42px;width:262px;height:72px;" aria-label="Empty condition slot"><span class="fcb-ph">?</span></button><button type="button" class="fcb-slot fcb-out" data-accept="big60" style="left:520px;top:36px;width:300px;height:84px;" aria-label="Empty outcome slot"><span class="fcb-ph">?</span></button><div class="fc-pill c" style="left:480px;top:274px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:230px;top:372px;"><span class="chip f sm">false</span></div><button type="button" class="fcb-slot fcb-cond" data-accept="s5" style="left:99px;top:238px;width:262px;height:72px;" aria-label="Empty condition slot"><span class="fcb-ph">?</span></button><button type="button" class="fcb-slot fcb-out" data-accept="big100" style="left:520px;top:232px;width:300px;height:84px;" aria-label="Empty outcome slot"><span class="fcb-ph">?</span></button><button type="button" class="fcb-slot fcb-out" data-accept="big140" style="left:80px;top:404px;width:300px;height:84px;" aria-label="Empty outcome slot"><span class="fcb-ph">?</span></button></div></div></div>
+      </div>
+      <div class="match-perfect-overlay" data-fcb-overlay aria-hidden="true">
+        <div class="match-perfect-badge">
+          <span class="match-perfect-check">&#10003;</span>
+          <span class="match-perfect-text">Perfect Flowchart!</span>
+          <span class="match-perfect-hint">Every card on the first try. Click to see your flowchart</span>
+        </div>
+      </div>
+      <aside class="notes">Students build this on their own device from the Level 4 code: if (score &gt; 10) makes the lemon 60 by 60, else if (score &gt; 5) makes it 100 by 100, and else makes it 140 by 140. Point out the chain: each false branch leads to the next check, and the final else catches everything left. The distractors (score &gt; 15, score &lt; 5, 20 by 20) are not in this version of the code.</aside>
+    </section>
+
+    <!-- SLIDE 20 · LEMON SQUEEZE PART 3: MODIFY -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Lemon Squeeze Pt 3 &middot; Level 4</span>
+        <h2>Make the Lemon Even Smaller</h2>
+        <p class="lead lead-lg"><i class="a">Modify the program</i> so that the lemon becomes <i class="c">even smaller</i> when the user has more than 15 points.</p>
+        <p class="fragment fade-up" data-fragment-index="0" style="margin-top:var(--gap);">Use the <i class="a">+</i> button at the bottom of the if-else-if block to add another branch. Then think carefully: <i class="c">where</i> in the chain does the new check need to go?</p>
+      </div>
+      <aside class="notes">The new branch must come first: if (score &gt; 15) before score &gt; 10. If students add it at the end, it never runs, because any score over 15 is also over 10 and matches the first branch. This previews "most specific case first" at the end of the lesson.</aside>
+    </section>
+
+    <!-- SLIDE 21 · VIDEO: AND AND OR -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:21:0"
+      data-activity-options='{"sourceUrl":"https://youtu.be/kyFdniI-ZZs"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">AND and OR Operators</h2>
+        <p style="font-size:var(--small);margin-bottom:var(--gap);">A short Code.org video about using the logical operators AND and OR inside conditionals.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <div class="glow" style="width:550px;height:550px;left:-120px;top:-120px;background:radial-gradient(circle,rgba(177,151,252,0.07),transparent 70%);"></div>
+      <aside class="notes">Code.org, "CS Principles: Conditionals - Part 3 And &amp; Or Operators."</aside>
+    </section>
+
+    <!-- SLIDE 22 · LEMON SQUEEZE PART 4 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Lemon Squeeze Pt 4 &middot; Level 5</span>
+        <h2>What Changed This Time?</h2>
+        <div class="steps steps-lg">
+          <p><span class="step-n">1</span><i class="a">Open Level 5</i> and play the game at least once.</p>
+          <p><span class="step-n">2</span>Discuss with a partner what has <i class="c">changed</i> in how the game works.</p>
+          <p><span class="step-n">3</span><i class="a">Find the if-else-if statement</i> that was added. This one uses <i class="c">logical operators</i>.</p>
+        </div>
+      </div>
+      <aside class="notes">The game now has a login screen. The new if-else-if is in the play button event handler and checks the username AND the password together.</aside>
+    </section>
+
+    <!-- SLIDE 23 · LOGIN FLOWCHART -->
+    <section
+      id="fcb-login" data-fcb>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Lemon Squeeze Pt 4 &middot; Level 5</span>
+        <h2>Flowchart the Login Check</h2>
+        <p class="lead">Use the code in Level 5 to build a flowchart for the <i class="c">if-else-if</i> statement that checks the login.</p>
+        <div class="fcb fcb-left" data-fcb-root data-prevent-swipe data-fcb-total="5" style="grid-template-columns:390px 1fr;"><div class="fcb-panel"><div class="fcb-status"><span class="badge" data-fcb-score>0 of 5 correct</span><span class="badge badge-amber" data-fcb-attempts>0 attempts</span><span class="fcb-complete" data-fcb-complete hidden>Flowchart complete!</span><button type="button" class="fcb-reset" data-fcb-reset>Start over</button></div><p class="fcb-help">Drag a card to the spot where it belongs, or click a card and then click the spot.</p><div class="fcb-bank" data-fcb-bank><button type="button" class="fcb-chip" data-chip="lh"><span class="fcb-in"><span class="lc"><span class="tk-op">(</span><span class="tk-nm">userName</span> <span class="tk-op">==</span> <span class="tk-str">"Lemonhead"</span><span class="tk-op">)</span> <span class="tk-op">&amp;&amp;</span></span><span class="lc"><span class="tk-op">(</span><span class="tk-nm">password</span> <span class="tk-op">==</span> <span class="tk-str">"lemon123"</span><span class="tk-op">)</span></span></span></button><button type="button" class="fcb-chip" data-chip="my"><span class="fcb-in"><span class="lc"><span class="tk-op">(</span><span class="tk-nm">userName</span> <span class="tk-op">==</span> <span class="tk-str">"Mellow Yellow"</span><span class="tk-op">)</span> <span class="tk-op">&amp;&amp;</span></span><span class="lc"><span class="tk-op">(</span><span class="tk-nm">password</span> <span class="tk-op">==</span> <span class="tk-str">"iLoveLemons"</span><span class="tk-op">)</span></span></span></button><button type="button" class="fcb-chip" data-chip="lhx"><span class="fcb-in"><span class="lc"><span class="tk-op">(</span><span class="tk-nm">userName</span> <span class="tk-op">==</span> <span class="tk-str">"Lemonhead"</span><span class="tk-op">)</span> <span class="tk-op">||</span></span><span class="lc"><span class="tk-op">(</span><span class="tk-nm">password</span> <span class="tk-op">==</span> <span class="tk-str">"lemon123"</span><span class="tk-op">)</span></span></span></button><button type="button" class="fcb-chip" data-chip="game"><span class="fcb-in">Go to the game screen</span></button><button type="button" class="fcb-chip" data-chip="game"><span class="fcb-in">Go to the game screen</span></button><button type="button" class="fcb-chip" data-chip="err"><span class="fcb-in">Play the error sound</span></button><button type="button" class="fcb-chip" data-chip="start"><span class="fcb-in">Go back to the start screen</span></button></div></div><div class="fc-wrap" role="img" aria-label="If-else-if flowchart for the login with empty slots" style="width:859.56px;height:494.16px;"><div class="fc" style="width:988px;height:568px;transform:scale(0.87);"><svg width="988" height="568" viewBox="0 0 988 568" aria-hidden="true"><polygon class="shape" points="300,12 590,96 300,180 10,96"/><line class="arrow" x1="590" y1="96" x2="678" y2="96"/><polygon class="arrow-head" points="674,86 674,106 690,96"/><line class="arrow" x1="300" y1="180" x2="300" y2="226"/><polygon class="arrow-head" points="290,222 310,222 300,238"/><polygon class="shape" points="300,238 590,322 300,406 10,322"/><line class="arrow" x1="590" y1="322" x2="678" y2="322"/><polygon class="arrow-head" points="674,312 674,332 690,322"/><line class="arrow" x1="300" y1="406" x2="300" y2="458"/><polygon class="arrow-head" points="290,454 310,454 300,470"/></svg><div class="fc-pill c" style="left:640px;top:96px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:300px;top:209px;"><span class="chip f sm">false</span></div><button type="button" class="fcb-slot fcb-cond" data-accept="lh" style="left:100px;top:50px;width:400px;height:92px;" aria-label="Empty condition slot"><span class="fcb-ph">?</span></button><button type="button" class="fcb-slot fcb-out" data-accept="game" style="left:690px;top:51px;width:290px;height:90px;" aria-label="Empty outcome slot"><span class="fcb-ph">?</span></button><div class="fc-pill c" style="left:640px;top:322px;"><span class="chip t sm">true</span></div><div class="fc-pill c" style="left:300px;top:438px;"><span class="chip f sm">false</span></div><button type="button" class="fcb-slot fcb-cond" data-accept="my" style="left:100px;top:276px;width:400px;height:92px;" aria-label="Empty condition slot"><span class="fcb-ph">?</span></button><button type="button" class="fcb-slot fcb-out" data-accept="game" style="left:690px;top:277px;width:290px;height:90px;" aria-label="Empty outcome slot"><span class="fcb-ph">?</span></button><button type="button" class="fcb-slot fcb-out" data-accept="err" style="left:155px;top:470px;width:290px;height:90px;" aria-label="Empty outcome slot"><span class="fcb-ph">?</span></button></div></div></div>
+      </div>
+      <div class="match-perfect-overlay" data-fcb-overlay aria-hidden="true">
+        <div class="match-perfect-badge">
+          <span class="match-perfect-check">&#10003;</span>
+          <span class="match-perfect-text">Perfect Flowchart!</span>
+          <span class="match-perfect-hint">Every card on the first try. Click to see your flowchart</span>
+        </div>
+      </div>
+      <aside class="notes">From the Level 5 code: if the username is "Lemonhead" AND the password is "lemon123", go to the game screen and play the start sound; else if the username is "Mellow Yellow" AND the password is "iLoveLemons", do the same; else play the error sound. The OR distractor would let anyone in who knows just the password. Ask why both conditions use AND.</aside>
+    </section>
+
+    <!-- SLIDE 24 · LEMON SQUEEZE PART 4: MODIFY -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Lemon Squeeze Pt 4 &middot; Level 5</span>
+        <h2>Add Another User</h2>
+        <p class="lead lead-lg"><i class="a">Modify the app</i> to add one more username and password. You will need to edit both the <i class="c">code</i> and the <i class="c">user interface</i>.</p>
+        <div class="callout accent-red" style="margin-top:var(--gap-lg);max-width:1100px;">
+          <h3>Use a fake password</h3>
+          <p>It is never a good idea to put real passwords directly in your code like this. Anyone who can see the code can read them.</p>
+        </div>
+      </div>
+      <aside class="notes">Students add an option to the name dropdown in Design mode and another else if branch in the code. The warning connects to the cybersecurity unit.</aside>
+    </section>
+
+    <!-- SLIDE 25 · CHECKING MULTIPLE CONDITIONS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">If-Else-If</span>
+        <h2>Checking Multiple Conditions With If-Else-If</h2>
+        <div class="split split-top" style="grid-template-columns:460px 1fr;">
+          <div class="img-stack"><img class="code-img img-zoomable " src="media/if-else-if-blocks.png" alt="if (temperature &gt; 100) {
+  console.log(&quot;It&#x27;s dangerously hot&quot;);
+} else if (temperature &gt; 90) {
+  console.log(&quot;It&#x27;s very hot&quot;);
+} else if (temperature &gt; 80) {
+  console.log(&quot;It&#x27;s hot&quot;);
+} else if (temperature &gt; 70) {
+  console.log(&quot;It&#x27;s warm&quot;);
+} else {
+  console.log(&quot;It&#x27;s cool&quot;);
+}" style="width:460px;"><img class="code-img img-zoomable " src="media/if-else-if-text.png" alt="if (temperature &gt; 100) {
+  console.log(&quot;It&#x27;s dangerously hot&quot;);
+} else if (temperature &gt; 90) {
+  console.log(&quot;It&#x27;s very hot&quot;);
+} else if (temperature &gt; 80) {
+  console.log(&quot;It&#x27;s hot&quot;);
+} else if (temperature &gt; 70) {
+  console.log(&quot;It&#x27;s warm&quot;);
+} else {
+  console.log(&quot;It&#x27;s cool&quot;);
+}" style="width:400px;"></div>
+          <div class="prose">
+            <p>An <i class="c">if-else-if</i> statement checks its conditions <i class="a">in order</i>, from top to bottom.</p>
+            <p class="fragment fade-up" data-fragment-index="0">The <i class="c">first</i> condition that evaluates to <i class="b">true</i> runs its code, and the rest of the chain is <i class="a">skipped</i>.</p>
+            <p class="fragment fade-up" data-fragment-index="1">If none of the conditions are true, the final <i class="tk-kw">else</i> runs.</p>
+            <p class="fragment fade-up" data-fragment-index="2">Try <i class="n">temperature</i> = <i class="v">95</i>: <span class="nw"><span class="tk-num">95</span> <span class="tk-op">&gt;</span> <span class="tk-num">100</span></span> is <i class="b">false</i>, then <span class="nw"><span class="tk-num">95</span> <span class="tk-op">&gt;</span> <span class="tk-num">90</span></span> is <i class="b">true</i>, so it prints &ldquo;It&rsquo;s very hot&rdquo; and stops.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">This is the reference version from Code.org Level 6. Have students say aloud which line runs for 95, then for 75, then for 50.</aside>
+    </section>
+
+    <!-- SLIDE 26 · MOST SPECIFIC CASE FIRST -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">If-Else-If</span>
+        <h2>Most Specific Case First</h2>
+        <div class="split split-top" style="grid-template-columns:440px 1fr;">
+          <img class="code-img img-zoomable " src="media/most-specific-wrong-blocks.png" alt="if (temperature &gt; 60) {
+  console.log(&quot;It&#x27;s cool&quot;);
+} else if (temperature &gt; 70) {
+  console.log(&quot;It&#x27;s warm&quot;);
+} else if (temperature &gt; 80) {
+  console.log(&quot;It&#x27;s hot&quot;);
+} else if (temperature &gt; 90) {
+  console.log(&quot;It&#x27;s very hot&quot;);
+} else {
+  console.log(&quot;It&#x27;s dangerously hot&quot;);
+}" style="width:440px;">
+          <div class="prose">
+            <p>What is wrong with this code? <i class="a">Trace it</i> with different temperatures.</p>
+            <p class="fragment fade-up" data-fragment-index="0">Try <i class="v">95</i>: <span class="nw"><span class="tk-num">95</span> <span class="tk-op">&gt;</span> <span class="tk-num">60</span></span> is <i class="b">true</i>, so it prints &ldquo;It&rsquo;s cool&rdquo; and skips everything else.</p>
+            <p class="fragment fade-up" data-fragment-index="1">Any temperature over 60 stops at the <i class="c">first</i> branch. The other branches can only run for temperatures that are <i class="c">60 or lower</i>, and then none of their conditions are true either.</p>
+            <p class="fragment fade-up" data-fragment-index="2">Put the <i class="a">most specific case first</i>: check the narrowest condition, like <span class="nw"><span class="tk-nm">temperature</span> <span class="tk-op">&gt;</span> <span class="tk-num">100</span></span>, before the broader ones.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">For 50, every condition is false, so it prints "It&#39;s dangerously hot," which is also wrong. Every branch except the first and the else is unreachable. This is the same mistake students could make in the Level 4 modify task.</aside>
+    </section>
+
+    <!-- SLIDE 27 · TRACE THE WRONG ORDER -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:27:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Using the code below, what does the program print when `temperature` is `85`?\n\n```javascript\nif (temperature > 60) {\n  console.log(\"It&#39;s cool\");\n} else if (temperature > 70) {\n  console.log(\"It&#39;s warm\");\n} else if (temperature > 80) {\n  console.log(\"It&#39;s hot\");\n} else {\n  console.log(\"It&#39;s very hot\");\n}\n```","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"It&#39;s hot","isCorrect":false},{"id":"q1b","text":"It&#39;s warm","isCorrect":false},{"id":"q1c","text":"It&#39;s very hot","isCorrect":false},{"id":"q1d","text":"It&#39;s cool","isCorrect":true}]}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Check In</span>
+        <p class="prompt-big">What does the out-of-order code print when <i class="n">temperature</i> is <i class="v">85</i>?</p>
+      </div>
+      <aside class="notes">85 &gt; 60 is true, so the first branch runs and prints "It&#39;s cool." Students who answer "It&#39;s hot" are reading the code as if it picked the best match instead of the first true condition.</aside>
+    </section>
+
+    <!-- SLIDE 28 · COMPARE THE CONDITIONALS -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:28:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What is the difference between an if statement, an if-else statement, and an if-else-if statement? How are they similar?","order":0,"responseTimeLimitMs":180000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Reflect</span>
+        <p class="prompt-big">What is the difference between an <i class="c">if</i> statement, an <i class="c">if-else</i> statement, and an <i class="c">if-else-if</i> statement? How are they similar?</p>
+      </div>
+      <aside class="notes">Listen for: an if runs code only when its condition is true; an if-else always runs exactly one of two blocks; an if-else-if checks several conditions in order and runs the first true one (or the else). All three use Boolean expressions to choose which code runs.</aside>
+    </section>
+
+    <!-- SLIDE 29 · VOCABULARY MATCH -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Wrap Up</span>
+        <h2>Vocabulary Match</h2>
+        <p style="font-size:var(--small);color:var(--text-dim);max-width:1250px;margin-bottom:var(--gap);">Click two cards to test whether they match. Each term has one definition somewhere on the board.</p>
+        <div class="match-wrap" id="match-vocab">
+          <div class="match-status">
+            <span class="badge" data-match-score>0 of 8 matched</span>
+            <span class="badge badge-amber" data-match-attempts>0 attempts</span>
+            <span class="match-complete" data-match-complete style="display:none;">Nicely done! You matched every pair.</span>
+          </div>
+          <div class="match-grid" data-match-grid></div>
+        </div>
+      </div>
+      <div class="match-perfect-overlay" data-match-overlay aria-hidden="true">
+        <div class="match-perfect-badge">
+          <span class="match-perfect-check">&#10003;</span>
+          <span class="match-perfect-text">Perfect Match!</span>
+          <span class="match-perfect-hint">Click to keep browsing the board</span>
+        </div>
+      </div>
+      <aside class="notes">Terms come from 4.1 through 4.6 and the Code.org Unit 4 vocabulary list. The board reshuffles the first time each student opens it.</aside>
+    </section>
+
+    <!-- SLIDE 30 · EXIT TICKET -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:30:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What does it mean to put the most specific case first in an if-else-if statement? Why is it important, and what kinds of errors does it help avoid?","order":0,"responseTimeLimitMs":240000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Exit Ticket</span>
+        <p class="prompt-big">What does it mean to put the <i class="a">most specific case first</i> in an if-else-if statement? Why is it important, and what kinds of errors does it help avoid?</p>
+      </div>
+      <aside class="notes">This is the Code.org Lesson 6 check for understanding. Strong answers explain that an if-else-if stops at the first true condition, so a broad condition placed first "catches" values meant for later branches and those branches never run.</aside>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-4-6-conditionals-investigate',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+    /* ── Flowchart builders (slides 2, 19, 23) ──────────────────────
+       Each section[data-fcb] holds a flowchart stage with .fcb-slot
+       buttons (data-accept: comma-separated chip values) and a bank of
+       .fcb-chip buttons (data-chip). Click a chip, then a slot, or drag
+       a chip onto a slot. A correct chip fills the slot; a wrong one
+       shakes it. "Start over" clears the board and reshuffles the bank.
+       Engine documented in .agent/knowledge/html5-activities-index.md.
+       ─────────────────────────────────────────────────────────────── */
+    function shuffleChildren(host) {
+      var kids = Array.prototype.slice.call(host.children);
+      for (var i = kids.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = kids[i]; kids[i] = kids[j]; kids[j] = t;
+      }
+      kids.forEach(function(k) { host.appendChild(k); });
+    }
+
+    function initFlowchartBuilder(section) {
+      var root = section.querySelector('[data-fcb-root]');
+      if (!root) return;
+      var bankEl = root.querySelector('[data-fcb-bank]');
+      var slots = Array.prototype.slice.call(root.querySelectorAll('.fcb-slot'));
+      var chips = Array.prototype.slice.call(root.querySelectorAll('.fcb-chip'));
+      var scoreEl = root.querySelector('[data-fcb-score]');
+      var attemptsEl = root.querySelector('[data-fcb-attempts]');
+      var completeEl = root.querySelector('[data-fcb-complete]');
+      var overlayEl = section.querySelector('[data-fcb-overlay]');
+      var total = slots.length;
+      var placed = 0, attempts = 0, misses = 0, selected = null, dragged = null;
+      /* Anti-cheat, like the matching game: attempts and misses persist in
+         sessionStorage, so reloading or Start over never resets them and a
+         board with any miss can't earn "Perfect". A new tab clears it. */
+      var STORE_KEY = 'csp-4-6-conditionals-investigate:fcb:' + section.id;
+      function save() {
+        try {
+          sessionStorage.setItem(STORE_KEY, JSON.stringify({
+            attempts: attempts, misses: misses,
+            filled: slots.map(function(sl) { return sl.dataset.chipIdx || null; }),
+          }));
+        } catch (e) { /* storage unavailable: activity still works, just won't persist */ }
+      }
+      function load() {
+        try { return JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; }
+      }
+      if (overlayEl) overlayEl.addEventListener('click', function() { overlayEl.classList.remove('visible'); });
+
+      function status(justFinished) {
+        var done = placed === total;
+        /* "Perfect" means every card went in on the first try, like the matching game. */
+        var perfect = done && misses === 0;
+        scoreEl.textContent = placed + ' of ' + total + ' correct';
+        attemptsEl.textContent = attempts + (attempts === 1 ? ' attempt' : ' attempts');
+        attemptsEl.classList.toggle('badge-amber', !perfect);
+        attemptsEl.classList.toggle('badge-pulse-complete', perfect);
+        completeEl.hidden = !done;
+        completeEl.textContent = perfect ? 'Perfect! Every card on the first try.'
+          : 'Flowchart complete! ' + misses + (misses === 1 ? ' wrong try' : ' wrong tries') + ' along the way.';
+        if (overlayEl) overlayEl.classList.toggle('visible', perfect && !!justFinished);
+        if (!done && overlayEl) overlayEl.classList.remove('visible');
+      }
+
+      function fill(slot, chip) {
+        slot.innerHTML = chip.innerHTML;
+        slot.classList.add('filled');
+        slot.dataset.chipIdx = String(chips.indexOf(chip));
+        slot.setAttribute('aria-label', 'Correct: ' + chip.textContent);
+        chip.classList.add('used');
+        placed++;
+      }
+
+      /* brief red cross on a rejected drop; correct cards just fill the slot */
+      function missBadge(slot) {
+        var b = document.createElement('span');
+        b.className = 'mc-badge fcb-x';
+        b.setAttribute('aria-hidden', 'true');
+        b.textContent = '\u2717';
+        slot.appendChild(b);
+        setTimeout(function() { if (b.parentNode) b.parentNode.removeChild(b); }, 650);
+      }
+
+      function select(chip) {
+        if (selected) selected.classList.remove('selected');
+        selected = (chip && chip !== selected) ? chip : null;
+        if (selected) selected.classList.add('selected');
+      }
+
+      function place(chip, slot) {
+        if (!chip || slot.classList.contains('filled') || chip.classList.contains('used')) return;
+        attempts++;
+        var accept = slot.dataset.accept.split(',');
+        if (accept.indexOf(chip.dataset.chip) !== -1) {
+          fill(slot, chip);
+        } else {
+          misses++;
+          slot.classList.remove('wrong');
+          void slot.offsetWidth;
+          slot.classList.add('wrong');
+          missBadge(slot);
+          setTimeout(function() { slot.classList.remove('wrong'); }, 420);
+        }
+        select(null);
+        save();
+        status(placed === total);
+      }
+
+      /* Pointer-based dragging (mouse, pen, and touch). HTML5 drag-and-drop
+         is avoided: buttons are not draggable in every browser, touch never
+         fires it, and Reveal's swipe navigation would claim the gesture. */
+      var suppressClick = false;
+      function slotAt(x, y) {
+        var el = document.elementFromPoint(x, y);
+        var slot = el && el.closest ? el.closest('.fcb-slot') : null;
+        return slot && root.contains(slot) ? slot : null;
+      }
+      function startDrag(chip, e) {
+        if (chip.classList.contains('used') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+        var startX = e.clientX, startY = e.clientY;
+        var rect = chip.getBoundingClientRect();
+        var offX = e.clientX - rect.left, offY = e.clientY - rect.top;
+        var ghost = null, hover = null;
+        try { chip.setPointerCapture(e.pointerId); } catch (err) {}
+        function move(ev) {
+          ev.stopPropagation();
+          if (!ghost) {
+            if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) < 6) return;
+            ghost = chip.cloneNode(true);
+            ghost.classList.add('fcb-ghost');
+            ghost.style.width = chip.offsetWidth + 'px';
+            ghost.style.transform = 'scale(' + (Reveal.getScale ? Reveal.getScale() : 1) + ')';
+            document.body.appendChild(ghost);
+            chip.classList.add('dragging');
+            select(null);
+          }
+          ghost.style.left = (ev.clientX - offX) + 'px';
+          ghost.style.top = (ev.clientY - offY) + 'px';
+          var over = slotAt(ev.clientX, ev.clientY);
+          if (over !== hover) {
+            if (hover) hover.classList.remove('drag-over');
+            hover = over && !over.classList.contains('filled') ? over : null;
+            if (hover) hover.classList.add('drag-over');
+          }
+        }
+        function end(ev) {
+          ev.stopPropagation();
+          chip.removeEventListener('pointermove', move);
+          chip.removeEventListener('pointerup', end);
+          chip.removeEventListener('pointercancel', end);
+          if (hover) hover.classList.remove('drag-over');
+          if (!ghost) return;
+          ghost.parentNode.removeChild(ghost);
+          chip.classList.remove('dragging');
+          suppressClick = true;
+          var target = ev.type === 'pointerup' ? slotAt(ev.clientX, ev.clientY) : null;
+          if (target) place(chip, target);
+        }
+        chip.addEventListener('pointermove', move);
+        chip.addEventListener('pointerup', end);
+        chip.addEventListener('pointercancel', end);
+      }
+
+      chips.forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          if (suppressClick) { suppressClick = false; return; }
+          select(chip);
+        });
+        chip.addEventListener('pointerdown', function(e) { e.stopPropagation(); startDrag(chip, e); });
+        /* keep Reveal from treating a card drag as a slide swipe */
+        chip.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: true });
+      });
+      slots.forEach(function(slot) {
+        slot.dataset.empty = slot.innerHTML;
+        slot.addEventListener('click', function() { if (selected) place(selected, slot); });
+      });
+
+      function clearBoard() {
+        slots.forEach(function(slot) {
+          slot.innerHTML = slot.dataset.empty;
+          slot.classList.remove('filled', 'wrong');
+          delete slot.dataset.chipIdx;
+        });
+        chips.forEach(function(chip) { chip.classList.remove('used', 'selected'); });
+        placed = 0; selected = null;
+        shuffleChildren(bankEl);
+      }
+      /* Start over clears the board but keeps attempts and misses. */
+      root.querySelector('[data-fcb-reset]').addEventListener('click', function() {
+        clearBoard();
+        save();
+        status(false);
+      });
+      clearBoard();
+      var saved = load();
+      if (saved) {
+        attempts = saved.attempts || 0;
+        misses = saved.misses || 0;
+        (saved.filled || []).forEach(function(idx, i) {
+          if (idx !== null && chips[+idx] && slots[i]) fill(slots[i], chips[+idx]);
+        });
+      }
+      status(false);
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('section[data-fcb]'), function(section) {
+      if (!section.closest('#storyboard')) initFlowchartBuilder(section);
+    });
+
+    var MATCH_PAIRS = [
+      { id: 'selection', term: 'Selection',            def: 'Deciding which parts of an algorithm run based on whether a condition is true or false.' },
+      { id: 'elseif',    term: 'If-Else-If Statement',  def: 'Checks several conditions in order and runs only the code for the first one that is true.' },
+      { id: 'bool',      term: 'Boolean Value',         def: 'A data type that is either true or false.' },
+      { id: 'compare',   term: 'Comparison Operators',  def: '<, >, <=, >=, ==, and !=, which signal a Boolean expression.' },
+      { id: 'logical',   term: 'Logical Operators',     def: 'NOT, AND, and OR (!, &&, ||), which combine or change Boolean values.' },
+      { id: 'expr',      term: 'Expression',            def: 'A combination of operators and values that evaluates to a single value.' },
+      { id: 'variable',  term: 'Variable',              def: 'A reference to a value that can be used repeatedly throughout a program.' },
+      { id: 'mod',       term: 'MOD Operator',          def: 'The % operator, which gives the remainder after dividing one number by another.' },
+    ];
+
+    function getLiveElementById(id) {
+      return Array.prototype.find.call(
+        document.querySelectorAll('#' + id),
+        function(element) { return !element.closest('#storyboard'); }
+      );
+    }
+
+    function shuffled(array) {
+      var copy = array.slice();
+      for (var i = copy.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
+      }
+      return copy;
+    }
+
+    var MATCH_STORAGE_KEY = 'csp-4-6-conditionals-investigate:match-vocab';
+
+    function loadMatchState() {
+      try {
+        var raw = sessionStorage.getItem(MATCH_STORAGE_KEY);
+        if (!raw) return null;
+        var parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.tiles) || parsed.tiles.length !== MATCH_PAIRS.length * 2) return null;
+        /* discard a board saved before the term list changed (stale ids render blank cards) */
+        var ids = MATCH_PAIRS.map(function(p) { return p.id; });
+        var stale = parsed.tiles.some(function(t) { return ids.indexOf(t.id) === -1; });
+        if (stale) return null;
+        return parsed;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function saveMatchState(tiles, attempts) {
+      try {
+        sessionStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify({
+          tiles: tiles.map(function(t) { return { id: t.id, isTerm: t.isTerm, matched: t.matched }; }),
+          attempts: attempts,
+        }));
+      } catch (e) {
+        /* storage unavailable (private mode, quota): activity still works, just won't persist */
+      }
+    }
+
+    function getMatchLabel(id, isTerm) {
+      var pair = MATCH_PAIRS.filter(function(p) { return p.id === id; })[0];
+      return pair ? (isTerm ? pair.term : pair.def) : '';
+    }
+
+    function buildFreshTiles() {
+      var tiles = [];
+      MATCH_PAIRS.forEach(function(pair) {
+        tiles.push({ id: pair.id, isTerm: true, matched: false });
+        tiles.push({ id: pair.id, isTerm: false, matched: false });
+      });
+      return shuffled(tiles);
+    }
+
+    function initMatchingPairs() {
+      var root = getLiveElementById('match-vocab');
+      if (!root) return;
+
+      var gridHost = root.querySelector('[data-match-grid]');
+      var scoreEl = root.querySelector('[data-match-score]');
+      var attemptsEl = root.querySelector('[data-match-attempts]');
+      var completeEl = root.querySelector('[data-match-complete]');
+      var section = root.closest('section');
+      var overlayEl = section ? section.querySelector('[data-match-overlay]') : null;
+      if (overlayEl) {
+        overlayEl.addEventListener('click', function() {
+          overlayEl.classList.remove('visible');
+        });
+      }
+
+      var tiles = [];
+      var matched = 0;
+      var attempts = 0;
+      var selected = null;
+
+      function updateStatus() {
+        scoreEl.textContent = matched + ' of ' + MATCH_PAIRS.length + ' matched';
+        attemptsEl.textContent = attempts + (attempts === 1 ? ' attempt' : ' attempts');
+        var isComplete = matched === MATCH_PAIRS.length;
+        /* "Perfect" means every attempt was a correct match, not just that
+           the board eventually got fully matched after some wrong guesses. */
+        var isPerfect = isComplete && attempts === MATCH_PAIRS.length;
+        completeEl.style.display = isComplete ? 'inline' : 'none';
+        if (overlayEl) overlayEl.classList.toggle('visible', isPerfect);
+        attemptsEl.classList.toggle('badge-amber', !isPerfect);
+        attemptsEl.classList.toggle('badge-pulse-complete', isPerfect);
+      }
+
+      function persist() {
+        saveMatchState(tiles, attempts);
+      }
+
+      function markMatched(card, tile) {
+        tile.matched = true;
+        card.classList.remove('mc-selected');
+        card.classList.add('mc-matched');
+        card.setAttribute('aria-disabled', 'true');
+        var badge = document.createElement('span');
+        badge.className = 'mc-badge';
+        badge.setAttribute('aria-hidden', 'true');
+        badge.textContent = '✓';
+        card.appendChild(badge);
+      }
+
+      function attemptMatch(a, b) {
+        attempts++;
+        var tileA = tiles[a.dataset.idx];
+        var tileB = tiles[b.dataset.idx];
+        if (a.dataset.matchId === b.dataset.matchId) {
+          markMatched(a, tileA);
+          markMatched(b, tileB);
+          matched++;
+        } else {
+          a.classList.add('mc-wrong');
+          b.classList.add('mc-wrong');
+          setTimeout(function() {
+            a.classList.remove('mc-wrong', 'mc-selected');
+            b.classList.remove('mc-wrong', 'mc-selected');
+          }, 400);
+        }
+        selected = null;
+        updateStatus();
+        persist();
+      }
+
+      function makeCard(tile, idx) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'match-card' + (tile.isTerm ? ' match-card-term' : '');
+        btn.dataset.matchId = tile.id;
+        btn.dataset.idx = idx;
+        btn.textContent = getMatchLabel(tile.id, tile.isTerm);
+        if (tile.matched) markMatched(btn, tile);
+        btn.addEventListener('click', function() {
+          if (btn.classList.contains('mc-matched')) return;
+          if (selected === btn) {
+            btn.classList.remove('mc-selected');
+            selected = null;
+            return;
+          }
+          if (selected) {
+            btn.classList.add('mc-selected');
+            attemptMatch(selected, btn);
+          } else {
+            selected = btn;
+            btn.classList.add('mc-selected');
+          }
+        });
+        return btn;
+      }
+
+      function paint() {
+        gridHost.innerHTML = '';
+        selected = null;
+        matched = 0;
+        tiles.forEach(function(tile, idx) {
+          if (tile.matched) matched++;
+          gridHost.appendChild(makeCard(tile, idx));
+        });
+        matched = matched / 2;
+        updateStatus();
+      }
+
+      function renderFresh() {
+        tiles = buildFreshTiles();
+        attempts = 0;
+        paint();
+        persist();
+      }
+
+      function renderFromStorageOrFresh() {
+        var saved = loadMatchState();
+        if (saved) {
+          tiles = saved.tiles;
+          attempts = saved.attempts || 0;
+          paint();
+        } else {
+          renderFresh();
+        }
+      }
+
+      renderFromStorageOrFresh();
+
+      Reveal.on('slidechanged', function(event) {
+        if (event.currentSlide === root.closest('section')) renderFromStorageOrFresh();
+      });
+    }
+
+    initMatchingPairs();
+
+  },
+});
+</script>
+</body>
+</html>
