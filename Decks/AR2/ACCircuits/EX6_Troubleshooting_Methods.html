@@ -234,7 +234,7 @@
 
 /* Reading log */
 .log-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: var(--gap-sm) 0 var(--gap); }
-.log-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 24px; }
+.log-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-family: var(--font-mono); font-size: 24px; }
 .log-table th {
   font-size: var(--small);
   text-transform: uppercase;
@@ -247,8 +247,13 @@
 .log-table.o th { color: var(--ohm); }
 .log-table td { padding: 5px 8px; color: var(--text-muted); border-bottom: 1px solid rgba(57,211,83,0.1); white-space: nowrap; }
 .log-table td.meas { color: var(--text); font-weight: 700; }
+.log-table th:nth-child(1), .log-table td:nth-child(1) { width: 28%; }
+.log-table th:nth-child(2), .log-table td:nth-child(2) { width: 32%; }
+.guess-seg .seg-btn { white-space: nowrap; }
 .sim-feedback {
-  min-height: 84px;
+  height: 228px; /* fixed: sized for the longest explanation so the slide does not jump */
+  box-sizing: border-box;
+  overflow: hidden;
   font-size: var(--small);
   line-height: 1.5;
   color: var(--text-muted);
@@ -608,8 +613,8 @@
   <div class="slide-inner">
     <span class="slide-tag">Troubleshooting · Try It</span>
     <h2>Find the <span class="fault">Fault</span></h2>
-    <p class="slide-intro" style="margin-bottom:var(--gap-sm);max-width:1300px;">A random fault is hidden in this circuit. <span class="step">Observe</span> the lights first, then take measurements and compare each one with its expected value. Try to find the fault with as few measurements as you can.</p>
-    <div class="split split-60 split-top fault-sim">
+    <p class="slide-intro" style="margin-bottom:var(--gap-sm);max-width:1300px;">A random fault is hidden in this circuit. <span class="step">Observe</span> the lights first, then compare measurements with their expected values. Use as few measurements as you can.</p>
+    <div class="split split-top fault-sim" style="grid-template-columns:1fr 1fr;">
 
       <div>
         <svg viewBox="0 0 900 480" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive circuit: a 24 V ac source feeds four indicator lights in series. A hidden fault is in one of the lights or in the source. Probe positions 1 to 4 with the voltmeter, or measure each light with the ohmmeter.">
@@ -689,10 +694,9 @@
         </svg>
 
         <div class="sim-controls">
-          <span class="ctl-label">Meter:</span>
-          <div class="seg" role="group" aria-label="Meter">
+          <div class="seg" role="group" aria-label="Meter" style="white-space:nowrap;">
             <button class="seg-btn" data-mode="volt" aria-pressed="true">Voltmeter (power on)</button>
-            <button class="seg-btn" data-mode="ohm" aria-pressed="false">Ohmmeter (source removed)</button>
+            <button class="seg-btn" data-mode="ohm" aria-pressed="false">Ohmmeter (no power)</button>
           </div>
         </div>
         <div class="sim-controls">
@@ -710,6 +714,7 @@
             <button class="seg-btn" data-probe="o2" aria-pressed="false">&Omega;3</button>
             <button class="seg-btn" data-probe="o3" aria-pressed="false">&Omega;4</button>
           </div>
+          <button class="sim-btn" data-act="new" style="margin-left:auto;">New fault</button>
         </div>
       </div>
 
@@ -734,7 +739,10 @@
             </tbody>
           </table>
         </div>
-        <span class="ctl-label">Which component is faulty?</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <span class="ctl-label">Which component is faulty?</span>
+          <span class="sim-chip">Measurements: <b data-count>0</b></span>
+        </div>
         <div class="seg guess-seg" role="group" aria-label="Faulty component" style="margin-top:8px;">
           <button class="seg-btn" data-guess="0">Light 1</button>
           <button class="seg-btn" data-guess="1">Light 2</button>
@@ -743,10 +751,6 @@
           <button class="seg-btn" data-guess="source">Source</button>
         </div>
         <div class="sim-feedback" data-feedback aria-live="polite"></div>
-        <div class="sim-controls">
-          <button class="sim-btn" data-act="new">New fault</button>
-          <span class="sim-chip">Measurements: <b data-count>0</b></span>
-        </div>
       </div>
 
     </div>
