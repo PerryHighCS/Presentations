@@ -137,10 +137,19 @@
   border-radius: 8px;
   padding: 12px 16px;
   background: var(--bg-card);
-  opacity: 0.7;
 }
-.beyond-stage.done { opacity: 1; }
+.beyond-stage.open { border-color: var(--accent); }
+/* Stage title doubles as the expand/collapse control */
 .beyond-stage-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
   font-family: var(--font-mono);
   font-size: var(--small);
   font-weight: 700;
@@ -148,6 +157,12 @@
   text-transform: uppercase;
   color: var(--accent);
 }
+.beyond-stage-label::after {
+  content: '\25B8'; /* collapsed: right-pointing chevron */
+  font-size: var(--body);
+  line-height: 1;
+}
+.beyond-stage.open .beyond-stage-label::after { content: '\25BE'; } /* expanded: down */
 .beyond-stage-text {
   font-size: var(--body);
   line-height: 1.5;
@@ -155,16 +170,12 @@
   margin-top: 6px;
   display: none;
 }
-.beyond-stage.done .beyond-stage-text { display: block; }
-/* Only the newest revealed stage shows its text; earlier ones collapse to their
-   label so all four stages fit the panel without a hidden scroll area. */
-.beyond-stage.done:has(+ .beyond-stage.done) .beyond-stage-text,
-.beyond-stage.done:has(+ .beyond-stage.done) .beyond-verdict { display: none; }
-.beyond-stage.done:has(+ .beyond-stage.done) { opacity: 0.7; }
-.beyond-stage.done .beyond-stage-text strong { color: var(--text); }
+/* One stage open at a time (accordion) so the longest answer always fits the panel. */
+.beyond-stage.open .beyond-stage-text { display: block; }
+.beyond-stage.open .beyond-stage-text strong { color: var(--text); }
 
 .beyond-verdict { display: none; }
-.beyond-stage.done .beyond-verdict { display: block; }
+.beyond-stage.open .beyond-verdict { display: block; }
 .beyond-verdict-badge {
   display: inline-block;
   font-family: var(--font-mono);
@@ -208,6 +219,13 @@
   cursor: pointer;
 }
 .beyond-btn:hover { background: rgba(57,211,83,0.7); }
+.beyond-btn:disabled { opacity: 0.4; cursor: default; }
+.beyond-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+}
+.beyond-btn--ghost:hover { background: transparent; border-color: var(--accent); }
 
 /* ── PPE category discussion grid ────────────────────────────────── */
 .ppe-cat-grid {
@@ -655,7 +673,7 @@
       <li class="step-item"><span class="step-num">4</span><div class="step-text"><strong>Still Need a Sign?</strong> After that fix, does the original sign become unnecessary, change, or stay exactly as important?</div></li>
     </ol>
     <div class="callout" style="margin-top:var(--gap-lg);max-width:1200px;">
-      There's no single right answer. Argue it out before you click to the next stage.
+      There's no single right answer. Argue it out before you open the next stage.
     </div>
   </div>
 </section>
@@ -676,25 +694,25 @@
       </div>
       <div class="beyond-panel">
         <div class="beyond-stage" data-stage="1">
-          <div class="beyond-stage-label">1 · Signs Needed</div>
+          <button type="button" class="beyond-stage-label" aria-expanded="false">1 · Signs Needed</button>
           <div class="beyond-stage-text"></div>
         </div>
         <div class="beyond-stage" data-stage="2">
-          <div class="beyond-stage-label">2 · Why It Could Fail</div>
+          <button type="button" class="beyond-stage-label" aria-expanded="false">2 · Why It Could Fail</button>
           <div class="beyond-stage-text"></div>
         </div>
         <div class="beyond-stage" data-stage="3">
-          <div class="beyond-stage-label">3 · A Better Fix</div>
+          <button type="button" class="beyond-stage-label" aria-expanded="false">3 · A Better Fix</button>
           <div class="beyond-stage-text"></div>
         </div>
         <div class="beyond-stage" data-stage="4">
-          <div class="beyond-stage-label">4 · Still Need a Sign?</div>
+          <button type="button" class="beyond-stage-label" aria-expanded="false">4 · Still Need a Sign?</button>
           <div class="beyond-stage-text"></div>
           <div class="beyond-verdict"><span class="beyond-verdict-badge"></span></div>
         </div>
         <div class="beyond-nav">
-          <span></span>
-          <button type="button" class="beyond-btn beyond-next">Reveal: Signs Needed</button>
+          <button type="button" class="beyond-btn beyond-btn--ghost beyond-prev">Previous Situation</button>
+          <button type="button" class="beyond-btn beyond-next">Next Situation</button>
         </div>
       </div>
     </div>
@@ -1337,10 +1355,11 @@ function initBeyondGame(Reveal) {
   var captionEl = liveSlide.querySelector('.beyond-caption');
   var progressEl = liveSlide.querySelector('.beyond-progress');
   var stageEls = liveSlide.querySelectorAll('.beyond-stage');
+  var prevBtn = liveSlide.querySelector('.beyond-prev');
   var nextBtn = liveSlide.querySelector('.beyond-next');
 
   var idx = 0;
-  var stage = 0; /* 0 = nothing revealed yet, 4 = all revealed */
+  var open = -1; /* index of the expanded stage, -1 = all collapsed */
 
   function render() {
     var situation = SITUATIONS[idx];
@@ -1353,7 +1372,8 @@ function initBeyondGame(Reveal) {
       var stageData = situation.stages[i];
       var textEl = stageEl.querySelector('.beyond-stage-text');
       textEl.innerHTML = stageData.text;
-      stageEl.classList.toggle('done', i < stage);
+      stageEl.classList.toggle('open', i === open);
+      stageEl.querySelector('.beyond-stage-label').setAttribute('aria-expanded', String(i === open));
 
       var verdictEl = stageEl.querySelector('.beyond-verdict');
       if (verdictEl) {
@@ -1363,29 +1383,32 @@ function initBeyondGame(Reveal) {
       }
     });
 
-    if (stage < 4) {
-      nextBtn.textContent = 'Reveal: ' + situation.stages[stage].label.replace(/^\d+ · /, '');
-    } else {
-      nextBtn.textContent = idx === SITUATIONS.length - 1 ? 'Restart' : 'Next Situation';
-    }
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === SITUATIONS.length - 1;
   }
 
-  nextBtn.addEventListener('click', function (evt) {
-    evt.stopPropagation();
-    if (stage < 4) {
-      stage += 1;
+  Array.prototype.forEach.call(stageEls, function (stageEl, i) {
+    stageEl.querySelector('.beyond-stage-label').addEventListener('click', function (evt) {
+      evt.stopPropagation();
+      open = open === i ? -1 : i;
       render();
-      return;
-    }
-    idx = idx === SITUATIONS.length - 1 ? 0 : idx + 1;
-    stage = 0;
-    render();
+    });
   });
+
+  function go(delta) {
+    var next = idx + delta;
+    if (next < 0 || next >= SITUATIONS.length) return;
+    idx = next;
+    open = -1;
+    render();
+  }
+  prevBtn.addEventListener('click', function (evt) { evt.stopPropagation(); go(-1); });
+  nextBtn.addEventListener('click', function (evt) { evt.stopPropagation(); go(1); });
 
   Reveal.on('slidechanged', function (event) {
     if (event.currentSlide !== liveSlide) {
       idx = 0;
-      stage = 0;
+      open = -1;
       render();
     }
   });
