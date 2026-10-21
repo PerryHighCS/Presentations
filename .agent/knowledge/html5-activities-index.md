@@ -46,6 +46,7 @@ mechanism.
 - **Where:** `Decks/AR2/ShopSafety/Making_Warnings_Unnecessary.html` — three instances of the same engine: `initBeyondGame` (~1324-1391, section `#beyond-game` ~661), `initPpeGame` (~1391-1466, `#ppe-game` ~835), `initRiskyGame` (~1466-1523, `#risky-game` ~962)
 - **Concept:** a scenario description with a sequence of hidden "stage" panels; each button click reveals the next stage (marking prior ones `.done`) until all are shown, then advances to the next scenario.
 - **Mechanism:** click-driven progressive reveal, per-scenario reset on slide change, no drag/drop.
+- **Fitting long stages:** in `#beyond-game`, only the newest `.done` stage shows its text; earlier ones collapse to their label via `.beyond-stage.done:has(+ .beyond-stage.done)`. Without this, four fully revealed body-size stages overflowed the panel into a hidden scroll area. Reuse that rule whenever stage text is long.
 - **Reuse:** generic step-by-step walkthrough pattern (hazard→control→limit, cause→effect chains, any staged reveal).
 
 ### Countdown timer with completion sound
