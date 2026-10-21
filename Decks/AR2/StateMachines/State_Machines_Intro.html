@@ -2261,7 +2261,7 @@
     <span class="slide-tag">Scaling Up</span>
     <h2 style="margin-bottom:10px;">The Full Cycle</h2>
     <p style="font-size:var(--body);color:var(--text-muted);max-width:1300px;line-height:1.6;margin-bottom:var(--gap);">
-      The full cycle of the pick and place machine has 8 steps, picking up a workpiece at one location and setting it down at another. Once it returns home, it cannot load a new workpiece by itself: press <strong style="color:var(--warn);">Reset Workpiece</strong> to confirm one is loaded before starting again.
+      The full cycle of the pick and place machine has 8 steps, picking up a workpiece at one location and setting it down at another. Once it returns home, it stops and waits, because it cannot load a new workpiece by itself. Load one, then press <strong style="color:var(--accent);">Start</strong> to begin the next cycle.
     </p>
 
     <div class="split split-50" style="align-items:center;">
@@ -2472,7 +2472,7 @@ function initMachineCarousel(Reveal, idSuffix, options) {
   // Some carousels (the full eight-state cycle) end on a pose the arm cannot
   // recover from by itself: a person has to load a new workpiece before the
   // next cycle can start. Those pass manualReset so the last Step is replaced
-  // with a distinct "Reset Workpiece" action instead of looping back around.
+  // with Start, which begins the next cycle at S1 instead of looping around.
   var manualReset = !!options.manualReset;
 
   var carousel = Array.prototype.find.call(
@@ -2516,15 +2516,15 @@ function initMachineCarousel(Reveal, idSuffix, options) {
 
     // The button always shows whichever trigger is about to fire next:
     // Start moves Ready -> S1, then Step/~Step alternate after that. A
-    // manualReset carousel swaps the button on the final state for a
-    // distinct "Reset Workpiece" action instead of looping back around.
+    // manualReset carousel swaps the button on the final state for Start,
+    // since a person has to restart the cycle after loading a new workpiece.
     if (btn) {
       if (index === -1) {
         btn.textContent = 'Start';
         btn.className = 'sm-btn sm-btn-push';
       } else if (manualReset && index === STATES.length - 1) {
-        btn.textContent = 'Reset Workpiece';
-        btn.className = 'sm-btn sm-btn-warn';
+        btn.textContent = 'Start';
+        btn.className = 'sm-btn sm-btn-push';
       } else {
         btn.textContent = index % 2 === 0 ? 'Step' : '~Step';
         btn.className = 'sm-btn sm-btn-toggle';
@@ -2544,7 +2544,7 @@ function initMachineCarousel(Reveal, idSuffix, options) {
 
   if (btn) btn.addEventListener('click', function () {
     if (manualReset && index === STATES.length - 1) {
-      index = -1;
+      index = 0;
     } else {
       index = (index + 1) % STATES.length;
     }
