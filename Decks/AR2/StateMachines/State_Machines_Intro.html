@@ -2169,12 +2169,12 @@
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Scaling Up</span>
     <h2 style="margin-bottom:10px;">The Full Cycle, Eight States Long</h2>
-    <p style="font-size:var(--body);color:var(--text-muted);max-width:1300px;line-height:1.6;margin-bottom:var(--gap-lg);">
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1300px;line-height:1.6;margin-bottom:var(--gap);">
       We built a four-step machine which moved from State 1 to State 4, one step at a time. The same idea will work for an eight-step version, controlled the same way: pressing <span style="color:var(--accent);">Start</span> moves us into State 1, and toggling <span style="color:var(--result);">Step</span> advances one state at a time on every press and every release.
     </p>
 
     <p class="fragment fade-up" data-fragment-index="1" style="font-size:var(--body);color:var(--text-muted);max-width:1300px;line-height:1.6;margin-bottom:var(--gap);">
-      Once Step 8 finishes, <span style="color:var(--result);">~STEP</span> sends us right back to S1, ready to run the whole procedure again.
+      Once Step 8 finishes, the machine waits for a new workpiece. Pressing <span style="color:var(--accent);">Start</span> sends us back to S1, ready to run the whole procedure again.
     </p>
 
     <div class="fragment fade-up" data-fragment-index="0" style="display:flex;justify-content:center;">
@@ -2240,7 +2240,7 @@
           <path class="chain-path" d="M1022,6 C930,98 138,98 46,6" fill="none" stroke="#39d353" stroke-width="2.5"></path>
           <path class="chain-arrowhead" d="M0,0 L8,4 L0,8 Z" fill="#39d353" transform="translate(46,6) rotate(-135) scale(2.5) translate(-8,-4)"></path>
         </svg>
-        <span class="chain-label fragment fade-up" data-fragment-index="1" data-arc="8" style="position:absolute;left:574px;top:181px;width:100px;text-align:center;">~Step</span>
+        <span class="chain-label fragment fade-up" data-fragment-index="1" data-arc="8" style="position:absolute;left:574px;top:181px;width:100px;text-align:center;">Start</span>
       </div>
     </div>
 
@@ -2249,7 +2249,7 @@
       <button type="button" class="sm-btn sm-btn-toggle" id="sm-step-btn">Step</button>
     </div>
 
-    <div id="sm-insight" class="callout" style="max-width:1100px;margin-top:var(--gap);display:none;">
+    <div id="sm-insight" class="callout" style="max-width:1300px;margin-top:var(--gap);display:none;">
       <p>Notice that the same trigger can move us into different states. How does the machine know to move you to <strong id="sm-insight-next">S2</strong> the next time you press <span style="color:var(--result);">STEP</span> rather than <strong id="sm-insight-prev">S2</strong>?</p>
     </div>
   </div>
@@ -2362,7 +2362,7 @@ initSyncDeckReveal({
   },
   afterInit: function (Reveal) {
     initStateMachineDemo(Reveal, '-4', 4);
-    initStateMachineDemo(Reveal, '', 8);
+    initStateMachineDemo(Reveal, '', 8, { restartWithStart: true });
     initRsLatchDemo(Reveal);
     initS1LatchDemo(Reveal);
     initS1MLatchDemo(Reveal);
@@ -2673,8 +2673,11 @@ function initRsLatchDemo(Reveal) {
   });
 }
 
-function initStateMachineDemo(Reveal, idSuffix, numStates) {
+function initStateMachineDemo(Reveal, idSuffix, numStates, options) {
   idSuffix = idSuffix || '';
+  // restartWithStart: the loop-back arc fires on Start instead of the
+  // Step toggle, for machines that wait for a person before each cycle.
+  var restartWithStart = !!(options && options.restartWithStart);
   var diagram = Array.prototype.find.call(
     document.querySelectorAll('#sm-diagram' + idSuffix),
     function (el) { return !el.closest('#storyboard'); }
@@ -2859,8 +2862,12 @@ function initStateMachineDemo(Reveal, idSuffix, numStates) {
 
   function advance(source) {
     if (!diagram.classList.contains('chain-dimmed') || animating) return;
-    if (source === 'start' && currentArc !== 0) return;
-    if (source === 'step' && currentArc === 0) return;
+    var startArc = currentArc === 0 || (restartWithStart && currentArc === lastArc);
+    if (source === 'start' && !startArc) return;
+    if (source === 'step' && startArc) return;
+    // Restarting the cycle puts the toggle back to off, so S1 -> S2 is
+    // a "Step" press again just like the first time through.
+    if (source === 'start' && stepBtn) stepBtn.classList.remove('is-on');
 
     var n = currentArc;
     var dest = DEST[n];
