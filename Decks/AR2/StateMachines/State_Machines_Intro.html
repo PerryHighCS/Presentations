@@ -1735,7 +1735,7 @@
     <span class="slide-tag">The Physical Machine</span>
     <h2 style="margin-bottom:14px;">From Logic to a Real Machine</h2>
     <p style="font-size:var(--body);color:var(--text-muted);max-width:1300px;line-height:1.6;text-align:left;">
-      So far, every <span style="color:var(--accent);">Active</span> signal we've built has just lit up on screen. Wire that same signal to a solenoid coil instead of a light, and it can push a cylinder, run a motor, or trigger a vacuum grip. Let's connect the state machine we built to a real pick-and-place machine and watch it drive actual hardware.
+      So far, every <span style="color:var(--accent);">Active</span> signal we've built has just lit up on screen. Wire that same signal to a solenoid coil instead of a light, and it can push a cylinder, run a motor, or trigger a vacuum grip. Let's connect the state machine we built to a pick-and-place machine and watch it drive actual hardware.
     </p>
   </div>
 </section>
@@ -1746,7 +1746,7 @@
     <span class="slide-tag">The Physical Machine</span>
     <h2 style="margin-bottom:10px;">What Is Our Controller Actually Running?</h2>
     <p style="font-size:var(--body);color:var(--text-muted);max-width:1300px;line-height:1.6;margin-bottom:var(--gap);">
-      Here is the real machine behind S1 through S4: a pneumatic arm with a vacuum gripper. Press <span style="color:var(--accent);">Start</span>, then keep toggling <span style="color:var(--result);">STEP</span> to watch it cycle through four states like we just built.
+      Here is the machine behind S1 through S4: a pneumatic arm with a vacuum gripper. Press <span style="color:var(--accent);">Start</span>, then keep toggling <span style="color:var(--result);">STEP</span> to watch it cycle through four states like we just built.
     </p>
 
     <div class="split split-50" style="align-items:center;">
@@ -1823,7 +1823,7 @@
       <div style="display:flex;flex-direction:column;gap:var(--gap);">
         <div class="key-prop" style="display:flex;flex-direction:column;gap:8px;">
           <div class="step-head" style="margin-bottom:0;gap:10px;"><span class="step-num">1</span><span class="step-label" style="font-size:var(--small);">Double-Click the Module</span></div>
-          <p style="margin-left:44px;font-size:var(--body);color:var(--text-muted);line-height:1.45;">Open it for editing, the same way you did to label the inputs.</p>
+          <p style="margin-left:44px;font-size:var(--body);color:var(--text-muted);line-height:1.45;">Open it for editing.</p>
         </div>
         <div class="key-prop" style="display:flex;flex-direction:column;gap:8px;">
           <div class="step-head" style="margin-bottom:0;gap:10px;"><span class="step-num">2</span><span class="step-label" style="font-size:var(--small);">Label Every Output</span></div>
@@ -1838,7 +1838,50 @@
   </div>
 </section>
 
-<!-- SLIDE 45 · Combining Signals -->
+<!-- SLIDE 45 · Sharing Outputs -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;">
+    <span class="slide-tag">Giving Each State a Job</span>
+    <h2 style="margin-bottom:10px;">Sharing Outputs</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1300px;line-height:1.6;margin-bottom:var(--gap);">
+      More than one state can involve the same action. <span style="color:var(--accent);">S1</span> and <span style="color:var(--accent);">S3</span> both move the gripper <strong style="color:var(--text);">DOWN</strong>. <span style="color:var(--accent);">S2</span> and <span style="color:var(--accent);">S4</span> both move it <strong style="color:var(--text);">UP</strong>. <span style="color:var(--accent);">S2</span> and <span style="color:var(--accent);">S3</span> both need the vacuum to <strong style="color:var(--text);">GRIP</strong>.
+    </p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap-sm);margin-bottom:var(--gap);">
+      <div class="key-prop" style="font-size:var(--body);">
+        <strong style="color:var(--accent);">Q2</strong> 2M1 &middot; DOWN<br>
+        Used by S1 and S3.
+      </div>
+      <div class="key-prop" style="font-size:var(--body);">
+        <strong style="color:var(--accent);">Q3</strong> 2M2 &middot; UP<br>
+        Used by S2 and S4.
+      </div>
+      <div class="key-prop" style="font-size:var(--body);">
+        <strong style="color:var(--accent);">Q4</strong> 3M1 &middot; GRIP<br>
+        Used by S2 and S3.
+      </div>
+    </div>
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);max-width:1300px;line-height:1.6;">
+      Each output needs to turn on whenever <em style="color:var(--text);">any</em> state that uses it is active. Which logic block, placed in front of an output, can do that?
+    </p>
+  </div>
+</section>
+
+<!-- SLIDE 46 · Check-In - Which Block -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:46:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"The DOWN output (Q2) must turn on when S1 is active and also when S3 is active. Which logic block should feed that output?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"An AND block","isCorrect":false},{"id":"q1b","text":"An M block (buffer)","isCorrect":false},{"id":"q1c","text":"An OR block","isCorrect":true},{"id":"q1d","text":"An RS latch","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check-In</span>
+    <h2 style="margin-bottom:10px;">Which Block Feeds the Output?</h2>
+    <p style="font-size:var(--body);color:var(--text-muted);max-width:1300px;line-height:1.6;">
+      The <strong style="color:var(--text);">DOWN</strong> output (Q2) must turn on when <span style="color:var(--accent);">S1</span> is active and also when <span style="color:var(--accent);">S3</span> is active. Which logic block should feed that output: an AND block, an M block, an OR block, or an RS latch?
+    </p>
+  </div>
+</section>
+
+<!-- SLIDE 47 · Combining Signals -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Giving Each State a Job</span>
@@ -1872,7 +1915,7 @@
   </div>
 </section>
 
-<!-- SLIDE 46 · Testing the Outputs -->
+<!-- SLIDE 48 · Testing the Outputs -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Giving Each State a Job</span>
@@ -1901,7 +1944,7 @@
   </div>
 </section>
 
-<!-- SLIDE 47 · Transition - Automating the System -->
+<!-- SLIDE 49 · Transition - Automating the System -->
 <section>
   <div class="slide-inner slide-center">
     <span class="slide-tag">Automating the System</span>
@@ -1915,7 +1958,7 @@
   </div>
 </section>
 
-<!-- SLIDE 48 · Sensors on the Actuators -->
+<!-- SLIDE 50 · Sensors on the Actuators -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Automating the System</span>
@@ -1939,7 +1982,7 @@
   </div>
 </section>
 
-<!-- SLIDE 49 · The Full Control Circuit -->
+<!-- SLIDE 51 · The Full Control Circuit -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Automating the System</span>
@@ -1953,7 +1996,7 @@
   </div>
 </section>
 
-<!-- SLIDE 50 · Label the Inputs -->
+<!-- SLIDE 52 · Label the Inputs -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Automating the System</span>
@@ -1980,7 +2023,7 @@
   </div>
 </section>
 
-<!-- SLIDE 51 · A Bus for Every Input -->
+<!-- SLIDE 53 · A Bus for Every Input -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Automating the System</span>
@@ -1994,7 +2037,7 @@
   </div>
 </section>
 
-<!-- SLIDE 52 · Replacing STEP, One State at a Time -->
+<!-- SLIDE 54 · Replacing STEP, One State at a Time -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Automating the System</span>
@@ -2025,7 +2068,7 @@
   </div>
 </section>
 
-<!-- SLIDE 53 · Automate S3 and S4 -->
+<!-- SLIDE 55 · Automate S3 and S4 -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Automating the System</span>
@@ -2078,7 +2121,7 @@
   </div>
 </section>
 
-<!-- SLIDE 55 · Transition - Your Turn -->
+<!-- SLIDE 57 · Transition - Your Turn -->
 <section>
   <div class="slide-inner slide-center">
     <span class="slide-tag">Your Turn</span>
@@ -2089,7 +2132,7 @@
   </div>
 </section>
 
-<!-- SLIDE 56 · Scaling Up -->
+<!-- SLIDE 58 · Scaling Up -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Scaling Up</span>
@@ -2180,7 +2223,7 @@
   </div>
 </section>
 
-<!-- SLIDE 57 · The Full Cycle -->
+<!-- SLIDE 59 · The Full Cycle -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Scaling Up</span>
@@ -2206,7 +2249,7 @@
   </div>
 </section>
 
-<!-- SLIDE 58 · The Build Process -->
+<!-- SLIDE 60 · The Build Process -->
 <section>
   <div class="slide-inner" style="justify-content:flex-start;">
     <span class="slide-tag">Recap</span>
