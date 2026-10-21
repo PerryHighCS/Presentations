@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1j0g79b">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6 - Belts and Pulleys</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../DCCircuits/theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC: Belts and Pulleys
+   Color semantics used throughout this deck (they match the
+   green driving pulley and red driven pulley in the diagrams):
+     --accent (blue)   → key concept terms (wrap angle, idler, tight side)
+     --result (green)  → the driving pulley / input side
+     --driven (coral)  → the driven pulley / output side
+     --warn   (yellow) → slip, friction losses, and other drawbacks
+   ============================================================ */
+
+/* Readability floor: reading text >= 30px, captions/labels >= 22px.
+   The shared theme defaults (--body 24px, --small 18px) are below it. */
+:root {
+  --driven: #ff8a80;
+  --body:  30px;
+  --small: 22px;
+}
+
+.lead {
+  font-size: 34px;
+  line-height: 1.45;
+  color: var(--text-muted);
+  max-width: 1250px;
+}
+.lead + .lead { margin-top: var(--gap); }
+
+.prose {
+  font-size: var(--body);
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 1250px;
+}
+.prose + .prose { margin-top: var(--gap-sm); }
+
+.driver-color { color: var(--result); }
+.driven-color { color: var(--driven); }
+.slip-color   { color: var(--warn); }
+
+/* Photos and diagrams beside text */
+.build-img {
+  display: block;
+  width: 100%;
+  max-height: 640px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--accent-border), 0 6px 24px rgba(0,0,0,0.5);
+}
+.ask {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  padding: 18px 24px;
+  margin-top: var(--gap);
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text);
+}
+
+/* Discussion prompt card */
+.prompt-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  padding: 36px 44px;
+  max-width: 1250px;
+}
+.prompt-card .lead { max-width: none; }
+.prompt-hint {
+  font-size: var(--body);
+  color: var(--text-muted);
+  margin-top: var(--gap);
+}
+
+/* Two-card comparisons */
+.pair-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+  margin-top: var(--gap);
+  align-items: start;
+}
+.info-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-top: 4px solid var(--accent);
+  border-radius: 10px;
+  padding: 26px 30px;
+}
+.info-card.con { border-top-color: var(--warn); }
+.info-card h3 { font-size: var(--h3); color: var(--accent); }
+.info-card.con h3 { color: var(--warn); }
+.info-card p {
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.info-card p + p { margin-top: var(--gap-sm); }
+.info-card img {
+  display: block;
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: var(--gap);
+}
+
+/* Numbered build steps */
+.build-steps {
+  list-style: none;
+  counter-reset: step;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.build-steps li {
+  counter-increment: step;
+  position: relative;
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text-muted);
+  padding-left: 58px;
+}
+.build-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Trial chips for the pulley-size experiment */
+.trial-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-sm);
+  margin-top: var(--gap);
+}
+.trial {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: var(--body);
+  line-height: 1.4;
+  color: var(--text);
+}
+.trial .trial-num {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+/* Multiple-choice fallback (shown when no activity is running) */
+.mcq-opts {
+  list-style: none;
+  counter-reset: opt;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin-top: var(--gap);
+  max-width: 1250px;
+}
+.mcq-opts li {
+  counter-increment: opt;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 14px 20px 14px 64px;
+  position: relative;
+  font-size: var(--body);
+  line-height: 1.45;
+  color: var(--text);
+}
+.mcq-opts li::before {
+  content: counter(opt, upper-alpha);
+  position: absolute;
+  left: 22px;
+  top: 14px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* Summary rule cards */
+.reason-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap);
+  margin-top: var(--gap);
+}
+.reason-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-top: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 26px 28px;
+}
+.reason-card.con { border-top-color: var(--warn); }
+.reason-card h3 { font-size: var(--h3); color: var(--accent); }
+.reason-card.con h3 { color: var(--warn); }
+.reason-card p {
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ============================================================
+     SLIDE 01 · TITLE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:700px;height:700px;background:radial-gradient(circle,rgba(77,255,176,0.08) 0%,transparent 70%);top:-240px;left:-200px;"></div>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(255,138,128,0.08) 0%,transparent 70%);bottom:-100px;right:10%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 3</span>
+    <h1 class="title-h1">Belts and<br><span class="accent">Pulleys</span></h1>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:900px;text-align:center;line-height:1.45;">How belt drives move power through friction, and what engineers do to keep them from slipping.</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 02 · BELTS IN AN HVAC BLOWER
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split split-50">
+      <div>
+        <span class="slide-tag">Belts Around Us</span>
+        <h2>Belts in an HVAC Blower</h2>
+        <p class="lead">This furnace blower uses a <span class="accent">belt</span> to carry power from a small motor pulley to the large fan.</p>
+        <p class="lead">Belts can transfer power over <span class="accent">longer distances</span> than gears can. They also run with less noise, less vibration, and less maintenance, and they don&rsquo;t need lubrication.</p>
+      </div>
+      <img class="build-img img-zoomable" src="Belts_and_Pulleys_Assets/hvac-blower.jpg" alt="A technician's hand on the belt of a furnace blower. The belt runs from a small motor pulley at the top down around the hub of a large squirrel-cage fan.">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 03 · ADVANTAGES OF BELT DRIVES
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Belt Drives</span>
+    <h2>Advantages of Belt Drives</h2>
+    <p class="prose">Maybe the biggest benefit of a belt drive is that the belt is <span class="accent">flexible</span>. The flexibility absorbs a lot of noise, so belt drives are much quieter than gear drives during routine operation. Belts are also lightweight and easy to replace.</p>
+    <div class="pair-grid">
+      <div class="info-card">
+        <img src="Belts_and_Pulleys_Assets/open-belt.jpg" alt="A motor with a small green driving pulley connected by a straight black belt to a large red driven pulley. Labels read driving pulley (input), belt, and driven pulley (output).">
+        <h3>Open Belt</h3>
+        <p>The <span class="driver-color">driving pulley</span> and the <span class="driven-color">driven pulley</span> turn in the same direction.</p>
+      </div>
+      <div class="info-card fragment fade-up">
+        <img src="Belts_and_Pulleys_Assets/crossed-belt.jpg" alt="The same motor and pulleys, but the belt crosses over itself in a figure eight between the green driving pulley and the red driven pulley.">
+        <h3>Crossed Belt</h3>
+        <p>Crossing the belt between the pulleys <span class="accent">reverses the direction</span> of the driven pulley. Belts can also connect shafts that aren&rsquo;t parallel.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 04 · DISADVANTAGES OF BELT DRIVES
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Belt Drives</span>
+    <h2>Disadvantages of Belt Drives</h2>
+    <p class="lead">Belt drives aren&rsquo;t perfect. Their biggest weakness comes from the same thing that makes them work: <span class="slip-color">friction</span>.</p>
+    <div class="pair-grid">
+      <div class="info-card con">
+        <h3>Energy Loss</h3>
+        <p>Belt drives can create a lot of extra <span class="slip-color">friction</span> during operation. This isn&rsquo;t necessarily a deal-breaker, but it wastes energy, so belt drives are less efficient than gear drives.</p>
+      </div>
+      <div class="info-card con fragment fade-up">
+        <h3>Limited Speed</h3>
+        <p>The extra friction also makes the belt <span class="slip-color">heat up</span>. That heat keeps belts from reaching the high speeds that gears can handle.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 05 · DISCUSS: WHEN IS SLIP HELPFUL?
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Discuss</span>
+    <h2>When Is Slip Helpful?</h2>
+    <div class="prompt-card">
+      <p class="lead">Belts can <span class="slip-color">slip</span> on their pulleys, but gears cannot. When might a little bit of slip actually be helpful?</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 06 · POWER THROUGH FRICTION
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Friction</span>
+    <h2>Power Through Friction</h2>
+    <p class="lead">A belt drive is <span class="accent">friction-locked</span>. The driving pulley pushes the belt through friction, and at the other end, the belt turns the driven pulley through friction.</p>
+    <p class="callout fragment fade-up" style="margin-top:var(--gap-lg);max-width:1250px;font-size:var(--h3);line-height:1.45;">This is when slip helps. If too much torque is applied, the belt can slip instead of breaking something, which <strong>prevents the drive from overloading</strong>.</p>
+    <p class="callout-warn fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">Slip still has a cost: <strong>too much slipping wears the belt down</strong>.</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 07 · THE TIGHT SIDE AND THE SLACK SIDE
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr 1.25fr;">
+      <div>
+        <span class="slide-tag">Belt Tension</span>
+        <h2>The Tight Side and the Slack Side</h2>
+        <p class="prose">As the belt turns around the <span class="driver-color">driving pulley</span>, the pulley pulls on the belt through friction. That pull travels along the <span class="accent">tight side</span> of the belt, which pulls on the <span class="driven-color">driven pulley</span>.</p>
+        <p class="prose fragment fade-up">On the far side, the driving pulley pushes the belt toward the driven pulley. That lets a little slack form, so the <span class="accent">slack side</span> of the belt sags slightly.</p>
+      </div>
+      <img class="build-img img-zoomable" src="Belts_and_Pulleys_Assets/tight-slack.jpg" alt="Belt drive diagram. The small green driving pulley turns counterclockwise. The upper run of belt is labeled tight side, with force arrows pulling it taut. The lower run is labeled slack side.">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 08 · WRAP ANGLE
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr 1.25fr;">
+      <div>
+        <span class="slide-tag">Belt Contact</span>
+        <h2>Wrap Angle</h2>
+        <p class="prose">The amount of contact a belt has with a pulley determines how much friction it gets, and how well it resists slipping.</p>
+        <p class="prose">The angle of the arc where the belt touches the pulley is called the <span class="accent">wrap angle</span>.</p>
+        <p class="ask fragment fade-up">The maximum force a belt can transmit is limited by the <strong>smaller wrap angle</strong>. That is usually on the smaller pulley.</p>
+      </div>
+      <img class="build-img img-zoomable" src="Belts_and_Pulleys_Assets/wrap-angle.jpg" alt="Belt drive diagram with the wrap angle shaded on each pulley. The belt covers a little less than half of the small green driving pulley and more than half of the large red driven pulley.">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 09 · IDLER AND TENSIONER PULLEYS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr 1.25fr;">
+      <div>
+        <span class="slide-tag">Belt Contact</span>
+        <h2>Idler and Tensioner Pulleys</h2>
+        <p class="prose">An <span class="accent">idler pulley</span> presses on the belt to bend it farther around the other pulleys. That increases the wrap angle on the small pulley.</p>
+        <p class="prose fragment fade-up">An idler pulley can also be used to add tension to the belt. When it does that job, it is called a <span class="accent">tensioner pulley</span>.</p>
+      </div>
+      <img class="build-img img-zoomable" src="Belts_and_Pulleys_Assets/idler-pulley.jpg" alt="The same belt drive with a tan idler pulley pressing up on the lower run of the belt. The shaded wrap angle on the small green driving pulley is now much larger than before.">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 10 · DISCUSS: WHAT LIMITS THE FORCE?
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Discuss</span>
+    <h2>What Limits the Force?</h2>
+    <p class="lead">In a belt drive, which pulley usually limits the maximum force the belt can transmit?</p>
+    <ol class="mcq-opts">
+      <li>The larger pulley, because it has more surface area</li>
+      <li>The pulley with the smaller wrap angle, which is usually the smaller pulley</li>
+      <li>The driven pulley, no matter what size it is</li>
+      <li>The idler pulley, because it does no work</li>
+    </ol>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 11 · BUILD 1: TWO SMALL PULLEYS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr 1.1fr;">
+      <div>
+        <span class="slide-tag">Build 1 · Belts in Action</span>
+        <h2>Two Small Pulleys</h2>
+        <ol class="build-steps">
+          <li>Build a train with <span class="accent">two small pulleys</span> sandwiched between two MechRails.</li>
+          <li>Mark each pulley with a small dot of tape on its rim.</li>
+          <li>Stretch a rubber band around both pulleys. Use a pen to mark a dot on the band, lined up with one of your tape marks.</li>
+          <li>Spin one pulley <strong>10 full turns</strong>.</li>
+        </ol>
+        <p class="ask fragment fade-up">Did the belt <span class="slip-color">slip</span>? How can you tell from your marks?</p>
+      </div>
+      <img class="build-img img-zoomable" src="Belts_and_Pulleys_Assets/build-two-small.jpg" alt="Kit render of two small pulleys, each on a shaft, held between two long white MechRails.">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 12 · BUILD 2: CHANGE THE PULLEY SIZES
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr 1.1fr;">
+      <div>
+        <span class="slide-tag">Build 2 · Belts in Action</span>
+        <h2>Change the Pulley Sizes</h2>
+        <p class="prose">Repeat the 10-turn test with each of these pulley pairs. Each time, watch whether the amount of <span class="slip-color">slip</span> changes.</p>
+        <div class="trial-grid">
+          <div class="trial"><span class="trial-num">TRIAL 1</span>Small and medium</div>
+          <div class="trial"><span class="trial-num">TRIAL 2</span>Medium and medium</div>
+          <div class="trial"><span class="trial-num">TRIAL 3</span>Small and large</div>
+          <div class="trial"><span class="trial-num">TRIAL 4</span>Large and large</div>
+        </div>
+        <p class="ask fragment fade-up">Now try moving the pulleys closer together or farther apart. How does changing the <span class="accent">tension</span> affect slip?</p>
+      </div>
+      <img class="build-img img-zoomable" src="Belts_and_Pulleys_Assets/build-small-large.jpg" alt="Kit render of a small pulley and a large pulley held between two white MechRails.">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 13 · BUILD 3: ADD AN IDLER PULLEY
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split split-50">
+      <div>
+        <span class="slide-tag">Build 3 · Belts in Action</span>
+        <h2>Add an Idler Pulley</h2>
+        <p class="prose">Set up two <span class="accent">large pulleys</span> and add a small <span class="accent">idler pulley</span> between them. Route the rubber band so that it wraps around the outside of the idler, as shown in red.</p>
+        <p class="ask fragment fade-up">Run the 10-turn test again. Does the idler pulley help with <span class="slip-color">slippage</span>? Why?</p>
+      </div>
+      <img class="build-img img-zoomable" src="Belts_and_Pulleys_Assets/build-idler.jpg" alt="Top view of a MechRail with a large pulley at each end and a small idler pulley in the middle, offset to one side. A red line shows the belt path wrapping around both large pulleys and bending around the outside of the idler.">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 14 · SUMMARY: WHAT CONTROLS SLIP
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Summary</span>
+    <h2>What Controls Slip</h2>
+    <div class="reason-grid">
+      <div class="reason-card">
+        <h3>More Wrap, Less Slip</h3>
+        <p>A bigger <span class="accent">wrap angle</span> gives the belt more contact with the pulley, so there is more friction to grip with.</p>
+      </div>
+      <div class="reason-card fragment fade-up">
+        <h3>More Tension, Less Slip</h3>
+        <p>A tighter belt presses harder against the pulleys. Moving pulleys apart or adding a <span class="accent">tensioner</span> increases tension.</p>
+      </div>
+      <div class="reason-card con fragment fade-up">
+        <h3>Too Much Slip Wastes Energy</h3>
+        <p>Every time the belt <span class="slip-color">slips</span>, some of the input energy turns into heat and wear instead of motion.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 15 · DISCUSS: FIX A SLIPPING BELT
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Discuss</span>
+    <h2>Fix a Slipping Belt</h2>
+    <p class="lead">A belt keeps <span class="slip-color">slipping</span> on a small <span class="driver-color">driving pulley</span>. Which change would most likely reduce the slip?</p>
+    <ol class="mcq-opts">
+      <li>Add an idler pulley that wraps the belt farther around the small pulley</li>
+      <li>Loosen the belt so it runs more freely</li>
+      <li>Swap the small pulley for an even smaller one</li>
+      <li>Spin the driving pulley faster</li>
+    </ol>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 16 · SERPENTINE BELTS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split split-50">
+      <div>
+        <span class="slide-tag">Belts Around Us</span>
+        <h2>Serpentine Belts</h2>
+        <p class="prose">Belt trains can be more complicated than a single driving pulley and a single driven pulley. In a car engine, one long <span class="accent">serpentine belt</span> snakes around many pulleys.</p>
+        <p class="prose">One <span class="driver-color">driver</span>, the engine&rsquo;s crankshaft, powers several <span class="driven-color">driven</span> components at once, such as the alternator and the power steering pump. Idler and tensioner pulleys keep the belt tight and wrapped around each one.</p>
+        <p class="ask fragment fade-up">If this one belt snapped, what would happen to the car?</p>
+      </div>
+      <img class="build-img img-zoomable" src="Belts_and_Pulleys_Assets/serpentine-belt.jpg" alt="Photo of a car engine bay. A single ribbed serpentine belt winds around six pulleys of different sizes, including the alternator at the upper left.">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 17 · DISCUSS: BELTS OR GEARS?
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Discuss</span>
+    <h2>Belts or Gears?</h2>
+    <div class="prompt-card">
+      <p class="lead">Why might some machines use <span class="accent">belts</span> instead of gears, even though belts can <span class="slip-color">slip</span>?</p>
+      <p class="prompt-hint">Think about the HVAC blower and the car engine from today.</p>
+    </div>
+  </div>
+</section>
+
+
+</div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'belts-and-pulleys',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>

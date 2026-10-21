@@ -251,6 +251,7 @@ a stable short link.
 |------|-----|
 | `px` for all font/spacing tokens | Reveal scales slides via `transform: scale()`. `em` values also respond to Reveal's JS-computed base font-size (~28 px at 720 px viewport height), causing double-shrinking. `px` bypasses this. |
 | Contrast of at least 7:1 | Per WCAG guidelines, ensure sufficient contrast for all readers |
+| Text at least 30px; captions/labels at least 22px | On the 1600×900 canvas, 30px matches 18pt on a widescreen PowerPoint slide, the usual floor for projected text. Applies to body copy, card text, questions, and steps; 22px applies to captions, figure labels, and chips. Small eyebrow `.slide-tag`s and the slide counter are exempt. The shared `DCCircuits/theme.css` defaults (`--body: 24px`, `--small: 18px`) fall below this, so override them in the deck's `:root` (as `6 - Belts_and_Pulleys.html` does) and check that every slide still fits. |
 | No `position` on `<section>` | Reveal sets `position: absolute` on sections to layer and fade them. Overriding with `position: relative` makes every slide after the first appear blank. |
 | Explicit CSS rules, not `--r-*` | `--r-background-color` etc. are only consumed by Reveal's bundled CSS theme files. Without one, those variables are ignored. |
 | `max-height: none` on `pre code` | Reveal's base CSS caps code blocks at 400 px. |
