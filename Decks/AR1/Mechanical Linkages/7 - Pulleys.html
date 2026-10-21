@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="uvmejv">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7 - Pulleys</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../DCCircuits/theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC: Pulleys
+   Color semantics used throughout this deck:
+     --accent  (blue)   → key concept terms (fixed pulley, IMA, AMA)
+     --result  (green)  → the effort: your pull, effort force and distance
+     --load    (coral)  → the resistance: the load, resistance force and distance
+     --warn    (yellow) → real-world losses and limits
+   ============================================================ */
+
+:root { --load: #ff8a80; }
+
+.lead {
+  font-size: 34px;
+  line-height: 1.45;
+  color: var(--text-muted);
+  max-width: 1250px;
+}
+.lead + .lead { margin-top: var(--gap); }
+
+.prose {
+  font-size: var(--body);
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 1250px;
+}
+.prose + .prose { margin-top: var(--gap-sm); }
+
+.effort-color { color: var(--result); }
+.load-color   { color: var(--load); }
+.loss-color   { color: var(--warn); }
+
+/* Photos and diagrams beside text */
+.build-img {
+  display: block;
+  width: 100%;
+  max-height: 640px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--accent-border), 0 6px 24px rgba(0,0,0,0.5);
+}
+.build-img.tall { width: auto; max-height: 720px; margin: 0 auto; }
+.ask {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  padding: 18px 24px;
+  margin-top: var(--gap);
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text);
+}
+
+/* Discussion prompt card */
+.prompt-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  padding: 36px 44px;
+  max-width: 1250px;
+}
+.prompt-card .lead { max-width: none; }
+.prompt-hint {
+  font-size: var(--body);
+  color: var(--text-muted);
+  margin-top: var(--gap);
+}
+
+/* Numbered build steps */
+.build-steps {
+  list-style: none;
+  counter-reset: step;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.build-steps li {
+  counter-increment: step;
+  position: relative;
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text-muted);
+  padding-left: 58px;
+}
+.build-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Route diagrams: inline SVG string paths drawn over the clean
+   two-assembly render (viewBox matches the 861x918 image). At 640px
+   tall the SVG scales by ~0.7, so 34px labels render at ~24px. */
+.route-fig {
+  display: block;
+  height: 640px;
+  width: auto;
+  margin: 0 auto;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--accent-border), 0 6px 24px rgba(0,0,0,0.5);
+}
+.route-label {
+  font-family: var(--font-ui);
+  font-size: 34px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: #0a1120;
+  stroke-width: 6px;
+  stroke-linejoin: round;
+}
+.route-num {
+  font-family: var(--font-mono);
+  font-size: 46px;
+  fill: var(--text);
+}
+
+/* Schematic SVG figures (slides 4, 16-18). Font sizes are in viewBox
+   units; each figure's display size keeps them at 22px or larger. */
+.pull-fig {
+  display: block;
+  width: 100%;
+  margin-top: var(--gap);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--accent-border), 0 6px 24px rgba(0,0,0,0.5);
+}
+.pull-fig .fig-label { font-size: 26px; }
+.tall-fig {
+  display: block;
+  height: 700px;
+  width: auto;
+  margin: 0 auto;
+  border-radius: 8px;
+  background: var(--bg-card);
+  box-shadow: 0 0 0 1px var(--accent-border), 0 6px 24px rgba(0,0,0,0.5);
+}
+.fig-label {
+  font-family: var(--font-ui);
+  font-size: 30px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: #0a1120;
+  stroke-width: 6px;
+  stroke-linejoin: round;
+}
+.fig-tension { fill: var(--text); font-size: 27px; }
+.fig-badge {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  fill: var(--accent);
+}
+
+/* System 2 side-view diagram (inline SVG) */
+.sys2-fig {
+  display: block;
+  height: 680px;
+  width: auto;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--accent-border), 0 6px 24px rgba(0,0,0,0.5);
+}
+.sys2-label {
+  font-family: var(--font-ui);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* Math display */
+.eq {
+  font-size: 32px;
+  color: var(--text);
+  line-height: 1.3;
+}
+.eq-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.eq-row + .eq-row { margin-top: 26px; }
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+}
+.frac > span:first-child {
+  border-bottom: 2px solid var(--text-muted);
+  padding: 0 10px 4px;
+}
+.frac > span:last-child { padding: 4px 10px 0; }
+.eq-op { color: var(--text-muted); }
+.eq-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 12px;
+  padding: 30px 40px;
+  margin-top: var(--gap);
+  width: fit-content;
+}
+
+/* Two-card comparisons */
+.pair-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+  margin-top: var(--gap);
+  align-items: start;
+}
+.info-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-top: 4px solid var(--accent);
+  border-radius: 10px;
+  padding: 26px 30px;
+}
+.info-card.con { border-top-color: var(--warn); }
+.info-card h3 { font-size: var(--h3); color: var(--accent); }
+.info-card.con h3 { color: var(--warn); }
+.info-card p {
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.info-card p + p { margin-top: var(--gap-sm); }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ============================================================
+     SLIDE 01 · TITLE
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:700px;height:700px;background:radial-gradient(circle,rgba(77,255,176,0.08) 0%,transparent 70%);top:-240px;left:-200px;"></div>
+  <div class="glow" style="width:440px;height:440px;background:radial-gradient(circle,rgba(255,138,128,0.08) 0%,transparent 70%);bottom:-100px;right:10%;"></div>
+
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 3</span>
+    <h1 class="title-h1"><span class="accent">Pulleys</span></h1>
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:900px;text-align:center;line-height:1.45;">How ropes and pulleys trade a longer pull for a lighter one, and how to measure the advantage they give you.</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 02 · DISCUSS: LIFTING A HEAVY BOX
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Discuss</span>
+    <h2>Lifting a Heavy Box</h2>
+    <div class="prompt-card">
+      <p class="lead">Would you rather lift a <span class="load-color">50 lb box</span> directly, or use a <span class="accent">rope and pulley</span> to do it? Why?</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 03 · BUILD A PULLEY ASSEMBLY
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr 1.25fr;">
+      <div>
+        <span class="slide-tag">Pulleys in Action</span>
+        <h2>Build a Pulley Assembly</h2>
+        <p class="prose">Sandwich <span class="accent">two pulleys</span> between two MechRails, with one pulley at each end.</p>
+        <p class="prose">You will use this assembly for every experiment today, so build it carefully.</p>
+      </div>
+      <img class="build-img img-zoomable" src="Pulleys_Assets/build-assembly.jpg" alt="Kit render of two long white MechRails stacked together, with a blue pulley sandwiched between them at each end.">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 04 · PULL BOTH ENDS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Pulleys in Action</span>
+    <h2>Pull Both Ends</h2>
+    <ol class="build-steps">
+      <li>Pass a string around <span class="accent">one pulley</span>.</li>
+      <li>One partner holds the assembly by the end without the string.</li>
+      <li>The other partner pulls on <strong>both ends</strong> of the string.</li>
+    </ol>
+    <svg class="pull-fig" viewBox="-60 575 1140 160" role="img" aria-label="Top view of the two-pulley assembly. A partner&#39;s hand holds the left end of the rail. A red string wraps around the inner side of the right pulley, and both ends of the string run off to the right, where they are pulled.">
+          <defs>
+            <marker id="pull-arrow" viewBox="0 0 10 10" refX="3" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#ff3b30" stroke="#3a0905" stroke-width="1"/>
+            </marker>
+          </defs>
+          <rect x="-60" y="575" width="1140" height="160" fill="#4c5566"/>
+          <image href="Pulleys_Assets/build-two-assemblies.jpg" width="861" height="918"/>
+          <path d="M955 614 L753 614 A41 41 0 0 0 753 696 L955 696" fill="none" stroke="#3a0905" stroke-width="11"/>
+          <path d="M955 614 L753 614 A41 41 0 0 0 753 696 L955 696" fill="none" stroke="#ff3b30" stroke-width="6" marker-start="url(#pull-arrow)" marker-end="url(#pull-arrow)"/>
+          <rect x="68" y="628" width="56" height="56" rx="16" fill="#e8c4a0" stroke="#1a1a1a" stroke-width="2"/>
+          <text x="52" y="666" text-anchor="end" class="fig-label" fill="#5daaff">Hold</text>
+          <text x="1000" y="666" text-anchor="start" class="fig-label" fill="#4dffb0">Pull</text>
+        </svg>
+    <p class="ask fragment fade-up">Can you pull one end of the string more easily than the other?</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 05 · SYSTEM 1: LIFT OVER ONE PULLEY
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr auto;">
+      <div>
+        <span class="slide-tag">System 1 · Pulleys in Action</span>
+        <h2>Lift Over One Pulley</h2>
+        <ol class="build-steps">
+          <li>Tie a string around a <span class="load-color">water bottle</span>, and tie a loop in the other end of the string.</li>
+          <li>Hook the loop on a spring scale to weigh the water bottle.</li>
+          <li>Pass the string over the <span class="accent">bottom pulley</span> of your assembly. One partner holds the assembly vertically by its top end.</li>
+          <li>Hook the spring scale on the loop and pull down to measure how much <span class="effort-color">force</span> it takes to lift the bottle.</li>
+        </ol>
+        <p class="ask fragment fade-up">How does the force on the scale compare with the weight of the bottle?</p>
+      </div>
+      <svg class="sys2-fig" viewBox="0 0 520 700" role="img" aria-label="Side view of System 1. A partner holds the two-pulley assembly upright by its top end. A red string runs over the top of the bottom pulley. One end of the string is tied to the water bottle, and the other end is hooked to a spring scale that is pulled downward to lift the bottle.">
+        <defs>
+          <marker id="sys1-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#4dffb0"/>
+          </marker>
+        </defs>
+        <rect width="520" height="700" rx="10" fill="#4c5566"/>
+
+        <!-- pulleys (behind the front rail) -->
+        <circle cx="260" cy="140" r="50" fill="#43439a" stroke="#1c1c55" stroke-width="3"/>
+        <circle cx="260" cy="140" r="42" fill="none" stroke="#2e2e78" stroke-width="3"/>
+        <circle cx="260" cy="400" r="66" fill="#43439a" stroke="#1c1c55" stroke-width="3"/>
+        <circle cx="260" cy="400" r="58" fill="none" stroke="#2e2e78" stroke-width="3"/>
+
+        <!-- red string: bottle, over the bottom pulley, down to the scale -->
+        <path d="M202 564 L202 400 A58 58 0 0 1 318 400 L318 504" fill="none" stroke="#ff3b30" stroke-width="5" stroke-linecap="round"/>
+
+        <!-- front MechRail with holes and axle hubs -->
+        <rect x="238" y="80" width="44" height="380" rx="10" fill="#ecece9" stroke="#1a1a1a" stroke-width="2"/>
+        <g fill="#555e6e" stroke="#1a1a1a" stroke-width="1.5"><circle cx="260" cy="110" r="8"/><circle cx="260" cy="170" r="8"/><circle cx="260" cy="200" r="8"/><circle cx="260" cy="230" r="8"/><circle cx="260" cy="260" r="8"/><circle cx="260" cy="290" r="8"/><circle cx="260" cy="320" r="8"/><circle cx="260" cy="350" r="8"/><circle cx="260" cy="430" r="8"/></g>
+        <g>
+          <circle cx="260" cy="140" r="15" fill="#3fd3e6" stroke="#1a1a1a" stroke-width="2"/>
+          <rect x="253" y="133" width="14" height="14" fill="#111"/>
+          <circle cx="260" cy="400" r="15" fill="#3fd3e6" stroke="#1a1a1a" stroke-width="2"/>
+          <rect x="253" y="393" width="14" height="14" fill="#111"/>
+        </g>
+
+        <!-- partner's hand holding the top end -->
+        <rect x="230" y="34" width="60" height="54" rx="16" fill="#e8c4a0" stroke="#1a1a1a" stroke-width="2"/>
+        <text x="214" y="70" text-anchor="end" class="sys2-label" fill="#5daaff">Hold</text>
+
+        <!-- water bottle on the left end -->
+        <rect x="191" y="560" width="22" height="16" rx="3" fill="#1d4f91" stroke="#0d2747" stroke-width="2"/>
+        <rect x="168" y="574" width="68" height="88" rx="14" fill="#8fd0ff" stroke="#1d4f91" stroke-width="3"/>
+        <rect x="174" y="604" width="56" height="26" fill="#1d4f91" opacity="0.55"/>
+        <text x="152" y="610" text-anchor="end" class="sys2-label" fill="#ff8a80">Water</text>
+        <text x="152" y="644" text-anchor="end" class="sys2-label" fill="#ff8a80">Bottle</text>
+
+        <!-- spring scale on the right end, pulled down -->
+        <line x1="318" y1="504" x2="318" y2="514" stroke="#4dffb0" stroke-width="3"/>
+        <rect x="298" y="514" width="40" height="88" rx="8" fill="#0a1120" stroke="#4dffb0" stroke-width="3"/>
+        <line x1="308" y1="534" x2="328" y2="534" stroke="#4dffb0" stroke-width="2"/>
+        <line x1="308" y1="554" x2="328" y2="554" stroke="#4dffb0" stroke-width="2"/>
+        <line x1="308" y1="574" x2="328" y2="574" stroke="#4dffb0" stroke-width="2"/>
+        <line x1="318" y1="602" x2="318" y2="660" stroke="#4dffb0" stroke-width="4" marker-end="url(#sys1-arrow)"/>
+        <text x="352" y="566" class="sys2-label" fill="#4dffb0">Scale</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 06 · WHAT DID WE JUST SEE?
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">System 1 · Results</span>
+    <h2>What Did We Just See?</h2>
+    <p class="lead">A pulley whose axle stays in one place is called a <span class="accent">fixed pulley</span>.</p>
+    <p class="callout fragment fade-up" style="margin-top:var(--gap-lg);max-width:1250px;font-size:var(--h3);line-height:1.45;">A single fixed pulley <strong>redirects</strong> the effort, but it does not change the amount. If you pull on one end with some force, the other end pulls with the same force.</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 07 · SYSTEM 2: LIFT WITH A MOVING PULLEY
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr auto;">
+      <div>
+        <span class="slide-tag">System 2 · Pulleys in Action</span>
+        <h2>Let the Pulley Move</h2>
+        <ol class="build-steps">
+          <li>Take the water bottle&rsquo;s string out of the pulley. Tie the <span class="load-color">water bottle</span> to a hole in the middle of one MechRail, so the bottle hangs from the assembly.</li>
+          <li>Pass another string around one of the pulleys.</li>
+          <li>One partner holds one end of the string above the bottle and assembly.</li>
+          <li>Hook the spring scale on the other end and pull it <strong>upward</strong> to lift the bottle.</li>
+        </ol>
+        <p class="ask fragment fade-up">What does the scale measure now? How does that compare with System 1?</p>
+      </div>
+      <svg class="sys2-fig" viewBox="0 0 520 800" role="img" aria-label="Side view of System 2. The two-pulley assembly hangs straight down in a loop of red string that passes under its top pulley. The left end of the string is held still by a partner. The right end goes up to a spring scale that is pulled upward. The water bottle hangs from a string tied to a hole in the middle of the MechRail.">
+        <defs>
+          <marker id="sys2-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#4dffb0"/>
+          </marker>
+        </defs>
+        <rect width="520" height="800" rx="10" fill="#4c5566"/>
+
+        <!-- lower pulley, then upper pulley (behind the front rail) -->
+        <circle cx="260" cy="590" r="50" fill="#43439a" stroke="#1c1c55" stroke-width="3"/>
+        <circle cx="260" cy="590" r="42" fill="none" stroke="#2e2e78" stroke-width="3"/>
+        <circle cx="260" cy="230" r="66" fill="#43439a" stroke="#1c1c55" stroke-width="3"/>
+        <circle cx="260" cy="230" r="58" fill="none" stroke="#2e2e78" stroke-width="3"/>
+
+        <!-- red string: held end, under the top pulley, up to the scale -->
+        <path d="M202 44 L202 230 A58 58 0 0 0 318 230 L318 152" fill="none" stroke="#ff3b30" stroke-width="5" stroke-linecap="round"/>
+
+        <!-- front MechRail with holes and axle hubs -->
+        <rect x="238" y="200" width="44" height="420" rx="10" fill="#ecece9" stroke="#1a1a1a" stroke-width="2"/>
+        <g fill="#555e6e" stroke="#1a1a1a" stroke-width="1.5">
+          <circle cx="260" cy="260" r="8"/><circle cx="260" cy="290" r="8"/><circle cx="260" cy="320" r="8"/>
+          <circle cx="260" cy="350" r="8"/><circle cx="260" cy="380" r="8"/><circle cx="260" cy="410" r="8"/>
+          <circle cx="260" cy="440" r="8"/><circle cx="260" cy="470" r="8"/><circle cx="260" cy="500" r="8"/>
+          <circle cx="260" cy="530" r="8"/><circle cx="260" cy="560" r="8"/>
+        </g>
+        <g>
+          <circle cx="260" cy="230" r="15" fill="#3fd3e6" stroke="#1a1a1a" stroke-width="2"/>
+          <rect x="253" y="223" width="14" height="14" fill="#111"/>
+          <circle cx="260" cy="590" r="15" fill="#3fd3e6" stroke="#1a1a1a" stroke-width="2"/>
+          <rect x="253" y="583" width="14" height="14" fill="#111"/>
+        </g>
+
+        <!-- water bottle tied to the middle hole -->
+        <line x1="260" y1="410" x2="260" y2="690" stroke="#1a1a1a" stroke-width="9"/>
+        <line x1="260" y1="410" x2="260" y2="690" stroke="#f2cf7a" stroke-width="5"/>
+        <circle cx="260" cy="410" r="8" fill="#f2cf7a" stroke="#1a1a1a" stroke-width="2"/>
+        <rect x="249" y="686" width="22" height="16" rx="3" fill="#1d4f91" stroke="#0d2747" stroke-width="2"/>
+        <rect x="226" y="700" width="68" height="88" rx="14" fill="#8fd0ff" stroke="#1d4f91" stroke-width="3"/>
+        <rect x="232" y="730" width="56" height="26" fill="#1d4f91" opacity="0.55"/>
+
+        <!-- held end -->
+        <rect x="180" y="20" width="44" height="30" rx="12" fill="#e8c4a0" stroke="#1a1a1a" stroke-width="2"/>
+        <text x="166" y="44" text-anchor="end" class="sys2-label" fill="#5daaff">Hold</text>
+
+        <!-- spring scale pulled upward -->
+        <rect x="298" y="56" width="40" height="88" rx="8" fill="#0a1120" stroke="#4dffb0" stroke-width="3"/>
+        <line x1="308" y1="76" x2="328" y2="76" stroke="#4dffb0" stroke-width="2"/>
+        <line x1="308" y1="96" x2="328" y2="96" stroke="#4dffb0" stroke-width="2"/>
+        <line x1="308" y1="116" x2="328" y2="116" stroke="#4dffb0" stroke-width="2"/>
+        <line x1="318" y1="144" x2="318" y2="154" stroke="#4dffb0" stroke-width="3"/>
+        <line x1="318" y1="56" x2="318" y2="14" stroke="#4dffb0" stroke-width="4" marker-end="url(#sys2-arrow)"/>
+        <text x="352" y="108" class="sys2-label" fill="#4dffb0">Scale</text>
+
+        <text x="310" y="760" class="sys2-label" fill="#ff8a80">Water Bottle</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 08 · SYSTEM 3: BUILD A SECOND ASSEMBLY
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">System 3 · Pulleys in Action</span>
+    <h2>Build a Second Assembly</h2>
+    <p class="prose">Build a second assembly with <span class="accent">three pulleys</span>: a small pulley at each end of the MechRail and a large pulley in the middle.</p>
+    <img class="build-img img-zoomable" style="margin-top:var(--gap-lg);max-height:420px;" src="Pulleys_Assets/build-three-pulleys.jpg" alt="Top view of a single white MechRail with a blue pulley at each end and a larger blue pulley in the center.">
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 09 · SYSTEM 3: USE BOTH ASSEMBLIES TOGETHER
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1.1fr 1fr;">
+      <div>
+        <span class="slide-tag">System 3 · Pulleys in Action</span>
+        <h2>Use Both Assemblies Together</h2>
+        <p class="prose">The new <span class="accent">three-pulley assembly</span> goes on top. One partner holds it in place, so its pulleys stay fixed.</p>
+        <p class="prose">Your first <span class="accent">two-pulley assembly</span> hangs below it, with the <span class="load-color">water bottle</span> still tied to its middle. This assembly moves up with the bottle.</p>
+      </div>
+      <img class="build-img img-zoomable" src="Pulleys_Assets/build-two-assemblies.jpg" alt="Top view of the two assemblies, one above the other. The upper rail holds three pulleys, with a large one in the center. The lower rail holds two small pulleys, one at each end.">
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 10 · ROUTE 3A
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr 1fr;">
+      <div>
+        <span class="slide-tag">System 3 · Pulleys in Action</span>
+        <h2>Route 3A</h2>
+        <p class="prose">Tie a string to the lower assembly and route it around the pulleys as shown in red.</p>
+        <p class="ask fragment fade-up">How much <span class="effort-color">force</span> does the scale need to lift the water bottle?</p>
+      </div>
+      <svg class="route-fig" viewBox="0 0 861 918" role="img" aria-label="Top view of the three-pulley assembly above the two-pulley assembly. A red string is tied to the lower rail, runs up over the large top pulley, down and under the lower right pulley, up over the top right pulley, and down to the scale. The water bottle hangs from the middle of the lower rail.">
+          <defs>
+            <marker id="route-arrow-3a" viewBox="0 0 10 10" refX="3" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#ff3b30" stroke="#3a0905" stroke-width="1"/>
+            </marker>
+          </defs>
+          <image href="Pulleys_Assets/build-two-assemblies.jpg" width="861" height="918"/>
+          <line x1="417" y1="656" x2="417" y2="790" stroke="#1a1a1a" stroke-width="11"/>
+          <line x1="417" y1="656" x2="417" y2="790" stroke="#f2cf7a" stroke-width="6"/>
+          <circle cx="417" cy="656" r="9" fill="#f2cf7a" stroke="#1a1a1a" stroke-width="2"/>
+          <path d="M207.0 656.0 L338.7 232.6 A82 82 0 0 1 490.4 220.4 L716.3 673.3 A41 41 0 0 0 793.9 657.1 L813.9 261.0 A60 60 0 1 0 694.0 256.6 L690.0 430.0" fill="none" stroke="#3a0905" stroke-width="11" stroke-linejoin="round"/>
+          <path d="M207.0 656.0 L338.7 232.6 A82 82 0 0 1 490.4 220.4 L716.3 673.3 A41 41 0 0 0 793.9 657.1 L813.9 261.0 A60 60 0 1 0 694.0 256.6 L690.0 430.0" fill="none" stroke="#ff3b30" stroke-width="6" stroke-linejoin="round" marker-end="url(#route-arrow-3a)"/>
+          <circle cx="207" cy="656" r="9" fill="#ff3b30" stroke="#3a0905" stroke-width="2"/>
+          <text x="690" y="482" text-anchor="middle" class="route-label" fill="#4dffb0">Scale</text>
+          <text x="417" y="840" text-anchor="middle" class="route-label" fill="#ff8a80">Water Bottle</text>
+          <text x="845" y="900" text-anchor="end" class="route-label route-num">3A</text>
+        </svg>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 11 · ROUTE 3B
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr 1fr;">
+      <div>
+        <span class="slide-tag">System 3 · Pulleys in Action</span>
+        <h2>Route 3B</h2>
+        <p class="prose">Keep the water bottle on the lower assembly. Reroute the string as shown, so that it also wraps around the lower left pulley.</p>
+        <p class="ask fragment fade-up">How much <span class="effort-color">force</span> does the scale need to lift the water bottle now?</p>
+      </div>
+      <svg class="route-fig" viewBox="0 0 861 918" role="img" aria-label="Top view of the three-pulley assembly above the two-pulley assembly. The 3A route continues from the top right pulley diagonally down and under the lower left pulley, then up to the scale. The water bottle hangs from the middle of the lower rail.">
+          <defs>
+            <marker id="route-arrow-3b" viewBox="0 0 10 10" refX="3" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#ff3b30" stroke="#3a0905" stroke-width="1"/>
+            </marker>
+          </defs>
+          <image href="Pulleys_Assets/build-two-assemblies.jpg" width="861" height="918"/>
+          <line x1="417" y1="656" x2="417" y2="790" stroke="#1a1a1a" stroke-width="11"/>
+          <line x1="417" y1="656" x2="417" y2="790" stroke="#f2cf7a" stroke-width="6"/>
+          <circle cx="417" cy="656" r="9" fill="#f2cf7a" stroke="#1a1a1a" stroke-width="2"/>
+          <path d="M207.0 656.0 L338.7 232.6 A82 82 0 0 1 490.4 220.4 L716.3 673.3 A41 41 0 0 0 793.9 657.1 L813.9 261.0 A60 60 0 0 0 715.5 212.0 L148.3 686.4 A41 41 0 0 1 81.0 655.0 L81.0 470.0" fill="none" stroke="#3a0905" stroke-width="11" stroke-linejoin="round"/>
+          <path d="M207.0 656.0 L338.7 232.6 A82 82 0 0 1 490.4 220.4 L716.3 673.3 A41 41 0 0 0 793.9 657.1 L813.9 261.0 A60 60 0 0 0 715.5 212.0 L148.3 686.4 A41 41 0 0 1 81.0 655.0 L81.0 470.0" fill="none" stroke="#ff3b30" stroke-width="6" stroke-linejoin="round" marker-end="url(#route-arrow-3b)"/>
+          <circle cx="207" cy="656" r="9" fill="#ff3b30" stroke="#3a0905" stroke-width="2"/>
+          <text x="81" y="450" text-anchor="middle" class="route-label" fill="#4dffb0">Scale</text>
+          <text x="417" y="840" text-anchor="middle" class="route-label" fill="#ff8a80">Water Bottle</text>
+          <text x="845" y="900" text-anchor="end" class="route-label route-num">3B</text>
+        </svg>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 12 · ROUTE 3C
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr 1fr;">
+      <div>
+        <span class="slide-tag">System 3 · Pulleys in Action</span>
+        <h2>Route 3C</h2>
+        <p class="prose">Keep the water bottle on the lower assembly. Reroute the string one more time, so that it also passes over the top left pulley.</p>
+        <p class="ask fragment fade-up">How much <span class="effort-color">force</span> does the scale need to lift the water bottle this time?</p>
+      </div>
+      <svg class="route-fig" viewBox="0 0 861 918" role="img" aria-label="Top view of the three-pulley assembly above the two-pulley assembly. The 3B route continues from the lower left pulley up and over the top left pulley, then down to the scale. The water bottle hangs from the middle of the lower rail.">
+          <defs>
+            <marker id="route-arrow-3c" viewBox="0 0 10 10" refX="3" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#ff3b30" stroke="#3a0905" stroke-width="1"/>
+            </marker>
+          </defs>
+          <image href="Pulleys_Assets/build-two-assemblies.jpg" width="861" height="918"/>
+          <line x1="417" y1="656" x2="417" y2="790" stroke="#1a1a1a" stroke-width="11"/>
+          <line x1="417" y1="656" x2="417" y2="790" stroke="#f2cf7a" stroke-width="6"/>
+          <circle cx="417" cy="656" r="9" fill="#f2cf7a" stroke="#1a1a1a" stroke-width="2"/>
+          <path d="M207.0 656.0 L338.7 232.6 A82 82 0 0 1 490.4 220.4 L716.3 673.3 A41 41 0 0 0 793.9 657.1 L813.9 261.0 A60 60 0 0 0 715.5 212.0 L148.3 686.4 A41 41 0 0 1 82.3 644.7 L179.0 273.4 A61 61 0 1 0 59.0 258.0 L59.0 380.0" fill="none" stroke="#3a0905" stroke-width="11" stroke-linejoin="round"/>
+          <path d="M207.0 656.0 L338.7 232.6 A82 82 0 0 1 490.4 220.4 L716.3 673.3 A41 41 0 0 0 793.9 657.1 L813.9 261.0 A60 60 0 0 0 715.5 212.0 L148.3 686.4 A41 41 0 0 1 82.3 644.7 L179.0 273.4 A61 61 0 1 0 59.0 258.0 L59.0 380.0" fill="none" stroke="#ff3b30" stroke-width="6" stroke-linejoin="round" marker-end="url(#route-arrow-3c)"/>
+          <circle cx="207" cy="656" r="9" fill="#ff3b30" stroke="#3a0905" stroke-width="2"/>
+          <text x="59" y="425" text-anchor="middle" class="route-label" fill="#4dffb0">Scale</text>
+          <text x="417" y="840" text-anchor="middle" class="route-label" fill="#ff8a80">Water Bottle</text>
+          <text x="845" y="900" text-anchor="end" class="route-label route-num">3C</text>
+        </svg>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 13 · DISCUSS: WHAT DID YOU NOTICE?
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Discuss</span>
+    <h2>What Did You Notice?</h2>
+    <div class="prompt-card">
+      <p class="lead">What happened to the <span class="effort-color">force on the scale</span> as the string wrapped around more pulleys?</p>
+      <p class="prompt-hint">Compare your measurements for System 1, System 2, and Routes 3A, 3B, and 3C.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 14 · PULLEYS IN COMBINATION
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Pulley Systems</span>
+    <h2>Pulleys in Combination</h2>
+    <p class="lead">In System 2 and System 3, the lower assembly rode up along with the bottle. A pulley that moves with the load is called a <span class="accent">movable pulley</span>.</p>
+    <p class="lead fragment fade-up">Fixed and movable pulleys in combination are called a <span class="accent">block and tackle</span>. A block and tackle provides <span class="accent">mechanical advantage</span>, and it can also change the direction you pull.</p>
+    <p class="callout fragment fade-up" style="margin-top:var(--gap-lg);max-width:1250px;font-size:var(--h3);">But what is <strong>mechanical advantage</strong>?</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 15 · MECHANICAL ADVANTAGE
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Mechanical Advantage</span>
+    <h2>Mechanical Advantage</h2>
+    <p class="prose"><span class="accent">Mechanical advantage</span> (MA) compares the <span class="load-color">resistance</span>, the weight you are lifting, with the <span class="effort-color">effort</span>, your pull. You can find it from the forces or from the distances each one travels.</p>
+    <div class="eq-panel">
+      <div class="eq eq-row">
+        <span>MA</span><span class="eq-op">=</span>
+        <span class="frac"><span class="load-color">Resistance Force</span><span class="effort-color">Effort Force</span></span>
+      </div>
+      <div class="eq eq-row fragment fade-up">
+        <span>MA</span><span class="eq-op">=</span>
+        <span class="frac"><span class="effort-color">Effort Distance</span><span class="load-color">Resistance Distance</span></span>
+      </div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">The effort distance is how far your hand moves. The resistance distance is how far the weight moves.</p>
+    <p class="ask fragment fade-up">Where have we seen a ratio like this before?</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 16 · IDEAL MECHANICAL ADVANTAGE
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr auto;">
+      <div>
+        <span class="slide-tag">Mechanical Advantage</span>
+        <h2>Ideal Mechanical Advantage</h2>
+        <p class="prose">When a single rope is threaded through a system of pulleys several times, the ideal, or expected, mechanical advantage is easy to count.</p>
+        <div class="eq-panel">
+          <div class="eq eq-row">
+            <span class="accent">IMA</span><span class="eq-op">=</span>
+            <span>number of strands opposing the <span class="load-color">load</span></span>
+          </div>
+        </div>
+        <p class="prose fragment fade-up" style="margin-top:var(--gap);">In this pulley system, <span class="accent">4 blue strands</span> hold up the motorcycle, so the IMA is 4. The <span class="effort-color">green strand</span> is your pull. It pulls in the same direction as the load, so it doesn&rsquo;t count.</p>
+      </div>
+      <svg class="tall-fig" viewBox="0 0 420 900" role="img" aria-label="A block and tackle. Two fixed pulleys hang from the ceiling and two movable pulleys hang below them, holding a 600 lb motorcycle. Four blue rope strands run between the fixed and movable pulleys and hold up the load. A fifth, green strand comes off the top pulley and is pulled down by the person lifting.">
+          <defs>
+            <marker id="bt-arrow-16" viewBox="0 0 10 10" refX="3" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#4dffb0"/>
+            </marker>
+          </defs>
+          <line x1="80" y1="40" x2="320" y2="40" stroke="#e8f2ff" stroke-width="4"/><line x1="100" y1="40" x2="118" y2="20" stroke="#e8f2ff" stroke-width="3"/><line x1="130" y1="40" x2="148" y2="20" stroke="#e8f2ff" stroke-width="3"/><line x1="160" y1="40" x2="178" y2="20" stroke="#e8f2ff" stroke-width="3"/><line x1="190" y1="40" x2="208" y2="20" stroke="#e8f2ff" stroke-width="3"/><line x1="220" y1="40" x2="238" y2="20" stroke="#e8f2ff" stroke-width="3"/><line x1="250" y1="40" x2="268" y2="20" stroke="#e8f2ff" stroke-width="3"/><line x1="280" y1="40" x2="298" y2="20" stroke="#e8f2ff" stroke-width="3"/>
+          <rect x="193" y="40" width="14" height="295" rx="4" fill="#9aa7b8"/>
+          <circle cx="200" cy="335" r="8" fill="none" stroke="#9aa7b8" stroke-width="4"/>
+          <rect x="193" y="540" width="14" height="245" rx="4" fill="#9aa7b8"/>
+          <circle cx="200" cy="130" r="70" fill="#1b2a44" stroke="#e8f2ff" stroke-width="3"/><circle cx="200" cy="130" r="7" fill="#e8f2ff"/><circle cx="200" cy="270" r="40" fill="#1b2a44" stroke="#e8f2ff" stroke-width="3"/><circle cx="200" cy="270" r="7" fill="#e8f2ff"/><circle cx="200" cy="540" r="40" fill="#1b2a44" stroke="#e8f2ff" stroke-width="3"/><circle cx="200" cy="540" r="7" fill="#e8f2ff"/><circle cx="200" cy="690" r="70" fill="#1b2a44" stroke="#e8f2ff" stroke-width="3"/><circle cx="200" cy="690" r="7" fill="#e8f2ff"/>
+          <path d="M200.0 335.0 L239.2 532.2 A40 40 0 1 1 160.0 540.0 L160.0 270.0 A40 40 0 0 1 239.9 267.1 L269.8 685.0 A70 70 0 1 1 130.0 690.0 L130.0 130.0 A70 70 0 0 1 269.0 118.1" fill="none" stroke="#5daaff" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M269.0 118.1 L345.0 560.0" fill="none" stroke="#4dffb0" stroke-width="6" marker-end="url(#bt-arrow-16)"/>
+          <line x1="200" y1="785" x2="210" y2="812" stroke="#9aa7b8" stroke-width="4"/>
+          <g>
+            <path d="M148 852 L188 814 L236 814 L252 796 L266 796 L272 852 Z" fill="#ff8a80"/>
+            <rect x="166" y="804" width="52" height="12" rx="6" fill="#3a1a1a"/>
+            <polyline points="252,798 262,776 280,778" fill="none" stroke="#e8f2ff" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="148" cy="856" r="30" fill="#0a1120" stroke="#e8f2ff" stroke-width="7"/>
+            <circle cx="272" cy="856" r="30" fill="#0a1120" stroke="#e8f2ff" stroke-width="7"/>
+          </g>
+          <text x="16" y="800" class="fig-label" fill="#ff8a80">600 lb</text>
+          <g class="fragment fade-in"><circle cx="130" cy="400" r="19" fill="#0a1120" stroke="#5daaff" stroke-width="3"/><text x="130" y="409" text-anchor="middle" class="fig-badge">1</text><circle cx="160" cy="470" r="19" fill="#0a1120" stroke="#5daaff" stroke-width="3"/><text x="160" y="479" text-anchor="middle" class="fig-badge">2</text><circle cx="209" cy="400" r="19" fill="#0a1120" stroke="#5daaff" stroke-width="3"/><text x="209" y="409" text-anchor="middle" class="fig-badge">3</text><circle cx="254" cy="470" r="19" fill="#0a1120" stroke="#5daaff" stroke-width="3"/><text x="254" y="479" text-anchor="middle" class="fig-badge">4</text></g>
+        </svg>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 17 · IMA PRACTICE: LIFT THE MOTORCYCLE
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:1fr auto;">
+      <div>
+        <span class="slide-tag">Mechanical Advantage</span>
+        <h2>Lift the Motorcycle</h2>
+        <p class="lead">This block and tackle has an IMA of 4. How hard would you need to pull to lift the <span class="load-color">600 lb</span> motorcycle?</p>
+        <div class="eq-panel fragment fade-up">
+          <div class="eq eq-row">
+            <span class="effort-color">Effort Force</span><span class="eq-op">=</span>
+            <span class="frac"><span class="load-color">600 lb</span><span class="accent">4</span></span>
+            <span class="eq-op">=</span>
+            <span class="effort-color">150 lb</span>
+          </div>
+        </div>
+      </div>
+      <svg class="tall-fig" viewBox="0 0 420 900" role="img" aria-label="A block and tackle. Two fixed pulleys hang from the ceiling and two movable pulleys hang below them, holding a 600 lb motorcycle. Four blue rope strands run between the fixed and movable pulleys and hold up the load. A fifth, green strand comes off the top pulley and is pulled down by the person lifting.">
+          <defs>
+            <marker id="bt-arrow-17" viewBox="0 0 10 10" refX="3" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#4dffb0"/>
+            </marker>
+          </defs>
+          <line x1="80" y1="40" x2="320" y2="40" stroke="#e8f2ff" stroke-width="4"/><line x1="100" y1="40" x2="118" y2="20" stroke="#e8f2ff" stroke-width="3"/><line x1="130" y1="40" x2="148" y2="20" stroke="#e8f2ff" stroke-width="3"/><line x1="160" y1="40" x2="178" y2="20" stroke="#e8f2ff" stroke-width="3"/><line x1="190" y1="40" x2="208" y2="20" stroke="#e8f2ff" stroke-width="3"/><line x1="220" y1="40" x2="238" y2="20" stroke="#e8f2ff" stroke-width="3"/><line x1="250" y1="40" x2="268" y2="20" stroke="#e8f2ff" stroke-width="3"/><line x1="280" y1="40" x2="298" y2="20" stroke="#e8f2ff" stroke-width="3"/>
+          <rect x="193" y="40" width="14" height="295" rx="4" fill="#9aa7b8"/>
+          <circle cx="200" cy="335" r="8" fill="none" stroke="#9aa7b8" stroke-width="4"/>
+          <rect x="193" y="540" width="14" height="245" rx="4" fill="#9aa7b8"/>
+          <circle cx="200" cy="130" r="70" fill="#1b2a44" stroke="#e8f2ff" stroke-width="3"/><circle cx="200" cy="130" r="7" fill="#e8f2ff"/><circle cx="200" cy="270" r="40" fill="#1b2a44" stroke="#e8f2ff" stroke-width="3"/><circle cx="200" cy="270" r="7" fill="#e8f2ff"/><circle cx="200" cy="540" r="40" fill="#1b2a44" stroke="#e8f2ff" stroke-width="3"/><circle cx="200" cy="540" r="7" fill="#e8f2ff"/><circle cx="200" cy="690" r="70" fill="#1b2a44" stroke="#e8f2ff" stroke-width="3"/><circle cx="200" cy="690" r="7" fill="#e8f2ff"/>
+          <path d="M200.0 335.0 L239.2 532.2 A40 40 0 1 1 160.0 540.0 L160.0 270.0 A40 40 0 0 1 239.9 267.1 L269.8 685.0 A70 70 0 1 1 130.0 690.0 L130.0 130.0 A70 70 0 0 1 269.0 118.1" fill="none" stroke="#5daaff" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M269.0 118.1 L345.0 560.0" fill="none" stroke="#4dffb0" stroke-width="6" marker-end="url(#bt-arrow-17)"/>
+          <line x1="200" y1="785" x2="210" y2="812" stroke="#9aa7b8" stroke-width="4"/>
+          <g>
+            <path d="M148 852 L188 814 L236 814 L252 796 L266 796 L272 852 Z" fill="#ff8a80"/>
+            <rect x="166" y="804" width="52" height="12" rx="6" fill="#3a1a1a"/>
+            <polyline points="252,798 262,776 280,778" fill="none" stroke="#e8f2ff" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="148" cy="856" r="30" fill="#0a1120" stroke="#e8f2ff" stroke-width="7"/>
+            <circle cx="272" cy="856" r="30" fill="#0a1120" stroke="#e8f2ff" stroke-width="7"/>
+          </g>
+          <text x="16" y="800" class="fig-label" fill="#ff8a80">600 lb</text>
+          <g><circle cx="130" cy="400" r="19" fill="#0a1120" stroke="#5daaff" stroke-width="3"/><text x="130" y="409" text-anchor="middle" class="fig-badge">1</text><circle cx="160" cy="470" r="19" fill="#0a1120" stroke="#5daaff" stroke-width="3"/><text x="160" y="479" text-anchor="middle" class="fig-badge">2</text><circle cx="209" cy="400" r="19" fill="#0a1120" stroke="#5daaff" stroke-width="3"/><text x="209" y="409" text-anchor="middle" class="fig-badge">3</text><circle cx="254" cy="470" r="19" fill="#0a1120" stroke="#5daaff" stroke-width="3"/><text x="254" y="479" text-anchor="middle" class="fig-badge">4</text></g>
+        </svg>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 18 · COMPOUND PULLEY SYSTEMS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <div class="split" style="grid-template-columns:auto 1fr;">
+      <svg class="tall-fig" viewBox="0 0 420 800" role="img" aria-label="A compound pulley system with three movable pulleys, each on its own rope. An 80 lbf load hangs from the bottom pulley, whose rope carries 40 lbf in each strand. That rope hangs from the middle pulley, whose rope carries 20 lbf in each strand. That rope hangs from the top pulley, whose rope carries 10 lbf in each strand, and the free end of the top rope is pulled up with 10 lbf of effort.">
+          <defs>
+            <marker id="cp-arrow" viewBox="0 0 10 10" refX="3" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#4dffb0"/>
+            </marker>
+          </defs>
+          <line x1="40" y1="60" x2="262" y2="60" stroke="#e8f2ff" stroke-width="4"/><line x1="56" y1="60" x2="74" y2="40" stroke="#e8f2ff" stroke-width="3"/><line x1="86" y1="60" x2="104" y2="40" stroke="#e8f2ff" stroke-width="3"/><line x1="116" y1="60" x2="134" y2="40" stroke="#e8f2ff" stroke-width="3"/><line x1="146" y1="60" x2="164" y2="40" stroke="#e8f2ff" stroke-width="3"/><line x1="176" y1="60" x2="194" y2="40" stroke="#e8f2ff" stroke-width="3"/><line x1="206" y1="60" x2="224" y2="40" stroke="#e8f2ff" stroke-width="3"/><line x1="236" y1="60" x2="254" y2="40" stroke="#e8f2ff" stroke-width="3"/>
+          <line x1="244" y1="200" x2="244" y2="278" stroke="#9aa7b8" stroke-width="8" stroke-linecap="round"/><circle cx="244" cy="278" r="7" fill="none" stroke="#9aa7b8" stroke-width="4"/><line x1="192" y1="380" x2="192" y2="458" stroke="#9aa7b8" stroke-width="8" stroke-linecap="round"/><circle cx="192" cy="458" r="7" fill="none" stroke="#9aa7b8" stroke-width="4"/><line x1="140" y1="560" x2="140" y2="638" stroke="#9aa7b8" stroke-width="8" stroke-linecap="round"/><circle cx="140" cy="638" r="7" fill="none" stroke="#9aa7b8" stroke-width="4"/><path d="M88 60 L88 560 A52 52 0 0 0 192 560 L192 458" fill="none" stroke="#5daaff" stroke-width="6"/><path d="M140 60 L140 380 A52 52 0 0 0 244 380 L244 278" fill="none" stroke="#5daaff" stroke-width="6"/><path d="M192 60 L192 200 A52 52 0 0 0 296 200" fill="none" stroke="#5daaff" stroke-width="6"/><circle cx="244" cy="200" r="52" fill="#1b2a44" stroke="#e8f2ff" stroke-width="3"/><circle cx="244" cy="200" r="7" fill="#e8f2ff"/><circle cx="192" cy="380" r="52" fill="#1b2a44" stroke="#e8f2ff" stroke-width="3"/><circle cx="192" cy="380" r="7" fill="#e8f2ff"/><circle cx="140" cy="560" r="52" fill="#1b2a44" stroke="#e8f2ff" stroke-width="3"/><circle cx="140" cy="560" r="7" fill="#e8f2ff"/>
+          <path d="M296 200 L296 26" fill="none" stroke="#4dffb0" stroke-width="6" marker-end="url(#cp-arrow)"/>
+          <text x="312" y="70" class="fig-label" fill="#4dffb0">10 lbf</text>
+          <text x="312" y="104" class="fig-label" fill="#4dffb0">effort</text>
+          <line x1="140" y1="638" x2="140" y2="660" stroke="#9aa7b8" stroke-width="4"/>
+          <path d="M114 660 L166 660 L184 730 L96 730 Z" fill="#ff8a80"/>
+          <text x="202" y="710" class="fig-label" fill="#ff8a80">80 lbf load</text>
+          <text x="140" y="480" text-anchor="middle" class="fig-label fig-tension">40 lbf</text><text x="192" y="300" text-anchor="middle" class="fig-label fig-tension">20 lbf</text><text x="244" y="125" text-anchor="middle" class="fig-label fig-tension">10 lbf</text>
+        </svg>
+      <div>
+        <span class="slide-tag">Pulley Systems</span>
+        <h2>Compound Pulley Systems</h2>
+        <p class="prose">Pulleys can also be combined using <span class="accent">separate ropes</span>. The output of one pulley system becomes the input of the next, creating a <span class="accent">compound machine</span>.</p>
+        <p class="prose fragment fade-up">Each movable pulley here cuts the force in half. The <span class="load-color">80 lbf</span> load becomes 40, then 20, then only <span class="effort-color">10 lbf</span> of effort, so the total IMA is 2 &times; 2 &times; 2 = 8.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 19 · ACTUAL MECHANICAL ADVANTAGE
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Mechanical Advantage</span>
+    <h2>Actual Mechanical Advantage</h2>
+    <p class="prose">Ideal mechanical advantage is just that: the mechanical advantage in an <span class="accent">ideal</span> situation. In the real world, factors such as <span class="loss-color">friction</span> in the pulleys, the <span class="loss-color">weight</span> of the moving pulleys, and the <span class="loss-color">angle</span> of the rope change the ratio we actually see.</p>
+    <p class="prose fragment fade-up">To find the <span class="accent">actual mechanical advantage</span> (AMA), you have to run the experiment and measure the forces, which takes all of those factors into account.</p>
+    <div class="eq-panel fragment fade-up">
+      <div class="eq eq-row">
+        <span class="accent">AMA</span><span class="eq-op">=</span>
+        <span class="frac"><span class="load-color">F<sub>R</sub></span><span class="effort-color">F<sub>E</sub></span></span>
+        <span class="eq-op">=</span>
+        <span class="frac"><span class="load-color">Resistance Force</span><span class="effort-color">Effort Force</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 20 · MECHANICAL ADVANTAGE TRADE-OFFS
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Mechanical Advantage</span>
+    <h2>Mechanical Advantage Trade-Offs</h2>
+    <p class="prose">Just like gear ratios, mechanical advantage involves trade-offs. For both mechanical advantage and gear ratios, <span class="accent">1 is the break-even number</span>.</p>
+    <div class="pair-grid">
+      <div class="info-card fragment fade-up">
+        <h3>MA Greater Than 1</h3>
+        <p><span class="effort-color">Less effort force</span> is needed to overcome the resistance, but your hand has to move a <span class="effort-color">longer distance</span> to move the resistance.</p>
+      </div>
+      <div class="info-card fragment fade-up">
+        <h3>MA Less Than 1</h3>
+        <p><span class="effort-color">More effort force</span> is needed to overcome the resistance, but your hand only has to move a <span class="effort-color">shorter distance</span> to move the resistance.</p>
+      </div>
+    </div>
+    <p class="callout-warn fragment fade-up" style="margin-top:var(--gap-lg);max-width:1250px;">Mechanical advantage is always <strong>greater than 0</strong>. It can never be zero or negative.</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SLIDE 21 · YOUR TURN
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Your Turn</span>
+    <h2>Design Two Pulley Systems</h2>
+    <p class="prose">With your partner, build two pulley systems that are different from the ones we have already tried.</p>
+    <div class="pair-grid">
+      <div class="info-card">
+        <h3>System A: One String</h3>
+        <p>Use <span class="accent">multiple pulleys</span> with a single string threaded through them all.</p>
+      </div>
+      <div class="info-card">
+        <h3>System B: Compound</h3>
+        <p>Use <span class="accent">multiple strings</span>, where one string&rsquo;s system acts as the resistance for the next.</p>
+      </div>
+    </div>
+    <p class="ask">Find the <span class="accent">IMA</span> and the <span class="accent">AMA</span> of each system. Are they the same? If not, what do you think is causing the difference?</p>
+  </div>
+</section>
+
+
+</div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'pulleys',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
