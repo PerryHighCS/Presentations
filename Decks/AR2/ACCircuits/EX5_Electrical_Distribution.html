@@ -218,7 +218,7 @@
   cursor: pointer;
 }
 .sim-btn.restore { background: var(--accent); }
-.sim-btn.restore:not(.on) { display: none; }
+.sim-btn.restore:not(.on) { visibility: hidden; } /* keep its space so the layout does not jump */
 .sim-btn:active { transform: translateY(1px); }
 .sim-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: var(--gap-sm); }
 .sim-chip {
@@ -236,6 +236,11 @@
 .sim-chip.bad { border-color: rgba(255,138,128,0.45); background: rgba(255,138,128,0.1); color: var(--text); }
 .sim-chip.bad b { color: var(--fault); }
 .sim-chip.cond-show:not(.on) { display: none; }
+/* Fixed chip widths so changing status text does not reflow the row */
+.prot-sim .sim-chip { text-align: center; box-sizing: border-box; }
+.prot-sim .sim-chip[data-chip="device"] { min-width: calc(21ch + 26px); }
+.prot-sim .sim-chip[data-chip="lamp"] { min-width: calc(9ch + 26px); }
+.prot-sim .sim-chip[data-chip="count"] { min-width: calc(15ch + 26px); }
 
 @media (prefers-reduced-motion: reduce) {
   .prot-sim .flow.on { animation: none; }
@@ -726,7 +731,7 @@
   <div class="slide-inner">
     <span class="slide-tag">Fuses and Circuit Breakers · Try It</span>
     <h2>Blow It, Trip It, <span class="prot">Fix It</span></h2>
-    <div class="split" style="grid-template-columns:1fr 1.2fr;align-items:center;">
+    <div class="split" style="grid-template-columns:1.15fr 1fr;align-items:start;">
 
       <div class="prot-sim">
         <svg viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive circuit: an ac source feeds a lamp through a protection device, either a fuse or a circuit breaker. A fault switch can short-circuit the lamp.">
@@ -744,7 +749,7 @@
           <!-- ac source -->
           <circle cx="130" cy="230" r="34" class="sym" style="fill:#0d1117;"/>
           <path d="M110,230 q10,-18 20,0 t20,0" class="sym"/>
-          <text x="84" y="236" class="lbl" text-anchor="end">AC source</text>
+          <text x="180" y="242" class="lbl">AC source</text>
           <circle cx="600" cy="80" r="6" class="node"/>
           <circle cx="600" cy="380" r="6" class="node"/>
 
@@ -774,8 +779,8 @@
           <line x1="600" y1="196" x2="600" y2="262" class="sym blade" data-when="faultclosed" style="transform-origin:600px 196px;"/>
           <circle cx="600" cy="196" r="6" class="term"/>
           <circle cx="600" cy="264" r="6" class="term"/>
-          <text x="576" y="224" class="lbl" text-anchor="end">Fault</text>
-          <text x="576" y="244" class="lbl" text-anchor="end">switch</text>
+          <text x="548" y="222" class="lbl" text-anchor="end">Fault</text>
+          <text x="548" y="262" class="lbl" text-anchor="end">switch</text>
           <rect x="560" y="180" width="80" height="100" rx="8" class="hit" data-act="fault"/>
           <rect x="560" y="180" width="80" height="100" rx="8" class="hit-ring"/>
 
