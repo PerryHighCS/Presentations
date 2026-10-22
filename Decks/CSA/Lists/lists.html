@@ -438,13 +438,13 @@
       <div class="fragment fade" style="grid-area:1/1; background:#07100a;">
         <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:var(--gap-sm);">After growth: same object, new internal array</p>
         <!-- Two rows + SVG diagonal arrow from ArrayList object to new array -->
-        <!-- Approx px: list≈239w, →≈22w, obj≈137w, gap=26 → obj right-edge≈450; new arr center-y≈111 -->
-        <div style="position:relative; display:flex; flex-direction:column; gap:var(--gap-sm);">
+        <!-- The path is drawn by drawGrowthArrow() at the bottom, from .growth-from to .growth-to -->
+        <div class="growth-diagram" style="position:relative; display:flex; flex-direction:column; gap:var(--gap-sm);">
           <!-- Row 1: list → ArrayList object | dim old [a,b,c] (hidden arrow keeps column width) -->
           <div class="mem-chain">
             <div class="mem-obj hi-a" style="min-width:120px;">ArrayList&lt;String&gt;<br><span style="font-style:italic;">list</span></div>
             <span class="mem-arrow">→</span>
-            <div class="mem-obj hi-p" style="min-width:130px;">ArrayList<br><span style="font-style:italic;">object</span></div>
+            <div class="mem-obj hi-p growth-from" style="min-width:130px;">ArrayList<br><span style="font-style:italic;">object</span></div>
             <span class="mem-arrow" style="visibility:hidden;">→</span>
             <div class="arr-1d" style="opacity:0.5;">
               <div class="arr-cell" style="border-style:dashed;">a</div>
@@ -458,7 +458,7 @@
             <span class="mem-arrow" style="visibility:hidden;">→</span>
             <div class="mem-obj" style="min-width:130px;visibility:hidden;">ArrayList<br>object</div>
             <span class="mem-arrow" style="visibility:hidden;">→</span>
-            <div class="arr-1d">
+            <div class="arr-1d growth-to">
               <div class="arr-cell">a</div>
               <div class="arr-cell">b</div>
               <div class="arr-cell">c</div>
@@ -472,7 +472,7 @@
                 <polygon points="0 0, 8 3, 0 6" fill="var(--phosphor-dim)"/>
               </marker>
             </defs>
-            <path d="M 450,33 C 470,33 470,90 510,90"
+            <path class="growth-arrow" d=""
                   stroke="var(--phosphor-dim)" stroke-width="1.5" fill="none"
                   marker-end="url(#arr-obj-new)"/>
           </svg>
@@ -1413,6 +1413,30 @@ initSyncDeckReveal({
     margin: 0.04,
     minScale: 0.2,
     maxScale: 2.5,
+  },
+  afterInit: function (Reveal) {
+    // Slide 11: point the growth arrow from the ArrayList object to the new
+    // array, measured from the rendered boxes so font metrics can't misalign it.
+    function drawGrowthArrow() {
+      document.querySelectorAll('.growth-diagram').forEach(function (box) {
+        if (!box.offsetWidth) return;  // slide not laid out yet
+        var scale = box.getBoundingClientRect().width / box.offsetWidth;
+        var b = box.getBoundingClientRect();
+        var from = box.querySelector('.growth-from').getBoundingClientRect();
+        var to = box.querySelector('.growth-to').getBoundingClientRect();
+        var x1 = (from.right - b.left) / scale + 4;
+        var y1 = ((from.top + from.bottom) / 2 - b.top) / scale;
+        var x2 = (to.left - b.left) / scale - 4;
+        var y2 = ((to.top + to.bottom) / 2 - b.top) / scale;
+        var mid = (x1 + x2) / 2;
+        box.querySelector('.growth-arrow').setAttribute('d',
+          'M ' + x1 + ',' + y1 + ' C ' + mid + ',' + y1 + ' ' + mid + ',' + y2 + ' ' + x2 + ',' + y2);
+      });
+    }
+    drawGrowthArrow();
+    Reveal.on('slidechanged', drawGrowthArrow);
+    Reveal.on('resize', drawGrowthArrow);
+    if (document.fonts) document.fonts.ready.then(drawGrowthArrow);
   },
 });
 </script>
