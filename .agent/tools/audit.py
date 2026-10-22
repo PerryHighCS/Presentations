@@ -11,8 +11,9 @@ fragments revealed. Checks, in 1600x900 canvas coordinates:
   CLIPPED   a box with overflow hidden/clip/auto cuts off part of its
             content at its padding edge, which OVERFLOW can't see
   SIZE      text below the AGENTS.md floors: under 22px (under 24px for code)
-            fails; 22-29px inside a paragraph or list item is flagged for a
-            role check, since body text should be 30px. Sub/superscripts are
+            fails; 22-29px inside a paragraph or list item, or any element
+            holding a run of more than nine words, is flagged for a role
+            check, since body text should be 30px. Sub/superscripts are
             measured against 75% of their parent. .slide-tag eyebrows and the
             slide counter are exempt.
   CONTRAST  text color (times ancestor opacity) composited over the ancestor
@@ -118,7 +119,8 @@ AUDIT_JS = r"""
     const where = svg ? ' (svg)' : '';
     if (px < floor - 0.5) {
       out.size.push('FAIL ' + px.toFixed(1) + 'px' + where + ' ' + label(e));
-    } else if (!isCode && !subsup && !svg && px < 29.5 && e.closest('p, li') &&
+    } else if (!isCode && !subsup && !svg && px < 29.5 &&
+               (e.closest('p, li') || [...e.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim().split(/\s+/).length > 9) &&
                !e.closest('[class*="-num"], [class*="-tag"], [class*="-label"], [class*="badge"], [class*="chip"]')) {
       out.size.push('CHECK ' + px.toFixed(1) + 'px body text? ' + label(e));
     }
