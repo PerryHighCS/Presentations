@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta name="syncdeck-permalink" content="a76zjq">
-<meta name="syncdeck-projects" content="em-dashes">
+<meta name="syncdeck-projects" content="em-dashes readability">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3.1-3.2 Graphics, Events, and MVC</title>
@@ -11,8 +11,8 @@
 <style>
   /* ── Deck-specific: coordinate/anatomy diagrams and the MVC legend ─── */
   .diagram { display: block; margin: 0 auto; max-width: 100%; height: auto; overflow: visible; }
-  .diagram text { font-family: var(--font-mono); font-size: 13px; fill: var(--text-muted); }
-  .diagram .dim { fill: var(--text-dim); }
+  .diagram text { font-family: var(--font-mono); font-size: 22px; fill: var(--text-muted); }  /* diagrams render at scale 1 */
+  .diagram .dim { fill: var(--text-muted); }
   .diagram .axis { stroke: var(--accent); stroke-width: 2; }
   .diagram .edge { stroke: var(--accent-border); stroke-width: 1.5; }
   .diagram .rect-fill { fill: rgba(242,177,52,0.14); stroke: var(--accent); stroke-width: 2; }
@@ -30,7 +30,7 @@
     border-radius: 8px;
     color: var(--accent);
     font-family: var(--font-mono);
-    font-size: 18px;
+    font-size: var(--small);
     font-weight: 700;
     text-decoration: none;
     letter-spacing: 0.04em;
@@ -41,7 +41,7 @@
      Nudge the code down a size and let a stray long line scroll rather
      than clip inside the rounded card. */
   .code-body { overflow-x: auto; }
-  .code-body pre code { font-size: 17px; line-height: 1.65; }
+  .code-body pre code { line-height: 1.5; }
 
   /* ── Slide 17: simulated "run" of the onMousePress program ──────────
      A fake Run button opens an absolutely-positioned overlay (sibling of
@@ -96,7 +96,7 @@
     border-bottom: 1px solid var(--accent-border);
     font-family: var(--font-mono);
     font-size: var(--small);
-    color: var(--text-dim);
+    color: var(--text-muted);
   }
   .sim-close {
     background: none;
@@ -132,7 +132,7 @@
     justify-content: center;
     text-align: center;
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: var(--small);
     line-height: 1.6;
     color: #9aa3ab;
     pointer-events: none;
@@ -156,10 +156,10 @@
   .sim-console-bar {
     padding: 6px 16px;
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: var(--small);
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--text-dim);
+    color: var(--text-muted);
     background: rgba(0,0,0,0.28);
   }
   .sim-console-out {
@@ -167,8 +167,8 @@
     overflow-y: auto;
     padding: 10px 16px;
     font-family: var(--font-mono);
-    font-size: 14px;
-    line-height: 1.65;
+    font-size: var(--code);
+    line-height: 1.5;  /* exactly three 24px lines in the 128px box */
     color: var(--result);
     background: #0c0906;
     white-space: pre-wrap;
@@ -204,7 +204,7 @@
     gap: var(--gap-lg);
     align-items: start;
   }
-  .mvc-sort-code .code-body pre code { font-size: 15px; line-height: 1.7; }
+  .mvc-sort-code .code-body pre code { line-height: 1.4; }
 
   .mvc-sort-right { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
   .mvc-sort-status { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -259,7 +259,7 @@
   .mvc-drag:hover { background: rgba(242,177,52,0.24); outline-color: var(--accent); }
   .mvc-drag:active { cursor: grabbing; }
   .mvc-drag.is-selected { background: rgba(242,177,52,0.32); outline: 1px solid var(--accent); box-shadow: 0 0 0 2px rgba(242,177,52,0.25); }
-  .mvc-drag.is-claimed { outline: none; background: transparent; opacity: 0.35; text-decoration: line-through; cursor: default; }
+  .mvc-drag.is-claimed { outline: none; background: transparent; opacity: 0.6; text-decoration: line-through; cursor: default; }
   .mvc-drag:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .mvc-sort-code.is-drop-target { outline: 1px dashed var(--accent-border); }
 
@@ -278,7 +278,7 @@
   .mvc-bin-hdr-draw  { color: var(--result);        background: rgba(124,217,146,0.10); border-color: rgba(124,217,146,0.35); }
   .mvc-bin-hdr-event { color: var(--syntax-number); background: rgba(201,164,255,0.10); border-color: rgba(201,164,255,0.35); }
   .mvc-bin-items {
-    min-height: 54px;
+    min-height: 70px;  /* one row of 22px chips, so bins don't grow as they fill */
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
@@ -298,7 +298,7 @@
     border: 1px solid var(--accent-border);
     background: rgba(242,177,52,0.06);
     font-family: var(--font-mono);
-    font-size: 15px;
+    font-size: var(--small);
     color: var(--text);
     cursor: grab;
     user-select: none;
@@ -329,7 +329,7 @@
   .mvc-sort-overlay.is-visible .mvc-sort-badge { animation: mvc-sort-pop 0.7s var(--ease) both; }
   .mvc-sort-check { font-size: 190px; line-height: 1; color: var(--result); filter: drop-shadow(0 0 44px rgba(124,217,146,0.5)); }
   .mvc-sort-text { font-family: var(--font-ui); font-size: 74px; font-weight: 800; color: var(--text); text-shadow: 0 0 30px rgba(124,217,146,0.4); }
-  .mvc-sort-hint { font-family: var(--font-mono); font-size: var(--small); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+  .mvc-sort-hint { font-family: var(--font-mono); font-size: var(--small); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
   @keyframes mvc-sort-pop {
     0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
     55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
@@ -484,12 +484,12 @@
           <p style="font-size:var(--body);margin-top:var(--gap);">
             Add <code style="color:var(--text);">fill='blue'</code> to set the color. Any name from the CMU color list works.
           </p>
-          <p style="font-size:var(--small);color:var(--text);margin-top:var(--gap);">
+          <p style="color:var(--text);margin-top:var(--gap);">
             <code>drawRect(0, 0, 100, 200, fill='blue')</code> means: left at x=0, top at y=0, 100 wide, 200 tall.
           </p>
         </div>
         <div>
-          <svg class="diagram" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="A rectangle positioned by its left edge, top edge, width, and height, measured from the top-left origin of the canvas.">
+          <svg class="diagram" width="430" height="300" viewBox="0 0 430 300" role="img" aria-label="A rectangle positioned by its left edge, top edge, width, and height, measured from the top-left origin of the canvas.">
             <line class="edge" x1="34" y1="26" x2="360" y2="26"></line>
             <line class="edge" x1="34" y1="26" x2="34" y2="282"></line>
             <text x="6" y="18" class="dim">(0,0)</text>
@@ -497,7 +497,7 @@
             <line class="axis" x1="34" y1="96" x2="160" y2="96" stroke-dasharray="4 4"></line>
             <text x="97" y="88" text-anchor="middle">left</text>
             <line class="axis" x1="130" y1="26" x2="130" y2="124" stroke-dasharray="4 4"></line>
-            <text x="137" y="82">top</text>
+            <text x="138" y="80">top</text>
             <line class="axis" x1="160" y1="252" x2="310" y2="252"></line>
             <text x="235" y="274" text-anchor="middle">width</text>
             <line class="axis" x1="330" y1="124" x2="330" y2="234"></line>
@@ -516,7 +516,7 @@
       <div class="slide-inner">
         <span class="slide-tag">Tool &middot; Video</span>
         <h2 style="margin-bottom:var(--gap-sm);">Using the Inspector</h2>
-        <p style="font-size:var(--small);color:var(--text-dim);margin-bottom:var(--gap);">
+        <p style="color:var(--text-muted);margin-bottom:var(--gap);">
           When you hover over a running drawing, the <span style="color:var(--accent);">Inspector</span> shows you the exact coordinates and sizes of every shape. It is how you figure out the numbers you need to reproduce a drawing yourself. Watch carefully.
         </p>
         <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
@@ -533,7 +533,7 @@
       <div class="slide-inner">
         <span class="slide-tag">Tool &middot; Video</span>
         <h2 style="margin-bottom:var(--gap-sm);">Using the Autograder with Graphics</h2>
-        <p style="font-size:var(--small);color:var(--text-dim);margin-bottom:var(--gap);">
+        <p style="color:var(--text-muted);margin-bottom:var(--gap);">
           You already know the <span style="color:var(--accent);">Autograder</span> checks your code for correctness. It works a little differently for graphics, because it has to compare what you drew against what was expected. This video shows how.
         </p>
         <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
@@ -558,16 +558,16 @@
           </ul>
         </div>
         <div>
-          <svg class="diagram" width="320" height="300" viewBox="0 0 320 300" role="img" aria-label="The canvas as a square. The origin is the top-left corner. X increases to the right, Y increases downward, and the center is at half the width and half the height.">
-            <rect class="edge" x="24" y="24" width="252" height="236" fill="rgba(242,177,52,0.04)"></rect>
-            <text x="6" y="18" class="dim">(0,0)</text>
-            <text x="272" y="250" text-anchor="end" class="dim">(app.width, app.height)</text>
-            <line class="axis" x1="24" y1="24" x2="150" y2="24" marker-end="url(#ah)"></line>
-            <line class="axis" x1="24" y1="24" x2="24" y2="150" marker-end="url(#ah)"></line>
-            <text x="140" y="40">x</text>
-            <text x="34" y="142">y</text>
-            <circle cx="150" cy="142" r="4" fill="var(--result)"></circle>
-            <text x="150" y="166" text-anchor="middle" style="fill:var(--result);">center</text>
+          <svg class="diagram" width="370" height="320" viewBox="0 0 370 320" role="img" aria-label="The canvas as a square. The origin is the top-left corner. X increases to the right, Y increases downward, and the center is at half the width and half the height.">
+            <rect class="edge" x="24" y="30" width="320" height="236" fill="rgba(242,177,52,0.04)"></rect>
+            <text x="4" y="22" class="dim">(0,0)</text>
+            <text x="344" y="296" text-anchor="end" class="dim">(app.width, app.height)</text>
+            <line class="axis" x1="24" y1="30" x2="170" y2="30" marker-end="url(#ah)"></line>
+            <line class="axis" x1="24" y1="30" x2="24" y2="170" marker-end="url(#ah)"></line>
+            <text x="158" y="56">x</text>
+            <text x="36" y="162">y</text>
+            <circle cx="184" cy="148" r="5" fill="var(--result)"></circle>
+            <text x="184" y="180" text-anchor="middle" style="fill:var(--result);">center</text>
             <defs>
               <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
                 <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"></path>
@@ -640,7 +640,7 @@
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:center-rect:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"The canvas is 400 by 400. Which call draws a 100-wide, 40-tall rectangle centered on the canvas?","order":0,"responseTimeLimitMs":40000,"options":[{"id":"q1b","text":"drawRect(200, 200, 100, 40)","isCorrect":false},{"id":"q1a","text":"drawRect(150, 180, 100, 40)","isCorrect":true},{"id":"q1d","text":"drawRect(100, 40, 200, 200)","isCorrect":false},{"id":"q1c","text":"drawRect(50, 20, 100, 40)","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"The canvas is 400 by 400. Which call draws a 100-wide, 40-tall rectangle centered on the canvas?","order":0,"responseTimeLimitMs":40000,"options":[{"id":"q1a","text":"drawRect(200, 200, 100, 40)","isCorrect":false},{"id":"q1b","text":"drawRect(150, 180, 100, 40)","isCorrect":true},{"id":"q1c","text":"drawRect(100, 40, 200, 200)","isCorrect":false},{"id":"q1d","text":"drawRect(50, 20, 100, 40)","isCorrect":false}]}]}'>
       <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-90px;right:6%;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint &middot; Centering</span>
@@ -893,7 +893,7 @@
       <div class="slide-inner">
         <span class="slide-tag">Tool &middot; Video</span>
         <h2 style="margin-bottom:var(--gap-sm);">Autograding Animations</h2>
-        <p style="font-size:var(--small);color:var(--text-dim);margin-bottom:var(--gap);">
+        <p style="color:var(--text-muted);margin-bottom:var(--gap);">
           Once your app responds to events, the <span style="color:var(--accent);">Autograder</span> needs to simulate those events and check the result after each one. There are details you need to know so it works for you. Watch closely.
         </p>
         <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
@@ -907,7 +907,7 @@
       <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
         <span class="slide-tag">Sort the Work</span>
         <h2 style="margin-bottom:var(--gap-sm);">Which part of the program does each job?</h2>
-        <p style="font-size:var(--small);color:var(--text-dim);max-width:1200px;margin-bottom:var(--gap);">
+        <p style="color:var(--text-muted);max-width:1200px;margin-bottom:var(--gap);">
           Drag the <span style="color:var(--accent);">highlighted parts</span> of <code style="color:var(--text);">main.py</code> into the job they do. Some parts hold the data the app remembers, one part draws the picture, and some parts run when something happens. Press <span style="color:var(--result);">Check</span> when all four are placed. (Drag a piece back onto the code to undo.)
         </p>
 
@@ -984,15 +984,15 @@
         <div style="display:flex;gap:var(--gap);margin-top:var(--gap-lg);">
           <div class="key-prop fragment fade-up" style="flex:1;">
             <strong style="color:var(--accent);">Clean design</strong><br>
-            <span style="font-size:var(--small);color:var(--text);">Event-handling code is kept separate from drawing code. This <span style="color:var(--accent)">separation of concerns</span> means fewer bugs and clearer thinking.</span>
+            <span style="color:var(--text-muted);">Event-handling code is kept separate from drawing code. This <span style="color:var(--accent)">separation of concerns</span> means fewer bugs and clearer thinking.</span>
           </div>
           <div class="key-prop fragment fade-up" style="flex:1;">
             <strong style="color:var(--result);">Scalability</strong><br>
-            <span style="font-size:var(--small);color:var(--text);">As a project grows, the <span style="color:var(--accent)">MVC structure</span> keeps the complexity manageable instead of letting it overwhelm you.</span>
+            <span style="color:var(--text-muted);">As a project grows, the <span style="color:var(--accent)">MVC structure</span> keeps the complexity manageable instead of letting it overwhelm you.</span>
           </div>
           <div class="key-prop fragment fade-up" style="flex:1;">
             <strong style="color:var(--syntax-number);">Real-world fit</strong><br>
-            <span style="font-size:var(--small);color:var(--text);">Real web and mobile frameworks are built on the same idea. Learning it here prepares you for them.</span>
+            <span style="color:var(--text-muted);">Real web and mobile frameworks are built on the same idea. Learning it here prepares you for them.</span>
           </div>
         </div>
         <p class="fragment fade-up" style="font-size:var(--body);margin-top:var(--gap-lg);max-width:1150px;">
@@ -1107,7 +1107,7 @@
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:mvc-violations:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"This code is an MVC Violation. It runs fine until you press the mouse, then it crashes.\n\n```python\ndef onMousePress(app, mouseX, mouseY):\n    app.rectLeft = mouseX\n    app.rectTop = mouseY\n    redrawAll(app)   # MVC Violation\n```\n\nWhy does the error only appear after a mouse press, not sooner?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1b","text":"onMousePress illegally modifies app.rectLeft.","isCorrect":false},{"id":"q1c","text":"MVC Violations can only happen after a mouse press.","isCorrect":false},{"id":"q1a","text":"The illegal call to redrawAll is inside onMousePress, which does not run until the mouse is pressed.","isCorrect":true},{"id":"q1d","text":"None of these.","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"This code is also an MVC Violation. It crashes immediately, before you ever touch the mouse.\n\n```python\ndef redrawAll(app):\n    drawRect(app.rectLeft, app.rectTop, 50, 50, fill=&#39;cyan&#39;)\n    app.rectLeft = 50   # MVC Violation\n```\n\nWhy does the error appear right at startup?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2c","text":"onAppStart illegally modifies app.rectLeft.","isCorrect":false},{"id":"q2a","text":"redrawAll illegally modifies app.rectLeft, and redrawAll runs when the app starts, right after onAppStart.","isCorrect":true},{"id":"q2b","text":"An illegal call to redrawAll was placed in onAppStart.","isCorrect":false},{"id":"q2d","text":"None of these.","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"This code is an MVC Violation. It runs fine until you press the mouse, then it crashes.\n\n```python\ndef onMousePress(app, mouseX, mouseY):\n    app.rectLeft = mouseX\n    app.rectTop = mouseY\n    redrawAll(app)   # MVC Violation\n```\n\nWhy does the error only appear after a mouse press, not sooner?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"onMousePress illegally modifies app.rectLeft.","isCorrect":false},{"id":"q1b","text":"MVC Violations can only happen after a mouse press.","isCorrect":false},{"id":"q1c","text":"The illegal call to redrawAll is inside onMousePress, which does not run until the mouse is pressed.","isCorrect":true},{"id":"q1d","text":"None of these.","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"This code is also an MVC Violation. It crashes immediately, before you ever touch the mouse.\n\n```python\ndef redrawAll(app):\n    drawRect(app.rectLeft, app.rectTop, 50, 50, fill=&#39;cyan&#39;)\n    app.rectLeft = 50   # MVC Violation\n```\n\nWhy does the error appear right at startup?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"redrawAll illegally modifies app.rectLeft, and redrawAll runs when the app starts, right after onAppStart.","isCorrect":true},{"id":"q2b","text":"onAppStart illegally modifies app.rectLeft.","isCorrect":false},{"id":"q2c","text":"An illegal call to redrawAll was placed in onAppStart.","isCorrect":false},{"id":"q2d","text":"None of these.","isCorrect":false}]}]}'>
       <div class="glow" style="width:450px;height:450px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);top:-90px;right:6%;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint &middot; MVC Violations</span>
