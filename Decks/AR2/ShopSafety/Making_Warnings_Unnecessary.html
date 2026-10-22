@@ -311,9 +311,18 @@
 .ppe-slide .slide-inner { justify-content: flex-start; }
 .ppe-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
 }
+.ppe-header .ppe-btn {
+  padding: 6px 16px;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+}
+.ppe-header .ppe-btn:hover { border-color: var(--accent); }
+.ppe-btn:disabled { opacity: 0.4; cursor: default; }
 .ppe-scenario {
   margin-top: var(--gap);
   background: var(--bg-card);
@@ -331,7 +340,7 @@
 }
 .ppe-scenario-title {
   font-family: var(--font-mono);
-  font-size: 26px;
+  font-size: var(--body);
   color: var(--text);
   margin-top: 4px;
 }
@@ -339,7 +348,7 @@
   font-size: var(--body);
   color: var(--text-muted);
   line-height: 1.5;
-  margin-top: 6px;
+  margin-top: 6px;  min-height: 3em; /* two lines reserved so the stages do not shift between scenarios */
 }
 .ppe-panel {
   display: flex;
@@ -352,10 +361,19 @@
   border-radius: 8px;
   padding: 10px 16px;
   background: var(--bg-card);
-  opacity: 0.7;
 }
-.ppe-stage.done { opacity: 1; }
+.ppe-stage.open { border-color: var(--accent); }
+/* Stage title doubles as the expand/collapse control (same pattern as #beyond-game) */
 .ppe-stage-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
   font-family: var(--font-mono);
   font-size: var(--small);
   font-weight: 700;
@@ -370,15 +388,10 @@
   margin-top: 5px;
   display: none;
 }
-.ppe-stage.done .ppe-stage-text { display: block; }
-.ppe-stage.done .ppe-stage-text strong { color: var(--text); }
-
-.ppe-nav {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-top: var(--gap);
-}
+.ppe-stage-label::after { content: '\25B8'; font-size: var(--body); line-height: 1; }
+.ppe-stage.open .ppe-stage-label::after { content: '\25BE'; }
+.ppe-stage.open .ppe-stage-text { display: block; }
+.ppe-stage.open .ppe-stage-text strong { color: var(--text); }
 .ppe-progress {
   font-family: var(--font-mono);
   font-size: var(--small);
@@ -854,7 +867,11 @@
   <div class="slide-inner">
     <div class="ppe-header">
       <span class="slide-tag">Protection With Limits</span>
-      <span class="ppe-progress"></span>
+      <div class="beyond-pager">
+        <button type="button" class="ppe-btn ppe-prev" aria-label="Previous scenario">&#9664;</button>
+        <span class="ppe-progress"></span>
+        <button type="button" class="ppe-btn ppe-next" aria-label="Next scenario">&#9654;</button>
+      </div>
     </div>
     <div class="ppe-scenario">
       <span class="ppe-scenario-tag"></span>
@@ -862,14 +879,11 @@
       <p class="ppe-scenario-desc"></p>
     </div>
     <div class="ppe-panel">
-      <div class="ppe-stage" data-stage="1"><div class="ppe-stage-label"></div><div class="ppe-stage-text"></div></div>
-      <div class="ppe-stage" data-stage="2"><div class="ppe-stage-label"></div><div class="ppe-stage-text"></div></div>
-      <div class="ppe-stage" data-stage="3"><div class="ppe-stage-label"></div><div class="ppe-stage-text"></div></div>
-      <div class="ppe-stage" data-stage="4"><div class="ppe-stage-label"></div><div class="ppe-stage-text"></div></div>
-      <div class="ppe-stage" data-stage="5"><div class="ppe-stage-label"></div><div class="ppe-stage-text"></div></div>
-    </div>
-    <div class="ppe-nav">
-      <button type="button" class="ppe-btn ppe-next">Reveal: Hazard</button>
+      <div class="ppe-stage" data-stage="1"><button type="button" class="ppe-stage-label" aria-expanded="false"></button><div class="ppe-stage-text"></div></div>
+      <div class="ppe-stage" data-stage="2"><button type="button" class="ppe-stage-label" aria-expanded="false"></button><div class="ppe-stage-text"></div></div>
+      <div class="ppe-stage" data-stage="3"><button type="button" class="ppe-stage-label" aria-expanded="false"></button><div class="ppe-stage-text"></div></div>
+      <div class="ppe-stage" data-stage="4"><button type="button" class="ppe-stage-label" aria-expanded="false"></button><div class="ppe-stage-text"></div></div>
+      <div class="ppe-stage" data-stage="5"><button type="button" class="ppe-stage-label" aria-expanded="false"></button><div class="ppe-stage-text"></div></div>
     </div>
   </div>
 </section>
@@ -1423,10 +1437,11 @@ function initPpeGame(Reveal) {
   var descEl = liveSlide.querySelector('.ppe-scenario-desc');
   var progressEl = liveSlide.querySelector('.ppe-progress');
   var stageEls = liveSlide.querySelectorAll('.ppe-stage');
+  var prevBtn = liveSlide.querySelector('.ppe-prev');
   var nextBtn = liveSlide.querySelector('.ppe-next');
 
   var idx = 0;
-  var stage = 0; /* 0 = nothing revealed yet, 5 = all revealed */
+  var open = -1; /* index of the expanded stage, -1 = all collapsed */
 
   function stageHtml(stageData) {
     var html = '';
@@ -1453,32 +1468,36 @@ function initPpeGame(Reveal) {
       var textEl = stageEl.querySelector('.ppe-stage-text');
       labelEl.textContent = stageData.label;
       textEl.innerHTML = stageHtml(stageData);
-      stageEl.classList.toggle('done', i < stage);
+      stageEl.classList.toggle('open', i === open);
+      labelEl.setAttribute('aria-expanded', String(i === open));
     });
 
-    if (stage < 5) {
-      nextBtn.textContent = 'Reveal: ' + scenario.stages[stage].label.replace(/^\d+ · /, '');
-    } else {
-      nextBtn.textContent = idx === PPE_SCENARIOS.length - 1 ? 'Restart' : 'Next Scenario';
-    }
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === PPE_SCENARIOS.length - 1;
   }
 
-  nextBtn.addEventListener('click', function (evt) {
-    evt.stopPropagation();
-    if (stage < 5) {
-      stage += 1;
+  Array.prototype.forEach.call(stageEls, function (stageEl, i) {
+    stageEl.querySelector('.ppe-stage-label').addEventListener('click', function (evt) {
+      evt.stopPropagation();
+      open = open === i ? -1 : i;
       render();
-      return;
-    }
-    idx = idx === PPE_SCENARIOS.length - 1 ? 0 : idx + 1;
-    stage = 0;
-    render();
+    });
   });
+
+  function go(delta) {
+    var next = idx + delta;
+    if (next < 0 || next >= PPE_SCENARIOS.length) return;
+    idx = next;
+    open = -1;
+    render();
+  }
+  prevBtn.addEventListener('click', function (evt) { evt.stopPropagation(); go(-1); });
+  nextBtn.addEventListener('click', function (evt) { evt.stopPropagation(); go(1); });
 
   Reveal.on('slidechanged', function (event) {
     if (event.currentSlide !== liveSlide) {
       idx = 0;
-      stage = 0;
+      open = -1;
       render();
     }
   });
