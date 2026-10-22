@@ -186,7 +186,7 @@ export const PAGE_STYLE = `
   }
   .project-chip.done { color: #0b1220; background: #7cd992; }
   .project-chip.pending { color: var(--muted); border: 1px dashed #4a6291; }
-  .project-chip.dimmed { opacity: 0.35; }
+  .project-chip.dimmed { opacity: 0.85; }
   .projects {
     margin: 24px 0 0;
     padding: 12px 14px;
