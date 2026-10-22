@@ -604,7 +604,7 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
 /* Line-numbered rows for step-by-step trace/highlight */
 .code-line {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   padding: 2px 0;
   font-family: var(--font-mono);
   font-size: var(--code);
@@ -614,7 +614,7 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
 }
 .code-line .car {
   flex: 0 0 auto;
-  width: 0.9em;
+  width: 1ch;
   color: var(--accent);
   font-weight: 700;
   opacity: 0;
@@ -623,16 +623,17 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
 .code-line.current .car { opacity: 1; }
 .code-line .ln {
   flex: 0 0 auto;
-  width: 1.6em;
+  min-width: 1ch;  /* as wide as its digits; 2ch once a block reaches line 10 */
   text-align: right;
   color: var(--text-muted);  /* stays 4.5:1 at .done opacity */
   user-select: none;
 }
+.code-body:has(> .code-line:nth-child(10)) .ln { min-width: 2ch; }
 .code-line.current .ln { color: var(--accent); font-weight: 700; }
 .code-line.current {
   background: rgba(242,177,52,0.08);
   border-radius: 4px;
-  margin: 2px -8px;
+  margin: 0 -8px;  /* no vertical margin, so lines never shift as the caret moves */
   padding: 2px 8px;
 }
 /* Dimmed lines may drop to 4.5:1 but no lower. Completed lines keep their
@@ -641,6 +642,21 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
 .code-line.done { opacity: 0.8; }
 .code-line.pending,
 .code-line.pending * { color: var(--text-dim); }
+
+/* Console output beside a .code-line block: each row matches a code row's
+   height, so output lines up with the code that printed it. */
+.code-body.console-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.console-lines > * {
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  line-height: 1.7;
+  padding: 2px 0;
+  white-space: pre;
+}
 
 /* Python syntax token colors — keep usage consistent by concept:
    keywords/builtins, identifiers, strings, numbers, booleans, comments. */
