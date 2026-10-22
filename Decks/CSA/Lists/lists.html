@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta name="syncdeck-permalink" content="r3nncm">
-<meta name="syncdeck-projects" content="em-dashes">
+<meta name="syncdeck-projects" content="em-dashes readability">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ArrayLists | CSA</title>
@@ -52,6 +52,7 @@
   font-size: var(--body);
   color: var(--text-muted);
 }
+.mcq-opts code { font-size: var(--code); }
 .opt-key {
   display: inline-block;
   min-width: 2.2em;
@@ -87,7 +88,7 @@
 .mem-obj.hi-p { border-color: var(--phosphor); color: var(--phosphor); background: rgba(0,255,65,0.09); }
 .mem-obj.hi-a { border-color: var(--amber); color: var(--amber); background: rgba(255,224,51,0.07); }
 .mem-obj.hi-g { border-color: rgba(77,255,180,0.5); color: var(--green); background: rgba(77,255,180,0.07); }
-.mem-obj.dim  { opacity: 0.28; border-style: dashed; }
+.mem-obj.dim  { opacity: 0.5; border-style: dashed; }  /* dimmed, still 4.5:1 */
 .mem-arrow { color: var(--phosphor-dim); font-size: var(--h3); flex-shrink: 0; }
 
 .warn-box {
@@ -97,7 +98,7 @@
   border-radius: 3px;
   padding: 0.65em 1em;
   font-family: var(--font-mono);
-  font-size: var(--small);
+  font-size: var(--code);
   color: var(--amber);
   line-height: 1.6;
 }
@@ -298,8 +299,7 @@
     <h2>Insert / Delete in <span style="color:var(--red);">arrays</span></h2>
 
     <div style="margin-top:var(--gap);">
-      <p style="margin-bottom:var(--gap);">We can add (though it is a bit of work), and with some more work we'd be able to insert an item into or delete an item from the array by shifting things around.</p>
-      <p style="margin-bottom:var(--gap);">But the main problem is that we have to create a <strong style="color:var(--text);">whole new array</strong> to hold the new items. We can't just change the size of the existing one. We didn't change the original array. We made a <strong style="color:var(--text);">new one</strong> and copied everything into it.</p>
+      <p style="margin-bottom:var(--gap);">With some work, we can insert or delete an item by shifting things around. The real problem is that an array can't change size, so we have to create a <strong style="color:var(--text);">whole new array</strong> and copy everything into it. The original array never changes.</p>
 
       <div class="split split-top">
 
@@ -309,8 +309,7 @@
           <ul class="bullets" style="gap:var(--gap-sm);">
             <li class="fragment fade-up" data-fragment-index="1">more code</li>
             <li class="fragment fade-up" data-fragment-index="2">more chances for bugs</li>
-            <li class="fragment fade-up" data-fragment-index="3">references to the old array <strong>don't update</strong><br>
-              <span style="font-size:var(--small);color:var(--text-dim);">If our program holds a reference to the original, it won't see the changes.</span>
+            <li class="fragment fade-up" data-fragment-index="3">references to the old array <strong>don't update</strong>, so code holding the original won't see the changes
             </li>
           </ul>
         </div>
@@ -320,7 +319,7 @@
 
           <!-- Before: appears at step 4 -->
           <div class="fragment fade-up" data-fragment-index="4" style="grid-area:1/1;">
-            <p style="font-size:var(--tag);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Before</p>
+            <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:var(--gap-sm);">Before</p>
             <div class="mem-chain">
               <div class="mem-obj hi-a">arr[]</div>
               <span class="mem-arrow" style="font-size:var(--body);">→</span>
@@ -334,10 +333,10 @@
 
           <!-- After: fades in at step 5, background paints over Before -->
           <div class="fragment fade" data-fragment-index="5" style="grid-area:1/1; background:#07100a;">
-            <p style="font-size:var(--tag);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">After</p>
+            <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:var(--gap-sm);">After</p>
             <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
               <!-- Row 1: old [a,b,c] in same x-position — invisible placeholders keep array alignment -->
-              <div class="mem-chain" style="opacity:0.28;">
+              <div class="mem-chain" style="opacity:0.5;">
                 <div class="mem-obj" style="visibility:hidden;">arr[]</div>
                 <span class="mem-arrow" style="font-size:var(--body);visibility:hidden;">→</span>
                 <div class="arr-1d">
@@ -421,11 +420,11 @@
 
       <!-- Before: normal operation -->
       <div class="fragment fade-up" style="grid-area:1/1;">
-        <p style="font-size:var(--tag);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">Normal operation</p>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:var(--gap-sm);">Normal operation</p>
         <div class="mem-chain">
-          <div class="mem-obj hi-a" style="min-width:120px;">ArrayList&lt;String&gt;<br><span style="font-size:0.85em;opacity:0.7;">list</span></div>
+          <div class="mem-obj hi-a" style="min-width:120px;">ArrayList&lt;String&gt;<br><span style="font-style:italic;">list</span></div>
           <span class="mem-arrow">→</span>
-          <div class="mem-obj hi-p" style="min-width:130px;">ArrayList<br><span style="font-size:0.85em;opacity:0.8;">object</span></div>
+          <div class="mem-obj hi-p" style="min-width:130px;">ArrayList<br><span style="font-style:italic;">object</span></div>
           <span class="mem-arrow">→</span>
           <div class="arr-1d">
             <div class="arr-cell">a</div>
@@ -437,17 +436,17 @@
 
       <!-- After: growth — same object, new internal array; covers Before with slide background -->
       <div class="fragment fade" style="grid-area:1/1; background:#07100a;">
-        <p style="font-size:var(--tag);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-dim);margin-bottom:var(--gap-sm);">After growth: same object, new internal array</p>
+        <p style="font-size:var(--small);text-transform:uppercase;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:var(--gap-sm);">After growth: same object, new internal array</p>
         <!-- Two rows + SVG diagonal arrow from ArrayList object to new array -->
         <!-- Approx px: list≈239w, →≈22w, obj≈137w, gap=26 → obj right-edge≈450; new arr center-y≈111 -->
         <div style="position:relative; display:flex; flex-direction:column; gap:var(--gap-sm);">
           <!-- Row 1: list → ArrayList object | dim old [a,b,c] (hidden arrow keeps column width) -->
           <div class="mem-chain">
-            <div class="mem-obj hi-a" style="min-width:120px;">ArrayList&lt;String&gt;<br><span style="font-size:0.85em;opacity:0.7;">list</span></div>
+            <div class="mem-obj hi-a" style="min-width:120px;">ArrayList&lt;String&gt;<br><span style="font-style:italic;">list</span></div>
             <span class="mem-arrow">→</span>
-            <div class="mem-obj hi-p" style="min-width:130px;">ArrayList<br><span style="font-size:0.85em;opacity:0.8;">object</span></div>
+            <div class="mem-obj hi-p" style="min-width:130px;">ArrayList<br><span style="font-style:italic;">object</span></div>
             <span class="mem-arrow" style="visibility:hidden;">→</span>
-            <div class="arr-1d" style="opacity:0.28;">
+            <div class="arr-1d" style="opacity:0.5;">
               <div class="arr-cell" style="border-style:dashed;">a</div>
               <div class="arr-cell" style="border-style:dashed;">b</div>
               <div class="arr-cell" style="border-style:dashed;">c</div>
@@ -556,7 +555,7 @@
         </div>
       </div>
       <div class="fragment fade-up">
-        <p style="font-size:var(--small);color:var(--text-dim);margin-top:var(--gap-sm);">
+        <p style="color:var(--text-muted);margin-top:var(--gap-sm);">
           <code>List</code> is a more general type. Swapping implementations (ArrayList, LinkedList, Vector...) takes just one line.
         </p>
         <div class="code-card" style="margin-top:var(--gap-sm);">
@@ -723,14 +722,14 @@
     <div class="code-card" style="margin-top:var(--gap);">
       <div class="code-hdr"><span class="clang">Java</span></div>
       <div class="code-body">
-        <pre><code><span style="opacity:0.35;"><span class="tp">ArrayList</span>&lt;<span class="tp">Integer</span>&gt; <span class="nm">myPoints</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();</span>
+        <pre><code><span class="code-dim"><span class="tp">ArrayList</span>&lt;<span class="tp">Integer</span>&gt; <span class="nm">myPoints</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();</span>
 
 <span class="nm">myPoints</span>.<span class="kw">add</span>(3);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(2);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(5);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(1);
 
-<span style="opacity:0.35;"><span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>);</span></code></pre>
+<span class="code-dim"><span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>);</span></code></pre>
       </div>
     </div>
 
@@ -788,7 +787,7 @@
     <div class="code-card" style="margin-top:var(--gap);">
       <div class="code-hdr"><span class="clang">Java</span></div>
       <div class="code-body">
-        <pre><code><span style="opacity:0.35;"><span class="tp">ArrayList</span>&lt;<span class="tp">Integer</span>&gt; <span class="nm">myPoints</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();
+        <pre><code><span class="code-dim"><span class="tp">ArrayList</span>&lt;<span class="tp">Integer</span>&gt; <span class="nm">myPoints</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();
 
 <span class="nm">myPoints</span>.<span class="kw">add</span>(3);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(2);
@@ -797,7 +796,7 @@
 </span>
 <span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>.<span class="kw">get</span>(0) + 5);   <span class="cm">// unboxed automatically</span>
 
-<span style="opacity:0.35;"><span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>);</span></code></pre>
+<span class="code-dim"><span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>);</span></code></pre>
       </div>
     </div>
   </div>
@@ -817,7 +816,7 @@
     <div class="code-card">
       <div class="code-hdr"><span class="clang">Java</span></div>
       <div class="code-body">
-        <pre><code><span style="opacity:0.35;"><span class="tp">ArrayList</span>&lt;<span class="tp">Integer</span>&gt; <span class="nm">myPoints</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();
+        <pre><code><span class="code-dim"><span class="tp">ArrayList</span>&lt;<span class="tp">Integer</span>&gt; <span class="nm">myPoints</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();
 
 <span class="nm">myPoints</span>.<span class="kw">add</span>(3);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(2);
@@ -826,7 +825,7 @@
 </span>
 <span class="nm">myPoints</span>.<span class="kw">set</span>(2, 0);   <span class="cm fragment fade-in" data-fragment-index="2">// index then value</span>
 
-<span style="opacity:0.35;"><span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>.<span class="kw">get</span>(0) + 5);   <span class="cm">// unboxed automatically</span>
+<span class="code-dim"><span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>.<span class="kw">get</span>(0) + 5);   <span class="cm">// unboxed automatically</span>
 
 <span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>);</span></code></pre>
       </div>
@@ -853,7 +852,7 @@
     <div class="code-card">
       <div class="code-hdr"><span class="clang">Java</span></div>
       <div class="code-body">
-        <pre><code><span style="opacity:0.35;"><span class="nm">myPoints</span>.<span class="kw">add</span>(3);
+        <pre><code><span class="code-dim"><span class="nm">myPoints</span>.<span class="kw">add</span>(3);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(2);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(5);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(1);
@@ -862,7 +861,7 @@
 </span>
 <span class="nm">myPoints</span>.<span class="kw">remove</span>(2);   <span class="cm fragment fade-in" data-fragment-index="3">// removes item at index 2</span>
 
-<span style="opacity:0.35;"><span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>.<span class="kw">get</span>(0) + 5);   <span class="cm">// unboxed automatically</span>
+<span class="code-dim"><span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>.<span class="kw">get</span>(0) + 5);   <span class="cm">// unboxed automatically</span>
 </code></pre>
       </div>
     </div>
@@ -885,7 +884,7 @@
     <span class="slide-tag">remove() Gotcha</span>
     <h2>We removed the <span style="color:var(--red);">wrong data</span></h2>
 
-    <div class="split split-60 split-top" style="margin-top:var(--gap);">
+    <div class="split split-top" style="margin-top:var(--gap);grid-template-columns:1fr auto;">
       <div>
         <p style="margin-bottom:var(--gap-sm);">If <code>remove()</code> is given an <code>int</code>, it treats it as an <strong style="color:var(--text);">index</strong>. If it gets an <code>Integer</code> object, it removes the <strong style="color:var(--text);">first matching value</strong>.</p>
         <p style="font-size:var(--body);color:var(--text-muted);margin-bottom:var(--gap);">Java sees a number and assumes you mean an index… unless you explicitly cast:</p>
@@ -900,7 +899,7 @@
       <div class="code-card fragment fade-up">
         <div class="code-hdr"><span class="clang">Full code</span></div>
         <div class="code-body">
-          <pre><code><span style="opacity:0.35;"><span class="nm">myPoints</span>.<span class="kw">add</span>(3);
+          <pre><code><span class="code-dim"><span class="nm">myPoints</span>.<span class="kw">add</span>(3);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(2);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(5);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(1);
@@ -909,7 +908,7 @@
 </span>
 <span class="nm">myPoints</span>.<span class="kw">remove</span>((<span class="tp">Integer</span>) 2);
 
-<span style="opacity:0.35;"><span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>.<span class="kw">get</span>(0) + 5);   <span class="cm">// unboxed automatically</span>
+<span class="code-dim"><span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>.<span class="kw">get</span>(0) + 5);
 </code></pre>
         </div>
       </div>
@@ -966,7 +965,7 @@
     <div class="code-card" style="margin-top:var(--gap);">
       <div class="code-hdr"><span class="clang">Java</span></div>
       <div class="code-body">
-        <pre><code><span style="opacity:0.35;"><span class="nm">myPoints</span>.<span class="kw">add</span>(3);
+        <pre><code><span class="code-dim"><span class="nm">myPoints</span>.<span class="kw">add</span>(3);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(2);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(5);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(1);
@@ -977,7 +976,7 @@
 </span>
 <span class="nm">myPoints</span>.<span class="kw">add</span>(4, 1);   <span class="cm">// insert 1 at index 4</span>
 
-<span style="opacity:0.35;"><span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>.<span class="kw">get</span>(0) + 5);   <span class="cm">// unboxed automatically</span>
+<span class="code-dim"><span class="tp">System</span>.out.<span class="kw">println</span>(<span class="nm">myPoints</span>.<span class="kw">get</span>(0) + 5);   <span class="cm">// unboxed automatically</span>
 </code></pre>
       </div>
     </div>
@@ -1078,9 +1077,9 @@
       <h2>Why the <span style="color:var(--amber);">inconsistency</span>?</h2>
 
       <div class="fragment fade-up" style="display:flex;flex-direction:column;gap:var(--gap-sm);margin-top:var(--gap-lg);align-items:flex-start;">
-        <div class="wrap-row"><span class="wp">Array</span><span class="ws">→</span><span class="wo">.length</span><span style="font-family:var(--font-mono);font-size:var(--small);color:var(--text-dim);">&nbsp;&nbsp;// field, not a method</span></div>
-        <div class="wrap-row"><span class="wp">String</span><span class="ws">→</span><span class="wo">.length()</span><span style="font-family:var(--font-mono);font-size:var(--small);color:var(--text-dim);">&nbsp;&nbsp;// method</span></div>
-        <div class="wrap-row"><span class="wp">List</span><span class="ws">→</span><span class="wo">.size()</span><span style="font-family:var(--font-mono);font-size:var(--small);color:var(--text-dim);">&nbsp;&nbsp;// also a method, different name</span></div>
+        <div class="wrap-row"><span class="wp">Array</span><span class="ws">→</span><span class="wo">.length</span><span style="font-family:var(--font-mono);font-size:var(--small);color:var(--text-muted);">&nbsp;&nbsp;// field, not a method</span></div>
+        <div class="wrap-row"><span class="wp">String</span><span class="ws">→</span><span class="wo">.length()</span><span style="font-family:var(--font-mono);font-size:var(--small);color:var(--text-muted);">&nbsp;&nbsp;// method</span></div>
+        <div class="wrap-row"><span class="wp">List</span><span class="ws">→</span><span class="wo">.size()</span><span style="font-family:var(--font-mono);font-size:var(--small);color:var(--text-muted);">&nbsp;&nbsp;// also a method, different name</span></div>
       </div>
     </div>
 
@@ -1090,7 +1089,7 @@
           "Java was built by many teams over many years and we, uh… didn't always coordinate.<br>Our bad. Just memorize it."
         </p>
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:var(--gap-sm);">
-          <span style="font-family:var(--font-mono);font-size:var(--small);color:var(--text-dim);">Duke, the Java mascot</span>
+          <span style="font-family:var(--font-mono);font-size:var(--small);color:var(--text-muted);">Duke, the Java mascot</span>
           <img src="assets/duke-thumbsup.svg" alt="Duke giving a thumbs up" style="height:64px;background-color:white;border-radius:5px;padding:3px;">
         </div>
       </div>
@@ -1112,7 +1111,7 @@
     <div class="code-card" style="margin-top:var(--gap);">
       <div class="code-hdr"><span class="clang">Java</span></div>
       <div class="code-body">
-        <pre><code><span style="opacity:0.35;"><span class="nm">myPoints</span>.<span class="kw">add</span>(3);
+        <pre><code><span class="code-dim"><span class="nm">myPoints</span>.<span class="kw">add</span>(3);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(2);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(5);
 <span class="nm">myPoints</span>.<span class="kw">add</span>(1);
@@ -1146,29 +1145,23 @@
     <span class="slide-tag">MCQ</span>
     <h2>Check yourself</h2>
 
-    <div class="split split-top" style="margin-top:var(--gap);gap:var(--gap-lg);">
+    <div style="margin-top:var(--gap);display:flex;flex-direction:column;gap:var(--gap-lg);">
       <div>
-        <p style="margin-bottom:var(--gap-sm);font-size:var(--body);color:var(--text-muted);">Which correctly creates an empty ArrayList of Strings?</p>
+        <p style="margin-bottom:var(--gap-sm);color:var(--text-muted);">1. Which correctly creates an empty ArrayList of Strings?</p>
         <ul class="mcq-opts" style="margin-top:var(--gap-sm);">
-          <li><span class="opt-key">A</span> <code>ArrayList&lt;String&gt; list = new ArrayList&lt;&gt;();</code></li>
-          <li><span class="opt-key">B</span> <code>ArrayList&lt;String&gt; list;</code></li>
+          <li><span class="opt-key">A</span> <code>ArrayList&lt;String&gt; list;</code></li>
+          <li><span class="opt-key">B</span> <code>ArrayList&lt;String&gt; list = new ArrayList&lt;&gt;();</code></li>
           <li><span class="opt-key">C</span> <code>ArrayList&lt;String&gt; list = new ArrayList();</code></li>
           <li><span class="opt-key">D</span> <code>ArrayList list = new ArrayList&lt;String&gt;();</code></li>
         </ul>
       </div>
 
       <div>
-        <p style="margin-bottom:var(--gap-sm);font-size:var(--body);color:var(--text-muted);">What is wrong with this code?</p>
-        <div class="code-card" style="margin-bottom:var(--gap-sm);">
-          <div class="code-hdr"><span class="clang">Java</span></div>
-          <div class="code-body">
-            <pre><code><span class="tp">ArrayList</span>&lt;<span class="tp">int</span>&gt; <span class="nm">nums</span> = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();</code></pre>
-          </div>
-        </div>
-        <ul class="mcq-opts">
-          <li><span class="opt-key">A</span> ArrayLists cannot store primitives</li>
-          <li><span class="opt-key">B</span> Missing import</li>
-          <li><span class="opt-key">C</span> Syntax is wrong</li>
+        <p style="margin-bottom:var(--gap-sm);color:var(--text-muted);">2. What is wrong with this code? <code>ArrayList&lt;int&gt; nums = new ArrayList&lt;&gt;();</code></p>
+        <ul class="mcq-opts" style="margin-top:var(--gap-sm);display:grid;grid-template-columns:1fr 1fr;">
+          <li><span class="opt-key">A</span> Missing import</li>
+          <li><span class="opt-key">B</span> Syntax is wrong</li>
+          <li><span class="opt-key">C</span> ArrayLists cannot store primitives</li>
           <li><span class="opt-key">D</span> Nothing is wrong</li>
         </ul>
       </div>
@@ -1262,7 +1255,7 @@
 
       <div class="callout fragment fade-up" style="display:flex;justify-content:space-between;align-items:center;gap:var(--gap);">
         <p style="color:var(--text-muted);">Add that 28 random <span class="tp">Grade</span>s to the list:</p>
-        <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-dim);white-space:nowrap;">That's up to you.</p>
+        <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);white-space:nowrap;">That's up to you.</p>
       </div>
     </div>
   </div>

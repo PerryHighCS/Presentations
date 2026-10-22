@@ -61,7 +61,7 @@ body,
 .reveal p,
 .reveal li,
 .reveal blockquote {
-  color: rgba(221,238,255,0.55);
+  color: var(--text-muted);
   font-family: 'JetBrains Mono', monospace;
 }
 
@@ -73,11 +73,12 @@ body,
   padding: 0.1em 0.38em;
   border-radius: 2px;
   border: 1px solid rgba(0,255,65,0.25);
+  white-space: nowrap;  /* keep each expression on one line */
 }
 
 /* Links */
-.reveal a { color: #00ff41; }
-.reveal a:hover { color: rgba(0,255,65,0.7); }
+.reveal a { color: var(--phosphor); }
+.reveal a:hover { color: var(--green); }
 
 /* Selection */
 .reveal ::selection {
@@ -89,20 +90,20 @@ body,
 :root {
   /* Palette */
   --phosphor:          #00ff41;
-  --phosphor-dim:      rgba(0,255,65,0.5);
+  --phosphor-dim:      rgba(0,255,65,0.65);
   --phosphor-glow:     rgba(0,255,65,0.15);
   --phosphor-border:   rgba(0,255,65,0.2);
   --amber:        #ffe033;
-  --amber-dim:    rgba(255,224,51,0.5);
+  --amber-dim:    rgba(255,224,51,0.65);
   --amber-glow:   rgba(255,224,51,0.12);
   --gold:          #ff9500;
   --green:         #4dffb4;
-  --red:           #ff4d6a;
+  --red:           #ff788e;
   --bg:            #07100a;
   --bg-card:       #0b1a0e;
   --text:          #ddeeff;
-  --text-muted:    rgba(221,238,255,0.55);
-  --text-dim:      rgba(221,238,255,0.42);
+  --text-muted:    rgba(221,238,255,0.68);  /* 7:1 on --bg-card */
+  --text-dim:      rgba(221,238,255,0.5);   /* 4.5:1; intentionally dimmed text only */
 
   /* Fonts */
   --font-ui:   'JetBrains Mono', monospace;
@@ -117,9 +118,9 @@ body,
   --title:  100px;    /* visual ~80px at 1280×720 — title slide  */
   --h2:      56px;    /* visual ~45px — section headings         */
   --h3:      36px;    /* visual ~29px — sub-headings             */
-  --body:    25px;    /* visual ~20px — paragraph text           */
-  --small:   19px;    /* visual ~15px — captions / annotations   */
-  --code:    21px;    /* visual ~17px — code blocks              */
+  --body:    30px;    /* reading text floor (18pt projected)     */
+  --small:   22px;    /* captions / labels / chips floor         */
+  --code:    24px;    /* code blocks and inline code floor       */
   --tag:     15px;    /* visual ~12px — slide labels             */
 
   /* Spacing — px so everything scales with Reveal's transform */
@@ -147,6 +148,10 @@ body::before {
   pointer-events: none;
   z-index: 0;
 }
+
+/* Reveal's default renders slide text at a line height of ~1.0,
+   which crowds lines once text is at the size floors. */
+.reveal .slides { line-height: 1.45; }
 
 /* Each section = full configured slide height.
    DO NOT set position here — Reveal.js sets position: absolute on sections
@@ -346,6 +351,7 @@ body::before {
   background: var(--bg-card);
   border: 1px solid rgba(0,255,65,0.4);
   overflow: hidden;
+  flex-shrink: 0;  /* never let a flex column clip code silently */
 }
 .code-card.accent { border-color: rgba(0,255,65,0.7); }
 
@@ -361,7 +367,7 @@ body::before {
 .cdot { display: none; }
 .clang {
   font-family: var(--font-mono);
-  font-size: var(--tag);
+  font-size: var(--code);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--phosphor);
@@ -378,7 +384,13 @@ body::before {
 .kw { color: var(--phosphor);   font-weight: 500; }
 .tp { color: var(--amber); }
 .nm { color: var(--gold);   }
-.cm { color: rgba(221,238,255,0.6); font-style: italic; }
+.cm { color: var(--text-muted); font-style: italic; }
+
+/* De-emphasized context lines inside a code block. Dimmed text may drop
+   to 4.5:1 but no lower, so use a uniform dim color rather than opacity
+   (opacity would push the darker token colors below 4.5:1). */
+.code-dim,
+.code-dim * { color: var(--text-dim) !important; }
 
 /* ─── 9. Array / memory visualizations ────────────────────────────── */
 
@@ -400,7 +412,7 @@ body::before {
 .type-ann {
   font-family: var(--font-mono);
   font-size: var(--small);
-  color: var(--text-dim);
+  color: var(--text-muted);
   align-self: center;
   margin-left: 0.5em;
 }
@@ -573,6 +585,13 @@ body::before {
     transform 0.55s var(--ease),
     filter 0.55s var(--ease) !important;
 }
+/* The !important rules above would otherwise keep these visible after
+   their step: restore Reveal's show-then-hide behavior. */
+.reveal .fragment.fade-in-then-out.visible:not(.current-fragment),
+.reveal .fragment.current-visible.visible:not(.current-fragment) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
 .reveal .fragment.fade-up {
   transform: translateY(22px);
 }
@@ -744,9 +763,9 @@ body.storyboard-open .reveal {
 /* ─── 14. Body paragraph helpers ──────────────────────────────────── */
 
 .p-body {
-  font-size: 24px;
-  line-height: 1.8;
-  color: rgba(221,238,255,0.62);
+  font-size: var(--body);
+  line-height: 1.6;
+  color: var(--text-muted);
   max-width: 940px;
   margin: 0;
 }
@@ -754,9 +773,9 @@ body.storyboard-open .reveal {
 .p-body strong { color: rgba(221,238,255,0.88); font-weight: 700; }
 
 .p-sm {
-  font-size: 21px;
-  line-height: 1.75;
-  color: rgba(221,238,255,0.60);
+  font-size: var(--body);   /* full sentences are reading text */
+  line-height: 1.6;
+  color: var(--text-muted);
   margin: 0;
 }
 .p-sm + .p-sm { margin-top: 0.7em; }
@@ -770,8 +789,8 @@ body.storyboard-open .reveal {
   border-left: 3px solid rgba(0,255,65,0.45);
   border-radius: 3px;
   padding: 0.55em 1em;
-  font-size: 19px;
-  color: rgba(221,238,255,0.5);
+  font-size: var(--body);
+  color: var(--text-muted);
   line-height: 1.6;
 }
 
@@ -783,7 +802,7 @@ body.storyboard-open .reveal {
   border-left: 3px solid var(--red);
   border-radius: 3px;
   padding: 0.65em 1em;
-  font-size: var(--small);
+  font-size: var(--code)  /* console output */;
   color: var(--red);
   line-height: 1.6;
 }
