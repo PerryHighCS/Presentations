@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta name="syncdeck-permalink" content="1hf273e">
-<meta name="syncdeck-projects" content="em-dashes">
+<meta name="syncdeck-projects" content="em-dashes readability">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Practice FRQ Scoring | AP CSA Practice Exam 1</title>
@@ -25,24 +25,34 @@
   white-space: pre;
   color: var(--amber);
 }
+.hl-line .nm { color: var(--amber); }  /* gold is under 7:1 on the highlight */
 
-/* Split: code left, criteria right */
+/* Point slides use the full canvas width: the code column needs room for
+   24px code, and the criteria panel takes whatever the code leaves. */
+.slide-inner.frq-point {
+  justify-content: flex-start;
+  padding: 32px 40px;
+  max-width: none;
+}
+
+/* Split: code left (sized to the code), criteria right */
 .frq-split {
   display: grid;
-  grid-template-columns: 55fr 45fr;
-  gap: 36px;
+  grid-template-columns: max-content 1fr;
+  gap: 32px;
   align-items: start;
   width: 100%;
   flex: 1;
   min-height: 0;
 }
-.frq-split.wide-code { grid-template-columns: 60fr 40fr; }
+.frq-split .code-body { padding: 10px 18px; }
+.frq-split .code-card .code-body pre { font-size: var(--code); line-height: 1.3; }
 
 /* Criteria panel */
 .criteria-panel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .point-badge {
@@ -54,7 +64,7 @@
   border: 1px solid rgba(255, 224, 51, 0.38);
   border-radius: 4px;
   padding: 8px 12px;
-  font-size: 24px;
+  font-size: var(--code);
   font-weight: 700;
   color: var(--amber);
   letter-spacing: 0.05em;
@@ -72,8 +82,9 @@
   background: rgba(77,255,180,0.09);
   border: 1px solid rgba(77,255,180,0.30);
   border-radius: 3px;
-  padding: 1px 7px;
-  font-size: 12px;
+  padding: 0 7px;
+  font-size: var(--small);
+  line-height: 1.3;
   letter-spacing: 0.10em;
   text-transform: uppercase;
   color: var(--green);
@@ -82,8 +93,8 @@
 }
 
 .criteria-text {
-  font-size: 19px;
-  line-height: 1.55;
+  font-size: var(--body);
+  line-height: 1.4;
   color: var(--text);
   font-weight: 600;
 }
@@ -95,7 +106,7 @@
 }
 .rule-can, .rule-cannot {
   border-radius: 3px;
-  padding: 8px 12px;
+  padding: 6px 12px;
 }
 .rule-can {
   background: rgba(77,255,180,0.05);
@@ -109,7 +120,7 @@
 }
 .rule-lbl {
   display: block;
-  font-size: 16px;
+  font-size: var(--small);
   font-weight: 700;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -123,15 +134,17 @@
   display: flex; flex-direction: column; gap: 3px;
 }
 .rule-ul li {
-  font-size: 20px;
+  font-size: var(--body);
   line-height: 1.45;
   padding-left: 1em;
   position: relative;
   color: inherit;
 }
-.rule-can  .rule-ul li { color: rgba(77,255,180,0.82); }
-.rule-cannot .rule-ul li { color: rgba(255,77,106,0.82); }
+.rule-can  .rule-ul li { color: var(--green); }
+.rule-cannot .rule-ul li { color: var(--red); }
 .rule-ul li::before { content:'•'; position:absolute; left:0; }
+/* Chips on consecutive wrapped lines would otherwise touch */
+.criteria-panel code { display: inline-block; line-height: 1.2; padding-top: 0; padding-bottom: 0; }
 
 /* Scoring slide */
 .scoring-layout {
@@ -147,7 +160,7 @@
   align-items: start;
 }
 .scoring-part-lbl {
-  font-size: 15px;
+  font-size: var(--small);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -173,7 +186,7 @@
   cursor: pointer;
 }
 .score-label {
-  font-size: 20px;
+  font-size: var(--body);
   line-height: 1.4;
   color: var(--text-muted);
   flex: 1;
@@ -181,7 +194,7 @@
   transition: color 0.14s;
 }
 .score-item.checked .score-label { color: var(--phosphor); }
-.score-pts { font-size: 13px; color: var(--text-dim); flex-shrink:0; margin-top:3px; }
+.score-pts { font-size: var(--small); color: var(--text-muted); flex-shrink:0; margin-top:3px; }
 .score-total-row {
   display: flex;
   align-items: center;
@@ -191,7 +204,7 @@
   border-top: 1px solid rgba(0,255,65,0.18);
 }
 .score-total-lbl {
-  font-size: 18px; font-weight: 700;
+  font-size: var(--small); font-weight: 700;
   color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.12em;
 }
 .score-total-val {
@@ -222,7 +235,7 @@
 }
 .earn-label:hover { background: rgba(0,255,65,0.07); border-color: rgba(0,255,65,0.28); }
 .earn-label input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--phosphor); cursor: pointer; flex-shrink: 0; }
-.earn-label-text { font-size: 18px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.03em; transition: color 0.15s; }
+.earn-label-text { font-size: var(--small); font-weight: 600; color: var(--text-muted); letter-spacing: 0.03em; transition: color 0.15s; }
 .point-badge-toggle {
   margin-left: auto;
   padding: 0;
@@ -233,7 +246,7 @@
 .point-badge-toggle:hover { background: transparent; border-color: transparent; }
 .point-badge-toggle.earned { background: transparent; border-color: transparent; }
 .point-badge-toggle .earn-label-text {
-  font-size: 20px;
+  font-size: var(--small);
 }
 .point-badge-toggle input[type="checkbox"] {
   width: 18px;
@@ -261,7 +274,7 @@
   border: 1px solid rgba(0,255,65,0.28);
   border-radius: 4px;
   padding: 5px 14px;
-  font-size: 19px; font-weight: 700;
+  font-size: var(--small); font-weight: 700;
   color: var(--phosphor);
 }
 .part-row {
@@ -274,7 +287,7 @@
   border: 1px solid rgba(255,224,51,0.28);
   border-radius: 3px;
   padding: 4px 12px;
-  font-size: 15px;
+  font-size: var(--small);
   color: var(--amber);
 }
 
@@ -302,13 +315,13 @@
 
 .summary-card h3 {
   margin: 0 0 12px;
-  font-size: 24px;
+  font-size: var(--h3);
   color: var(--phosphor);
 }
 
 .summary-card p {
   margin: 0;
-  font-size: 24px;
+  font-size: var(--body);
   line-height: 1.6;
   color: var(--text-muted);
 }
@@ -333,7 +346,7 @@
     <h1 class="title-h1" style="font-size:80px;line-height:1.1;">
       Practice FRQ <span style="color:var(--phosphor);">Scoring</span>
     </h1>
-    <p style="font-size:22px;color:var(--text-muted);margin-top:28px;max-width:44ch;line-height:1.6;">
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:28px;max-width:44ch;line-height:1.5;">
       Step through each scoring point, check which ones you earned, and tally your total.
     </p>
     <div class="part-row" style="justify-content:center;margin-top:32px;">
@@ -381,32 +394,27 @@
      Q1a POINT 1 — Calls getLapTime
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q1a · Point 1 of 4</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">findWinner</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:17px;line-height:1.5;"><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">findWinner</span>(<span class="tp">int</span> numLaps)
-{
+        <div class="code-body"><pre><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">findWinner</span>(<span class="tp">int</span> numLaps) {
     <span class="tp">double</span> car1Time = 0;
     <span class="tp">double</span> car2Time = 0;
 
-    <span class="kw">for</span>(<span class="tp">int</span> j = 1; j &lt;= numLaps; j++)
-    {
+    <span class="kw">for</span>(<span class="tp">int</span> j = 1; j &lt;= numLaps; j++) {
 <span class="hl-line">        car1Time += carOne.getLapTime(j);
         car2Time += carTwo.getLapTime(j);</span>
     }
 
-    <span class="kw">if</span> (car1Time &lt; car2Time)
-    {
+    <span class="kw">if</span> (car1Time &lt; car2Time) {
         <span class="kw">return</span> "Car 1 Wins!";
     }
-    <span class="kw">else if</span>(car2Time &lt; car1Time)
-    {
+    <span class="kw">else if</span>(car2Time &lt; car1Time) {
         <span class="kw">return</span> "Car 2 Wins!";
     }
-    <span class="kw">else</span>
-    {
+    <span class="kw">else</span> {
         <span class="kw">return</span> "Tie!";
     }
 }</code></pre></div>
@@ -436,32 +444,27 @@
      Q1a POINT 2 — Loops numLaps times
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q1a · Point 2 of 4</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">findWinner</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:17px;line-height:1.5;"><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">findWinner</span>(<span class="tp">int</span> numLaps)
-{
+        <div class="code-body"><pre><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">findWinner</span>(<span class="tp">int</span> numLaps) {
     <span class="tp">double</span> car1Time = 0;
     <span class="tp">double</span> car2Time = 0;
 
-<span class="hl-line">    <span class="kw">for</span>(<span class="tp">int</span> j = 1; j &lt;= numLaps; j++)</span>
-    {
+<span class="hl-line">    <span class="kw">for</span>(<span class="tp">int</span> j = 1; j &lt;= numLaps; j++) {</span>
         car1Time += carOne.getLapTime(j);
         car2Time += carTwo.getLapTime(j);
     }
 
-    <span class="kw">if</span> (car1Time &lt; car2Time)
-    {
+    <span class="kw">if</span> (car1Time &lt; car2Time) {
         <span class="kw">return</span> "Car 1 Wins!";
     }
-    <span class="kw">else if</span>(car2Time &lt; car1Time)
-    {
+    <span class="kw">else if</span>(car2Time &lt; car1Time) {
         <span class="kw">return</span> "Car 2 Wins!";
     }
-    <span class="kw">else</span>
-    {
+    <span class="kw">else</span> {
         <span class="kw">return</span> "Tie!";
     }
 }</code></pre></div>
@@ -472,7 +475,7 @@
           <label class="earn-label point-badge-toggle"><span class="earn-label-text">I earned this point</span><input type="checkbox" class="point-check" data-point="q1p2"></label>
         </div>
         <p class="criteria-text">Loops <code>numLaps</code> times.</p>
-        <p style="font-size:17px;color:var(--text-dim);line-height:1.5;margin-top:6px;">No additional decision rules for this point.</p>
+        <p style="font-size:var(--small);color:var(--text-muted);line-height:1.5;margin-top:6px;">No additional decision rules for this point.</p>
         
       </div>
     </div>
@@ -484,32 +487,27 @@
      Q1a POINT 3 — Calculates total time
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q1a · Point 3 of 4</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">findWinner</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:17px;line-height:1.5;"><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">findWinner</span>(<span class="tp">int</span> numLaps)
-{
+        <div class="code-body"><pre><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">findWinner</span>(<span class="tp">int</span> numLaps) {
 <span class="hl-line">    <span class="tp">double</span> car1Time = 0;
     <span class="tp">double</span> car2Time = 0;</span>
 
-    <span class="kw">for</span>(<span class="tp">int</span> j = 1; j &lt;= numLaps; j++)
-    {
+    <span class="kw">for</span>(<span class="tp">int</span> j = 1; j &lt;= numLaps; j++) {
 <span class="hl-line">        car1Time += carOne.getLapTime(j);
         car2Time += carTwo.getLapTime(j);</span>
     }
 
-    <span class="kw">if</span> (car1Time &lt; car2Time)
-    {
+    <span class="kw">if</span> (car1Time &lt; car2Time) {
         <span class="kw">return</span> "Car 1 Wins!";
     }
-    <span class="kw">else if</span>(car2Time &lt; car1Time)
-    {
+    <span class="kw">else if</span>(car2Time &lt; car1Time) {
         <span class="kw">return</span> "Car 2 Wins!";
     }
-    <span class="kw">else</span>
-    {
+    <span class="kw">else</span> {
         <span class="kw">return</span> "Tie!";
     }
 }</code></pre></div>
@@ -546,32 +544,27 @@
      Q1a POINT 4 — Returns correct string (algorithm)
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q1a · Point 4 of 4 <span class="algo-tag">algorithm</span></span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">findWinner</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:17px;line-height:1.5;"><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">findWinner</span>(<span class="tp">int</span> numLaps)
-{
+        <div class="code-body"><pre><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">findWinner</span>(<span class="tp">int</span> numLaps) {
     <span class="tp">double</span> car1Time = 0;
     <span class="tp">double</span> car2Time = 0;
 
-    <span class="kw">for</span>(<span class="tp">int</span> j = 1; j &lt;= numLaps; j++)
-    {
+    <span class="kw">for</span>(<span class="tp">int</span> j = 1; j &lt;= numLaps; j++) {
         car1Time += carOne.getLapTime(j);
         car2Time += carTwo.getLapTime(j);
     }
 
-<span class="hl-line">    <span class="kw">if</span> (car1Time &lt; car2Time)
-    {
+<span class="hl-line">    <span class="kw">if</span> (car1Time &lt; car2Time) {
         <span class="kw">return</span> "Car 1 Wins!";
     }
-    <span class="kw">else if</span>(car2Time &lt; car1Time)
-    {
+    <span class="kw">else if</span>(car2Time &lt; car1Time) {
         <span class="kw">return</span> "Car 2 Wins!";
     }
-    <span class="kw">else</span>
-    {
+    <span class="kw">else</span> {
         <span class="kw">return</span> "Tie!";
     }</span>
 }</code></pre></div>
@@ -603,17 +596,15 @@
      Q1b POINT 5 — Loop, no bounds error
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q1b · Point 5 of 7</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">shortenMessage</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:18px;line-height:1.55;"><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">shortenMessage</span>(
-        <span class="tp">String</span> message, <span class="tp">String</span> str)
-{
+        <div class="code-body"><pre><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">shortenMessage</span>(
+        <span class="tp">String</span> message, <span class="tp">String</span> str) {
     <span class="tp">String</span> result = message;
-<span class="hl-line">    <span class="kw">while</span> (result.indexOf(str) &gt;= 0)</span>
-    {
+<span class="hl-line">    <span class="kw">while</span> (result.indexOf(str) &gt;= 0) {</span>
         <span class="tp">int</span> idx = result.indexOf(str);
         result = result.substring(0, idx)
                + result.substring(
@@ -647,17 +638,15 @@
      Q1b POINT 6 — Identifies location of str
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q1b · Point 6 of 7</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">shortenMessage</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:18px;line-height:1.55;"><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">shortenMessage</span>(
-        <span class="tp">String</span> message, <span class="tp">String</span> str)
-{
+        <div class="code-body"><pre><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">shortenMessage</span>(
+        <span class="tp">String</span> message, <span class="tp">String</span> str) {
     <span class="tp">String</span> result = message;
-    <span class="kw">while</span> (result.indexOf(str) &gt;= 0)
-    {
+    <span class="kw">while</span> (result.indexOf(str) &gt;= 0) {
 <span class="hl-line">        <span class="tp">int</span> idx = result.indexOf(str);</span>
         result = result.substring(0, idx)
                + result.substring(
@@ -691,17 +680,15 @@
      Q1b POINT 7 — Builds and returns correct string (algorithm)
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q1b · Point 7 of 7 <span class="algo-tag">algorithm</span></span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">shortenMessage</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:18px;line-height:1.55;"><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">shortenMessage</span>(
-        <span class="tp">String</span> message, <span class="tp">String</span> str)
-{
+        <div class="code-body"><pre><code><span class="kw">public</span> <span class="tp">String</span> <span class="nm">shortenMessage</span>(
+        <span class="tp">String</span> message, <span class="tp">String</span> str) {
     <span class="tp">String</span> result = message;
-    <span class="kw">while</span> (result.indexOf(str) &gt;= 0)
-    {
+    <span class="kw">while</span> (result.indexOf(str) &gt;= 0) {
         <span class="tp">int</span> idx = result.indexOf(str);
 <span class="hl-line">        result = result.substring(0, idx)</span>
 <span class="hl-line">               + result.substring(</span>
@@ -789,30 +776,26 @@
      Q2 POINT 1 — class CubePair header
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q2 · Point 1 of 7</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">CubePair</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:16px;line-height:1.5;"><code><span class="hl-line"><span class="kw">public class</span> <span class="tp">CubePair</span></span>
-{
+        <div class="code-body"><pre><code><span class="hl-line"><span class="kw">public class</span> <span class="tp">CubePair</span> {</span>
     <span class="kw">private</span> <span class="tp">Cube</span> cube1;
     <span class="kw">private</span> <span class="tp">Cube</span> cube2;
 
-    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type)
-    {
+    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type) {
         cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type);
         cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type);
     }
 
-    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2)
-    {
+    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2) {
         cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type1);
         cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type2);
     }
 
-    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>()
-    {
+    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>() {
         <span class="tp">String</span> result = "";
         result += cube1.roll();
         result += cube2.roll();
@@ -846,30 +829,26 @@
      Q2 POINT 2 — two private Cube instance variables
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q2 · Point 2 of 7</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">CubePair</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:16px;line-height:1.5;"><code><span class="kw">public class</span> <span class="tp">CubePair</span>
-{
+        <div class="code-body"><pre><code><span class="kw">public class</span> <span class="tp">CubePair</span> {
 <span class="hl-line">    <span class="kw">private</span> <span class="tp">Cube</span> cube1;</span>
 <span class="hl-line">    <span class="kw">private</span> <span class="tp">Cube</span> cube2;</span>
 
-    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type)
-    {
+    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type) {
         cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type);
         cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type);
     }
 
-    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2)
-    {
+    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2) {
         cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type1);
         cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type2);
     }
 
-    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>()
-    {
+    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>() {
         <span class="tp">String</span> result = "";
         result += cube1.roll();
         result += cube2.roll();
@@ -903,30 +882,26 @@
      Q2 POINT 3 — two constructor headers
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q2 · Point 3 of 7</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">CubePair</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:16px;line-height:1.5;"><code><span class="kw">public class</span> <span class="tp">CubePair</span>
-{
+        <div class="code-body"><pre><code><span class="kw">public class</span> <span class="tp">CubePair</span> {
     <span class="kw">private</span> <span class="tp">Cube</span> cube1;
     <span class="kw">private</span> <span class="tp">Cube</span> cube2;
 
-<span class="hl-line">    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type)</span>
-    {
+<span class="hl-line">    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type) {</span>
         cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type);
         cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type);
     }
 
-<span class="hl-line">    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2)</span>
-    {
+<span class="hl-line">    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2) {</span>
         cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type1);
         cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type2);
     }
 
-    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>()
-    {
+    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>() {
         <span class="tp">String</span> result = "";
         result += cube1.roll();
         result += cube2.roll();
@@ -959,30 +934,26 @@
      Q2 POINT 4 — constructor assigns correct values
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q2 · Point 4 of 7</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">CubePair</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:16px;line-height:1.5;"><code><span class="kw">public class</span> <span class="tp">CubePair</span>
-{
+        <div class="code-body"><pre><code><span class="kw">public class</span> <span class="tp">CubePair</span> {
     <span class="kw">private</span> <span class="tp">Cube</span> cube1;
     <span class="kw">private</span> <span class="tp">Cube</span> cube2;
 
-    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type)
-    {
+    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type) {
 <span class="hl-line">        cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type);</span>
 <span class="hl-line">        cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type);</span>
     }
 
-    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2)
-    {
+    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2) {
 <span class="hl-line">        cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type1);</span>
 <span class="hl-line">        cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type2);</span>
     }
 
-    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>()
-    {
+    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>() {
         <span class="tp">String</span> result = "";
         result += cube1.roll();
         result += cube2.roll();
@@ -1016,30 +987,26 @@
      Q2 POINT 5 — rollCubes method header
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q2 · Point 5 of 7</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">CubePair</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:16px;line-height:1.5;"><code><span class="kw">public class</span> <span class="tp">CubePair</span>
-{
+        <div class="code-body"><pre><code><span class="kw">public class</span> <span class="tp">CubePair</span> {
     <span class="kw">private</span> <span class="tp">Cube</span> cube1;
     <span class="kw">private</span> <span class="tp">Cube</span> cube2;
 
-    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type)
-    {
+    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type) {
         cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type);
         cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type);
     }
 
-    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2)
-    {
+    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2) {
         cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type1);
         cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type2);
     }
 
-<span class="hl-line">    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>()</span>
-    {
+<span class="hl-line">    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>() {</span>
         <span class="tp">String</span> result = "";
         result += cube1.roll();
         result += cube2.roll();
@@ -1073,30 +1040,26 @@
      Q2 POINT 6 — calls roll, concatenates (algorithm)
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q2 · Point 6 of 7 <span class="algo-tag">algorithm</span></span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">CubePair</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:16px;line-height:1.5;"><code><span class="kw">public class</span> <span class="tp">CubePair</span>
-{
+        <div class="code-body"><pre><code><span class="kw">public class</span> <span class="tp">CubePair</span> {
     <span class="kw">private</span> <span class="tp">Cube</span> cube1;
     <span class="kw">private</span> <span class="tp">Cube</span> cube2;
 
-    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type)
-    {
+    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type) {
         cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type);
         cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type);
     }
 
-    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2)
-    {
+    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2) {
         cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type1);
         cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type2);
     }
 
-    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>()
-    {
+    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>() {
         <span class="tp">String</span> result = "";
 <span class="hl-line">        result += cube1.roll();</span>
 <span class="hl-line">        result += cube2.roll();</span>
@@ -1131,30 +1094,26 @@
      Q2 POINT 7 — returns concatenated string
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q2 · Point 7 of 7</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">CubePair</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:16px;line-height:1.5;"><code><span class="kw">public class</span> <span class="tp">CubePair</span>
-{
+        <div class="code-body"><pre><code><span class="kw">public class</span> <span class="tp">CubePair</span> {
     <span class="kw">private</span> <span class="tp">Cube</span> cube1;
     <span class="kw">private</span> <span class="tp">Cube</span> cube2;
 
-    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type)
-    {
+    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type) {
         cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type);
         cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type);
     }
 
-    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2)
-    {
+    <span class="kw">public</span> <span class="nm">CubePair</span>(<span class="tp">String</span> type1, <span class="tp">String</span> type2) {
         cube1 = <span class="kw">new</span> <span class="tp">Cube</span>(type1);
         cube2 = <span class="kw">new</span> <span class="tp">Cube</span>(type2);
     }
 
-    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>()
-    {
+    <span class="kw">public</span> <span class="tp">String</span> <span class="nm">rollCubes</span>() {
         <span class="tp">String</span> result = "";
         result += cube1.roll();
         result += cube2.roll();
@@ -1240,23 +1199,19 @@
      Q3 POINT 1 — accesses all vehicles, no bounds error
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q3 · Point 1 of 5</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">getHighRangeVehicles</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:16px;line-height:1.5;"><code><span class="kw">public</span> ArrayList&lt;<span class="tp">String</span>&gt; <span class="nm">getHighRangeVehicles</span>(<span class="tp">int</span> target)
-{
+        <div class="code-body"><pre><code><span class="kw">public</span> ArrayList&lt;<span class="tp">String</span>&gt; <span class="nm">getHighRangeVehicles</span>(<span class="tp">int</span> target) {
     ArrayList&lt;<span class="tp">String</span>&gt; highRange =
         <span class="kw">new</span> ArrayList&lt;<span class="tp">String</span>&gt;();
 
-<span class="hl-line">    <span class="kw">for</span> (<span class="tp">ElectricVehicle</span> ev : vehicleList)</span>
-    {
-        <span class="kw">if</span> (ev.getRange() &gt; target)
-        {
+<span class="hl-line">    <span class="kw">for</span> (<span class="tp">ElectricVehicle</span> ev : vehicleList) {</span>
+        <span class="kw">if</span> (ev.getRange() &gt; target) {
             <span class="tp">boolean</span> found = <span class="kw">false</span>;
-            <span class="kw">for</span> (<span class="tp">String</span> s : highRange)
-            {
+            <span class="kw">for</span> (<span class="tp">String</span> s : highRange) {
                 <span class="kw">if</span> (s.equals(ev.getModelName()))
                     found = <span class="kw">true</span>;
             }
@@ -1300,23 +1255,19 @@
      Q3 POINT 2 — calls getRange and getModelName
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q3 · Point 2 of 5</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">getHighRangeVehicles</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:16px;line-height:1.5;"><code><span class="kw">public</span> ArrayList&lt;<span class="tp">String</span>&gt; <span class="nm">getHighRangeVehicles</span>(<span class="tp">int</span> target)
-{
+        <div class="code-body"><pre><code><span class="kw">public</span> ArrayList&lt;<span class="tp">String</span>&gt; <span class="nm">getHighRangeVehicles</span>(<span class="tp">int</span> target) {
     ArrayList&lt;<span class="tp">String</span>&gt; highRange =
         <span class="kw">new</span> ArrayList&lt;<span class="tp">String</span>&gt;();
 
-    <span class="kw">for</span> (<span class="tp">ElectricVehicle</span> ev : vehicleList)
-    {
-<span class="hl-line">        <span class="kw">if</span> (ev.getRange() &gt; target)</span>
-        {
+    <span class="kw">for</span> (<span class="tp">ElectricVehicle</span> ev : vehicleList) {
+<span class="hl-line">        <span class="kw">if</span> (ev.getRange() &gt; target) {</span>
             <span class="tp">boolean</span> found = <span class="kw">false</span>;
-            <span class="kw">for</span> (<span class="tp">String</span> s : highRange)
-            {
+            <span class="kw">for</span> (<span class="tp">String</span> s : highRange) {
 <span class="hl-line">                <span class="kw">if</span> (s.equals(ev.getModelName()))</span>
                     found = <span class="kw">true</span>;
             }
@@ -1358,23 +1309,19 @@
      Q3 POINT 3 — sufficient range, not already included
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q3 · Point 3 of 5</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">getHighRangeVehicles</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:16px;line-height:1.5;"><code><span class="kw">public</span> ArrayList&lt;<span class="tp">String</span>&gt; <span class="nm">getHighRangeVehicles</span>(<span class="tp">int</span> target)
-{
+        <div class="code-body"><pre><code><span class="kw">public</span> ArrayList&lt;<span class="tp">String</span>&gt; <span class="nm">getHighRangeVehicles</span>(<span class="tp">int</span> target) {
     ArrayList&lt;<span class="tp">String</span>&gt; highRange =
         <span class="kw">new</span> ArrayList&lt;<span class="tp">String</span>&gt;();
 
-    <span class="kw">for</span> (<span class="tp">ElectricVehicle</span> ev : vehicleList)
-    {
-<span class="hl-line">        <span class="kw">if</span> (ev.getRange() &gt; target)</span>
-        {
+    <span class="kw">for</span> (<span class="tp">ElectricVehicle</span> ev : vehicleList) {
+<span class="hl-line">        <span class="kw">if</span> (ev.getRange() &gt; target) {</span>
 <span class="hl-line">            <span class="tp">boolean</span> found = <span class="kw">false</span>;</span>
-            <span class="kw">for</span> (<span class="tp">String</span> s : highRange)
-            {
+            <span class="kw">for</span> (<span class="tp">String</span> s : highRange) {
                 <span class="kw">if</span> (s.equals(ev.getModelName()))
                     found = <span class="kw">true</span>;
             }
@@ -1418,23 +1365,19 @@
      Q3 POINT 4 — compares model names
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q3 · Point 4 of 5</span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">getHighRangeVehicles</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:16px;line-height:1.5;"><code><span class="kw">public</span> ArrayList&lt;<span class="tp">String</span>&gt; <span class="nm">getHighRangeVehicles</span>(<span class="tp">int</span> target)
-{
+        <div class="code-body"><pre><code><span class="kw">public</span> ArrayList&lt;<span class="tp">String</span>&gt; <span class="nm">getHighRangeVehicles</span>(<span class="tp">int</span> target) {
     ArrayList&lt;<span class="tp">String</span>&gt; highRange =
         <span class="kw">new</span> ArrayList&lt;<span class="tp">String</span>&gt;();
 
-    <span class="kw">for</span> (<span class="tp">ElectricVehicle</span> ev : vehicleList)
-    {
-        <span class="kw">if</span> (ev.getRange() &gt; target)
-        {
+    <span class="kw">for</span> (<span class="tp">ElectricVehicle</span> ev : vehicleList) {
+        <span class="kw">if</span> (ev.getRange() &gt; target) {
             <span class="tp">boolean</span> found = <span class="kw">false</span>;
-            <span class="kw">for</span> (<span class="tp">String</span> s : highRange)
-            {
+            <span class="kw">for</span> (<span class="tp">String</span> s : highRange) {
 <span class="hl-line">                <span class="kw">if</span> (s.equals(ev.getModelName()))</span>
                     found = <span class="kw">true</span>;
             }
@@ -1477,23 +1420,19 @@
      Q3 POINT 5 — returns correct list (algorithm)
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q3 · Point 5 of 5 <span class="algo-tag">algorithm</span></span>
     <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">getHighRangeVehicles</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:16px;line-height:1.5;"><code><span class="kw">public</span> ArrayList&lt;<span class="tp">String</span>&gt; <span class="nm">getHighRangeVehicles</span>(<span class="tp">int</span> target)
-{
+        <div class="code-body"><pre><code><span class="kw">public</span> ArrayList&lt;<span class="tp">String</span>&gt; <span class="nm">getHighRangeVehicles</span>(<span class="tp">int</span> target) {
 <span class="hl-line">    ArrayList&lt;<span class="tp">String</span>&gt; highRange =</span>
 <span class="hl-line">        <span class="kw">new</span> ArrayList&lt;<span class="tp">String</span>&gt;();</span>
 
-    <span class="kw">for</span> (<span class="tp">ElectricVehicle</span> ev : vehicleList)
-    {
-        <span class="kw">if</span> (ev.getRange() &gt; target)
-        {
+    <span class="kw">for</span> (<span class="tp">ElectricVehicle</span> ev : vehicleList) {
+        <span class="kw">if</span> (ev.getRange() &gt; target) {
             <span class="tp">boolean</span> found = <span class="kw">false</span>;
-            <span class="kw">for</span> (<span class="tp">String</span> s : highRange)
-            {
+            <span class="kw">for</span> (<span class="tp">String</span> s : highRange) {
                 <span class="kw">if</span> (s.equals(ev.getModelName()))
                     found = <span class="kw">true</span>;
             }
@@ -1582,19 +1521,15 @@
      Q4 POINT 1 — accesses all elements of apples
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q4 · Point 1 of 6</span>
-    <div class="frq-split wide-code">
+    <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">numberOfPies</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:14px;line-height:1.45;"><code><span class="kw">public int</span> <span class="nm">numberOfPies</span>(<span class="tp">double</span> poundsPerPie)
-{
+        <div class="code-body"><pre><code><span class="kw">public int</span> <span class="nm">numberOfPies</span>(<span class="tp">double</span> poundsPerPie) {
     <span class="tp">double</span> weight = 0;
-
-<span class="hl-line">    <span class="kw">for</span> (<span class="tp">int</span> r = 0; r &lt; apples.length; r++)</span>
-    {
-<span class="hl-line">        <span class="kw">for</span> (<span class="tp">int</span> c = 0; c &lt; apples[0].length; c++)</span>
-        {
+<span class="hl-line">    <span class="kw">for</span> (<span class="tp">int</span> r = 0; r &lt; apples.length; r++) {</span>
+<span class="hl-line">        <span class="kw">for</span> (<span class="tp">int</span> c = 0; c &lt; apples[0].length; c++) {</span>
             <span class="tp">boolean</span> bad = apples[r][c].isRotten();
             <span class="kw">if</span> (r &gt; 0 &amp;&amp;
                 apples[r-1][c].isRotten())
@@ -1646,19 +1581,15 @@
      Q4 POINT 2 — calls isRotten and getWeight
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q4 · Point 2 of 6</span>
-    <div class="frq-split wide-code">
+    <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">numberOfPies</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:14px;line-height:1.45;"><code><span class="kw">public int</span> <span class="nm">numberOfPies</span>(<span class="tp">double</span> poundsPerPie)
-{
+        <div class="code-body"><pre><code><span class="kw">public int</span> <span class="nm">numberOfPies</span>(<span class="tp">double</span> poundsPerPie) {
     <span class="tp">double</span> weight = 0;
-
-    <span class="kw">for</span> (<span class="tp">int</span> r = 0; r &lt; apples.length; r++)
-    {
-        <span class="kw">for</span> (<span class="tp">int</span> c = 0; c &lt; apples[0].length; c++)
-        {
+    <span class="kw">for</span> (<span class="tp">int</span> r = 0; r &lt; apples.length; r++) {
+        <span class="kw">for</span> (<span class="tp">int</span> c = 0; c &lt; apples[0].length; c++) {
 <span class="hl-line">            <span class="tp">boolean</span> bad = apples[r][c].isRotten();</span>
             <span class="kw">if</span> (r &gt; 0 &amp;&amp;
                 apples[r-1][c].isRotten())
@@ -1711,19 +1642,15 @@
      Q4 POINT 3 — guards sum with rotten check
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q4 · Point 3 of 6</span>
-    <div class="frq-split wide-code">
+    <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">numberOfPies</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:14px;line-height:1.45;"><code><span class="kw">public int</span> <span class="nm">numberOfPies</span>(<span class="tp">double</span> poundsPerPie)
-{
+        <div class="code-body"><pre><code><span class="kw">public int</span> <span class="nm">numberOfPies</span>(<span class="tp">double</span> poundsPerPie) {
     <span class="tp">double</span> weight = 0;
-
-    <span class="kw">for</span> (<span class="tp">int</span> r = 0; r &lt; apples.length; r++)
-    {
-        <span class="kw">for</span> (<span class="tp">int</span> c = 0; c &lt; apples[0].length; c++)
-        {
+    <span class="kw">for</span> (<span class="tp">int</span> r = 0; r &lt; apples.length; r++) {
+        <span class="kw">for</span> (<span class="tp">int</span> c = 0; c &lt; apples[0].length; c++) {
             <span class="tp">boolean</span> bad = apples[r][c].isRotten();
             <span class="kw">if</span> (r &gt; 0 &amp;&amp;
                 apples[r-1][c].isRotten())
@@ -1759,7 +1686,7 @@
             </ul>
           </div>
         </div>
-        <p style="font-size:16px;color:var(--text-dim);margin-top:8px;">No "will not earn" rules for this point.</p>
+        <p style="font-size:var(--small);color:var(--text-muted);margin-top:8px;">No "will not earn" rules for this point.</p>
       </div>
     </div>
   </div>
@@ -1770,19 +1697,15 @@
      Q4 POINT 4 — initializes sum, accumulates in loop
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q4 · Point 4 of 6</span>
-    <div class="frq-split wide-code">
+    <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">numberOfPies</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:14px;line-height:1.45;"><code><span class="kw">public int</span> <span class="nm">numberOfPies</span>(<span class="tp">double</span> poundsPerPie)
-{
+        <div class="code-body"><pre><code><span class="kw">public int</span> <span class="nm">numberOfPies</span>(<span class="tp">double</span> poundsPerPie) {
 <span class="hl-line">    <span class="tp">double</span> weight = 0;</span>
-
-    <span class="kw">for</span> (<span class="tp">int</span> r = 0; r &lt; apples.length; r++)
-    {
-        <span class="kw">for</span> (<span class="tp">int</span> c = 0; c &lt; apples[0].length; c++)
-        {
+    <span class="kw">for</span> (<span class="tp">int</span> r = 0; r &lt; apples.length; r++) {
+        <span class="kw">for</span> (<span class="tp">int</span> c = 0; c &lt; apples[0].length; c++) {
             <span class="tp">boolean</span> bad = apples[r][c].isRotten();
             <span class="kw">if</span> (r &gt; 0 &amp;&amp;
                 apples[r-1][c].isRotten())
@@ -1828,18 +1751,15 @@
      Q4 POINT 5 — identifies non-usable apples (algorithm)
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q4 · Point 5 of 6 <span class="algo-tag">algorithm</span></span>
-    <div class="frq-split wide-code">
+    <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">numberOfPies</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:14px;line-height:1.45;"><code><span class="kw">public int</span> <span class="nm">numberOfPies</span>(<span class="tp">double</span> poundsPerPie)
-{
+        <div class="code-body"><pre><code><span class="kw">public int</span> <span class="nm">numberOfPies</span>(<span class="tp">double</span> poundsPerPie) {
     <span class="tp">double</span> weight = 0;
-    <span class="kw">for</span> (<span class="tp">int</span> r = 0; r &lt; apples.length; r++)
-    {
-        <span class="kw">for</span> (<span class="tp">int</span> c = 0; c &lt; apples[0].length; c++)
-        {
+    <span class="kw">for</span> (<span class="tp">int</span> r = 0; r &lt; apples.length; r++) {
+        <span class="kw">for</span> (<span class="tp">int</span> c = 0; c &lt; apples[0].length; c++) {
 <span class="hl-line">            <span class="tp">boolean</span> bad = apples[r][c].isRotten();</span>
 <span class="hl-line">            <span class="kw">if</span> (r &gt; 0 &amp;&amp;</span>
 <span class="hl-line">                apples[r-1][c].isRotten())</span>
@@ -1895,18 +1815,15 @@
      Q4 POINT 6 — returns correct integer number of pies (algorithm)
      ============================================================ -->
 <section>
-  <div class="slide-inner" style="justify-content:flex-start;padding:36px 60px;">
+  <div class="slide-inner frq-point">
     <span class="slide-tag" style="margin-bottom:10px;">Q4 · Point 6 of 6 <span class="algo-tag">algorithm</span></span>
-    <div class="frq-split wide-code">
+    <div class="frq-split">
       <div class="code-card">
         <div class="code-hdr"><span class="clang">numberOfPies</span></div>
-        <div class="code-body" style="padding:0.5em 1em;"><pre style="font-size:14px;line-height:1.45;"><code><span class="kw">public int</span> <span class="nm">numberOfPies</span>(<span class="tp">double</span> poundsPerPie)
-{
+        <div class="code-body"><pre><code><span class="kw">public int</span> <span class="nm">numberOfPies</span>(<span class="tp">double</span> poundsPerPie) {
     <span class="tp">double</span> weight = 0;
-    <span class="kw">for</span> (<span class="tp">int</span> r = 0; r &lt; apples.length; r++)
-    {
-        <span class="kw">for</span> (<span class="tp">int</span> c = 0; c &lt; apples[0].length; c++)
-        {
+    <span class="kw">for</span> (<span class="tp">int</span> r = 0; r &lt; apples.length; r++) {
+        <span class="kw">for</span> (<span class="tp">int</span> c = 0; c &lt; apples[0].length; c++) {
             <span class="tp">boolean</span> bad = apples[r][c].isRotten();
             <span class="kw">if</span> (r &gt; 0 &amp;&amp;
                 apples[r-1][c].isRotten())
@@ -1990,24 +1907,24 @@
     <h2 style="font-size:44px;margin-bottom:36px;">Add up your <span style="color:var(--phosphor);">totals</span></h2>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;width:100%;max-width:900px;">
       <div class="callout" style="text-align:center;">
-        <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;">Q1</div>
+        <div style="font-size:var(--small);letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;">Q1</div>
         <div style="font-size:40px;font-weight:700;color:var(--text);line-height:1;">/ 7</div>
-        <div style="font-size:13px;color:var(--text-dim);margin-top:6px;">Methods</div>
+        <div style="font-size:var(--small);color:var(--text-muted);margin-top:6px;">Methods</div>
       </div>
       <div class="callout" style="text-align:center;">
-        <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;">Q2</div>
+        <div style="font-size:var(--small);letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;">Q2</div>
         <div style="font-size:40px;font-weight:700;color:var(--text);line-height:1;">/ 7</div>
-        <div style="font-size:13px;color:var(--text-dim);margin-top:6px;">Class Design</div>
+        <div style="font-size:var(--small);color:var(--text-muted);margin-top:6px;">Class Design</div>
       </div>
       <div class="callout" style="text-align:center;">
-        <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;">Q3</div>
+        <div style="font-size:var(--small);letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;">Q3</div>
         <div style="font-size:40px;font-weight:700;color:var(--text);line-height:1;">/ 5</div>
-        <div style="font-size:13px;color:var(--text-dim);margin-top:6px;">ArrayList</div>
+        <div style="font-size:var(--small);color:var(--text-muted);margin-top:6px;">ArrayList</div>
       </div>
       <div class="callout" style="text-align:center;">
-        <div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;">Q4</div>
+        <div style="font-size:var(--small);letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;">Q4</div>
         <div style="font-size:40px;font-weight:700;color:var(--text);line-height:1;">/ 6</div>
-        <div style="font-size:13px;color:var(--text-dim);margin-top:6px;">2D Arrays</div>
+        <div style="font-size:var(--small);color:var(--text-muted);margin-top:6px;">2D Arrays</div>
       </div>
     </div>
     <div style="margin-top:32px;padding:16px 40px;background:rgba(0,255,65,0.06);border:1px solid rgba(0,255,65,0.25);border-radius:4px;">
