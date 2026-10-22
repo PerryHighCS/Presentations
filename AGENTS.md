@@ -176,7 +176,7 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
    - Never set `position` on `.reveal .slides > section` — Reveal needs `position: absolute` there for fade transitions; put padding/centering in a `.slide-inner` div inside each section instead
 5. Check the style tokens for the chosen preset in `.agent/skills/STYLE_PRESETS_EXTENDED.md` (full library) or `.agent/skills/vendor/syncdeck/references/STYLE_PRESETS.md` (short reference).
 6. If the deck needs a custom interactive widget (drag-and-drop, a classification/matching exercise, a code trace, a timed prompt game, a scored scenario, etc.), check `.agent/knowledge/html5-activities-index.md` first for an existing engine to copy and re-skin before building one from scratch.
-7. Run `node scripts/generate-permalink.mjs Decks/<path>/<deck>.html` to give the new deck a stable permalink before committing. See "Presentation Permalinks" below.
+7. Run `node scripts/generate-permalink.mjs Decks/<path>/<deck>.html` to give the new deck a stable permalink before committing. See "Presentation Permalinks" below. Then mark it done for the projects in `config/projects.json` it already meets (see "Project Tracking" below).
 8. If the deck has any `data-activity-options` blocks (resonance, mobcode, postboard, etc.), run
    `python3 .agent/skills/vendor/syncdeck/scripts/validate-deck.py Decks/<path>/<deck>.html`
    before considering the deck done. It checks that every activity's JSON actually parses,
@@ -242,6 +242,30 @@ a stable short link.
   instructor" and "Syncdeck link" (both ActiveBits-hosted, built from the deck's real current
   URL) and "Permalink" (the short `/p/<hash>.html` link, safe to share or feed into the
   ActiveBits launcher directly).
+
+## Project Tracking
+
+Repo-wide cleanup projects (for example #11, readability, and #13, em dashes) are tracked per
+deck with a `<meta name="syncdeck-projects" content="<id> <id>">` tag listing the projects the
+deck is **done** for. A project missing from the list is not done yet. The tag sits right after
+the permalink tag; edit it with the script below rather than by hand.
+
+- `config/projects.json` is the registry: `id -> { title, issue, symbol, scope? }`. `symbol` is
+  the short badge text shown on the index pages, and the optional `scope` is a list of public
+  path prefixes (`"CSP/"`, `"HPy/Unit 2 - Loops and Strings/"`) the project applies to; omit it
+  for projects that cover every deck. To start a new project, add an entry there.
+- `node scripts/project-status.mjs mark <id> Decks/<path>/<deck>.html ...` marks decks done;
+  `unmark` reverses it. Mark a deck in the same commit as the work that finishes it.
+- `node scripts/project-status.mjs [<id>...] [--pending|--done] [--under <path>]` prints
+  done/total per course, and with `--pending` or `--done` lists the matching decks.
+- `node scripts/project-status.mjs --check` (run in CI next to the permalink check) fails on
+  unknown project ids or a deck marked done for a project outside its scope.
+- The index pages show one badge per applicable project on each deck (solid when done, dashed
+  when not) and a filter for project and status on every folder page. The filter is kept in the
+  query string (`?project=<id>&status=pending`), so a filtered view of a subtree can be shared
+  as a link and stays applied when moving between folder pages.
+- A new deck built to the current rules should be marked done for every registered project it
+  already satisfies.
 
 ---
 

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { buildIndexPages, defaultTitleForFile, permalinkHashForFile } from './site-indexes.mjs';
+import { completedProjectsForFile, loadProjects } from './project-utils.mjs';
 import { createExclusionChecker, loadManifestRules } from './site-utils.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -44,7 +45,11 @@ async function main() {
   const pages = await buildIndexPages(
     htmlFiles,
     async (publicPath) => defaultTitleForFile(path.join(siteDir, publicPath)),
-    async (publicPath) => permalinkHashForFile(path.join(siteDir, publicPath))
+    async (publicPath) => permalinkHashForFile(path.join(siteDir, publicPath)),
+    {
+      projects: await loadProjects(rootDir),
+      getCompletedProjectsForPublicPath: async (publicPath) => completedProjectsForFile(path.join(siteDir, publicPath)),
+    }
   );
 
   for (const [relativePath, html] of pages) {
