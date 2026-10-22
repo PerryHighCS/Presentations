@@ -250,10 +250,14 @@ deck with a `<meta name="syncdeck-projects" content="<id> <id>">` tag listing th
 deck is **done** for. A project missing from the list is not done yet. The tag sits right after
 the permalink tag; edit it with the script below rather than by hand.
 
-- `config/projects.json` is the registry: `id -> { title, issue, symbol, scope? }`. `symbol` is
+- `config/projects.json` is the registry: `id -> { title, issue, symbol, scope?, complete? }`. `symbol` is
   the short badge text shown on the index pages, and the optional `scope` is a list of public
   path prefixes (`"CSP/"`, `"HPy/Unit 2 - Loops and Strings/"`) the project applies to; omit it
   for projects that cover every deck. To start a new project, add an entry there.
+- When a project is finished, set `"complete": true` on its entry rather than deleting it. Its id
+  stays valid in deck tags (so `--check` still passes without touching every deck), but the index
+  pages drop its badge and filter, the report skips it unless it's named, and `mark`/`unmark`
+  refuse it. Remove `complete` to reopen the project.
 - `node scripts/project-status.mjs mark <id> Decks/<path>/<deck>.html ...` marks decks done;
   `unmark` reverses it. Mark a deck in the same commit as the work that finishes it.
 - `node scripts/project-status.mjs [<id>...] [--pending|--done] [--under <path>]` prints
@@ -265,7 +269,7 @@ the permalink tag; edit it with the script below rather than by hand.
   query string (`?project=<id>&status=pending`), so a filtered view of a subtree can be shared
   as a link and stays applied when moving between folder pages.
 - A new deck built to the current rules should be marked done for every registered project it
-  already satisfies.
+  already satisfies. Completed projects are the exception: don't add their ids to new decks.
 
 ---
 
