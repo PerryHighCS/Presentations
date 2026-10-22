@@ -13,6 +13,11 @@ fragments revealed. Checks, in 1600x900 canvas coordinates:
             role check, since body text should be 30px. Sub/superscripts are
             measured against 75% of their parent. .slide-tag eyebrows and the
             slide counter are exempt.
+  CONTRAST  text color (times ancestor opacity) composited over the ancestor
+            backgrounds: under 4.5:1 fails; 4.5-7:1 is flagged for a role
+            check, since only intentionally de-emphasized text may sit there.
+            Text drawn on SVG shapes and on background images or gradients is
+            measured against the nearest solid background-color only.
 
 The audit only measures; it cannot judge layout. Always look at screenshots
 (shots.py) of every slide you change, and click through interactive widgets.
@@ -53,7 +58,7 @@ AUDIT_JS = r"""
     const cls = typeof e.className === 'string' && e.className ? '.' + e.className.trim().split(/\s+/)[0] : '';
     return e.tagName.toLowerCase() + cls + ' "' + t.slice(0, 50) + '"';
   };
-  const out = { overflow: [], overlap: [], size: [] };
+  const out = { overflow: [], overlap: [], size: [], contrast: [] };
 
   // Elements that own text directly
   const textEls = [...slide.querySelectorAll('*')].filter(e =>
@@ -91,6 +96,46 @@ AUDIT_JS = r"""
     }
   }
 
+  // CONTRAST: composite the text color over every ancestor background
+  // down to the first opaque one (or the page background).
+  const rgba = c => {
+    const m = c.match(/rgba?\(([^)]+)\)/);
+    if (!m) return null;
+    const p = m[1].split(/[,\s/]+/).filter(Boolean).map(parseFloat);
+    return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 };
+  };
+  const over = (top, bot) => {
+    const a = top.a + bot.a * (1 - top.a);
+    if (!a) return { r: 0, g: 0, b: 0, a: 0 };
+    const mix = k => (top[k] * top.a + bot[k] * bot.a * (1 - top.a)) / a;
+    return { r: mix('r'), g: mix('g'), b: mix('b'), a };
+  };
+  const lum = c => {
+    const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+  };
+  const pageBg = rgba(getComputedStyle(document.body).backgroundColor) || { r: 0, g: 0, b: 0, a: 1 };
+  for (const e of textEls) {
+    if (e.closest('svg')) continue;
+    const layers = [];
+    let op = 1;
+    for (let a = e; a && a !== document.documentElement; a = a.parentElement) {
+      const cs = getComputedStyle(a);
+      op *= parseFloat(cs.opacity);
+      const bg = rgba(cs.backgroundColor);
+      if (bg && bg.a > 0) { layers.push(bg); if (bg.a >= 1) break; }
+    }
+    let bg = pageBg.a >= 1 ? { ...pageBg } : { r: 0, g: 0, b: 0, a: 1 };
+    for (let i = layers.length - 1; i >= 0; i--) bg = over(layers[i], bg);
+    const fg = rgba(getComputedStyle(e).color);
+    if (!fg) continue;
+    const txt = over({ ...fg, a: fg.a * op }, bg);
+    const L1 = lum(txt), L2 = lum(bg);
+    const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+    if (ratio < 4.45) out.contrast.push('FAIL ' + ratio.toFixed(2) + ':1 ' + label(e));
+    else if (ratio < 6.95) out.contrast.push('CHECK ' + ratio.toFixed(2) + ':1 dimmed on purpose? ' + label(e));
+  }
+
   // OVERLAP: text blocks and images that intersect without nesting
   const blocks = [...textEls.filter(e => !e.closest('svg')), ...[...slide.querySelectorAll('img')].filter(visible)];
   const boxes = blocks.map(e => {
@@ -126,12 +171,13 @@ def main():
             res = page.evaluate(AUDIT_JS)
             lines = (['OVERFLOW ' + x for x in res['overflow']] +
                      ['OVERLAP  ' + x for x in res['overlap']] +
-                     ['SIZE     ' + x for x in res['size']])
+                     ['SIZE     ' + x for x in res['size']] +
+                     ['CONTRAST ' + x for x in res['contrast']])
             if lines:
                 print('Slide %d' % n)
                 for line in lines:
                     print('  ' + line)
-                problems += sum(1 for l in lines if not l.startswith('SIZE     CHECK'))
+                problems += sum(1 for l in lines if ' CHECK ' not in l)
         for e in page.errors:
             print('page error:', e)
     print('%d problem(s) (CHECK lines need a human role check and are not counted)' % problems)

@@ -31,7 +31,7 @@ and the `<!-- SLIDE NN -->` comments.
 | Script | What it does |
 |---|---|
 | `shots.py <deck> <n>... [--out DIR] [--no-fragments]` | Screenshot slides (or `all`), with every fragment revealed by default. Writes `slide<N>.png` to `--out` (default `/tmp/deck-shots`). Read the PNGs to see the result. |
-| `audit.py <deck> [<n>...]` | Reports, per slide, elements running off the canvas (OVERFLOW), separate text blocks or images that intersect (OVERLAP), and text below the AGENTS.md size floors (SIZE FAIL; SIZE CHECK for 22-29px text in paragraphs and list items that may need to be body size). Exits non-zero if anything but CHECK lines is found. |
+| `audit.py <deck> [<n>...]` | Reports, per slide, elements running off the canvas (OVERFLOW), separate text blocks or images that intersect (OVERLAP), text below the AGENTS.md size floors (SIZE FAIL; SIZE CHECK for 22-29px text in paragraphs and list items that may need to be body size), and text contrast composited over its ancestor backgrounds (CONTRAST FAIL under 4.5:1; CONTRAST CHECK for 4.5-7:1, which only intentionally dimmed text may use). Exits non-zero if anything but CHECK lines is found. |
 | `deck_page.py` | Shared helpers: `open_deck`, `goto_slide`, `click_in_slide`, `rects`. Import it for one-off checks. |
 
 The audit measures; it does not judge. OVERLAP can include layers that are
@@ -71,6 +71,9 @@ longest possible message directly from the data.
   the deck. Query inside `Reveal.getCurrentSlide()`, never
   `document.querySelector('.reveal ...')`, and click with `click_in_slide`
   (a DOM click) because the storyboard track can intercept real clicks.
+- CONTRAST only sees CSS backgrounds. Text drawn on SVG shapes, images, or
+  gradients is measured against the nearest solid `background-color`, so
+  check those by eye.
 - SVG text renders at the SVG's scale. Its rendered size is the computed
   font size times `getScreenCTM()` scale divided by `Reveal.getScale()`.
   `audit.py` does this for you.
