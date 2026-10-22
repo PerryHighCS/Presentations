@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta name="syncdeck-permalink" content="1aiofss">
-<meta name="syncdeck-projects" content="em-dashes">
+<meta name="syncdeck-projects" content="em-dashes readability">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2.3-2.4 Style and Strings</title>
@@ -21,13 +21,13 @@
   .trace-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gap); }
   .var-row { display: flex; gap: var(--gap-sm); justify-content: center; }
   .var-box-value .placeholder { color: var(--text-dim); font-style: italic; }
-  .console-card { width: 260px; }
+  .console-card { min-width: 260px; max-width: 100%; }  /* sized to its longest line */
   .console-card .code-body { display: flex; flex-direction: column; gap: 7px; align-items: center; font-family: var(--font-mono); color: var(--text); text-align: center; }
   .console-in { color: var(--result); }
-  .console-hdr-row { color: var(--text-dim); letter-spacing: 0.08em; }
+  .console-hdr-row { color: var(--text-muted); letter-spacing: 0.08em; }
   .code-card.compact .code-body { padding: 12px 20px; }
-  .code-card.compact .code-line { font-size: 17px; line-height: 1.5; padding: 1px 0; }
-  .step-hint { font-size: var(--small); color: var(--text-dim); margin-top: var(--gap-sm); }
+  .code-card.compact .code-line { line-height: 1.3; padding: 0; }
+  .step-hint { font-size: var(--body); color: var(--text-muted); margin-top: var(--gap-sm); }
 
   /* Character strip: a static row of character "cells", each with an
      optional label above and below (index, negative index, or char code).
@@ -35,8 +35,8 @@
      characters rather than a whole string. */
   .char-strip { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .char-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: var(--font-mono); }
-  .char-cell .idx-top { font-size: 14px; color: var(--result); min-height: 1.2em; }
-  .char-cell .idx-bottom { font-size: 14px; color: var(--accent); min-height: 1.2em; }
+  .char-cell .idx-top { font-size: var(--small); color: var(--result); min-height: 1.2em; }
+  .char-cell .idx-bottom { font-size: var(--small); color: var(--accent); min-height: 1.2em; }
   .char-cell .ch {
     min-width: 40px;
     padding: 10px 12px;
@@ -49,7 +49,7 @@
     text-align: center;
   }
   .char-cell.hl .ch { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 3px rgba(242,177,52,0.18); }
-  .char-cell .ch.wide { min-width: 52px; font-size: 14px; }
+  .char-cell .ch.wide { min-width: 52px; }
 </style>
 </head>
 <body>
@@ -191,7 +191,7 @@
       <div class="slide-inner">
         <span class="slide-tag">One Good Rewrite</span>
         <h2>Same math, <span style="color:var(--result);">readable</span> now</h2>
-        <div class="split split-50" style="margin-top:var(--gap);">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:var(--gap);margin-top:var(--gap);">
           <div class="code-card">
             <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">before</span></div>
             <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">c</span>(<span class="tok-nm">w</span>):
@@ -207,7 +207,7 @@
             </div>
           </div>
         </div>
-        <p style="font-size:var(--body);margin-top:var(--gap-lg);max-width:1000px;">Nothing about what the code <em>does</em> changed. What changed is how quickly someone else, including future you, can tell what it does.</p>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">Nothing about what the code <em>does</em> changed. What changed is how quickly someone else, including future you, can tell what it does.</p>
       </div>
     </section>
 
@@ -399,9 +399,9 @@ patience finds them all.'''</span>
         <span class="slide-tag">A Common Fix</span>
         <h2>Skip the <span style="color:var(--result);">leading</span> newline</h2>
         <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
-          It's often more readable to start the text on its own line, right after the opening triple-quote. But that puts a newline right after the quote, which shows up as a blank first line of output. When the text is meant to line up with something printed just before it, like a boxed table sitting right under its heading, that stray blank line breaks the alignment. The fix: a backslash (<code style="color:var(--text);">\</code>, not a forward slash) right after the opening quote tells Python to ignore that one newline.
+          Starting the text on its own line reads well, but it puts a newline right after the opening quote, which prints as a blank first line. Here, that blank line pushes the box away from its heading. A backslash (<code style="color:var(--text);">\</code>, not a forward slash) right after the opening quote tells Python to ignore that one newline.
         </p>
-        <div class="split split-50" style="margin-top:var(--gap-lg);">
+        <div class="split split-50" style="margin-top:var(--gap);flex:0 0 auto;">
           <div class="code-card">
             <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">misaligned</span></div>
             <div class="code-body"><pre><code><span class="tok-kw">print</span>(<span class="tok-str">'Order Summary:'</span>)
@@ -494,17 +494,17 @@ patience finds them all.'''</span>
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:literals-checkpoint-1:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which literal correctly represents the text: She said, \"Nice job!\"","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"&#39;She said, \"Nice job!\"&#39;","isCorrect":true},{"id":"q1b","text":"\"She said, \"Nice job!\"\"","isCorrect":false},{"id":"q1c","text":"&#39;She said, \\&#39;Nice job!\\&#39;&#39;","isCorrect":false},{"id":"q1d","text":"She said, \"Nice job!\"","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which literal correctly represents the text: She said, \"Nice job!\"","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"\"She said, \"Nice job!\"\"","isCorrect":false},{"id":"q1b","text":"&#39;She said, \\&#39;Nice job!\\&#39;&#39;","isCorrect":false},{"id":"q1c","text":"She said, \"Nice job!\"","isCorrect":false},{"id":"q1d","text":"&#39;She said, \"Nice job!\"&#39;","isCorrect":true}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint 1</span>
         <h2>Which literal is <span style="color:var(--accent);">correct</span>?</h2>
         <p style="margin:var(--gap) 0;max-width:900px;">Which literal correctly represents the text: <code>She said, "Nice job!"</code></p>
         <ul class="mcq-opts">
-          <li><span class="opt-key">A</span> <code>'She said, "Nice job!"'</code></li>
-          <li><span class="opt-key">B</span> <code>"She said, "Nice job!""</code></li>
-          <li><span class="opt-key">C</span> <code>'She said, \'Nice job!\''</code></li>
-          <li><span class="opt-key">D</span> <code>She said, "Nice job!"</code> with no quotes at all</li>
+          <li><span class="opt-key">A</span> <code>"She said, "Nice job!""</code></li>
+          <li><span class="opt-key">B</span> <code>'She said, \'Nice job!\''</code></li>
+          <li><span class="opt-key">C</span> <code>She said, "Nice job!"</code> with no quotes at all</li>
+          <li><span class="opt-key">D</span> <code>'She said, "Nice job!"'</code></li>
         </ul>
       </div>
     </section>
@@ -516,7 +516,7 @@ patience finds them all.'''</span>
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:literals-checkpoint-2:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does this print?\n\n```python\nprint(&#39;Row1\\\\nRow2&#39;)\n```\n\n(Note: there are two backslashes in a row before the n.)","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"Row1 and Row2 on two separate lines","isCorrect":false},{"id":"q1b","text":"The literal text Row1\\nRow2 on one line, backslash and n included","isCorrect":true},{"id":"q1c","text":"A syntax error","isCorrect":false},{"id":"q1d","text":"RowRow12nn, jumbled together","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does this print?\n\n```python\nprint(&#39;Row1\\\\nRow2&#39;)\n```\n\n(Note: there are two backslashes in a row before the n.)","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"Row1 and Row2 on two separate lines","isCorrect":false},{"id":"q1b","text":"A syntax error","isCorrect":false},{"id":"q1c","text":"The literal text Row1\\nRow2 on one line, backslash and n included","isCorrect":true},{"id":"q1d","text":"RowRow12nn, jumbled together","isCorrect":false}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint 2</span>
@@ -529,8 +529,8 @@ patience finds them all.'''</span>
         <p style="margin-bottom:var(--gap);">What does this print? (There are two backslashes in a row before the <code>n</code>.)</p>
         <ul class="mcq-opts">
           <li><span class="opt-key">A</span> <code>Row1</code> and <code>Row2</code> on two separate lines</li>
-          <li><span class="opt-key">B</span> The literal text <code>Row1\nRow2</code> on one line, backslash and <code>n</code> included</li>
-          <li><span class="opt-key">C</span> A syntax error</li>
+          <li><span class="opt-key">B</span> A syntax error</li>
+          <li><span class="opt-key">C</span> The literal text <code>Row1\nRow2</code> on one line, backslash and <code>n</code> included</li>
           <li><span class="opt-key">D</span> <code>RowRow12nn</code>, jumbled together</li>
         </ul>
       </div>
@@ -879,16 +879,16 @@ patience finds them all.'''</span>
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:operators-checkpoint-slice:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does &#39;ABCDEFGH&#39;[1:7:2] evaluate to?","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"&#39;BDF&#39;","isCorrect":true},{"id":"q1b","text":"&#39;ABC&#39;","isCorrect":false},{"id":"q1c","text":"&#39;BDFH&#39;","isCorrect":false},{"id":"q1d","text":"&#39;ACE&#39;","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does &#39;ABCDEFGH&#39;[1:7:2] evaluate to?","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"&#39;ABC&#39;","isCorrect":false},{"id":"q1b","text":"&#39;BDFH&#39;","isCorrect":false},{"id":"q1c","text":"&#39;ACE&#39;","isCorrect":false},{"id":"q1d","text":"&#39;BDF&#39;","isCorrect":true}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
         <h2>What does <span style="color:var(--accent);">'ABCDEFGH'[1:7:2]</span> evaluate to?</h2>
         <ul class="mcq-opts" style="margin-top:var(--gap);">
-          <li><span class="opt-key">A</span> <code>'BDF'</code></li>
-          <li><span class="opt-key">B</span> <code>'ABC'</code></li>
-          <li><span class="opt-key">C</span> <code>'BDFH'</code></li>
-          <li><span class="opt-key">D</span> <code>'ACE'</code></li>
+          <li><span class="opt-key">A</span> <code>'ABC'</code></li>
+          <li><span class="opt-key">B</span> <code>'BDFH'</code></li>
+          <li><span class="opt-key">C</span> <code>'ACE'</code></li>
+          <li><span class="opt-key">D</span> <code>'BDF'</code></li>
         </ul>
       </div>
     </section>
@@ -1036,7 +1036,7 @@ hi
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:builtins-checkpoint-repr:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does this print?\n\n```python\ns = &#39; go\\n&#39;\nprint(repr(s))\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"&#39; go\\n&#39; (quotes and escape sequences shown as text)","isCorrect":true},{"id":"q1b","text":"go, followed by a real blank line","isCorrect":false},{"id":"q1c","text":"go","isCorrect":false},{"id":"q1d","text":"A syntax error","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does this print?\n\n```python\ns = &#39; go\\n&#39;\nprint(repr(s))\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"go, followed by a real blank line","isCorrect":false},{"id":"q1b","text":"&#39; go\\n&#39; (quotes and escape sequences shown as text)","isCorrect":true},{"id":"q1c","text":"go","isCorrect":false},{"id":"q1d","text":"A syntax error","isCorrect":false}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
@@ -1048,8 +1048,8 @@ hi
           </div>
         </div>
         <ul class="mcq-opts">
-          <li><span class="opt-key">A</span> <code>' go\n'</code>, quotes and escape sequence shown as text</li>
-          <li><span class="opt-key">B</span> <code>go</code>, followed by a real blank line</li>
+          <li><span class="opt-key">A</span> <code>go</code>, followed by a real blank line</li>
+          <li><span class="opt-key">B</span> <code>' go\n'</code>, quotes and escape sequence shown as text</li>
           <li><span class="opt-key">C</span> <code>go</code></li>
           <li><span class="opt-key">D</span> A syntax error</li>
         </ul>
@@ -1352,7 +1352,7 @@ hi
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:methods-checkpoint-immutable:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What will the following code print?\n\n```python\ns = &#39;I like tea&#39;\ns.replace(&#39;tea&#39;, &#39;coffee&#39;)\nprint(s)\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"I like tea","isCorrect":true},{"id":"q1b","text":"I like coffee","isCorrect":false},{"id":"q1c","text":"None","isCorrect":false},{"id":"q1d","text":"It crashes","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What will the following code print?\n\n```python\ns = &#39;I like tea&#39;\ns.replace(&#39;tea&#39;, &#39;coffee&#39;)\nprint(s)\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"I like coffee","isCorrect":false},{"id":"q1b","text":"None","isCorrect":false},{"id":"q1c","text":"I like tea","isCorrect":true},{"id":"q1d","text":"It crashes","isCorrect":false}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
@@ -1365,9 +1365,9 @@ hi
           </div>
         </div>
         <ul class="mcq-opts">
-          <li><span class="opt-key">A</span> <code>I like tea</code></li>
-          <li><span class="opt-key">B</span> <code>I like coffee</code></li>
-          <li><span class="opt-key">C</span> <code>None</code></li>
+          <li><span class="opt-key">A</span> <code>I like coffee</code></li>
+          <li><span class="opt-key">B</span> <code>None</code></li>
+          <li><span class="opt-key">C</span> <code>I like tea</code></li>
           <li><span class="opt-key">D</span> It crashes</li>
         </ul>
       </div>
@@ -1430,16 +1430,16 @@ hi
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:methods-checkpoint-find-index:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"For which value of s do s.find(&#39;q&#39;) and s.index(&#39;q&#39;) behave differently?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"s = &#39;quick&#39;","isCorrect":false},{"id":"q1b","text":"s = &#39;queue&#39;","isCorrect":false},{"id":"q1c","text":"s = &#39;slow&#39;","isCorrect":true},{"id":"q1d","text":"find and index always behave the same","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"For which value of s do s.find(&#39;q&#39;) and s.index(&#39;q&#39;) behave differently?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"s = &#39;slow&#39;","isCorrect":true},{"id":"q1b","text":"s = &#39;quick&#39;","isCorrect":false},{"id":"q1c","text":"s = &#39;queue&#39;","isCorrect":false},{"id":"q1d","text":"find and index always behave the same","isCorrect":false}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
         <h2>Where do <span style="color:var(--accent);">find</span> and <span style="color:var(--warn);">index</span> disagree?</h2>
         <p style="margin:var(--gap) 0;max-width:900px;">For which value of <code>s</code> do <code>s.find('q')</code> and <code>s.index('q')</code> behave differently?</p>
         <ul class="mcq-opts">
-          <li><span class="opt-key">A</span> <code>s = 'quick'</code></li>
-          <li><span class="opt-key">B</span> <code>s = 'queue'</code></li>
-          <li><span class="opt-key">C</span> <code>s = 'slow'</code></li>
+          <li><span class="opt-key">A</span> <code>s = 'slow'</code></li>
+          <li><span class="opt-key">B</span> <code>s = 'quick'</code></li>
+          <li><span class="opt-key">C</span> <code>s = 'queue'</code></li>
           <li><span class="opt-key">D</span> <code>find</code> and <code>index</code> always behave the same</li>
         </ul>
       </div>
@@ -1660,7 +1660,7 @@ hi
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:looping-checkpoint-form:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"You need to print each character of a string together with its position, counting positions starting at 1 instead of 0. Which loop form fits?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"for c in s:, since you&#39;re printing characters","isCorrect":false},{"id":"q1b","text":"for i in range(len(s)):, then print(i + 1, s[i])","isCorrect":true},{"id":"q1c","text":"Either form works identically here","isCorrect":false},{"id":"q1d","text":"Neither form can produce 1-based positions","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"You need to print each character of a string together with its position, counting positions starting at 1 instead of 0. Which loop form fits?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"for c in s:, since you&#39;re printing characters","isCorrect":false},{"id":"q1b","text":"Either form works identically here","isCorrect":false},{"id":"q1c","text":"Neither form can produce 1-based positions","isCorrect":false},{"id":"q1d","text":"for i in range(len(s)):, then print(i + 1, s[i])","isCorrect":true}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
@@ -1668,9 +1668,9 @@ hi
         <p style="margin:var(--gap) 0;max-width:900px;">You need to print each character of a string together with its position, counting positions starting at <code>1</code> instead of <code>0</code>. Which loop form fits?</p>
         <ul class="mcq-opts">
           <li><span class="opt-key">A</span> <code>for c in s:</code>, since you're printing characters</li>
-          <li><span class="opt-key">B</span> <code>for i in range(len(s)):</code>, then <code>print(i + 1, s[i])</code></li>
-          <li><span class="opt-key">C</span> Either form works identically here</li>
-          <li><span class="opt-key">D</span> Neither form can produce 1-based positions</li>
+          <li><span class="opt-key">B</span> Either form works identically here</li>
+          <li><span class="opt-key">C</span> Neither form can produce 1-based positions</li>
+          <li><span class="opt-key">D</span> <code>for i in range(len(s)):</code>, then <code>print(i + 1, s[i])</code></li>
         </ul>
       </div>
     </section>
@@ -1839,7 +1839,7 @@ Cy,95,89
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:looping-checkpoint-splitlines:0"
-      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "What does this print?\n\n```python\ndata = &#39;&#39;&#39;\\\nx,y\nz,w\n&#39;&#39;&#39;\nfor row in data.splitlines():\n    for item in row.split(&#39;,&#39;):\n        print(item)\n```", "order": 0, "responseTimeLimitMs": 40000, "options": [{"id": "q1a", "text": "x, y, z, w: four lines, nothing else", "isCorrect": true}, {"id": "q1b", "text": "x, y, z, w, then one extra blank line", "isCorrect": false}, {"id": "q1c", "text": "x,y then z,w: two lines, commas kept", "isCorrect": false}, {"id": "q1d", "text": "A blank line, then x, y, z, w", "isCorrect": false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does this print?\n\n```python\ndata = &#39;&#39;&#39;\\\nx,y\nz,w\n&#39;&#39;&#39;\nfor row in data.splitlines():\n    for item in row.split(&#39;,&#39;):\n        print(item)\n```","order":0,"responseTimeLimitMs":40000,"options":[{"id":"q1a","text":"x, y, z, w, then one extra blank line","isCorrect":false},{"id":"q1b","text":"x,y then z,w: two lines, commas kept","isCorrect":false},{"id":"q1c","text":"x, y, z, w: four lines, nothing else","isCorrect":true},{"id":"q1d","text":"A blank line, then x, y, z, w","isCorrect":false}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
@@ -1856,9 +1856,9 @@ z,w
           </div>
         </div>
         <ul class="mcq-opts">
-          <li><span class="opt-key">A</span> <code>x</code>, <code>y</code>, <code>z</code>, <code>w</code>: four lines, nothing else</li>
-          <li><span class="opt-key">B</span> <code>x</code>, <code>y</code>, <code>z</code>, <code>w</code>, then one extra blank line</li>
-          <li><span class="opt-key">C</span> <code>x,y</code> then <code>z,w</code>: two lines, commas kept</li>
+          <li><span class="opt-key">A</span> <code>x</code>, <code>y</code>, <code>z</code>, <code>w</code>, then one extra blank line</li>
+          <li><span class="opt-key">B</span> <code>x,y</code> then <code>z,w</code>: two lines, commas kept</li>
+          <li><span class="opt-key">C</span> <code>x</code>, <code>y</code>, <code>z</code>, <code>w</code>: four lines, nothing else</li>
           <li><span class="opt-key">D</span> A blank line, then <code>x</code>, <code>y</code>, <code>z</code>, <code>w</code></li>
         </ul>
       </div>
@@ -2012,15 +2012,15 @@ z,w
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:fstrings-checkpoint-quotes:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"name = &#39;Zoe&#39;\nfood = &#39;ramen&#39;\n\nWhich line prints: Zoe&#39;s favorite food is ramen.","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"print(f\"{name}&#39;s favorite food is {food}.\")","isCorrect":true},{"id":"q1b","text":"print(f&#39;{name}&#39;s favorite food is {food}.&#39;)","isCorrect":false},{"id":"q1c","text":"print(f\"name&#39;s favorite food is food.\")","isCorrect":false},{"id":"q1d","text":"print(f&#39;name&#39;s favorite food is food.&#39;)","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"name = &#39;Zoe&#39;\nfood = &#39;ramen&#39;\n\nWhich line prints: Zoe&#39;s favorite food is ramen.","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"print(f&#39;{name}&#39;s favorite food is {food}.&#39;)","isCorrect":false},{"id":"q1b","text":"print(f\"{name}&#39;s favorite food is {food}.\")","isCorrect":true},{"id":"q1c","text":"print(f\"name&#39;s favorite food is food.\")","isCorrect":false},{"id":"q1d","text":"print(f&#39;name&#39;s favorite food is food.&#39;)","isCorrect":false}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
         <h2>Which line prints it <span style="color:var(--accent);">correctly</span>?</h2>
         <p style="margin:var(--gap) 0;max-width:900px;"><code>name = 'Zoe'</code>, <code>food = 'ramen'</code>. Which line prints: <em>Zoe's favorite food is ramen.</em></p>
         <ul class="mcq-opts">
-          <li><span class="opt-key">A</span> <code>print(f"{name}'s favorite food is {food}.")</code></li>
-          <li><span class="opt-key">B</span> <code>print(f'{name}'s favorite food is {food}.')</code></li>
+          <li><span class="opt-key">A</span> <code>print(f'{name}'s favorite food is {food}.')</code></li>
+          <li><span class="opt-key">B</span> <code>print(f"{name}'s favorite food is {food}.")</code></li>
           <li><span class="opt-key">C</span> <code>print(f"name's favorite food is food.")</code></li>
           <li><span class="opt-key">D</span> <code>print(f'name's favorite food is food.')</code></li>
         </ul>
