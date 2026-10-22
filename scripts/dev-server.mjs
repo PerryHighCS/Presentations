@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { buildIndexPages, defaultTitleForFile, permalinkHashForFile } from './site-indexes.mjs';
 import { loadManifest, redirectHtml, toRedirectTarget } from './permalink-utils.mjs';
+import { completedProjectsForFile, loadProjects } from './project-utils.mjs';
 import {
   collectHtmlFiles,
   createExclusionChecker,
@@ -290,6 +291,13 @@ async function main() {
           return null;
         }
         return permalinkHashForFile(sourcePath);
+      },
+      {
+        projects: await loadProjects(rootDir),
+        getCompletedProjectsForPublicPath: async (publicPath) => {
+          const sourcePath = resolvePublicPathToSource(publicPath, mounts);
+          return sourcePath ? completedProjectsForFile(sourcePath) : [];
+        },
       }
     );
 

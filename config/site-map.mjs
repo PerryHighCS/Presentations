@@ -13,6 +13,9 @@ export const siteMounts = [
 // `presentationUrl` values for ActiveBits SyncDeck launch/permalink links.
 export const siteBaseUrl = 'https://perryhighcs.github.io/Presentations/';
 
+// Source repository; index pages link project badges to its issues.
+export const repoUrl = 'https://github.com/PerryHighCS/Presentations';
+
 // ActiveBits hosts the SyncDeck instructor/student session infrastructure.
 // See vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.md
 // ("Presentation Team Handoff") for the full launch/permalink contract.
