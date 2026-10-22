@@ -289,6 +289,24 @@ This applies uniformly to console output, variable assignment, and function-retu
   normal deck work.
 - Do not kill a running dev server unless requested.
 
+## Agent Tools (Checking Decks in a Browser)
+
+`.agent/tools/` holds Playwright scripts for checking decks against the dev
+server. `scripts/` is for the site's build and dev scripts; put reusable agent
+tooling in `.agent/tools/` instead of a temp folder, so it survives between
+sessions. See `.agent/tools/README.md` for setup (Playwright in a throwaway
+virtualenv outside the repo) and usage.
+
+- `shots.py <deck> <slide>...` screenshots slides at the 1600×900 canvas with
+  fragments revealed. Look at the screenshot of every slide you change.
+- `audit.py <deck> [<slide>...]` reports overflow past the canvas, overlapping
+  text, and text below the size floors in Key Architecture Notes.
+- `deck_page.py` has shared helpers for one-off checks, such as clicking
+  through an interactive widget and confirming nothing moves between states.
+
+The audit measures but does not judge. Pair it with screenshots, and for
+interactive widgets, drive every state (see "Stability checks" in the README).
+
 ## PDF Image Extraction Helper
 
 - Use `scripts/extract-pdf-images.sh` to extract embedded images from each PDF
