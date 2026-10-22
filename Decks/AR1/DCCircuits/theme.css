@@ -47,6 +47,10 @@ body,
   font-family: 'DM Sans', sans-serif;
 }
 
+/* Base line height for slide text; Reveal's default renders at ~1.0, which
+   crowds lines together at projection sizes. */
+.reveal .slides { line-height: 1.45; }
+
 /* Headings — reset Reveal defaults (margin, text-transform, etc.) */
 .reveal h1,
 .reveal h2,
@@ -76,8 +80,8 @@ body,
 .reveal sup { vertical-align: super; font-size: 0.75em; }
 
 /* Links */
-.reveal a { color: #2a8fff; }
-.reveal a:hover { color: rgba(42,143,255,0.7); }
+.reveal a { color: var(--accent); }
+.reveal a:hover { color: var(--text); }
 
 /* Selection */
 .reveal ::selection {
@@ -113,9 +117,9 @@ body::before {
   --bg:          #060b14;
   --bg-card:     #0a1120;
   --text:        #e8f2ff;
-  --text-muted:  rgba(232,242,255,0.58);
-  --text-dim:    rgba(232,242,255,0.28);
-  --accent:      #2a8fff;
+  --text-muted:  rgba(232,242,255,0.66);
+  --text-dim:    rgba(232,242,255,0.50);
+  --accent:      #5daaff;
   --accent-dim:  rgba(42,143,255,0.12);
   --accent-border: rgba(42,143,255,0.22);
   --result:      #4dffb0;   /* answer highlights */
@@ -132,10 +136,10 @@ body::before {
   --title:  90px;    /* title slide main heading */
   --h2:     46px;    /* section headings         */
   --h3:     32px;    /* sub-headings             */
-  --body:   24px;    /* paragraph / bullet text  */
-  --small:  18px;    /* captions / annotations   */
+  --body:   30px;    /* paragraph / bullet text  */
+  --small:  22px;    /* captions / annotations   */
   --label:  13px;    /* eyebrow labels / tags    */
-  --code:   20px;    /* monospace / formula text */
+  --code:   24px;    /* monospace / formula text */
 
   /* Spacing */
   --pad:     64px;   /* slide inner padding      */
@@ -524,7 +528,7 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
 }
 .outcome-num {
   font-family: var(--font-mono);
-  font-size: 18px;
+  font-size: var(--small);
   font-weight: 700;
   color: var(--accent);
   flex-shrink: 0;
@@ -532,7 +536,7 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
   margin-top: 2px;
 }
 .outcome-text {
-  font-size: 18px;
+  font-size: var(--body);
   color: var(--text-muted);
   line-height: 1.45;
 }
@@ -548,7 +552,7 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
 .topic-list li {
   position: relative;
   padding-left: 24px;
-  font-size: 21px;
+  font-size: var(--body);
   color: var(--text-muted);
   line-height: 1.5;
 }
@@ -619,8 +623,8 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
   border: 1px solid var(--accent-border);
   border-radius: 6px;
 }
-.agenda-num  { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--accent); min-width: 22px; padding-top: 2px; opacity: 0.7; }
-.agenda-text { font-size: 20px; color: var(--text-muted); line-height: 1.4; }
+.agenda-num  { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--accent); min-width: 22px; padding-top: 2px; }
+.agenda-text { font-size: var(--body); color: var(--text-muted); line-height: 1.4; }
 .agenda-text strong { color: var(--text); font-weight: 600; }
 
 a.agenda-item {
@@ -644,12 +648,13 @@ a.agenda-item:hover .agenda-num { opacity: 1; }
   background: rgba(255,209,102,0.06);
   border-radius: 0 4px 4px 0;
   display: flex;
+  line-height: 1.45;
   flex-direction: column;
   gap: 4px;
 }
 .warn-label {
   font-family: var(--font-mono);
-  font-size: var(--label);
+  font-size: var(--small);
   color: var(--warn);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -659,8 +664,8 @@ a.agenda-item:hover .agenda-num { opacity: 1; }
 
 .method-steps { display: flex; flex-direction: column; gap: 8px; }
 .method-step {
-  font-family: var(--font-mono);
-  font-size: var(--small);
+  font-size: var(--body);
+  line-height: 1.4;
   color: var(--text-muted);
   padding: 8px 14px;
   background: var(--accent-dim);
@@ -682,7 +687,7 @@ a.agenda-item:hover .agenda-num { opacity: 1; }
   border: 2px solid var(--accent);
   border-radius: 50%;
   font-family: var(--font-mono);
-  font-size: 20px;
+  font-size: var(--small);
   font-weight: 700;
   color: var(--accent);
 }
@@ -699,11 +704,16 @@ a.agenda-item:hover .agenda-num { opacity: 1; }
 
 .yt-formula {
   font-family: var(--font-mono);
-  font-size: 22px;
+  font-size: 26px;
   color: var(--text);
   line-height: 1.9;
   display: block;
+  /* hanging indent: a wrapped formula continues indented under its first line */
+  padding-left: 2ch;
+  text-indent: -2ch;
 }
+/* text-indent inherits; keep it off fraction parts and other inline-blocks */
+.yt-formula * { text-indent: 0; }
 .yt-result {
   font-family: var(--font-mono);
   font-size: 28px;
@@ -726,7 +736,7 @@ a.agenda-item:hover .agenda-num { opacity: 1; }
 }
 .col-label {
   font-family: var(--font-mono);
-  font-size: var(--label);
+  font-size: var(--small);
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -739,7 +749,7 @@ a.agenda-item:hover .agenda-num { opacity: 1; }
 
 .subtitle {
   font-family: var(--font-mono);
-  font-size: 20px;
+  font-size: 26px;
   color: var(--text-dim);
   margin-top: 22px;
   letter-spacing: 0.04em;
@@ -755,6 +765,6 @@ a.agenda-item:hover .agenda-num { opacity: 1; }
 
 /* ─── 26. Slide intro text ───────────────────────────────── */
 
-.slide-intro { font-size: var(--body); color: var(--text-muted); margin-bottom: var(--gap); }
+.slide-intro { font-size: var(--body); color: var(--text-muted); line-height: 1.45; margin-bottom: var(--gap); }
 
 

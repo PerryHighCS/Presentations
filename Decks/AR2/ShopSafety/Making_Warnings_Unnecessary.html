@@ -51,55 +51,56 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  margin-top: var(--gap-lg);
+  margin-top: var(--gap);
   flex: 1;
   justify-content: center;
 }
 .hierarchy-tier {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 62px;
+  padding: 6px 12px;
+  line-height: 1.2;
+  text-align: center;
   border-radius: 8px;
   color: #06120b;
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 19px;
+  font-size: var(--body);
   letter-spacing: 0.03em;
   position: relative;
-  gap: 16px;
+  gap: 2px;
 }
-.hierarchy-tier .tier-name { font-size: 20px; }
+.hierarchy-tier .tier-name { font-size: var(--body); }
 .hierarchy-tier .tier-note {
   font-family: var(--font-ui);
   font-weight: 400;
-  font-size: 15px;
+  font-size: var(--body);
   opacity: 0.85;
 }
 .hierarchy-tier--1 { width: 40%;  background: #39d353; }
 .hierarchy-tier--2 { width: 52%;  background: #63dd76; }
 .hierarchy-tier--3 { width: 64%;  background: #8ee79a; }
 .hierarchy-tier--4 { width: 76%;  background: var(--warn); }
-.hierarchy-tier--5 { width: 88%;  background: #e5484d; color: #fff; }
-.hierarchy-side {
+.hierarchy-tier--5 { width: 88%;  background: #ac181d; color: #fff; }
+.hierarchy-end {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--small);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-dim);
-  display: flex;
-  justify-content: space-between;
-  width: 88%;
-  margin-top: 10px;
 }
 
 /* ── Beyond-the-sign activity slide ──────────────────────────────── */
 .beyond-slide .slide-inner { justify-content: flex-start; }
 .beyond-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
 }
+.beyond-pager { display: flex; align-items: center; gap: 14px; }
+.beyond-pager .beyond-btn { padding: 6px 16px; line-height: 1; }
 .beyond-body {
   display: flex;
   gap: 40px;
@@ -121,8 +122,8 @@
   display: block;
 }
 .beyond-caption {
-  font-size: var(--small);
-  color: var(--text-dim);
+  font-size: var(--body);
+  color: var(--text-muted);
   line-height: 1.4;
 }
 .beyond-panel {
@@ -138,33 +139,49 @@
   border-radius: 8px;
   padding: 12px 16px;
   background: var(--bg-card);
-  opacity: 0.35;
 }
-.beyond-stage.done { opacity: 1; }
+.beyond-stage.open { border-color: var(--accent); }
+/* Stage title doubles as the expand/collapse control */
 .beyond-stage-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--small);
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--accent);
 }
+.beyond-stage-label::after {
+  content: '\25B8'; /* collapsed: right-pointing chevron */
+  font-size: var(--body);
+  line-height: 1;
+}
+.beyond-stage.open .beyond-stage-label::after { content: '\25BE'; } /* expanded: down */
 .beyond-stage-text {
-  font-size: 17px;
+  font-size: var(--body);
   line-height: 1.5;
   color: var(--text-muted);
   margin-top: 6px;
   display: none;
 }
-.beyond-stage.done .beyond-stage-text { display: block; }
-.beyond-stage.done .beyond-stage-text strong { color: var(--text); }
+/* One stage open at a time (accordion) so the longest answer always fits the panel. */
+.beyond-stage.open .beyond-stage-text { display: block; }
+.beyond-stage.open .beyond-stage-text strong { color: var(--text); }
 
 .beyond-verdict { display: none; }
-.beyond-stage.done .beyond-verdict { display: block; }
+.beyond-stage.open .beyond-verdict { display: block; }
 .beyond-verdict-badge {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--small);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -176,13 +193,6 @@
 .beyond-verdict--changed .beyond-verdict-badge { background: rgba(94,234,212,0.16); color: var(--result); }
 .beyond-verdict--required .beyond-verdict-badge { background: rgba(255,209,102,0.18); color: var(--warn); }
 
-.beyond-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: auto;
-  padding-top: 10px;
-}
 .beyond-progress {
   font-family: var(--font-mono);
   font-size: var(--small);
@@ -204,6 +214,13 @@
   cursor: pointer;
 }
 .beyond-btn:hover { background: rgba(57,211,83,0.7); }
+.beyond-btn:disabled { opacity: 0.4; cursor: default; }
+.beyond-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+}
+.beyond-btn--ghost:hover { background: transparent; border-color: var(--accent); }
 
 /* ── PPE category discussion grid ────────────────────────────────── */
 .ppe-cat-grid {
@@ -220,13 +237,13 @@
 }
 .ppe-cat-card h4 {
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: var(--body);
   color: var(--accent);
   letter-spacing: 0.02em;
   margin-bottom: 6px;
 }
 .ppe-cat-card p {
-  font-size: 15px;
+  font-size: var(--body);
   line-height: 1.45;
   color: var(--text-muted);
 }
@@ -239,7 +256,7 @@
   letter-spacing: -0.01em;
 }
 .impact-line--1 { font-size: 52px; color: var(--text); }
-.impact-line--2 { font-size: 52px; color: #e5484d; margin-top: 6px; }
+.impact-line--2 { font-size: 52px; color: #f08a8d; margin-top: 6px; }
 
 /* ── Worked example (fragmented rows) ────────────────────────────── */
 .example-list {
@@ -258,7 +275,7 @@
 .example-label {
   flex: 0 0 220px;
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: var(--small);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -266,7 +283,7 @@
 }
 .example-value {
   flex: 1;
-  font-size: 19px;
+  font-size: var(--body);
   line-height: 1.5;
   color: var(--text-muted);
 }
@@ -276,7 +293,7 @@
 .control-tag {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--small);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -294,9 +311,18 @@
 .ppe-slide .slide-inner { justify-content: flex-start; }
 .ppe-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
 }
+.ppe-header .ppe-btn {
+  padding: 6px 16px;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+}
+.ppe-header .ppe-btn:hover { border-color: var(--accent); }
+.ppe-btn:disabled { opacity: 0.4; cursor: default; }
 .ppe-scenario {
   margin-top: var(--gap);
   background: var(--bg-card);
@@ -306,7 +332,7 @@
 }
 .ppe-scenario-tag {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--small);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -314,15 +340,15 @@
 }
 .ppe-scenario-title {
   font-family: var(--font-mono);
-  font-size: 26px;
+  font-size: var(--body);
   color: var(--text);
   margin-top: 4px;
 }
 .ppe-scenario-desc {
-  font-size: 17px;
+  font-size: var(--body);
   color: var(--text-muted);
   line-height: 1.5;
-  margin-top: 6px;
+  margin-top: 6px;  min-height: 3em; /* two lines reserved so the stages do not shift between scenarios */
 }
 .ppe-panel {
   display: flex;
@@ -335,33 +361,37 @@
   border-radius: 8px;
   padding: 10px 16px;
   background: var(--bg-card);
-  opacity: 0.35;
 }
-.ppe-stage.done { opacity: 1; }
+.ppe-stage.open { border-color: var(--accent); }
+/* Stage title doubles as the expand/collapse control (same pattern as #beyond-game) */
 .ppe-stage-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--small);
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--accent);
 }
 .ppe-stage-text {
-  font-size: 16px;
+  font-size: var(--body);
   line-height: 1.45;
   color: var(--text-muted);
   margin-top: 5px;
   display: none;
 }
-.ppe-stage.done .ppe-stage-text { display: block; }
-.ppe-stage.done .ppe-stage-text strong { color: var(--text); }
-
-.ppe-nav {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-top: var(--gap);
-}
+.ppe-stage-label::after { content: '\25B8'; font-size: var(--body); line-height: 1; }
+.ppe-stage.open .ppe-stage-label::after { content: '\25BE'; }
+.ppe-stage.open .ppe-stage-text { display: block; }
+.ppe-stage.open .ppe-stage-text strong { color: var(--text); }
 .ppe-progress {
   font-family: var(--font-mono);
   font-size: var(--small);
@@ -397,14 +427,14 @@
   background: var(--bg-card);
   border: 1px solid var(--accent-border);
   border-radius: 10px;
-  padding: 20px 22px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 .phase-card h4 {
   font-family: var(--font-mono);
-  font-size: 20px;
+  font-size: var(--body);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -415,13 +445,13 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 6px;
 }
 .phase-list li {
   position: relative;
   padding-left: 20px;
-  font-size: 16px;
-  line-height: 1.45;
+  font-size: var(--body);
+  line-height: 1.32;
   color: var(--text-muted);
 }
 .phase-list li::before {
@@ -436,9 +466,18 @@
 .risky-slide .slide-inner { justify-content: flex-start; }
 .risky-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
 }
+.risky-header .risky-btn {
+  padding: 6px 16px;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+}
+.risky-header .risky-btn:hover { border-color: var(--accent); }
+.risky-btn:disabled { opacity: 0.4; cursor: default; }
 .risky-scenario {
   margin-top: var(--gap);
   background: var(--bg-card);
@@ -448,17 +487,18 @@
 }
 .risky-scenario-tag {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--small);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--result);
 }
 .risky-scenario-desc {
-  font-size: 19px;
+  font-size: var(--body);
   color: var(--text);
   line-height: 1.5;
   margin-top: 6px;
+  min-height: 3em; /* two lines reserved so the stages do not shift between situations */
 }
 .risky-panel {
   display: flex;
@@ -471,47 +511,52 @@
   border-radius: 8px;
   padding: 10px 16px;
   background: var(--bg-card);
-  opacity: 0.35;
 }
-.risky-stage.done { opacity: 1; }
+.risky-stage.open { border-color: var(--accent); }
+/* Stage title doubles as the expand/collapse control (same pattern as #beyond-game) */
 .risky-stage-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--small);
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--accent);
 }
 .risky-stage-text {
-  font-size: 16px;
+  font-size: var(--body);
   line-height: 1.45;
   color: var(--text-muted);
   margin-top: 5px;
   display: none;
 }
-.risky-stage.done .risky-stage-text { display: block; }
+.risky-stage-label::after { content: '\25B8'; font-size: var(--body); line-height: 1; }
+.risky-stage.open .risky-stage-label::after { content: '\25BE'; }
+.risky-stage.open .risky-stage-text { display: block; }
 
 .risky-core { display: none; margin-top: 8px; }
-.risky-stage.done .risky-core { display: block; }
+.risky-stage.open .risky-core { display: block; }
 .risky-core-badge {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--small);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 5px 12px;
   border-radius: 999px;
   background: rgba(229,72,77,0.16);
-  color: #e5484d;
+  color: #f08a8d;
 }
 
-.risky-nav {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-top: var(--gap);
-}
 .risky-progress {
   font-family: var(--font-mono);
   font-size: var(--small);
@@ -549,15 +594,15 @@
 }
 .rule-col h4 {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: var(--body);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 10px;
 }
-.rule-col--vague h4 { color: #e5484d; }
+.rule-col--vague h4 { color: #f08a8d; }
 .rule-col--observable h4 { color: var(--accent); }
 .rule-col--vague p {
-  font-size: 20px;
+  font-size: var(--body);
   color: var(--text-dim);
   font-style: italic;
 }
@@ -569,7 +614,7 @@
 }
 .rule-list li {
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: var(--body);
   color: var(--text-muted);
   line-height: 1.4;
 }
@@ -619,16 +664,17 @@
   <div class="slide-inner">
     <span class="slide-tag">The Hierarchy of Hazard Controls</span>
     <h2>Five Ways to Handle Any Hazard</h2>
-    <p style="font-size:19px;color:var(--text-muted);margin-top:10px;max-width:1300px;line-height:1.5;">
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:10px;max-width:1300px;line-height:1.5;">
       Safety professionals rank fixes from most to least reliable. A sign lives near the bottom, because it depends on a person, not on the hazard itself, getting it right every single time.
     </p>
     <div class="hierarchy-wrap">
+      <div class="hierarchy-end">&#9650; Most reliable</div>
       <div class="hierarchy-tier hierarchy-tier--1 fragment fade-up"><span class="tier-name">Elimination</span><span class="tier-note">remove the hazard entirely</span></div>
       <div class="hierarchy-tier hierarchy-tier--2 fragment fade-up"><span class="tier-name">Substitution</span><span class="tier-note">swap in something less dangerous</span></div>
       <div class="hierarchy-tier hierarchy-tier--3 fragment fade-up"><span class="tier-name">Engineering Controls</span><span class="tier-note">guard, contain, or redesign it</span></div>
       <div class="hierarchy-tier hierarchy-tier--4 fragment fade-up"><span class="tier-name">Administrative Controls</span><span class="tier-note">signs, labels, training, rules</span></div>
       <div class="hierarchy-tier hierarchy-tier--5 fragment fade-up"><span class="tier-name">PPE</span><span class="tier-note">the last line of defense, worn by a person</span></div>
-      <div class="hierarchy-side"><span>Most reliable</span><span>Least reliable</span></div>
+      <div class="hierarchy-end">&#9660; Least reliable</div>
     </div>
   </div>
 </section>
@@ -650,7 +696,7 @@
       <li class="step-item"><span class="step-num">4</span><div class="step-text"><strong>Still Need a Sign?</strong> After that fix, does the original sign become unnecessary, change, or stay exactly as important?</div></li>
     </ol>
     <div class="callout" style="margin-top:var(--gap-lg);max-width:1200px;">
-      There's no single right answer. Argue it out before you click to the next stage.
+      There's no single right answer. Argue it out before you open the next stage.
     </div>
   </div>
 </section>
@@ -662,7 +708,11 @@
   <div class="slide-inner">
     <div class="beyond-header">
       <span class="slide-tag">Beyond the Sign</span>
-      <span class="beyond-progress"></span>
+      <div class="beyond-pager">
+        <button type="button" class="beyond-btn beyond-btn--ghost beyond-prev" aria-label="Previous situation">&#9664;</button>
+        <span class="beyond-progress"></span>
+        <button type="button" class="beyond-btn beyond-btn--ghost beyond-next" aria-label="Next situation">&#9654;</button>
+      </div>
     </div>
     <div class="beyond-body">
       <div class="beyond-media">
@@ -671,25 +721,21 @@
       </div>
       <div class="beyond-panel">
         <div class="beyond-stage" data-stage="1">
-          <div class="beyond-stage-label">1 · Signs Needed</div>
+          <button type="button" class="beyond-stage-label" aria-expanded="false">1 · Signs Needed</button>
           <div class="beyond-stage-text"></div>
         </div>
         <div class="beyond-stage" data-stage="2">
-          <div class="beyond-stage-label">2 · Why It Could Fail</div>
+          <button type="button" class="beyond-stage-label" aria-expanded="false">2 · Why It Could Fail</button>
           <div class="beyond-stage-text"></div>
         </div>
         <div class="beyond-stage" data-stage="3">
-          <div class="beyond-stage-label">3 · A Better Fix</div>
+          <button type="button" class="beyond-stage-label" aria-expanded="false">3 · A Better Fix</button>
           <div class="beyond-stage-text"></div>
         </div>
         <div class="beyond-stage" data-stage="4">
-          <div class="beyond-stage-label">4 · Still Need a Sign?</div>
+          <button type="button" class="beyond-stage-label" aria-expanded="false">4 · Still Need a Sign?</button>
           <div class="beyond-stage-text"></div>
           <div class="beyond-verdict"><span class="beyond-verdict-badge"></span></div>
-        </div>
-        <div class="beyond-nav">
-          <span></span>
-          <button type="button" class="beyond-btn beyond-next">Reveal: Signs Needed</button>
         </div>
       </div>
     </div>
@@ -736,7 +782,7 @@
     <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1300px;line-height:1.6;">
       PPE stands for <span style="color:var(--accent);">Personal Protective Equipment</span>: anything worn on the body to reduce someone's exposure to a hazard. It's the bottom tier of the hierarchy you just learned, the last thing standing between a person and an injury after every other option has already been tried.
     </p>
-    <p style="font-size:18px;color:var(--text-muted);margin-top:10px;max-width:1300px;line-height:1.5;">
+    <p style="font-size:var(--body);color:var(--text-muted);margin-top:10px;max-width:1300px;line-height:1.5;">
       Let's look at some examples of PPE. For each category, <span style="color:var(--accent);">name at least one example</span> you've seen or used, and the hazard it's meant for.
     </p>
 
@@ -836,7 +882,11 @@
   <div class="slide-inner">
     <div class="ppe-header">
       <span class="slide-tag">Protection With Limits</span>
-      <span class="ppe-progress"></span>
+      <div class="beyond-pager">
+        <button type="button" class="ppe-btn ppe-prev" aria-label="Previous scenario">&#9664;</button>
+        <span class="ppe-progress"></span>
+        <button type="button" class="ppe-btn ppe-next" aria-label="Next scenario">&#9654;</button>
+      </div>
     </div>
     <div class="ppe-scenario">
       <span class="ppe-scenario-tag"></span>
@@ -844,14 +894,11 @@
       <p class="ppe-scenario-desc"></p>
     </div>
     <div class="ppe-panel">
-      <div class="ppe-stage" data-stage="1"><div class="ppe-stage-label"></div><div class="ppe-stage-text"></div></div>
-      <div class="ppe-stage" data-stage="2"><div class="ppe-stage-label"></div><div class="ppe-stage-text"></div></div>
-      <div class="ppe-stage" data-stage="3"><div class="ppe-stage-label"></div><div class="ppe-stage-text"></div></div>
-      <div class="ppe-stage" data-stage="4"><div class="ppe-stage-label"></div><div class="ppe-stage-text"></div></div>
-      <div class="ppe-stage" data-stage="5"><div class="ppe-stage-label"></div><div class="ppe-stage-text"></div></div>
-    </div>
-    <div class="ppe-nav">
-      <button type="button" class="ppe-btn ppe-next">Reveal: Hazard</button>
+      <div class="ppe-stage" data-stage="1"><button type="button" class="ppe-stage-label" aria-expanded="false"></button><div class="ppe-stage-text"></div></div>
+      <div class="ppe-stage" data-stage="2"><button type="button" class="ppe-stage-label" aria-expanded="false"></button><div class="ppe-stage-text"></div></div>
+      <div class="ppe-stage" data-stage="3"><button type="button" class="ppe-stage-label" aria-expanded="false"></button><div class="ppe-stage-text"></div></div>
+      <div class="ppe-stage" data-stage="4"><button type="button" class="ppe-stage-label" aria-expanded="false"></button><div class="ppe-stage-text"></div></div>
+      <div class="ppe-stage" data-stage="5"><button type="button" class="ppe-stage-label" aria-expanded="false"></button><div class="ppe-stage-text"></div></div>
     </div>
   </div>
 </section>
@@ -862,7 +909,7 @@
 <section>
   <div class="slide-inner">
     <span class="slide-tag">Debrief</span>
-    <h2>The Last Column Is the Real Answer</h2>
+    <h2><span style="color:var(--accent);">Better Control</span> Is the Real Answer</h2>
     <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1300px;line-height:1.6;">
       Look back at how often <span style="color:var(--accent);">Better Control</span> pointed at a guard, a label, a rack, or a rule, the same kinds of fixes from <span style="color:var(--warn);">Beyond the Sign</span>. That's not a coincidence. PPE is what you fall back on once elimination, substitution, and engineering controls have already done as much as they can, not a substitute for trying them first.
     </p>
@@ -896,7 +943,7 @@
   <div class="slide-inner">
     <span class="slide-tag">The Three Phases</span>
     <h2>Before, During, After</h2>
-    <p style="font-size:18px;color:var(--text-dim);margin-top:10px;max-width:1300px;line-height:1.5;">
+    <p style="font-size:var(--body);color:var(--text-dim);margin-top:10px;max-width:1300px;line-height:1.5;">
       Every task in this shop has three phases, and safe behavior looks different in each one.
     </p>
     <div class="phase-grid">
@@ -963,24 +1010,25 @@
   <div class="slide-inner">
     <div class="risky-header">
       <span class="slide-tag">Safe Choice or Risky Shortcut?</span>
-      <span class="risky-progress"></span>
+      <div class="beyond-pager">
+        <button type="button" class="risky-btn risky-prev" aria-label="Previous situation">&#9664;</button>
+        <span class="risky-progress"></span>
+        <button type="button" class="risky-btn risky-next" aria-label="Next situation">&#9654;</button>
+      </div>
     </div>
     <div class="risky-scenario">
       <span class="risky-scenario-tag"></span>
       <p class="risky-scenario-desc"></p>
     </div>
     <div class="risky-panel">
-      <div class="risky-stage" data-stage="1"><div class="risky-stage-label">1 · The Risky Behavior</div><div class="risky-stage-text"></div></div>
-      <div class="risky-stage" data-stage="2"><div class="risky-stage-label">2 · Why It's Tempting</div><div class="risky-stage-text"></div></div>
-      <div class="risky-stage" data-stage="3"><div class="risky-stage-label">3 · What To Do Instead</div><div class="risky-stage-text"></div></div>
+      <div class="risky-stage" data-stage="1"><button type="button" class="risky-stage-label" aria-expanded="false">1 · The Risky Behavior</button><div class="risky-stage-text"></div></div>
+      <div class="risky-stage" data-stage="2"><button type="button" class="risky-stage-label" aria-expanded="false">2 · Why It's Tempting</button><div class="risky-stage-text"></div></div>
+      <div class="risky-stage" data-stage="3"><button type="button" class="risky-stage-label" aria-expanded="false">3 · What To Do Instead</button><div class="risky-stage-text"></div></div>
       <div class="risky-stage" data-stage="4">
-        <div class="risky-stage-label">4 · When To Stop</div>
+        <button type="button" class="risky-stage-label" aria-expanded="false">4 · When To Stop</button>
         <div class="risky-stage-text"></div>
         <div class="risky-core"><span class="risky-core-badge">Stop. Make it safe. Ask for help.</span></div>
       </div>
-    </div>
-    <div class="risky-nav">
-      <button type="button" class="risky-btn risky-next">Reveal: The Risky Behavior</button>
     </div>
   </div>
 </section>
@@ -991,16 +1039,23 @@
 <section>
   <div class="slide-inner">
     <span class="slide-tag">The Hardest Skill</span>
-    <div style="margin-top:var(--gap);">
-      <div class="impact-line" style="font-size:44px;color:var(--text);">Anyone may stop a task when they believe something is unsafe.</div>
-      <div class="impact-line" style="font-size:44px;color:var(--accent);margin-top:6px;">Stopping is not overreacting. It is part of the job.</div>
+    <div style="display:grid;grid-template-columns:260px 1fr;gap:var(--gap-lg);align-items:center;margin-top:var(--gap);">
+      <svg viewBox="0 0 200 200" role="img" aria-label="A red octagonal stop sign reading STOP" style="width:260px;height:260px;display:block;">
+        <polygon points="58.6,0 141.4,0 200,58.6 200,141.4 141.4,200 58.6,200 0,141.4 0,58.6" fill="#fff"/>
+        <polygon points="62.7,10 137.3,10 190,62.7 190,137.3 137.3,190 62.7,190 10,137.3 10,62.7" fill="#ac181d"/>
+        <text x="100" y="118" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="50" fill="#fff" letter-spacing="2">STOP</text>
+      </svg>
+      <div style="border-left:4px solid var(--accent);padding-left:var(--gap-lg);">
+        <div class="impact-line" style="font-size:44px;color:var(--text);">Anyone may stop a task when they believe something is unsafe.</div>
+      </div>
     </div>
     <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap-lg);max-width:1300px;line-height:1.6;">
       This is called <span style="color:var(--accent);">stop work authority</span>, and it applies to everyone in this room, not just the instructor. You don't need to be certain something is dangerous. You just need to believe it might be, and say so.
     </p>
-    <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1300px;line-height:1.6;">
-      Every situation on the last slide had the same real answer underneath it: speaking up is often the hardest behavior to practice, and the one this room needs most.
-    </p>
+    <div class="callout" style="margin-top:var(--gap);">
+      Every situation on the last slide had the same real answer underneath it: <strong>speaking up</strong> is often the hardest behavior to practice, and the one this room needs most.
+    </div>
+    <div class="impact-line" style="font-size:44px;color:var(--accent);margin-top:var(--gap-lg);">Stopping is not overreacting. It is part of the job.</div>
   </div>
 </section>
 
@@ -1332,10 +1387,11 @@ function initBeyondGame(Reveal) {
   var captionEl = liveSlide.querySelector('.beyond-caption');
   var progressEl = liveSlide.querySelector('.beyond-progress');
   var stageEls = liveSlide.querySelectorAll('.beyond-stage');
+  var prevBtn = liveSlide.querySelector('.beyond-prev');
   var nextBtn = liveSlide.querySelector('.beyond-next');
 
   var idx = 0;
-  var stage = 0; /* 0 = nothing revealed yet, 4 = all revealed */
+  var open = -1; /* index of the expanded stage, -1 = all collapsed */
 
   function render() {
     var situation = SITUATIONS[idx];
@@ -1348,7 +1404,8 @@ function initBeyondGame(Reveal) {
       var stageData = situation.stages[i];
       var textEl = stageEl.querySelector('.beyond-stage-text');
       textEl.innerHTML = stageData.text;
-      stageEl.classList.toggle('done', i < stage);
+      stageEl.classList.toggle('open', i === open);
+      stageEl.querySelector('.beyond-stage-label').setAttribute('aria-expanded', String(i === open));
 
       var verdictEl = stageEl.querySelector('.beyond-verdict');
       if (verdictEl) {
@@ -1358,29 +1415,32 @@ function initBeyondGame(Reveal) {
       }
     });
 
-    if (stage < 4) {
-      nextBtn.textContent = 'Reveal: ' + situation.stages[stage].label.replace(/^\d+ · /, '');
-    } else {
-      nextBtn.textContent = idx === SITUATIONS.length - 1 ? 'Restart' : 'Next Situation';
-    }
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === SITUATIONS.length - 1;
   }
 
-  nextBtn.addEventListener('click', function (evt) {
-    evt.stopPropagation();
-    if (stage < 4) {
-      stage += 1;
+  Array.prototype.forEach.call(stageEls, function (stageEl, i) {
+    stageEl.querySelector('.beyond-stage-label').addEventListener('click', function (evt) {
+      evt.stopPropagation();
+      open = open === i ? -1 : i;
       render();
-      return;
-    }
-    idx = idx === SITUATIONS.length - 1 ? 0 : idx + 1;
-    stage = 0;
-    render();
+    });
   });
+
+  function go(delta) {
+    var next = idx + delta;
+    if (next < 0 || next >= SITUATIONS.length) return;
+    idx = next;
+    open = -1;
+    render();
+  }
+  prevBtn.addEventListener('click', function (evt) { evt.stopPropagation(); go(-1); });
+  nextBtn.addEventListener('click', function (evt) { evt.stopPropagation(); go(1); });
 
   Reveal.on('slidechanged', function (event) {
     if (event.currentSlide !== liveSlide) {
       idx = 0;
-      stage = 0;
+      open = -1;
       render();
     }
   });
@@ -1400,10 +1460,11 @@ function initPpeGame(Reveal) {
   var descEl = liveSlide.querySelector('.ppe-scenario-desc');
   var progressEl = liveSlide.querySelector('.ppe-progress');
   var stageEls = liveSlide.querySelectorAll('.ppe-stage');
+  var prevBtn = liveSlide.querySelector('.ppe-prev');
   var nextBtn = liveSlide.querySelector('.ppe-next');
 
   var idx = 0;
-  var stage = 0; /* 0 = nothing revealed yet, 5 = all revealed */
+  var open = -1; /* index of the expanded stage, -1 = all collapsed */
 
   function stageHtml(stageData) {
     var html = '';
@@ -1430,32 +1491,36 @@ function initPpeGame(Reveal) {
       var textEl = stageEl.querySelector('.ppe-stage-text');
       labelEl.textContent = stageData.label;
       textEl.innerHTML = stageHtml(stageData);
-      stageEl.classList.toggle('done', i < stage);
+      stageEl.classList.toggle('open', i === open);
+      labelEl.setAttribute('aria-expanded', String(i === open));
     });
 
-    if (stage < 5) {
-      nextBtn.textContent = 'Reveal: ' + scenario.stages[stage].label.replace(/^\d+ · /, '');
-    } else {
-      nextBtn.textContent = idx === PPE_SCENARIOS.length - 1 ? 'Restart' : 'Next Scenario';
-    }
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === PPE_SCENARIOS.length - 1;
   }
 
-  nextBtn.addEventListener('click', function (evt) {
-    evt.stopPropagation();
-    if (stage < 5) {
-      stage += 1;
+  Array.prototype.forEach.call(stageEls, function (stageEl, i) {
+    stageEl.querySelector('.ppe-stage-label').addEventListener('click', function (evt) {
+      evt.stopPropagation();
+      open = open === i ? -1 : i;
       render();
-      return;
-    }
-    idx = idx === PPE_SCENARIOS.length - 1 ? 0 : idx + 1;
-    stage = 0;
-    render();
+    });
   });
+
+  function go(delta) {
+    var next = idx + delta;
+    if (next < 0 || next >= PPE_SCENARIOS.length) return;
+    idx = next;
+    open = -1;
+    render();
+  }
+  prevBtn.addEventListener('click', function (evt) { evt.stopPropagation(); go(-1); });
+  nextBtn.addEventListener('click', function (evt) { evt.stopPropagation(); go(1); });
 
   Reveal.on('slidechanged', function (event) {
     if (event.currentSlide !== liveSlide) {
       idx = 0;
-      stage = 0;
+      open = -1;
       render();
     }
   });
@@ -1474,10 +1539,11 @@ function initRiskyGame(Reveal) {
   var descEl = liveSlide.querySelector('.risky-scenario-desc');
   var progressEl = liveSlide.querySelector('.risky-progress');
   var stageEls = liveSlide.querySelectorAll('.risky-stage');
+  var prevBtn = liveSlide.querySelector('.risky-prev');
   var nextBtn = liveSlide.querySelector('.risky-next');
 
   var idx = 0;
-  var stage = 0; /* 0 = nothing revealed yet, 4 = all revealed */
+  var open = -1; /* index of the expanded stage, -1 = all collapsed */
 
   function render() {
     var scenario = RISKY_SCENARIOS[idx];
@@ -1489,32 +1555,36 @@ function initRiskyGame(Reveal) {
       var stageData = scenario.stages[i];
       var textEl = stageEl.querySelector('.risky-stage-text');
       textEl.innerHTML = stageData.text;
-      stageEl.classList.toggle('done', i < stage);
+      stageEl.classList.toggle('open', i === open);
+      stageEl.querySelector('.risky-stage-label').setAttribute('aria-expanded', String(i === open));
     });
 
-    if (stage < 4) {
-      nextBtn.textContent = 'Reveal: ' + RISKY_SCENARIOS[idx].stages[stage].label.replace(/^\d+ · /, '');
-    } else {
-      nextBtn.textContent = idx === RISKY_SCENARIOS.length - 1 ? 'Restart' : 'Next Situation';
-    }
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === RISKY_SCENARIOS.length - 1;
   }
 
-  nextBtn.addEventListener('click', function (evt) {
-    evt.stopPropagation();
-    if (stage < 4) {
-      stage += 1;
+  Array.prototype.forEach.call(stageEls, function (stageEl, i) {
+    stageEl.querySelector('.risky-stage-label').addEventListener('click', function (evt) {
+      evt.stopPropagation();
+      open = open === i ? -1 : i;
       render();
-      return;
-    }
-    idx = idx === RISKY_SCENARIOS.length - 1 ? 0 : idx + 1;
-    stage = 0;
-    render();
+    });
   });
+
+  function go(delta) {
+    var next = idx + delta;
+    if (next < 0 || next >= RISKY_SCENARIOS.length) return;
+    idx = next;
+    open = -1;
+    render();
+  }
+  prevBtn.addEventListener('click', function (evt) { evt.stopPropagation(); go(-1); });
+  nextBtn.addEventListener('click', function (evt) { evt.stopPropagation(); go(1); });
 
   Reveal.on('slidechanged', function (event) {
     if (event.currentSlide !== liveSlide) {
       idx = 0;
-      stage = 0;
+      open = -1;
       render();
     }
   });

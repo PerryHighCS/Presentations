@@ -38,49 +38,14 @@
   border-radius: 8px;
 }
 .pulse-timing-panel {
-  position: relative;
   width: 100%;
-  background: #fff;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(42,143,255,0.2), 0 6px 24px rgba(0,0,0,0.35);
+  padding: 8px 0;
 }
-.pulse-timing-panel img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-.pulse-label {
-  position: absolute;
-  transform: translateX(-50%);
-  font-family: var(--font-mono);
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--accent);
-  text-shadow: 0 1px 0 rgba(255,255,255,0.95);
-}
-.pulse-label.t1 { left: 6.2%; top: 48%;}
-.pulse-label.t2 { left: 17.7%; top: 28%;}
-.pulse-label.period {
-  top: 4%;
-  left: 15.8%;
-  color: var(--accent);
-}
-.pulse-bracket {
-  position: absolute;
-  height: 18px;
-  border-top: 3px solid var(--accent);
-  border-left: 3px solid var(--accent);
-  border-right: 3px solid var(--accent);
-}
-.pulse-bracket.t1 { left: 4.3%; width: 3.7%; top: 59%;}
-.pulse-bracket.t2 { left: 8.1%; width: 19.2%; top: 40%;}
-.pulse-bracket.period {
-  top: 15%;
-  left: 4.3%;
-  width: 23%;
-  border-color: var(--accent);
-}
+.pulse-timing-panel svg { display: block; width: 100%; height: auto; }
+.pulse-timing-panel text { font-family: var(--font-mono); }
 
 /* ── PWM diagrams ─────────────────────────────────────────
    The row diagrams are generated from servo-position-pwm.png by
@@ -106,7 +71,7 @@
   color: var(--text-muted);
   line-height: 1.5;
 }
-.pwm-label strong { color: var(--accent); font-size: 20px; display: block; margin-bottom: 2px; }
+.pwm-label strong { color: var(--accent); font-size: var(--small); display: block; margin-bottom: 2px; }
 .pwm-angle {
   font-family: var(--font-mono);
   font-size: 22px;
@@ -148,7 +113,7 @@
 .state-card.active { border-color: var(--result); background: rgba(77,255,176,0.04); }
 .state-label {
   font-family: var(--font-mono);
-  font-size: var(--label);
+  font-size: var(--small);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -200,7 +165,7 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: var(--small);
   font-weight: 700;
   color: var(--accent);
 }
@@ -238,6 +203,7 @@
   gap: 14px;
 }
 .design-directions p {
+  font-size: var(--body);
   text-align: left;
   line-height: 1.45;
 }
@@ -250,7 +216,7 @@
 }
 .timing-table th {
   font-family: var(--font-mono);
-  font-size: var(--label);
+  font-size: var(--small);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--accent);
@@ -292,7 +258,7 @@
 }
 .req-num {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: var(--small);
   font-weight: 700;
   color: var(--accent);
   background: var(--accent-dim);
@@ -668,13 +634,35 @@
     <h2>The control signal has two parts.</h2>
     <p class="slide-intro" style="margin-top: var(--gap-sm);">Every cycle of the 555 timer output consists of a HIGH phase and a LOW phase. Together they define how fast and how long the signal pulses.</p>
     <div class="pulse-timing-panel fragment fade-up" style="margin-top: var(--gap);">
-      <img src="Signals_and_Motion_Assets/pulse.png" alt="Pulse train showing high time t1, low time t2, and one full period">
-      <div class="pulse-label t1">t<sub>1</sub></div>
-      <div class="pulse-label t2">t<sub>2</sub></div>
-      <div class="pulse-label period">period</div>
-      <div class="pulse-bracket t1" aria-hidden="true"></div>
-      <div class="pulse-bracket t2" aria-hidden="true"></div>
-      <div class="pulse-bracket period" aria-hidden="true"></div>
+      <svg viewBox="0 20 1470 260" role="img" aria-label="Pulse train: a short HIGH pulse t1, a longer LOW gap t2, and one full period spanning both">
+        <defs>
+          <marker id="pt-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#5daaff"/>
+          </marker>
+        </defs>
+        <!-- level labels -->
+        <text x="95" y="158" text-anchor="end" font-size="27" fill="rgba(232,242,255,0.66)">HIGH</text>
+        <text x="95" y="268" text-anchor="end" font-size="27" fill="rgba(232,242,255,0.66)">LOW</text>
+        <!-- extension lines -->
+        <g stroke="rgba(232,242,255,0.5)" stroke-width="2" stroke-dasharray="6 6">
+          <line x1="190" y1="148" x2="190" y2="52"/>
+          <line x1="570" y1="148" x2="570" y2="52"/>
+          <line x1="280" y1="148" x2="280" y2="112"/>
+        </g>
+        <!-- pulse train -->
+        <path d="M110,260 H190 V150 H280 V260 H570 V150 H660 V260 H950 V150 H1040 V260 H1330 V150 H1420 V260 H1450" fill="none" stroke="#e8f2ff" stroke-width="4" stroke-linejoin="round"/>
+        <!-- dimension bars -->
+        <g stroke="#5daaff" stroke-width="3" marker-start="url(#pt-arrow)" marker-end="url(#pt-arrow)">
+          <line x1="193" y1="122" x2="275" y2="122"/>
+          <line x1="285" y1="122" x2="567" y2="122"/>
+          <line x1="193" y1="62" x2="567" y2="62"/>
+        </g>
+        <g font-size="34" font-weight="700" fill="#5daaff" text-anchor="middle">
+          <text x="235" y="104">t<tspan font-size="26" dy="9">1</tspan></text>
+          <text x="425" y="104">t<tspan font-size="26" dy="9">2</tspan></text>
+          <text x="380" y="46" fill="#e8f2ff">period</text>
+        </g>
+      </svg>
     </div>
     <div style="display: flex; flex-direction: column; gap: var(--gap); margin-top: var(--gap);">
       <div class="formula-block fragment fade-up">
@@ -689,7 +677,7 @@
           <span>+</span>
           <span class="sym">t<sub>2</sub></span>
         </div>
-        <p style="font-size: var(--small); color: var(--text-dim); margin-top: 8px;">How often the signal repeats. For a servo this should be about <span class="val" style="font-family:var(--font-mono);">20 ms</span>.</p>
+        <p style="font-size: var(--code); color: var(--text-muted); margin-top: 8px;">How often the signal repeats. For a servo this should be about <span class="val" style="font-family:var(--font-mono);">20 ms</span>.</p>
       </div>
     </div>
   </div>

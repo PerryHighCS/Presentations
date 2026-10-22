@@ -18,6 +18,9 @@
   --sign-orange: #f57c00;
   --sign-blue:   #005ea8;
   --sign-green:  #00843d;
+  --sign-red-text:   #ee8882;
+  --sign-blue-text:  #3daaff;
+  --sign-green-text: #00bc57;
   --sign-white:  #ffffff;
 }
 
@@ -81,16 +84,19 @@
   background: var(--bg-card);
   border: 1px solid var(--accent-border);
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  /* Fixed grid: the sign and the text block start at the same spot on every card,
+     so revealing an answer or moving to the next sign does not shift anything. */
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  align-items: start;
   gap: 64px;
-  padding: 32px;
+  padding: 150px 64px 32px;
 }
 
 .sign-face {
-  width: 260px;
-  height: 260px;
+  width: 320px;
+  height: 320px;
+  box-sizing: border-box;
   flex-shrink: 0;
   background: #fff;
   border-radius: 18px;
@@ -107,17 +113,16 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-width: 640px;
 }
 .sign-prompt {
   font-family: var(--font-mono);
-  font-size: 22px;
+  font-size: var(--body);
   letter-spacing: 0.04em;
   color: var(--text-dim);
 }
 .sign-prompt::before { content: '>> '; opacity: 0.7; }
 
-.sign-answer { display: none; flex-direction: column; gap: 10px; max-width: 640px; }
+.sign-answer { display: none; flex-direction: column; gap: 10px; }
 .sign-stage[data-revealed="true"] .sign-answer { display: flex; }
 .sign-stage[data-revealed="true"] .sign-prompt-col > .sign-prompt { display: none; }
 
@@ -137,7 +142,7 @@
   text-transform: uppercase;
 }
 .sign-meaning {
-  font-size: 22px;
+  font-size: var(--body);
   color: var(--text-muted);
   line-height: 1.5;
   margin-top: 4px;
@@ -176,34 +181,34 @@
 /* ── Category system cards (shape + color debrief) ──────────────── */
 .cat-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--gap);
-  margin-top: var(--gap-lg);
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--gap-sm) var(--gap);
+  margin-top: var(--gap);
 }
 .cat-card {
   background: var(--bg-card);
   border: 1px solid var(--accent-border);
   border-radius: 10px;
-  padding: 18px 20px;
+  padding: 14px 20px;
   display: flex;
-  gap: 16px;
+  gap: 20px;
   align-items: center;
 }
 .cat-swatch {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   flex-shrink: 0;
 }
 .cat-swatch svg,
 .cat-swatch img { width: 100%; height: 100%; object-fit: contain; }
 .cat-text h4 {
   font-family: var(--font-mono);
-  font-size: 17px;
+  font-size: var(--body);
   letter-spacing: 0.02em;
   margin-bottom: 4px;
 }
 .cat-text p {
-  font-size: 16px;
+  font-size: var(--body);
   line-height: 1.4;
   color: var(--text-muted);
 }
@@ -236,7 +241,7 @@
   background: var(--bg-card);
   flex: 1;
   padding: 16px 18px;
-  font-size: 17px;
+  font-size: var(--body);
   line-height: 1.5;
   color: var(--text-muted);
 }
@@ -272,8 +277,8 @@
   justify-content: center;
 }
 .ref-face img { width: 100%; height: 100%; object-fit: contain; }
-.ref-name { font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.2; }
-.ref-cat { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+.ref-name { font-size: var(--body); font-weight: 700; color: var(--text); line-height: 1.2; }
+.ref-cat { font-family: var(--font-mono); font-size: var(--small); letter-spacing: 0.06em; text-transform: uppercase; }
 
 /* ── Choose the Warning activity ─────────────────────────────────── */
 .choose-slide .slide-inner { justify-content: flex-start; }
@@ -287,14 +292,15 @@
 }
 .choose-scenario-label {
   font-family: var(--font-mono);
-  font-size: var(--label);
+  font-size: var(--small);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent);
 }
 .choose-scenario-text {
-  font-size: 23px;
+  font-size: var(--body);
+  min-height: 3em; /* two lines (line-height 1.5) reserved so the sign grid does not shift between stations */
   color: var(--text);
   line-height: 1.5;
   margin-top: 6px;
@@ -305,7 +311,6 @@
   grid-template-columns: repeat(8, 1fr);
   gap: 12px;
   margin-top: var(--gap);
-  flex: 1;
   align-content: start;
 }
 .choose-chip {
@@ -321,8 +326,8 @@
   cursor: pointer;
 }
 .choose-chip-face {
-  width: 62px;
-  height: 62px;
+  width: 80px;
+  height: 80px;
   background: #fff;
   border-radius: 8px;
   padding: 8px;
@@ -333,7 +338,7 @@
 }
 .choose-chip-face img { width: 100%; height: 100%; object-fit: contain; }
 .choose-chip-name {
-  font-size: 13px;
+  font-size: var(--small);
   line-height: 1.2;
   text-align: center;
   color: var(--text-muted);
@@ -349,7 +354,7 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--small);
   font-weight: 700;
 }
 .choose-chip.chosen { border-color: var(--accent); background: var(--accent-dim); }
@@ -364,29 +369,38 @@
   display: flex; background: #2fbf71; color: #06120b;
 }
 .choose-bank.checked .choose-chip.state-incorrect {
-  border-color: #e5484d;
-  background: rgba(229,72,77,0.12);
-}
-.choose-bank.checked .choose-chip.state-incorrect .choose-chip-mark {
-  display: flex; background: #e5484d; color: #1a0607;
-}
-.choose-bank.checked .choose-chip.state-missed {
   border-color: var(--warn);
-  border-style: dashed;
   background: rgba(255,209,102,0.08);
 }
-.choose-bank.checked .choose-chip.state-missed .choose-chip-mark {
+.choose-bank.checked .choose-chip.state-incorrect .choose-chip-mark {
   display: flex; background: var(--warn); color: #1a1000;
 }
-
-.choose-feedback {
-  margin-top: var(--gap);
-  font-size: 19px;
-  color: var(--text-muted);
-  min-height: 26px;
+.choose-bank.checked .choose-chip.state-missed {
+  border-color: #e5484d;
+  border-style: dashed;
+  background: rgba(229,72,77,0.12);
 }
+.choose-bank.checked .choose-chip.state-missed .choose-chip-mark {
+  display: flex; background: #e5484d; color: #1a0607;
+}
+
+.choose-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  margin-top: var(--gap);
+}
+.choose-feedback {
+  flex: 1;
+  font-size: var(--body);
+  line-height: 1.4;
+  color: var(--text-muted);
+  min-height: 2.8em; /* room for a two-line summary */
+}
+.choose-slide .sign-nav { position: static; flex-shrink: 0; }
 .choose-feedback .ok { color: #2fbf71; font-weight: 700; }
 .choose-feedback .bad { color: #e5484d; font-weight: 700; }
+.choose-feedback .extra { color: var(--warn); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -471,7 +485,7 @@
     <div class="cat-grid">
       <div class="cat-card fragment fade-up">
         <div class="cat-swatch"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="#fff" stroke="#d0271d" stroke-width="16"/><line x1="38" y1="38" x2="162" y2="162" stroke="#d0271d" stroke-width="14"/></svg></div>
-        <div class="cat-text"><h4 style="color:var(--sign-red);">Red Circle, Diagonal Bar</h4><p>Prohibition. An action that is forbidden in this area.</p></div>
+        <div class="cat-text"><h4 style="color: var(--sign-red-text);">Red Circle, Diagonal Bar</h4><p>Prohibition. An action that is forbidden in this area.</p></div>
       </div>
       <div class="cat-card fragment fade-up">
         <div class="cat-swatch"><svg viewBox="0 0 200 200"><polygon points="100,18 187,178 13,178" fill="#ffcc00" stroke="#171717" stroke-width="8"/></svg></div>
@@ -479,19 +493,19 @@
       </div>
       <div class="cat-card fragment fade-up">
         <div class="cat-swatch"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="#005ea8"/></svg></div>
-        <div class="cat-text"><h4 style="color:var(--sign-blue);">Blue Circle</h4><p>Mandatory. A specific protective action you must take.</p></div>
+        <div class="cat-text"><h4 style="color: var(--sign-blue-text);">Blue Circle</h4><p>Mandatory. A specific protective action you must take.</p></div>
       </div>
       <div class="cat-card fragment fade-up">
         <div class="cat-swatch"><svg viewBox="0 0 200 200"><rect x="10" y="10" width="180" height="180" rx="14" fill="#00843d"/></svg></div>
-        <div class="cat-text"><h4 style="color:var(--sign-green);">Green Square</h4><p>Safe condition. Exits, first aid, and rescue equipment.</p></div>
+        <div class="cat-text"><h4 style="color: var(--sign-green-text);">Green Square</h4><p>Safe condition. Exits, first aid, and rescue equipment.</p></div>
       </div>
       <div class="cat-card fragment fade-up">
         <div class="cat-swatch"><svg viewBox="0 0 200 200"><rect x="10" y="10" width="180" height="180" rx="14" fill="#d0271d"/></svg></div>
-        <div class="cat-text"><h4 style="color:var(--sign-red);">Red Square</h4><p>Fire equipment, such as extinguishers, alarms, and hose reels.</p></div>
+        <div class="cat-text"><h4 style="color: var(--sign-red-text);">Red Square</h4><p>Fire equipment, such as extinguishers, alarms, and hose reels.</p></div>
       </div>
       <div class="cat-card fragment fade-up">
         <div class="cat-swatch"><img src="Industrial_Warning_Signs_Assets/signs/ghs-toxic.svg" alt="GHS toxic pictogram: skull and crossbones on a white diamond with a red border"></div>
-        <div class="cat-text"><h4 style="color:var(--sign-red);">White Diamond, Red Border</h4><p>GHS chemical hazard. A separate global system, used on containers rather than on walls or equipment.</p></div>
+        <div class="cat-text"><h4 style="color: var(--sign-red-text);">White Diamond, Red Border</h4><p>GHS chemical hazard. A separate global system, used on containers rather than on walls or equipment.</p></div>
       </div>
     </div>
   </div>
@@ -561,7 +575,7 @@
       Safety researchers call it <span style="color:var(--warn);">sign blindness</span>: a warning stops working the moment it blends into the wallpaper. A sign you walk past every day still needs to register the instant it matters, whether that's the first day you touch a new machine or the one day something goes wrong.
     </p>
     <p style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1200px;line-height:1.6;">
-      Before you run any machine in this shop for the first time, find its signs. When you use the machine again, look at the signs. Know which ones are <span style="color:var(--sign-red);">prohibitions</span>, which are <span style="color:var(--sign-blue);">mandatory</span>, and which mark the nearest <span style="color:var(--sign-green);">safe exit</span> or <span style="color:var(--sign-green);">first aid station</span>. That five-second habit is what the signs are actually for.
+      Before you run any machine in this shop for the first time, find its signs. When you use the machine again, look at the signs. Know which ones are <span style="color: var(--sign-red-text);">prohibitions</span>, which are <span style="color: var(--sign-blue-text);">mandatory</span>, and which mark the nearest <span style="color: var(--sign-green-text);">safe exit</span> or <span style="color: var(--sign-green-text);">first aid station</span>. That five-second habit is what the signs are actually for.
     </p>
   </div>
 </section>
@@ -603,9 +617,11 @@
       <p class="choose-scenario-text"></p>
     </div>
     <div class="choose-bank"></div>
-    <div class="choose-feedback"></div>
-    <div class="sign-nav">
-      <button type="button" class="sign-btn choose-next">Check Answer</button>
+    <div class="choose-footer">
+      <div class="choose-feedback"></div>
+      <div class="sign-nav">
+        <button type="button" class="sign-btn choose-next">Check Answer</button>
+      </div>
     </div>
   </div>
 </section>
@@ -641,7 +657,7 @@
    ────────────────────────────────────────────────────────────────── */
 var SIGNS = [
   {
-    id: 'exit', name: 'Emergency Exit', categoryLabel: 'Safe Condition', categoryColor: 'var(--sign-green)', file: 'exit.svg',
+    id: 'exit', name: 'Emergency Exit', categoryLabel: 'Safe Condition', categoryColor: 'var(--sign-green-text)', file: 'exit.svg',
     meaning: 'Marks the nearest evacuation route. Follow the arrow toward the nearest safe exit.'
   },
   {
@@ -669,35 +685,35 @@ var SIGNS = [
     meaning: 'A concentrated beam that can damage eyes or skin. Never look into the beam.'
   },
   {
-    id: 'eye-protection', name: 'Eye Protection Required', categoryLabel: 'Mandatory', categoryColor: 'var(--sign-blue)', file: 'eye-protection.svg',
+    id: 'eye-protection', name: 'Eye Protection Required', categoryLabel: 'Mandatory', categoryColor: 'var(--sign-blue-text)', file: 'eye-protection.svg',
     meaning: 'Safety glasses or goggles must be worn in this area, no exceptions.'
   },
   {
-    id: 'e-stop', name: 'Emergency Stop', categoryLabel: 'Safe Condition', categoryColor: 'var(--sign-green)', file: 'e-stop.svg',
+    id: 'e-stop', name: 'Emergency Stop', categoryLabel: 'Safe Condition', categoryColor: 'var(--sign-green-text)', file: 'e-stop.svg',
     meaning: 'Marks the control that instantly cuts power to a machine. Pressing it is always the safe move, which is why the sign is green rather than red.'
   },
   {
-    id: 'no-smoking', name: 'No Smoking', categoryLabel: 'Prohibition', categoryColor: 'var(--sign-red)', file: 'no-smoking.svg',
+    id: 'no-smoking', name: 'No Smoking', categoryLabel: 'Prohibition', categoryColor: 'var(--sign-red-text)', file: 'no-smoking.svg',
     meaning: 'Smoking, lighters, and open flame are forbidden here, usually near fuel or flammable materials.'
   },
   {
-    id: 'no-pedestrians', name: 'No Pedestrian Access', categoryLabel: 'Prohibition', categoryColor: 'var(--sign-red)', file: 'no-pedestrians.svg',
+    id: 'no-pedestrians', name: 'No Pedestrian Access', categoryLabel: 'Prohibition', categoryColor: 'var(--sign-red-text)', file: 'no-pedestrians.svg',
     meaning: 'Walking is not permitted in this area, often because it is an active vehicle or forklift lane.'
   },
   {
-    id: 'hearing-protection', name: 'Hearing Protection Required', categoryLabel: 'Mandatory', categoryColor: 'var(--sign-blue)', file: 'hearing-protection.svg',
+    id: 'hearing-protection', name: 'Hearing Protection Required', categoryLabel: 'Mandatory', categoryColor: 'var(--sign-blue-text)', file: 'hearing-protection.svg',
     meaning: 'Noise levels here can damage hearing over time. Ear muffs or plugs are required.'
   },
   {
-    id: 'hard-hat', name: 'Hard Hat Required', categoryLabel: 'Mandatory', categoryColor: 'var(--sign-blue)', file: 'hard-hat.svg',
+    id: 'hard-hat', name: 'Hard Hat Required', categoryLabel: 'Mandatory', categoryColor: 'var(--sign-blue-text)', file: 'hard-hat.svg',
     meaning: 'Head protection is required, typically due to overhead work or a falling-object risk.'
   },
   {
-    id: 'first-aid', name: 'First Aid Station', categoryLabel: 'Safe Condition', categoryColor: 'var(--sign-green)', file: 'first-aid.svg',
+    id: 'first-aid', name: 'First Aid Station', categoryLabel: 'Safe Condition', categoryColor: 'var(--sign-green-text)', file: 'first-aid.svg',
     meaning: 'Marks the location of first aid supplies or a trained first aid responder.'
   },
   {
-    id: 'fire-extinguisher', name: 'Fire Extinguisher', categoryLabel: 'Fire Equipment', categoryColor: 'var(--sign-red)', file: 'fire-extinguisher.svg',
+    id: 'fire-extinguisher', name: 'Fire Extinguisher', categoryLabel: 'Fire Equipment', categoryColor: 'var(--sign-red-text)', file: 'fire-extinguisher.svg',
     meaning: 'Marks the location of a fire extinguisher. Learn where the nearest one is before you need it.'
   },
   {
@@ -968,8 +984,8 @@ function initChooseGame(Reveal) {
     } else {
       var parts = [];
       parts.push('<span class="ok">' + correctPicks + ' of ' + total + ' correct signs found</span>');
-      if (missed > 0) parts.push('<span class="bad">' + missed + ' missed (dashed outline)</span>');
-      if (wrongPicks > 0) parts.push('<span class="bad">' + wrongPicks + ' picked that don\'t belong (red)</span>');
+      if (missed > 0) parts.push('<span class="bad">' + missed + ' missed (!)</span>');
+      if (wrongPicks > 0) parts.push('<span class="extra">' + wrongPicks + ' don\'t belong (&#x2715;)</span>');
       summary = parts.join(' &middot; ');
     }
     feedbackEl.innerHTML = summary;
