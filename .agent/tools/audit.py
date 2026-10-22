@@ -8,6 +8,8 @@ fragments revealed. Checks, in 1600x900 canvas coordinates:
 
   OVERFLOW  a visible element extends past the canvas edge
   OVERLAP   two separate text blocks (or a text block and an image) intersect
+  CLIPPED   a box with overflow hidden/clip/auto cuts off part of its
+            content at its padding edge, which OVERFLOW can't see
   SIZE      text below the AGENTS.md floors: under 22px (under 24px for code)
             fails; 22-29px inside a paragraph or list item is flagged for a
             role check, since body text should be 30px. Sub/superscripts are
@@ -58,7 +60,7 @@ AUDIT_JS = r"""
     const cls = typeof e.className === 'string' && e.className ? '.' + e.className.trim().split(/\s+/)[0] : '';
     return e.tagName.toLowerCase() + cls + ' "' + t.slice(0, 50) + '"';
   };
-  const out = { overflow: [], overlap: [], size: [], contrast: [] };
+  const out = { overflow: [], overlap: [], size: [], contrast: [], clipped: [] };
 
   // Elements that own text directly
   const textEls = [...slide.querySelectorAll('*')].filter(e =>
@@ -70,6 +72,32 @@ AUDIT_JS = r"""
     const c = canvas(e.getBoundingClientRect());
     if (c.b > H + 0.5 || c.r > W + 0.5 || c.l < -0.5 || c.t < -0.5) {
       out.overflow.push(label(e) + ' at [' + [c.l, c.t, c.r, c.b].map(Math.round) + ']');
+    }
+  }
+
+  // CLIPPED: content cut off at the padding edge of an overflow:hidden (or
+  // scrolling) box. Content that only reaches into the padding is still
+  // visible, so compare descendants' boxes, not scrollWidth/scrollHeight.
+  const leaves = [...textEls, ...[...slide.querySelectorAll('img, svg, canvas, video')].filter(visible)];
+  for (const e of [slide, ...slide.querySelectorAll('*')]) {
+    if (!visible(e) || e.closest('svg')) continue;
+    const cs = getComputedStyle(e);
+    const clipX = cs.overflowX !== 'visible', clipY = cs.overflowY !== 'visible';
+    if (!clipX && !clipY) continue;
+    const r = e.getBoundingClientRect();
+    const box = { l: r.left + parseFloat(cs.borderLeftWidth), r: r.right - parseFloat(cs.borderRightWidth),
+                  t: r.top + parseFloat(cs.borderTopWidth), b: r.bottom - parseFloat(cs.borderBottomWidth) };
+    let dx = 0, dy = 0;
+    for (const d of leaves) {
+      if (d === e || !e.contains(d)) continue;
+      for (const q of d.getClientRects()) {
+        if (clipX) dx = Math.max(dx, box.l - q.left, q.right - box.r);
+        if (clipY) dy = Math.max(dy, box.t - q.top, q.bottom - box.b);
+      }
+    }
+    dx /= scale; dy /= scale;
+    if (dx > 2 || dy > 2) {
+      out.clipped.push(label(e) + ' cuts off ' + [dx > 2 ? Math.round(dx) + 'px across' : '', dy > 2 ? Math.round(dy) + 'px down' : ''].filter(Boolean).join(', '));
     }
   }
 
@@ -171,6 +199,7 @@ def main():
             res = page.evaluate(AUDIT_JS)
             lines = (['OVERFLOW ' + x for x in res['overflow']] +
                      ['OVERLAP  ' + x for x in res['overlap']] +
+                     ['CLIPPED  ' + x for x in res['clipped']] +
                      ['SIZE     ' + x for x in res['size']] +
                      ['CONTRAST ' + x for x in res['contrast']])
             if lines:
