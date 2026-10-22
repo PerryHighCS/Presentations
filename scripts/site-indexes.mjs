@@ -614,9 +614,10 @@ function presentationCount(node) {
 }
 
 // `projectInfo` is optional: { projects, getCompletedProjectsForPublicPath },
-// where `projects` is the registry from loadProjects().
+// where `projects` is the registry from loadProjects(). Completed projects are
+// left off the pages entirely.
 export async function buildIndexPages(htmlFiles, getTitleForPublicPath, getPermalinkForPublicPath, projectInfo = null) {
-  const projects = projectInfo?.projects || [];
+  const projects = (projectInfo?.projects || []).filter((project) => !project.complete);
   const generatedAtDt = new Date();
   const generatedAt = generatedAtDt.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, ' UTC');
   const generatedAtIso = generatedAtDt.toISOString();

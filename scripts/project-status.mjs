@@ -47,6 +47,10 @@ function findProject(projects, id) {
 async function runMark(projectId, targetPaths, done) {
   const projects = await loadProjects(rootDir);
   const project = findProject(projects, projectId);
+  if (project.complete) {
+    console.error(`Project "${project.id}" is complete. Remove "complete" from ${projectsRelativePath} to reopen it.`);
+    process.exit(1);
+  }
   const order = projects.map((p) => p.id);
 
   for (const deck of targetPaths.map(toDeck)) {
@@ -120,7 +124,8 @@ async function runReport(args) {
       ids.push(args[i]);
     }
   }
-  const selected = ids.length ? ids.map((id) => findProject(projects, id)) : projects;
+  // Completed projects are only reported when named explicitly.
+  const selected = ids.length ? ids.map((id) => findProject(projects, id)) : projects.filter((p) => !p.complete);
 
   const decks = [];
   for (const deck of await collectDeckFiles(rootDir)) {

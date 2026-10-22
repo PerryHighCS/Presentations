@@ -15,8 +15,10 @@ const HEAD_OPEN_RE = /<head[^>]*>/i;
 const PROJECT_ID_RE = /^[a-z0-9][a-z0-9-]*$/;
 
 // Returns the registry as an ordered array of
-// { id, title, issue, symbol, scope } where `scope` is a list of public path
-// prefixes (e.g. "CSP/") the project applies to, or null for every deck.
+// { id, title, issue, symbol, scope, complete } where `scope` is a list of
+// public path prefixes (e.g. "CSP/") the project applies to, or null for every
+// deck, and `complete` marks a finished project: its id stays valid in deck
+// tags, but the index pages and the default report no longer show it.
 export async function loadProjects(rootDir) {
   const raw = await fs.readFile(path.join(rootDir, projectsRelativePath), 'utf8');
   const parsed = JSON.parse(raw);
@@ -33,6 +35,7 @@ export async function loadProjects(rootDir) {
       issue: entry.issue ?? null,
       symbol: entry.symbol,
       scope: Array.isArray(entry.scope) && entry.scope.length ? entry.scope : null,
+      complete: entry.complete === true,
     };
   });
 }
