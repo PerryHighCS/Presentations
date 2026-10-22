@@ -466,9 +466,18 @@
 .risky-slide .slide-inner { justify-content: flex-start; }
 .risky-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
 }
+.risky-header .risky-btn {
+  padding: 6px 16px;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+}
+.risky-header .risky-btn:hover { border-color: var(--accent); }
+.risky-btn:disabled { opacity: 0.4; cursor: default; }
 .risky-scenario {
   margin-top: var(--gap);
   background: var(--bg-card);
@@ -489,6 +498,7 @@
   color: var(--text);
   line-height: 1.5;
   margin-top: 6px;
+  min-height: 3em; /* two lines reserved so the stages do not shift between situations */
 }
 .risky-panel {
   display: flex;
@@ -501,10 +511,19 @@
   border-radius: 8px;
   padding: 10px 16px;
   background: var(--bg-card);
-  opacity: 0.7;
 }
-.risky-stage.done { opacity: 1; }
+.risky-stage.open { border-color: var(--accent); }
+/* Stage title doubles as the expand/collapse control (same pattern as #beyond-game) */
 .risky-stage-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
   font-family: var(--font-mono);
   font-size: var(--small);
   font-weight: 700;
@@ -519,10 +538,12 @@
   margin-top: 5px;
   display: none;
 }
-.risky-stage.done .risky-stage-text { display: block; }
+.risky-stage-label::after { content: '\25B8'; font-size: var(--body); line-height: 1; }
+.risky-stage.open .risky-stage-label::after { content: '\25BE'; }
+.risky-stage.open .risky-stage-text { display: block; }
 
 .risky-core { display: none; margin-top: 8px; }
-.risky-stage.done .risky-core { display: block; }
+.risky-stage.open .risky-core { display: block; }
 .risky-core-badge {
   display: inline-block;
   font-family: var(--font-mono);
@@ -536,12 +557,6 @@
   color: #f08a8d;
 }
 
-.risky-nav {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-top: var(--gap);
-}
 .risky-progress {
   font-family: var(--font-mono);
   font-size: var(--small);
@@ -995,24 +1010,25 @@
   <div class="slide-inner">
     <div class="risky-header">
       <span class="slide-tag">Safe Choice or Risky Shortcut?</span>
-      <span class="risky-progress"></span>
+      <div class="beyond-pager">
+        <button type="button" class="risky-btn risky-prev" aria-label="Previous situation">&#9664;</button>
+        <span class="risky-progress"></span>
+        <button type="button" class="risky-btn risky-next" aria-label="Next situation">&#9654;</button>
+      </div>
     </div>
     <div class="risky-scenario">
       <span class="risky-scenario-tag"></span>
       <p class="risky-scenario-desc"></p>
     </div>
     <div class="risky-panel">
-      <div class="risky-stage" data-stage="1"><div class="risky-stage-label">1 · The Risky Behavior</div><div class="risky-stage-text"></div></div>
-      <div class="risky-stage" data-stage="2"><div class="risky-stage-label">2 · Why It's Tempting</div><div class="risky-stage-text"></div></div>
-      <div class="risky-stage" data-stage="3"><div class="risky-stage-label">3 · What To Do Instead</div><div class="risky-stage-text"></div></div>
+      <div class="risky-stage" data-stage="1"><button type="button" class="risky-stage-label" aria-expanded="false">1 · The Risky Behavior</button><div class="risky-stage-text"></div></div>
+      <div class="risky-stage" data-stage="2"><button type="button" class="risky-stage-label" aria-expanded="false">2 · Why It's Tempting</button><div class="risky-stage-text"></div></div>
+      <div class="risky-stage" data-stage="3"><button type="button" class="risky-stage-label" aria-expanded="false">3 · What To Do Instead</button><div class="risky-stage-text"></div></div>
       <div class="risky-stage" data-stage="4">
-        <div class="risky-stage-label">4 · When To Stop</div>
+        <button type="button" class="risky-stage-label" aria-expanded="false">4 · When To Stop</button>
         <div class="risky-stage-text"></div>
         <div class="risky-core"><span class="risky-core-badge">Stop. Make it safe. Ask for help.</span></div>
       </div>
-    </div>
-    <div class="risky-nav">
-      <button type="button" class="risky-btn risky-next">Reveal: The Risky Behavior</button>
     </div>
   </div>
 </section>
@@ -1516,10 +1532,11 @@ function initRiskyGame(Reveal) {
   var descEl = liveSlide.querySelector('.risky-scenario-desc');
   var progressEl = liveSlide.querySelector('.risky-progress');
   var stageEls = liveSlide.querySelectorAll('.risky-stage');
+  var prevBtn = liveSlide.querySelector('.risky-prev');
   var nextBtn = liveSlide.querySelector('.risky-next');
 
   var idx = 0;
-  var stage = 0; /* 0 = nothing revealed yet, 4 = all revealed */
+  var open = -1; /* index of the expanded stage, -1 = all collapsed */
 
   function render() {
     var scenario = RISKY_SCENARIOS[idx];
@@ -1531,32 +1548,36 @@ function initRiskyGame(Reveal) {
       var stageData = scenario.stages[i];
       var textEl = stageEl.querySelector('.risky-stage-text');
       textEl.innerHTML = stageData.text;
-      stageEl.classList.toggle('done', i < stage);
+      stageEl.classList.toggle('open', i === open);
+      stageEl.querySelector('.risky-stage-label').setAttribute('aria-expanded', String(i === open));
     });
 
-    if (stage < 4) {
-      nextBtn.textContent = 'Reveal: ' + RISKY_SCENARIOS[idx].stages[stage].label.replace(/^\d+ · /, '');
-    } else {
-      nextBtn.textContent = idx === RISKY_SCENARIOS.length - 1 ? 'Restart' : 'Next Situation';
-    }
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === RISKY_SCENARIOS.length - 1;
   }
 
-  nextBtn.addEventListener('click', function (evt) {
-    evt.stopPropagation();
-    if (stage < 4) {
-      stage += 1;
+  Array.prototype.forEach.call(stageEls, function (stageEl, i) {
+    stageEl.querySelector('.risky-stage-label').addEventListener('click', function (evt) {
+      evt.stopPropagation();
+      open = open === i ? -1 : i;
       render();
-      return;
-    }
-    idx = idx === RISKY_SCENARIOS.length - 1 ? 0 : idx + 1;
-    stage = 0;
-    render();
+    });
   });
+
+  function go(delta) {
+    var next = idx + delta;
+    if (next < 0 || next >= RISKY_SCENARIOS.length) return;
+    idx = next;
+    open = -1;
+    render();
+  }
+  prevBtn.addEventListener('click', function (evt) { evt.stopPropagation(); go(-1); });
+  nextBtn.addEventListener('click', function (evt) { evt.stopPropagation(); go(1); });
 
   Reveal.on('slidechanged', function (event) {
     if (event.currentSlide !== liveSlide) {
       idx = 0;
-      stage = 0;
+      open = -1;
       render();
     }
   });
