@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta name="syncdeck-permalink" content="79rjii">
-<meta name="syncdeck-projects" content="em-dashes">
+<meta name="syncdeck-projects" content="readability em-dashes">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Public / Private Key Lab - AP CSP Cybersecurity</title>
@@ -15,19 +15,28 @@
 <style>
 .lab-grid {
   display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 28px;
+  grid-template-columns: 390px 1fr;
+  gap: 24px;
   width: 100%;
   align-items: stretch;
+  flex: 1;         /* fill the rest of the slide so panels keep one size */
+  min-height: 0;   /* as feedback and results appear */
 }
 
 .lab-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 28px;
-  margin-bottom: 20px;
+  /* Progress chips share the tag's row; the heading and intro sentence
+     run the full width underneath. */
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 28px;
+  align-items: start;
+  margin-bottom: 14px;
 }
+.lab-header > div:first-child { display: contents; }
+.lab-header .slide-tag { grid-column: 1; grid-row: 1; }
+.lab-header h2 { grid-column: 1 / -1; grid-row: 2; }
+.lab-header .progress-chips { grid-column: 2; grid-row: 1; justify-content: flex-end; flex-wrap: nowrap; max-width: none; margin-top: -10px; }
+.lab-header p { grid-column: 1 / -1; grid-row: 3; }
 
 .lab-header h2 {
   font-size: 46px;
@@ -35,10 +44,9 @@
 }
 
 .lab-header p {
-  font-size: 21px;
+  font-size: var(--body);
   color: var(--text-muted);
   line-height: 1.45;
-  max-width: 830px;
 }
 
 .key-bank,
@@ -51,16 +59,16 @@
 }
 
 .key-bank {
-  padding: 18px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .key-bank-title {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: var(--small);
+  color: var(--text-muted);
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
@@ -68,7 +76,7 @@
 .key-card {
   border: 2px solid var(--teal-border);
   border-radius: 6px;
-  padding: 14px 16px;
+  padding: 8px 16px;
   background: rgba(0,201,177,0.06);
   color: var(--text);
   cursor: grab;
@@ -115,15 +123,15 @@
 
 .key-token {
   font-family: var(--font-mono);
-  font-size: 17px;
+  font-size: var(--code);
   color: var(--text-muted);
 }
 
 .lab-workspace {
-  padding: 18px;
+  padding: 14px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  gap: 14px;
   min-height: 520px;
 }
 
@@ -132,10 +140,10 @@
 }
 
 .message-panel {
-  padding: 18px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   min-height: 210px;
   transition: border-color 140ms, background 140ms, box-shadow 140ms;
 }
@@ -147,7 +155,7 @@
 
 .message-panel.failed {
   border-color: rgba(255,107,107,0.62);
-  background: rgba(255,107,107,0.08);
+  background: rgba(255,138,138,0.06);
   box-shadow: 0 0 20px rgba(255,107,107,0.12);
 }
 
@@ -157,14 +165,16 @@
 
 .message-panel.failed .lab-textarea {
   border-color: rgba(255,107,107,0.6);
-  background: rgba(255,107,107,0.08);
+  background: rgba(255,138,138,0.06);
 }
 
+.message-panel > * { flex-shrink: 0; }  /* overflow shows up instead of squeezing */
+
 .panel-label {
-  font-family: var(--font-mono);
-  font-size: 15px;
+  font-family: var(--font-body);
+  font-size: var(--small);
   color: var(--teal);
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -174,14 +184,14 @@
 
 .lab-textarea {
   width: 100%;
-  min-height: 105px;
+  min-height: 150px;  /* three lines at body size */
   resize: none;
   border: 1px solid var(--teal-border);
   border-radius: 4px;
   background: rgba(4,12,11,0.55);
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 22px;
+  font-size: var(--body);
   line-height: 1.35;
   padding: 14px;
 }
@@ -195,11 +205,11 @@
   border: 2px dashed rgba(226,245,242,0.24);
   border-radius: 6px;
   min-height: 122px;
-  padding: 16px;
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   transition: border-color 120ms, background 120ms;
 }
 
@@ -239,8 +249,8 @@
 }
 
 .drop-hint {
-  font-size: 18px;
-  color: var(--text-dim);
+  font-size: var(--small);  /* a caption inside the drop control */
+  color: var(--text-muted);
   line-height: 1.35;
 }
 
@@ -252,7 +262,7 @@
   padding: 10px 12px;
   display: none;
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: var(--code);
   color: var(--text-muted);
   word-break: break-word;
 }
@@ -270,7 +280,7 @@
 .drop-key-result.invalid {
   color: var(--red);
   border-color: rgba(255,107,107,0.55);
-  background: rgba(255,107,107,0.08);
+  background: rgba(255,138,138,0.06);
 }
 
 .state-card {
@@ -280,7 +290,7 @@
   padding: 14px;
   min-height: 74px;
   font-family: var(--font-mono);
-  font-size: 17px;
+  font-size: var(--code);
   color: var(--text-muted);
   word-break: break-word;
 }
@@ -300,7 +310,8 @@
   border: 1px solid rgba(226,245,242,0.12);
   border-radius: 4px;
   padding: 10px 14px;
-  font-size: 18px;
+  font-size: var(--small);  /* status message on a control, like .drop-hint */
+  line-height: 1.4;
   color: var(--text-muted);
   background: rgba(4,12,11,0.36);
 }
@@ -325,9 +336,9 @@
 }
 
 .progress-chip {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: var(--small);
+  color: var(--text-muted);
   border: 1px solid rgba(226,245,242,0.16);
   border-radius: 999px;
   padding: 7px 11px;
@@ -362,7 +373,7 @@
 }
 
 .flow-card p {
-  font-size: 21px;
+  font-size: var(--body);
   line-height: 1.5;
 }
 
@@ -391,11 +402,17 @@
 }
 
 .summary-list li {
-  font-size: 23px;
+  font-size: var(--body);
   color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.summary-list-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 40px;
 }
 
 .summary-mark {
@@ -407,8 +424,8 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 17px;
-  color: var(--text-dim);
+  font-size: var(--small);
+  color: var(--text-muted);
   flex: 0 0 auto;
 }
 
@@ -423,16 +440,16 @@
 }
 
 .note-strip {
-  font-size: 18px;
-  color: var(--text-dim);
+  font-size: var(--body);
+  color: var(--text-muted);
   border-left: 3px solid var(--amber);
   padding-left: 14px;
   line-height: 1.45;
 }
 
 .locked-note {
-  color: var(--text-dim);
-  font-size: 18px;
+  color: var(--text-muted);
+  font-size: var(--body);
   line-height: 1.35;
 }
 
@@ -523,14 +540,14 @@
           <textarea class="lab-textarea" data-input="plaintext" aria-label="Plaintext message">Can you send me the homework link?</textarea>
           <div class="drop-zone" tabindex="0" role="button" data-drop-zone="encrypt">
             <div class="drop-title">Encryption Key</div>
-            <div class="drop-hint">Drag a key card here to use it to encrypt the message. You can also click a key, then click here. Use the key that belongs to the person who should be able to read it.</div>
+            <div class="drop-hint">Drag a key card here, or click a key and then click here. Use the key that belongs to the person who should read the message.</div>
           </div>
-          <div class="feedback" data-feedback="encrypt"></div>
         </div>
 
         <div class="message-panel">
           <div class="panel-label partner-label">Sent State</div>
           <div class="state-card" data-output="ciphertext">Ciphertext will appear here after encryption.</div>
+          <div class="feedback" data-feedback="encrypt"></div>
         </div>
       </div>
     </div>
@@ -577,12 +594,12 @@
             <div class="drop-title">Decrypt Received Message</div>
             <div class="drop-hint">The message was locked with your public key. Which matching key opens it?</div>
           </div>
-          <div class="feedback" data-feedback="decrypt"></div>
         </div>
 
         <div class="message-panel">
           <div class="panel-label">Decrypted Plaintext</div>
           <div class="state-card" data-output="replyPlaintext">Plaintext will appear here after decryption.</div>
+          <div class="feedback" data-feedback="decrypt"></div>
         </div>
       </div>
     </div>
@@ -629,12 +646,12 @@
             <div class="drop-title">Encryption Key</div>
             <div class="drop-hint">Use the public key for the person who should be able to decrypt this.</div>
           </div>
-          <div class="feedback" data-feedback="encrypt2"></div>
         </div>
 
         <div class="message-panel">
           <div class="panel-label partner-label">Sent State</div>
           <div class="state-card" data-output="ciphertext2">Ciphertext will appear here after encryption.</div>
+          <div class="feedback" data-feedback="encrypt2"></div>
         </div>
       </div>
     </div>
@@ -681,12 +698,12 @@
             <div class="drop-title">Decrypt Received Message</div>
             <div class="drop-hint">This was locked with your public key. Use the matching private key.</div>
           </div>
-          <div class="feedback" data-feedback="decrypt2"></div>
         </div>
 
         <div class="message-panel">
           <div class="panel-label">Decrypted Plaintext</div>
           <div class="state-card" data-output="replyPlaintext2">Plaintext will appear here after decryption.</div>
+          <div class="feedback" data-feedback="decrypt2"></div>
         </div>
       </div>
     </div>
@@ -711,7 +728,7 @@
     <div class="callout fragment fade-up" style="padding:20px 26px;margin-top:var(--gap);border-color:rgba(0,201,177,0.4);">
       <p>The <span style="color:var(--teal);">math used to encrypt with a public key is a one-way operation</span>: it cannot be reversed using that same key. The public key can <span style="color:var(--red);">only lock</span> a message. It <span style="color:var(--red);">cannot undo its own work</span> and decrypt what it just encrypted. Only the mathematically paired <span style="color:var(--amber);">private key</span> can run the reverse operation.</p>
     </div>
-    <p class="fragment fade-up" style="font-size:24px;color:var(--text-muted);margin-top:var(--gap);max-width:1120px;">Confidentiality means protecting who can read the message. In asymmetric encryption, you usually encrypt with the receiver's public key so only the receiver's private key can decrypt it.</p>
+    <p class="fragment fade-up" style="font-size:var(--body);color:var(--text-muted);margin-top:var(--gap);max-width:1120px;">Confidentiality means protecting who can read the message. In asymmetric encryption, you usually encrypt with the receiver's public key so only the receiver's private key can decrypt it.</p>
   </div>
 </section>
 
@@ -855,7 +872,7 @@
           <div class="key-name">Partner Public Key</div>
           <div class="key-token" data-token="partnerPublic"></div>
         </div>
-        <p class="locked-note">Verify that your partner is the person who sent this message. Then decrypt the message that was sent to you.</p>
+        <p class="locked-note">Check that your partner really sent this package, then decrypt it.</p>
       </div>
 
       <div class="lab-workspace">
@@ -864,7 +881,7 @@
           <div class="state-card warning" data-output="partnerSecurePackage"></div>
           <div class="drop-zone" tabindex="0" role="button" data-drop-zone="verifyPartner">
             <div class="drop-title">Verify Partner Signature</div>
-            <div class="drop-hint">Which public key proves this package was signed by your partner?</div>
+            <div class="drop-hint">Which public key proves your partner signed this?</div>
           </div>
           <div class="feedback" data-feedback="partnerVerify"></div>
         </div>
@@ -887,11 +904,9 @@
 <section data-crypto-lab="summary">
   <div class="slide-inner">
     <span class="slide-tag">Wrap Up</span>
-    <h2>Public / Private Key Takeaways</h2>
-    <div class="summary-grid">
-      <div class="summary-card">
-        <h3>Your Lab Progress</h3>
-        <ul class="summary-list">
+    <h2>Your Lab Progress</h2>
+    <div class="summary-card">
+        <ul class="summary-list summary-list-2col">
           <li data-summary="encrypted"><span class="summary-mark">-</span>Encrypted a message for a partner</li>
           <li data-summary="decrypted"><span class="summary-mark">-</span>Decrypted a received message</li>
           <li data-summary="encrypted2"><span class="summary-mark">-</span>Encrypted a second message for the partner</li>
@@ -902,16 +917,22 @@
           <li data-summary="partnerVerified"><span class="summary-mark">-</span>Verified a signed partner message</li>
           <li data-summary="partnerDecrypted"><span class="summary-mark">-</span>Decrypted a message sent to you</li>
         </ul>
-      </div>
-      <div class="summary-card">
-        <h3>Remember</h3>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 12 - Wrap Up: Takeaways -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Wrap Up</span>
+    <h2>Public / Private Key Takeaways</h2>
+    <div class="summary-card">
         <ul class="bullets">
           <li><strong>Encrypt with the receiver's public key</strong> to protect confidentiality.</li>
           <li><strong>Decrypt with the receiver's private key</strong> because only the receiver should have it.</li>
           <li><strong>Sign with your private key</strong> to attach proof that the message came from you.</li>
           <li><strong>Verify with the matching public key</strong> to check authenticity and detect changes.</li>
         </ul>
-      </div>
     </div>
     <p class="note-strip" style="margin-top:28px;">Real cryptography uses carefully designed algorithms, trusted libraries, and secure key management. This activity is a simplified model to make the roles of the keys visible.</p>
   </div>
