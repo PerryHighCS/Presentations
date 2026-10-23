@@ -142,6 +142,10 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
    Only add a `<style>` block after that link for styles that are specific to this presentation. If no `theme.css` exists and the new deck needs its own theme, consider extracting it to a `theme.css` so future decks in the same folder can share it.
    Check the parent folder heirarchy for a `theme.css` and place a new `theme.css` at the highest place
    in the heirarchy that makes sense (e.g. the course level).
+   Load every font the theme or deck names. A shared `theme.css` should `@import` its own Google Fonts
+   URL at the top, so each deck that links it gets the fonts; a font that is named but never loaded
+   silently falls back to whatever the viewer has installed. `node scripts/check-fonts.mjs` (run in CI)
+   fails on any deck that uses a font it doesn't load.
 3. Load the bundled runtime with a relative path from the deck's published
    location. For the current `Decks/<course>/<unit>/deck.html` layout, use
    `../../runtime/`:
@@ -287,6 +291,7 @@ the permalink tag; edit it with the script below rather than by hand.
 | Overview → storyboard | `overview: true` in any synced state is intercepted and routed to `reveal-storyboard-set` rather than `deck.setState()`, so students see the custom strip, not Reveal's grid. |
 | No `chalkboard.storage` | The vendored chalkboard plugin does not write to `sessionStorage`. The host page is the source of truth (snapshot + delta buffer). Setting `storage` would cause divergence on reload. |
 | Role starts as `standalone` | `reveal-iframe-sync.js` always initialises in `standalone` mode. The host must send `setRole` to promote to `instructor` or `student`. Never rely on the `role` config field. |
+| Load every font you name | A font that is named in `font-family` but never loaded falls back to the viewer's installed fonts, so text widths, wrapping, and overflow differ from machine to machine, and a slide that fits on one screen spills over on another. `scripts/check-fonts.mjs` (CI) checks the first family of every declaration against Google Fonts links/imports, `@font-face`, and a short list of fonts every OS ships. |
 | Never hand-edit `syncdeck-permalink` meta tag or `config/permalinks.json` | The hash is generated once by `scripts/generate-permalink.mjs` and must stay stable across moves/renames. CI (`--check`) fails if a deck's tag and the manifest disagree. |
 
 ## Code Tracing Convention
