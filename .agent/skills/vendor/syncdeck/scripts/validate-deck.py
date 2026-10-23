@@ -23,10 +23,12 @@ Checks:
     - Presence of data-activity-instance-key attributes (warns if none found)
     - "<!-- SLIDE NN · ... -->" comments match the flattened position of the
       <section> they immediately precede. This mirrors Reveal's slideNumber
-      'c/t' counter, which counts every <section> in document order,
+      'c/t' counter, which counts every leaf <section> in document order,
       including nested vertical-stack children — a stack's children simply
       appear later in that same flattened sequence, so no separate h/v
-      notation is needed for the comment to stay accurate.
+      notation is needed for the comment to stay accurate. A stack's wrapper
+      <section> is not a slide of its own, so a comment above a wrapper
+      takes the number of the stack's first child.
 
 --renumber rewrites every drifted "SLIDE NN" comment in place to match its
 section's true flattened position and leaves all other comment text alone.
@@ -60,13 +62,19 @@ def line_of(html, offset):
 
 def check_slide_numbering(html):
     """Find every '<!-- ... SLIDE NN ... -->' block and compare NN against
-    the 1-based rank, in document order, of the <section> it precedes.
+    the 1-based rank, in document order, of the leaf <section> it precedes
+    (a vertical stack's wrapper section is skipped, as Reveal skips it).
 
     Returns (comments, mismatches): comments is every SLIDE-comment found
     (each a dict with comment_number/expected_number/line/offset/width);
     mismatches is the subset whose comment_number is wrong.
     """
-    section_starts = [m.start() for m in re.finditer(r'<section\b', html)]
+    # Leaf sections only: an opening tag followed by a closing tag before
+    # any other opening tag. Wrappers of vertical stacks are not slides.
+    tags = [(m.start(), m.group(1) == '/')
+            for m in re.finditer(r'<(/?)section\b', html)]
+    section_starts = [pos for (pos, closing), nxt in zip(tags, tags[1:] + [(None, True)])
+                      if not closing and nxt[1]]
     comments = []
     for block in re.finditer(r'<!--(.*?)-->', html, re.DOTALL):
         text = block.group(1)
