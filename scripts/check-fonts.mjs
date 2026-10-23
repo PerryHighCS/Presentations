@@ -118,8 +118,15 @@ async function collectSources(deck) {
   const remoteUrls = [];
   const seen = new Set();
 
-  for (const [, css] of html.matchAll(STYLE_BLOCK_RE)) {
-    sources.push({ file: deckFile, css: css.replace(COMMENT_RE, '') });
+  for (const [, block] of html.matchAll(STYLE_BLOCK_RE)) {
+    const css = block.replace(COMMENT_RE, '');
+    sources.push({ file: deckFile, css });
+    for (const match of css.matchAll(IMPORT_RE)) {
+      const href = importUrl(match);
+      if (!isRemote(href)) {
+        await readStylesheet(path.resolve(path.dirname(deck.absolutePath), href), sources, seen);
+      }
+    }
   }
   for (const [tag] of html.matchAll(LINK_RE)) {
     const rawHref = tag.match(HREF_RE)?.[1];
@@ -134,10 +141,11 @@ async function collectSources(deck) {
       await readStylesheet(path.resolve(path.dirname(deck.absolutePath), href), sources, seen);
     }
   }
+  // Attribute values reach CSS with their character references decoded (&quot;).
   for (const match of html.matchAll(STYLE_ATTR_RE)) {
-    sources.push({ file: deckFile, css: match[1] ?? match[2] });
+    sources.push({ file: deckFile, css: decodeHtmlEntities(match[1] ?? match[2]) });
   }
-  const svgFamilies = [...html.matchAll(SVG_FONT_ATTR_RE)].map((match) => match[1] ?? match[2]);
+  const svgFamilies = [...html.matchAll(SVG_FONT_ATTR_RE)].map((match) => decodeHtmlEntities(match[1] ?? match[2]));
   return { sources, remoteUrls, svgFamilies, deckFile };
 }
 
@@ -187,11 +195,78 @@ function firstFamilies(value, customProps, depth = 0) {
   return match[2] !== undefined ? firstFamilies(match[2] + tail, customProps, depth + 1) : [];
 }
 
-// The family list of a font shorthand follows the size (and optional
-// line-height): "700 24px/1.5 'Fira Code', monospace".
+// Substitutes every var() in a value with each text the deck defines for it
+// (or its fallback), returning each fully expanded value. An undefined
+// variable with no fallback makes the declaration invalid, so it yields none.
+function expandVars(value, customProps, depth = 0) {
+  const start = value.indexOf('var(');
+  if (start === -1) {
+    return [value];
+  }
+  if (depth > 20) {
+    return [];
+  }
+  let end = start + 'var('.length;
+  for (let open = 1; end < value.length && open; end++) {
+    if (value[end] === '(') open++;
+    else if (value[end] === ')') open--;
+  }
+  const inner = value.slice(start + 'var('.length, end - 1);
+  const [name, fallback] = splitFirst(inner);
+  const defined = customProps.get(name.trim());
+  const replacements = defined?.length ? defined : fallback !== null ? [fallback.trim()] : [];
+  return replacements.flatMap((text) =>
+    expandVars(value.slice(0, start) + text + value.slice(end), customProps, depth + 1));
+}
+
+// Splits a value on top-level whitespace and slashes (keeping each "/" as its
+// own token), leaving quoted strings and parenthesized groups whole.
+function shorthandTokens(value) {
+  const tokens = [];
+  let current = '';
+  let depth = 0;
+  let quote = null;
+  const flush = () => {
+    if (current) tokens.push(current);
+    current = '';
+  };
+  for (const ch of value) {
+    if (quote) {
+      current += ch;
+      if (ch === quote) quote = null;
+    } else if (ch === '"' || ch === "'") {
+      current += ch;
+      quote = ch;
+    } else if (ch === '(' || ch === ')') {
+      depth += ch === '(' ? 1 : -1;
+      current += ch;
+    } else if (depth === 0 && /\s/.test(ch)) {
+      flush();
+    } else if (depth === 0 && ch === '/') {
+      flush();
+      tokens.push('/');
+    } else {
+      current += ch;
+    }
+  }
+  flush();
+  return tokens;
+}
+
+const FONT_SIZE_RE = /^(?:[\d.]+(?:px|em|rem|pt|pc|cm|mm|in|q|ch|ex|vw|vh|vmin|vmax|%)|(?:calc|clamp|min|max)\(.*\)|xx-small|x-small|small|medium|large|x-large|xx-large|xxx-large|larger|smaller)$/i;
+
+// The family list of a font shorthand follows the size and an optional
+// /line-height (a number, length, or normal): "700 24px/1.5 'Fira Code', monospace".
+// Call it on a value whose var()s are already expanded.
 function shorthandFamilies(value) {
-  const match = value.match(/[\d.]+(?:px|em|rem|pt|%)(?:\s*\/\s*[\d.]+\w*)?\s+(.+)$/);
-  return match ? match[1] : null;
+  const tokens = shorthandTokens(value);
+  const size = tokens.findIndex((token) => FONT_SIZE_RE.test(token));
+  if (size === -1) {
+    return null; // a system font keyword like "caption", or not a font value
+  }
+  const familiesAt = tokens[size + 1] === '/' ? size + 3 : size + 1;
+  const families = tokens.slice(familiesAt).join(' ');
+  return families || null;
 }
 
 async function checkDeck(deck) {
@@ -217,10 +292,7 @@ async function checkDeck(deck) {
       usages.push({ value: value.trim(), file, declaration: declaration.trim() });
     }
     for (const [declaration, value] of css.matchAll(FONT_SHORTHAND_RE)) {
-      const families = shorthandFamilies(value.replace(/\s*!important\s*$/i, '').trim());
-      if (families) {
-        usages.push({ value: families, file, declaration: declaration.trim() });
-      }
+      usages.push({ value: value.trim(), file, declaration: declaration.trim(), shorthand: true });
     }
   }
   for (const value of svgFamilies) {
@@ -229,7 +301,11 @@ async function checkDeck(deck) {
 
   const missing = new Map(); // normalized family -> { family, usage } for the first declaration asking for it
   for (const usage of usages) {
-    for (const first of firstFamilies(usage.value, customProps)) {
+    // Expand shorthands only now, once every source's custom properties are known.
+    const familyLists = usage.shorthand
+      ? expandVars(usage.value.replace(/\s*!important\s*$/i, ''), customProps).map(shorthandFamilies).filter(Boolean)
+      : [usage.value];
+    for (const first of familyLists.flatMap((list) => firstFamilies(list, customProps))) {
       const family = first.replace(/^["']|["']$/g, '');
       const key = normalize(family);
       if (key && !ALWAYS_AVAILABLE.has(key) && !loaded.has(key) && !missing.has(key)) {
