@@ -61,7 +61,7 @@ body,
 .reveal p,
 .reveal li,
 .reveal blockquote {
-  color: rgba(226,245,242,0.6);
+  color: var(--text-muted);
   font-family: 'Space Grotesk', sans-serif;
 }
 
@@ -73,11 +73,12 @@ body,
   padding: 0.1em 0.38em;
   border-radius: 2px;
   border: 1px solid rgba(0,201,177,0.3);
+  white-space: nowrap;  /* keep each expression on one line */
 }
 
 /* Links */
-.reveal a { color: #00c9b1; }
-.reveal a:hover { color: rgba(0,201,177,0.7); }
+.reveal a { color: var(--teal); }
+.reveal a:hover { color: var(--green); }
 
 /* Selection */
 .reveal ::selection {
@@ -91,8 +92,8 @@ body,
   --bg:            #091412;
   --bg-card:       #0f1d1a;
   --text:          #e2f5f2;
-  --text-muted:    rgba(226,245,242,0.6);
-  --text-dim:      rgba(226,245,242,0.35);
+  --text-muted:    rgba(226,245,242,0.7);   /* 7:1 on cards and tinted callouts */
+  --text-dim:      rgba(226,245,242,0.52);  /* 4.5:1; intentionally dimmed text only */
   --teal:          #00c9b1;
   --teal-border:   rgba(0,201,177,0.25);
   --teal-glow:     rgba(0,201,177,0.12);
@@ -100,8 +101,9 @@ body,
   --amber-border:  rgba(255,212,59,0.35);
   --yellow:        #ffd43b;
   --green:         #69db7c;
-  --red:           #ff6b6b;
+  --red:           #ff8a8a;
   --gold:          #ff9f43;
+  --purple:        #b4a0fb;
 
   /* Fonts */
   --font-display: 'Space Grotesk', sans-serif;
@@ -117,9 +119,9 @@ body,
   --title:  100px;    /* visual ~80px at 1280×720 — title slide  */
   --h2:      56px;    /* visual ~45px — section headings         */
   --h3:      36px;    /* visual ~29px — sub-headings             */
-  --body:    25px;    /* visual ~20px — paragraph text           */
-  --small:   19px;    /* visual ~15px — captions / annotations   */
-  --code:    21px;    /* visual ~17px — code blocks              */
+  --body:    30px;    /* reading text floor (18pt projected)     */
+  --small:   22px;    /* captions / labels / chips floor         */
+  --code:    24px;    /* code blocks and inline code floor       */
   --tag:     15px;    /* visual ~12px — slide labels             */
 
   /* Spacing — px so everything scales with Reveal's transform */
@@ -147,6 +149,10 @@ body::before {
   pointer-events: none;
   z-index: 0;
 }
+
+/* Reveal's default renders slide text at a line height of ~1.0,
+   which crowds lines once text is at the size floors. */
+.reveal .slides { line-height: 1.45; }
 
 /* Each section = full configured slide height.
    DO NOT set position here — Reveal.js sets position: absolute on sections
@@ -220,7 +226,7 @@ body::before {
 
 .reveal p {
   font-size: var(--body);
-  line-height: 1.65;
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -361,6 +367,7 @@ body::before {
   border: 1px solid rgba(0,201,177,0.4);
   border-radius: 4px;
   overflow: hidden;
+  flex-shrink: 0;  /* never let a flex column clip code silently */
 }
 .code-card.accent { border-color: rgba(0,201,177,0.7); }
 
@@ -370,13 +377,13 @@ body::before {
   justify-content: center;
   gap: 0;
   padding: 0.35em 1em;
-  background: rgba(0,201,177,0.12);
+  background: rgba(0,201,177,0.08);
   border-bottom: 1px solid rgba(0,201,177,0.4);
 }
 .cdot { display: none; }
 .clang {
   font-family: var(--font-mono);
-  font-size: var(--tag);
+  font-size: var(--small);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--teal);
@@ -393,7 +400,13 @@ body::before {
 .kw { color: var(--amber);   font-weight: 500; }
 .tp { color: var(--teal); }
 .nm { color: var(--gold); }
-.cm { color: rgba(226,245,242,0.5); font-style: italic; }
+.cm { color: var(--text-muted); font-style: italic; }
+
+/* De-emphasized context lines inside a code block. Dimmed text may drop
+   to 4.5:1 but no lower, so use a uniform dim color rather than opacity
+   (opacity would push the darker token colors below 4.5:1). */
+.code-dim,
+.code-dim * { color: var(--text-dim) !important; }
 
 /* ─── 9. Info / callout cards ──────────────────────────────────────── */
 
@@ -413,12 +426,12 @@ body::before {
 .callout.accent-amber h3  { color: var(--amber); }
 .callout.accent-green  { border-color: rgba(105,219,124,0.4); background: rgba(105,219,124,0.05); }
 .callout.accent-green h3 { color: var(--green); }
-.callout.accent-red    { border-color: rgba(255,107,107,0.4); background: rgba(255,107,107,0.05); }
+.callout.accent-red    { border-color: rgba(255,138,138,0.4); background: rgba(255,107,107,0.05); }
 .callout.accent-red h3 { color: var(--red); }
 .callout.accent-yellow { border-color: rgba(255,212,59,0.4); background: rgba(255,212,59,0.05); }
 .callout.accent-yellow h3 { color: var(--yellow); }
 .callout.accent-purple { border-color: rgba(167,139,250,0.4); background: rgba(167,139,250,0.05); }
-.callout.accent-purple h3 { color: #a78bfa; }
+.callout.accent-purple h3 { color: var(--purple); }
 .callout p, .callout li { font-size: var(--body); }
 
 /* ─── 10. Rubric checklist component ───────────────────────────────── */
@@ -500,6 +513,13 @@ body::before {
     opacity 0.55s var(--ease),
     transform 0.55s var(--ease),
     filter 0.55s var(--ease) !important;
+}
+/* The !important rules above would otherwise keep these visible after
+   their step: restore Reveal's show-then-hide behavior. */
+.reveal .fragment.fade-in-then-out.visible:not(.current-fragment),
+.reveal .fragment.current-visible.visible:not(.current-fragment) {
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 .reveal .fragment.fade-up {
   transform: translateY(22px);
@@ -709,7 +729,7 @@ body.storyboard-open .reveal {
   padding: 12px 16px;
   min-height: 48px;
   font-size: var(--body);
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-family: var(--font-body);
 }
 
@@ -730,8 +750,8 @@ body.storyboard-open .reveal {
   color: var(--yellow);
 }
 .badge-red {
-  background: rgba(255,107,107,0.1);
-  border-color: rgba(255,107,107,0.35);
+  background: rgba(255,138,138,0.1);
+  border-color: rgba(255,138,138,0.35);
   color: var(--red);
 }
 .badge-green {
@@ -782,7 +802,7 @@ body.storyboard-open .reveal {
   background: var(--teal-glow);
   border: 1px solid var(--teal-border);
   border-radius: 2px;
-  font-size: 0.8em;
+  font-size: var(--small);
   color: var(--teal);
   font-weight: 700;
   text-align: center;
