@@ -12,3 +12,9 @@ for safe_dir in \
     git config --global --add safe.directory "$safe_dir"
   fi
 done
+
+# The skills subtree pushes/pulls through this remote; remotes live in
+# .git/config, so a fresh clone doesn't have it.
+if ! git -C "$WORKSPACE_DIR" remote get-url syncdeck-agent-skills >/dev/null 2>&1; then
+  git -C "$WORKSPACE_DIR" remote add syncdeck-agent-skills https://github.com/PerryHighCS/syncdeck-agent-skills
+fi
