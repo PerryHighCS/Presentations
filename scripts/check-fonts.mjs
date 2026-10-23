@@ -33,13 +33,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 
 // Families that never need loading: CSS keywords and generic families, plus
-// fonts installed on every Windows and macOS machine students use.
+// fonts installed on both Windows and macOS. Windows has no Helvetica, Times,
+// or Courier, but substitutes Arial, Times New Roman, and Courier New, which
+// share their metrics, so layout doesn't change. Helvetica Neue has no such
+// substitute, so it must be loaded like any other font.
 const ALWAYS_AVAILABLE = new Set([
   'inherit', 'initial', 'unset', 'revert',
   'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'math', 'emoji',
   'system-ui', 'ui-serif', 'ui-sans-serif', 'ui-monospace', 'ui-rounded',
   '-apple-system', 'blinkmacsystemfont',
-  'arial', 'helvetica', 'helvetica neue', 'georgia', 'times', 'times new roman',
+  'arial', 'helvetica', 'georgia', 'times', 'times new roman',
   'courier', 'courier new', 'verdana', 'tahoma', 'trebuchet ms',
 ]);
 
@@ -68,6 +71,19 @@ function normalize(family) {
 
 function importUrl(match) {
   return match.slice(1).find((group) => group !== undefined);
+}
+
+// Maps a local stylesheet URL to a file: drops any ?query or #hash (cache
+// busting, media fragments) and decodes %-escapes, as the browser would.
+function localStylesheetPath(fromFile, href) {
+  const pathname = href.split(/[?#]/)[0];
+  let decoded = pathname;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    // a malformed escape: leave it, the read below just fails
+  }
+  return path.resolve(path.dirname(fromFile), decoded);
 }
 
 function isRemote(href) {
@@ -105,7 +121,7 @@ async function readStylesheet(absolutePath, sources, seen) {
   for (const match of css.matchAll(IMPORT_RE)) {
     const href = importUrl(match);
     if (!isRemote(href)) {
-      await readStylesheet(path.resolve(path.dirname(absolutePath), href), sources, seen);
+      await readStylesheet(localStylesheetPath(absolutePath, href), sources, seen);
     }
   }
 }
@@ -124,7 +140,7 @@ async function collectSources(deck) {
     for (const match of css.matchAll(IMPORT_RE)) {
       const href = importUrl(match);
       if (!isRemote(href)) {
-        await readStylesheet(path.resolve(path.dirname(deck.absolutePath), href), sources, seen);
+        await readStylesheet(localStylesheetPath(deck.absolutePath, href), sources, seen);
       }
     }
   }
@@ -138,12 +154,12 @@ async function collectSources(deck) {
       remoteUrls.push(href);
     } else if (!href.includes('runtime/syncdeck-reveal/')) {
       // The SyncDeck runtime styles its own overlay, not slide content.
-      await readStylesheet(path.resolve(path.dirname(deck.absolutePath), href), sources, seen);
+      await readStylesheet(localStylesheetPath(deck.absolutePath, href), sources, seen);
     }
   }
   // Attribute values reach CSS with their character references decoded (&quot;).
   for (const match of html.matchAll(STYLE_ATTR_RE)) {
-    sources.push({ file: deckFile, css: decodeHtmlEntities(match[1] ?? match[2]) });
+    sources.push({ file: deckFile, css: decodeHtmlEntities(match[1] ?? match[2]).replace(COMMENT_RE, '') });
   }
   const svgFamilies = [...html.matchAll(SVG_FONT_ATTR_RE)].map((match) => decodeHtmlEntities(match[1] ?? match[2]));
   return { sources, remoteUrls, svgFamilies, deckFile };
