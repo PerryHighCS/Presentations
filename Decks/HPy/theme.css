@@ -27,6 +27,10 @@
   21. Type classification bins        → .type-bins / .type-chip
    ============================================================ */
 
+/* The theme's fonts. Without this, decks fall back to whatever monospace and
+   sans-serif the viewer has installed, and every width on the slides shifts. */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fira+Code:wght@400;500;700&display=swap');
+
 /* ─── 1. Force nav controls visible ──────────────────────── */
 
 .reveal .controls {
@@ -54,6 +58,9 @@ body,
   background: transparent;
   color: #f5ecdf;
   font-family: 'Manrope', sans-serif;
+  /* Fira Code would draw == and != as single joined glyphs; students need
+     to see the characters they type. */
+  font-variant-ligatures: none;
 }
 
 /* Headings — reset Reveal defaults (margin, text-transform, etc.) */
@@ -76,13 +83,17 @@ body,
 .reveal p,
 .reveal li,
 .reveal blockquote {
-  color: rgba(245,236,223,0.64);
+  color: var(--text-muted);
   font-family: 'Manrope', sans-serif;
 }
 
+/* Inline code: keep each expression on one line. Manrope's space is narrow,
+   so a little padding keeps capitals like None from touching the word before. */
+.reveal :not(pre) > code { white-space: nowrap; padding-left: 0.12em; }
+
 /* Links */
-.reveal a { color: #f2b134; }
-.reveal a:hover { color: rgba(242,177,52,0.7); }
+.reveal a { color: var(--accent); }
+.reveal a:hover { color: var(--result); }
 
 /* Selection */
 .reveal ::selection {
@@ -116,13 +127,13 @@ body::before {
   --bg:            #1a1410;
   --bg-card:       #221a14;
   --text:          #f5ecdf;
-  --text-muted:    rgba(245,236,223,0.64);
-  --text-dim:      rgba(245,236,223,0.30);
+  --text-muted:    rgba(245,236,223,0.72);  /* 7:1 on --bg-card and tinted callouts */
+  --text-dim:      rgba(245,236,223,0.55);  /* 4.5:1; intentionally dimmed text only */
   --accent:        #f2b134;
   --accent-dim:    rgba(242,177,52,0.12);
   --accent-border: rgba(242,177,52,0.25);
   --result:        #7cd992;   /* green highlight — secondary accent */
-  --warn:          #ff6b5b;   /* warm red-orange — attention / caution */
+  --warn:          #ff8a7e;   /* warm red-orange — attention / caution */
   --syntax-string: #7ec8e3;   /* soft cyan — python string literals */
   --syntax-number: #c9a4ff;   /* soft violet — python numeric literals */
 
@@ -137,10 +148,10 @@ body::before {
   --title:  88px;    /* title slide main heading */
   --h2:     46px;    /* section headings         */
   --h3:     32px;    /* sub-headings             */
-  --body:   24px;    /* paragraph / bullet text  */
-  --small:  18px;    /* captions / annotations   */
-  --label:  13px;    /* eyebrow labels / tags    */
-  --code:   20px;    /* monospace / formula text */
+  --body:   30px;    /* reading text floor (18pt projected) */
+  --small:  22px;    /* captions / labels / chips floor     */
+  --label:  13px;    /* .slide-tag eyebrow only (exempt)    */
+  --code:   24px;    /* code and monospace formula floor    */
 
   /* Spacing */
   --pad:     64px;   /* slide inner padding      */
@@ -155,6 +166,11 @@ body::before {
 /* ─── 5. Structural overrides ─────────────────────────────── */
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* Reveal's default renders slide text at a line height of ~1.0,
+   which crowds lines once text is at the size floors. Unstyled text
+   would otherwise fall back to the browser's 16px. */
+.reveal .slides { line-height: 1.45; font-size: var(--body); }
 
 /* CRITICAL: Do NOT set position on sections.
    Reveal needs position: absolute to layer/fade slides.
@@ -497,7 +513,7 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
 .topic-list li {
   position: relative;
   padding-left: 24px;
-  font-size: 21px;
+  font-size: var(--body);
   color: var(--text-muted);
   line-height: 1.5;
 }
@@ -524,7 +540,7 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
 }
 .warn-label {
   font-family: var(--font-mono);
-  font-size: var(--label);
+  font-size: var(--small);
   color: var(--warn);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -534,8 +550,8 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
 
 .subtitle {
   font-family: var(--font-mono);
-  font-size: 20px;
-  color: var(--text-dim);
+  font-size: var(--small);
+  color: var(--text-muted);
   margin-top: 22px;
   letter-spacing: 0.02em;
 }
@@ -550,7 +566,7 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
   background: var(--bg-card);
   border: 1px solid var(--accent-border);
   border-radius: 10px;
-  overflow: hidden;
+  overflow: hidden;  flex-shrink: 0;  /* never let a flex column clip code silently */
 }
 
 .code-hdr {
@@ -560,8 +576,8 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
   padding: 10px 18px;
   border-bottom: 1px solid var(--accent-border);
   font-family: var(--font-mono);
-  font-size: var(--small);
-  color: var(--text-dim);
+  font-size: var(--code);
+  color: var(--text-muted);
   letter-spacing: 0.04em;
 }
 .code-hdr .dot {
@@ -596,7 +612,7 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
 /* Line-numbered rows for step-by-step trace/highlight */
 .code-line {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   padding: 2px 0;
   font-family: var(--font-mono);
   font-size: var(--code);
@@ -606,7 +622,7 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
 }
 .code-line .car {
   flex: 0 0 auto;
-  width: 0.9em;
+  width: 1ch;
   color: var(--accent);
   font-weight: 700;
   opacity: 0;
@@ -615,20 +631,40 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
 .code-line.current .car { opacity: 1; }
 .code-line .ln {
   flex: 0 0 auto;
-  width: 1.6em;
+  min-width: 1ch;  /* as wide as its digits; 2ch once a block reaches line 10 */
   text-align: right;
-  color: var(--text-dim);
+  color: var(--text-muted);  /* stays 4.5:1 at .done opacity */
   user-select: none;
 }
+.code-body:has(> .code-line:nth-child(10)) .ln { min-width: 2ch; }
 .code-line.current .ln { color: var(--accent); font-weight: 700; }
 .code-line.current {
   background: rgba(242,177,52,0.08);
   border-radius: 4px;
-  margin: 2px -8px;
+  margin: 0 -8px;  /* no vertical margin, so lines never shift as the caret moves */
   padding: 2px 8px;
 }
-.code-line.done { opacity: 0.5; }
-.code-line.pending { opacity: 0.35; }
+/* Dimmed lines may drop to 4.5:1 but no lower. Completed lines keep their
+   syntax colors at reduced opacity; not-yet-run lines turn a uniform dim
+   color, since opacity would push already-dim tokens below 4.5:1. */
+.code-line.done { opacity: 0.8; }
+.code-line.pending,
+.code-line.pending * { color: var(--text-dim); }
+
+/* Console output beside a .code-line block: each row matches a code row's
+   height, so output lines up with the code that printed it. */
+.code-body.console-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.console-lines > * {
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  line-height: 1.7;
+  padding: 2px 0;
+  white-space: pre;
+}
 
 /* Python syntax token colors — keep usage consistent by concept:
    keywords/builtins, identifiers, strings, numbers, booleans, comments. */
@@ -637,7 +673,7 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
 .tok-str  { color: var(--syntax-string); }
 .tok-num  { color: var(--syntax-number); }
 .tok-bool { color: var(--result); font-weight: 600; }
-.tok-cm   { color: var(--text-dim); font-style: italic; }
+.tok-cm   { color: var(--text-muted); font-style: italic; }
 .tok-op   { color: var(--text-muted); }
 
 /* ─── 19. MCQ / FRQ fallback rendering ────────────────────────
@@ -653,10 +689,11 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
   gap: var(--gap-sm);
 }
 .mcq-opts li {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 18px;
+  /* Block layout with a hanging indent so text wraps around inline code
+     normally (flex turned each text run and <code> into its own column). */
+  display: block;
+  padding: 10px 18px 10px 60px;
+  text-indent: -42px;
   background: var(--bg-card);
   border: 1px solid var(--accent-border);
   border-radius: 8px;
@@ -669,11 +706,13 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
   color: var(--text);
 }
 .opt-key {
-  flex: 0 0 auto;
   width: 28px;
   height: 28px;
+  margin-right: 14px;
+  vertical-align: middle;
+  text-indent: 0;  /* text-indent is inherited by inline-level boxes */
   border-radius: 50%;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
@@ -740,7 +779,7 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
   font-family: var(--font-mono);
   font-size: var(--code);
   font-weight: 600;
-  color: var(--text-dim);
+  color: var(--text-muted);
   text-align: center;
 }
 .var-box.empty .var-box-value { font-style: italic; }
@@ -794,7 +833,7 @@ body.storyboard-open .reveal     { padding-bottom: 172px; }
   min-height: 1.4em;
   font-family: var(--font-mono);
   font-size: var(--small);
-  color: var(--text-dim);
+  color: var(--text-muted);
 }
 .trace-feedback.good { color: var(--result); }
 .trace-feedback.bad { color: var(--warn); }

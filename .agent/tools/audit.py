@@ -8,11 +8,19 @@ fragments revealed. Checks, in 1600x900 canvas coordinates:
 
   OVERFLOW  a visible element extends past the canvas edge
   OVERLAP   two separate text blocks (or a text block and an image) intersect
+  CLIPPED   a box with overflow hidden/clip/auto cuts off part of its
+            content at its padding edge, which OVERFLOW can't see
   SIZE      text below the AGENTS.md floors: under 22px (under 24px for code)
-            fails; 22-29px inside a paragraph or list item is flagged for a
-            role check, since body text should be 30px. Sub/superscripts are
+            fails; 22-29px inside a paragraph or list item, or any element
+            holding a run of more than nine words, is flagged for a role
+            check, since body text should be 30px. Sub/superscripts are
             measured against 75% of their parent. .slide-tag eyebrows and the
             slide counter are exempt.
+  CONTRAST  text color (times ancestor opacity) composited over the ancestor
+            backgrounds: under 4.5:1 fails; 4.5-7:1 is flagged for a role
+            check, since only intentionally de-emphasized text may sit there.
+            Text drawn on SVG shapes and on background images or gradients is
+            measured against the nearest solid background-color only.
 
 The audit only measures; it cannot judge layout. Always look at screenshots
 (shots.py) of every slide you change, and click through interactive widgets.
@@ -53,18 +61,51 @@ AUDIT_JS = r"""
     const cls = typeof e.className === 'string' && e.className ? '.' + e.className.trim().split(/\s+/)[0] : '';
     return e.tagName.toLowerCase() + cls + ' "' + t.slice(0, 50) + '"';
   };
-  const out = { overflow: [], overlap: [], size: [] };
+  const out = { overflow: [], overlap: [], size: [], contrast: [], clipped: [] };
 
   // Elements that own text directly
   const textEls = [...slide.querySelectorAll('*')].filter(e =>
     [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && visible(e));
 
-  // OVERFLOW
-  for (const e of [...textEls, ...slide.querySelectorAll('img, svg, table, button')]) {
+  // OVERFLOW. Bordered boxes (cards, consoles) count too: their text can stay
+  // on the canvas while the box's bottom edge runs off, which reads as cut off.
+  const bordered = [...slide.querySelectorAll('*')].filter(e => {
+    const cs = getComputedStyle(e);
+    return ['Top', 'Right', 'Bottom', 'Left'].some(s =>
+      parseFloat(cs['border' + s + 'Width']) > 0 && cs['border' + s + 'Style'] !== 'none' &&
+      !/rgba\(.*,\s*0\)$|transparent/.test(cs['border' + s + 'Color']));
+  });
+  for (const e of [...textEls, ...slide.querySelectorAll('img, svg, table, button'), ...bordered]) {
     if (!visible(e) || e.closest('svg') && e.tagName.toLowerCase() !== 'svg') continue;
     const c = canvas(e.getBoundingClientRect());
     if (c.b > H + 0.5 || c.r > W + 0.5 || c.l < -0.5 || c.t < -0.5) {
       out.overflow.push(label(e) + ' at [' + [c.l, c.t, c.r, c.b].map(Math.round) + ']');
+    }
+  }
+
+  // CLIPPED: content cut off at the padding edge of an overflow:hidden (or
+  // scrolling) box. Content that only reaches into the padding is still
+  // visible, so compare descendants' boxes, not scrollWidth/scrollHeight.
+  const leaves = [...textEls, ...[...slide.querySelectorAll('img, svg, canvas, video')].filter(visible)];
+  for (const e of [slide, ...slide.querySelectorAll('*')]) {
+    if (!visible(e) || e.closest('svg')) continue;
+    const cs = getComputedStyle(e);
+    const clipX = cs.overflowX !== 'visible', clipY = cs.overflowY !== 'visible';
+    if (!clipX && !clipY) continue;
+    const r = e.getBoundingClientRect();
+    const box = { l: r.left + parseFloat(cs.borderLeftWidth), r: r.right - parseFloat(cs.borderRightWidth),
+                  t: r.top + parseFloat(cs.borderTopWidth), b: r.bottom - parseFloat(cs.borderBottomWidth) };
+    let dx = 0, dy = 0;
+    for (const d of leaves) {
+      if (d === e || !e.contains(d)) continue;
+      for (const q of d.getClientRects()) {
+        if (clipX) dx = Math.max(dx, box.l - q.left, q.right - box.r);
+        if (clipY) dy = Math.max(dy, box.t - q.top, q.bottom - box.b);
+      }
+    }
+    dx /= scale; dy /= scale;
+    if (dx > 2 || dy > 2) {
+      out.clipped.push(label(e) + ' cuts off ' + [dx > 2 ? Math.round(dx) + 'px across' : '', dy > 2 ? Math.round(dy) + 'px down' : ''].filter(Boolean).join(', '));
     }
   }
 
@@ -85,10 +126,51 @@ AUDIT_JS = r"""
     const where = svg ? ' (svg)' : '';
     if (px < floor - 0.5) {
       out.size.push('FAIL ' + px.toFixed(1) + 'px' + where + ' ' + label(e));
-    } else if (!isCode && !subsup && !svg && px < 29.5 && e.closest('p, li') &&
+    } else if (!isCode && !subsup && !svg && px < 29.5 &&
+               (e.closest('p, li') || [...e.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim().split(/\s+/).length > 9) &&
                !e.closest('[class*="-num"], [class*="-tag"], [class*="-label"], [class*="badge"], [class*="chip"]')) {
       out.size.push('CHECK ' + px.toFixed(1) + 'px body text? ' + label(e));
     }
+  }
+
+  // CONTRAST: composite the text color over every ancestor background
+  // down to the first opaque one (or the page background).
+  const rgba = c => {
+    const m = c.match(/rgba?\(([^)]+)\)/);
+    if (!m) return null;
+    const p = m[1].split(/[,\s/]+/).filter(Boolean).map(parseFloat);
+    return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 };
+  };
+  const over = (top, bot) => {
+    const a = top.a + bot.a * (1 - top.a);
+    if (!a) return { r: 0, g: 0, b: 0, a: 0 };
+    const mix = k => (top[k] * top.a + bot[k] * bot.a * (1 - top.a)) / a;
+    return { r: mix('r'), g: mix('g'), b: mix('b'), a };
+  };
+  const lum = c => {
+    const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+  };
+  const pageBg = rgba(getComputedStyle(document.body).backgroundColor) || { r: 0, g: 0, b: 0, a: 1 };
+  for (const e of textEls) {
+    if (e.closest('svg')) continue;
+    const layers = [];
+    let op = 1;
+    for (let a = e; a && a !== document.documentElement; a = a.parentElement) {
+      const cs = getComputedStyle(a);
+      op *= parseFloat(cs.opacity);
+      const bg = rgba(cs.backgroundColor);
+      if (bg && bg.a > 0) { layers.push(bg); if (bg.a >= 1) break; }
+    }
+    let bg = pageBg.a >= 1 ? { ...pageBg } : { r: 0, g: 0, b: 0, a: 1 };
+    for (let i = layers.length - 1; i >= 0; i--) bg = over(layers[i], bg);
+    const fg = rgba(getComputedStyle(e).color);
+    if (!fg) continue;
+    const txt = over({ ...fg, a: fg.a * op }, bg);
+    const L1 = lum(txt), L2 = lum(bg);
+    const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+    if (ratio < 4.45) out.contrast.push('FAIL ' + ratio.toFixed(2) + ':1 ' + label(e));
+    else if (ratio < 6.95) out.contrast.push('CHECK ' + ratio.toFixed(2) + ':1 dimmed on purpose? ' + label(e));
   }
 
   // OVERLAP: text blocks and images that intersect without nesting
@@ -126,12 +208,14 @@ def main():
             res = page.evaluate(AUDIT_JS)
             lines = (['OVERFLOW ' + x for x in res['overflow']] +
                      ['OVERLAP  ' + x for x in res['overlap']] +
-                     ['SIZE     ' + x for x in res['size']])
+                     ['CLIPPED  ' + x for x in res['clipped']] +
+                     ['SIZE     ' + x for x in res['size']] +
+                     ['CONTRAST ' + x for x in res['contrast']])
             if lines:
                 print('Slide %d' % n)
                 for line in lines:
                     print('  ' + line)
-                problems += sum(1 for l in lines if not l.startswith('SIZE     CHECK'))
+                problems += sum(1 for l in lines if ' CHECK ' not in l)
         for e in page.errors:
             print('page error:', e)
     print('%d problem(s) (CHECK lines need a human role check and are not counted)' % problems)

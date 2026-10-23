@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta name="syncdeck-permalink" content="1aiofss">
-<meta name="syncdeck-projects" content="em-dashes">
+<meta name="syncdeck-projects" content="em-dashes readability">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2.3-2.4 Style and Strings</title>
@@ -21,13 +21,12 @@
   .trace-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gap); }
   .var-row { display: flex; gap: var(--gap-sm); justify-content: center; }
   .var-box-value .placeholder { color: var(--text-dim); font-style: italic; }
-  .console-card { width: 260px; }
+  .console-card { min-width: 260px; max-width: 100%; }  /* sized to its longest line */
   .console-card .code-body { display: flex; flex-direction: column; gap: 7px; align-items: center; font-family: var(--font-mono); color: var(--text); text-align: center; }
   .console-in { color: var(--result); }
-  .console-hdr-row { color: var(--text-dim); letter-spacing: 0.08em; }
   .code-card.compact .code-body { padding: 12px 20px; }
-  .code-card.compact .code-line { font-size: 17px; line-height: 1.5; padding: 1px 0; }
-  .step-hint { font-size: var(--small); color: var(--text-dim); margin-top: var(--gap-sm); }
+  .code-card.compact .code-line { line-height: 1.3; padding: 0; }
+  .step-hint { font-size: var(--body); color: var(--text-muted); margin-top: var(--gap-sm); }
 
   /* Character strip: a static row of character "cells", each with an
      optional label above and below (index, negative index, or char code).
@@ -35,8 +34,8 @@
      characters rather than a whole string. */
   .char-strip { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .char-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: var(--font-mono); }
-  .char-cell .idx-top { font-size: 14px; color: var(--result); min-height: 1.2em; }
-  .char-cell .idx-bottom { font-size: 14px; color: var(--accent); min-height: 1.2em; }
+  .char-cell .idx-top { font-size: var(--small); color: var(--result); min-height: 1.2em; }
+  .char-cell .idx-bottom { font-size: var(--small); color: var(--accent); min-height: 1.2em; }
   .char-cell .ch {
     min-width: 40px;
     padding: 10px 12px;
@@ -49,7 +48,7 @@
     text-align: center;
   }
   .char-cell.hl .ch { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 3px rgba(242,177,52,0.18); }
-  .char-cell .ch.wide { min-width: 52px; font-size: 14px; }
+  .char-cell .ch.wide { min-width: 52px; }
 </style>
 </head>
 <body>
@@ -191,7 +190,7 @@
       <div class="slide-inner">
         <span class="slide-tag">One Good Rewrite</span>
         <h2>Same math, <span style="color:var(--result);">readable</span> now</h2>
-        <div class="split split-50" style="margin-top:var(--gap);">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:var(--gap);margin-top:var(--gap);">
           <div class="code-card">
             <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">before</span></div>
             <div class="code-body"><pre><code><span class="tok-kw">def</span> <span class="tok-nm">c</span>(<span class="tok-nm">w</span>):
@@ -207,7 +206,7 @@
             </div>
           </div>
         </div>
-        <p style="font-size:var(--body);margin-top:var(--gap-lg);max-width:1000px;">Nothing about what the code <em>does</em> changed. What changed is how quickly someone else, including future you, can tell what it does.</p>
+        <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">Nothing about what the code <em>does</em> changed. What changed is how quickly someone else, including future you, can tell what it does.</p>
       </div>
     </section>
 
@@ -399,9 +398,9 @@ patience finds them all.'''</span>
         <span class="slide-tag">A Common Fix</span>
         <h2>Skip the <span style="color:var(--result);">leading</span> newline</h2>
         <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
-          It's often more readable to start the text on its own line, right after the opening triple-quote. But that puts a newline right after the quote, which shows up as a blank first line of output. When the text is meant to line up with something printed just before it, like a boxed table sitting right under its heading, that stray blank line breaks the alignment. The fix: a backslash (<code style="color:var(--text);">\</code>, not a forward slash) right after the opening quote tells Python to ignore that one newline.
+          Starting the text on its own line reads well, but it puts a newline right after the opening quote, which prints as a blank first line. Here, that blank line pushes the box away from its heading. A backslash (<code style="color:var(--text);">\</code>, not a forward slash) right after the opening quote tells Python to ignore that one newline.
         </p>
-        <div class="split split-50" style="margin-top:var(--gap-lg);">
+        <div class="split split-50" style="margin-top:var(--gap);flex:0 0 auto;">
           <div class="code-card">
             <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">misaligned</span></div>
             <div class="code-body"><pre><code><span class="tok-kw">print</span>(<span class="tok-str">'Order Summary:'</span>)
@@ -494,17 +493,17 @@ patience finds them all.'''</span>
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:literals-checkpoint-1:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which literal correctly represents the text: She said, \"Nice job!\"","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"&#39;She said, \"Nice job!\"&#39;","isCorrect":true},{"id":"q1b","text":"\"She said, \"Nice job!\"\"","isCorrect":false},{"id":"q1c","text":"&#39;She said, \\&#39;Nice job!\\&#39;&#39;","isCorrect":false},{"id":"q1d","text":"She said, \"Nice job!\"","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which literal correctly represents the text: She said, \"Nice job!\"","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"\"She said, \"Nice job!\"\"","isCorrect":false},{"id":"q1b","text":"&#39;She said, \\&#39;Nice job!\\&#39;&#39;","isCorrect":false},{"id":"q1c","text":"She said, \"Nice job!\"","isCorrect":false},{"id":"q1d","text":"&#39;She said, \"Nice job!\"&#39;","isCorrect":true}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint 1</span>
         <h2>Which literal is <span style="color:var(--accent);">correct</span>?</h2>
         <p style="margin:var(--gap) 0;max-width:900px;">Which literal correctly represents the text: <code>She said, "Nice job!"</code></p>
         <ul class="mcq-opts">
-          <li><span class="opt-key">A</span> <code>'She said, "Nice job!"'</code></li>
-          <li><span class="opt-key">B</span> <code>"She said, "Nice job!""</code></li>
-          <li><span class="opt-key">C</span> <code>'She said, \'Nice job!\''</code></li>
-          <li><span class="opt-key">D</span> <code>She said, "Nice job!"</code> with no quotes at all</li>
+          <li><span class="opt-key">A</span> <code>"She said, "Nice job!""</code></li>
+          <li><span class="opt-key">B</span> <code>'She said, \'Nice job!\''</code></li>
+          <li><span class="opt-key">C</span> <code>She said, "Nice job!"</code> with no quotes at all</li>
+          <li><span class="opt-key">D</span> <code>'She said, "Nice job!"'</code></li>
         </ul>
       </div>
     </section>
@@ -516,7 +515,7 @@ patience finds them all.'''</span>
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:literals-checkpoint-2:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does this print?\n\n```python\nprint(&#39;Row1\\\\nRow2&#39;)\n```\n\n(Note: there are two backslashes in a row before the n.)","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"Row1 and Row2 on two separate lines","isCorrect":false},{"id":"q1b","text":"The literal text Row1\\nRow2 on one line, backslash and n included","isCorrect":true},{"id":"q1c","text":"A syntax error","isCorrect":false},{"id":"q1d","text":"RowRow12nn, jumbled together","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does this print?\n\n```python\nprint(&#39;Row1\\\\nRow2&#39;)\n```\n\n(Note: there are two backslashes in a row before the n.)","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"Row1 and Row2 on two separate lines","isCorrect":false},{"id":"q1b","text":"A syntax error","isCorrect":false},{"id":"q1c","text":"The literal text Row1\\nRow2 on one line, backslash and n included","isCorrect":true},{"id":"q1d","text":"RowRow12nn, jumbled together","isCorrect":false}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint 2</span>
@@ -529,8 +528,8 @@ patience finds them all.'''</span>
         <p style="margin-bottom:var(--gap);">What does this print? (There are two backslashes in a row before the <code>n</code>.)</p>
         <ul class="mcq-opts">
           <li><span class="opt-key">A</span> <code>Row1</code> and <code>Row2</code> on two separate lines</li>
-          <li><span class="opt-key">B</span> The literal text <code>Row1\nRow2</code> on one line, backslash and <code>n</code> included</li>
-          <li><span class="opt-key">C</span> A syntax error</li>
+          <li><span class="opt-key">B</span> A syntax error</li>
+          <li><span class="opt-key">C</span> The literal text <code>Row1\nRow2</code> on one line, backslash and <code>n</code> included</li>
           <li><span class="opt-key">D</span> <code>RowRow12nn</code>, jumbled together</li>
         </ul>
       </div>
@@ -879,16 +878,16 @@ patience finds them all.'''</span>
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:operators-checkpoint-slice:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does &#39;ABCDEFGH&#39;[1:7:2] evaluate to?","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"&#39;BDF&#39;","isCorrect":true},{"id":"q1b","text":"&#39;ABC&#39;","isCorrect":false},{"id":"q1c","text":"&#39;BDFH&#39;","isCorrect":false},{"id":"q1d","text":"&#39;ACE&#39;","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does &#39;ABCDEFGH&#39;[1:7:2] evaluate to?","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"&#39;ABC&#39;","isCorrect":false},{"id":"q1b","text":"&#39;BDFH&#39;","isCorrect":false},{"id":"q1c","text":"&#39;ACE&#39;","isCorrect":false},{"id":"q1d","text":"&#39;BDF&#39;","isCorrect":true}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
         <h2>What does <span style="color:var(--accent);">'ABCDEFGH'[1:7:2]</span> evaluate to?</h2>
         <ul class="mcq-opts" style="margin-top:var(--gap);">
-          <li><span class="opt-key">A</span> <code>'BDF'</code></li>
-          <li><span class="opt-key">B</span> <code>'ABC'</code></li>
-          <li><span class="opt-key">C</span> <code>'BDFH'</code></li>
-          <li><span class="opt-key">D</span> <code>'ACE'</code></li>
+          <li><span class="opt-key">A</span> <code>'ABC'</code></li>
+          <li><span class="opt-key">B</span> <code>'BDFH'</code></li>
+          <li><span class="opt-key">C</span> <code>'ACE'</code></li>
+          <li><span class="opt-key">D</span> <code>'BDF'</code></li>
         </ul>
       </div>
     </section>
@@ -911,7 +910,7 @@ patience finds them all.'''</span>
     </section>
 
     <!-- ============================================================
-         SLIDE 40 · SECTION — 2.4.4 Builtin Functions, +fragment: len() concept
+         SLIDE 40 · SECTION — 2.4.4 Builtin Functions
          ============================================================ -->
     <section>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
@@ -921,25 +920,31 @@ patience finds them all.'''</span>
         <p style="font-size:var(--body);margin-top:var(--gap);max-width:1000px;">
           Behind every character is an integer code. This section covers <code style="color:var(--text);">len()</code>, <code style="color:var(--text);">repr()</code>, and the pair that connects characters to their codes: <code style="color:var(--text);">ord()</code> and <code style="color:var(--text);">chr()</code>.
         </p>
-        <div class="fragment split split-50" style="margin-top:var(--gap-lg);">
-          <div>
-            <span class="slide-tag">len()</span>
-            <h3>Every character <span style="color:var(--result);">counts as one</span></h3>
-            <p style="font-size:var(--body);margin-top:var(--gap);">
-              <code style="color:var(--text);">len(s)</code> returns the number of characters in <code style="color:var(--text);">s</code>. An escape sequence like <code style="color:var(--text);">\t</code> is typed as two symbols but is a single character, so it only counts once.
-            </p>
-          </div>
-          <div class="code-card">
-            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
-            <div class="code-body"><pre><code><span class="tok-kw">print</span>(<span class="tok-nm">len</span>(<span class="tok-str">'cat\tdog'</span>))  <span class="tok-cm"># 7</span></code></pre>
-            </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SLIDE 41 · CONCEPT — len() counts characters, incl. escapes
+         ============================================================ -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">len()</span>
+          <h2>Every character <span style="color:var(--result);">counts as one</span></h2>
+          <p style="font-size:var(--body);margin-top:var(--gap);">
+            <code style="color:var(--text);">len(s)</code> returns the number of characters in <code style="color:var(--text);">s</code>. An escape sequence like <code style="color:var(--text);">\t</code> is typed as two symbols but is a single character, so it only counts once.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code><span class="tok-kw">print</span>(<span class="tok-nm">len</span>(<span class="tok-str">'cat\tdog'</span>))  <span class="tok-cm"># 7</span></code></pre>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ============================================================
-         SLIDE 41 · CHAR-STRIP — 'cat\tdog' is 7 characters
+         SLIDE 42 · CHAR-STRIP — 'cat\tdog' is 7 characters
          ============================================================ -->
     <section>
       <div class="slide-inner">
@@ -959,7 +964,7 @@ patience finds them all.'''</span>
     </section>
 
     <!-- ============================================================
-         SLIDE 42 · FRQ — len of a triple-quoted string
+         SLIDE 43 · FRQ — len of a triple-quoted string
          ============================================================ -->
     <section
       data-activity-id="resonance"
@@ -983,7 +988,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 43 · MOBCODE — verify the triple-quoted len() prediction
+         SLIDE 44 · MOBCODE — verify the triple-quoted len() prediction
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -1008,10 +1013,10 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 44 · CONCEPT — repr() reveals whitespace
+         SLIDE 45 · CONCEPT — repr() reveals whitespace
          ============================================================ -->
     <section>
-      <div class="slide-inner split split-50">
+      <div class="slide-inner split" style="grid-template-columns:1fr auto;">
         <div>
           <span class="slide-tag">repr()</span>
           <h2>Seeing what <span style="color:var(--result);">print()</span> hides</h2>
@@ -1030,13 +1035,13 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 45 · MCQ — predict repr() output
+         SLIDE 46 · MCQ — predict repr() output
          ============================================================ -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:builtins-checkpoint-repr:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does this print?\n\n```python\ns = &#39; go\\n&#39;\nprint(repr(s))\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"&#39; go\\n&#39; (quotes and escape sequences shown as text)","isCorrect":true},{"id":"q1b","text":"go, followed by a real blank line","isCorrect":false},{"id":"q1c","text":"go","isCorrect":false},{"id":"q1d","text":"A syntax error","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does this print?\n\n```python\ns = &#39; go\\n&#39;\nprint(repr(s))\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"go, followed by a real blank line","isCorrect":false},{"id":"q1b","text":"&#39; go\\n&#39; (quotes and escape sequences shown as text)","isCorrect":true},{"id":"q1c","text":"go","isCorrect":false},{"id":"q1d","text":"A syntax error","isCorrect":false}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
@@ -1048,8 +1053,8 @@ hi
           </div>
         </div>
         <ul class="mcq-opts">
-          <li><span class="opt-key">A</span> <code>' go\n'</code>, quotes and escape sequence shown as text</li>
-          <li><span class="opt-key">B</span> <code>go</code>, followed by a real blank line</li>
+          <li><span class="opt-key">A</span> <code>go</code>, followed by a real blank line</li>
+          <li><span class="opt-key">B</span> <code>' go\n'</code>, quotes and escape sequence shown as text</li>
           <li><span class="opt-key">C</span> <code>go</code></li>
           <li><span class="opt-key">D</span> A syntax error</li>
         </ul>
@@ -1057,7 +1062,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 46 · CONCEPT — ord() and chr()
+         SLIDE 47 · CONCEPT — ord() and chr()
          ============================================================ -->
     <section>
       <div class="slide-inner split split-50">
@@ -1079,7 +1084,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 47 · CHAR-STRIP — 'CODE' with its character codes
+         SLIDE 48 · CHAR-STRIP — 'CODE' with its character codes
          ============================================================ -->
     <section>
       <div class="slide-inner">
@@ -1096,7 +1101,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 48 · TRACE — ord/chr shift by one
+         SLIDE 49 · TRACE — ord/chr shift by one
          ============================================================ -->
     <section data-fragment-trace data-trace-start="1">
       <div class="slide-inner split split-50">
@@ -1145,7 +1150,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 49 · CONCEPT — non-ASCII characters via hex codes
+         SLIDE 50 · CONCEPT — non-ASCII characters via hex codes
          ============================================================ -->
     <section>
       <div class="slide-inner split split-50">
@@ -1167,7 +1172,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 50 · MOBCODE — loop over a range of hex character codes
+         SLIDE 51 · MOBCODE — loop over a range of hex character codes
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -1184,7 +1189,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 51 · MOBCODE — guided practice, shiftLetter
+         SLIDE 52 · MOBCODE — guided practice, shiftLetter
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -1201,7 +1206,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 52 · WRAP-UP — 2.4.4 recap
+         SLIDE 53 · WRAP-UP — 2.4.4 recap
          ============================================================ -->
     <section>
       <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
@@ -1218,7 +1223,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 53 · SECTION — 2.4.5 String Methods
+         SLIDE 54 · SECTION — 2.4.5 String Methods
          ============================================================ -->
     <section>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
@@ -1232,7 +1237,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 54 · CONCEPT — method call syntax
+         SLIDE 55 · CONCEPT — method call syntax
          ============================================================ -->
     <section>
       <div class="slide-inner split split-50">
@@ -1253,7 +1258,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 55 · CONCEPT — character type test methods
+         SLIDE 56 · CONCEPT — character type test methods
          ============================================================ -->
     <section>
       <div class="slide-inner split split-50">
@@ -1278,7 +1283,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 56 · FRQ — predict type-test chain
+         SLIDE 57 · FRQ — predict type-test chain
          ============================================================ -->
     <section
       data-activity-id="resonance"
@@ -1296,7 +1301,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 57 · MOBCODE — verify the type-test chain prediction
+         SLIDE 58 · MOBCODE — verify the type-test chain prediction
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -1322,10 +1327,10 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 58 · CONCEPT — string edit methods
+         SLIDE 59 · CONCEPT — string edit methods
          ============================================================ -->
     <section>
-      <div class="slide-inner split split-50">
+      <div class="slide-inner split" style="grid-template-columns:1fr auto;">
         <div>
           <span class="slide-tag">String Edit Methods</span>
           <h2>New strings, <span style="color:var(--result);">not changed</span> ones</h2>
@@ -1346,13 +1351,13 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 59 · MCQ — replace() doesn't mutate
+         SLIDE 60 · MCQ — replace() doesn't mutate
          ============================================================ -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:methods-checkpoint-immutable:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What will the following code print?\n\n```python\ns = &#39;I like tea&#39;\ns.replace(&#39;tea&#39;, &#39;coffee&#39;)\nprint(s)\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"I like tea","isCorrect":true},{"id":"q1b","text":"I like coffee","isCorrect":false},{"id":"q1c","text":"None","isCorrect":false},{"id":"q1d","text":"It crashes","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What will the following code print?\n\n```python\ns = &#39;I like tea&#39;\ns.replace(&#39;tea&#39;, &#39;coffee&#39;)\nprint(s)\n```","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"I like coffee","isCorrect":false},{"id":"q1b","text":"None","isCorrect":false},{"id":"q1c","text":"I like tea","isCorrect":true},{"id":"q1d","text":"It crashes","isCorrect":false}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
@@ -1365,16 +1370,16 @@ hi
           </div>
         </div>
         <ul class="mcq-opts">
-          <li><span class="opt-key">A</span> <code>I like tea</code></li>
-          <li><span class="opt-key">B</span> <code>I like coffee</code></li>
-          <li><span class="opt-key">C</span> <code>None</code></li>
+          <li><span class="opt-key">A</span> <code>I like coffee</code></li>
+          <li><span class="opt-key">B</span> <code>None</code></li>
+          <li><span class="opt-key">C</span> <code>I like tea</code></li>
           <li><span class="opt-key">D</span> It crashes</li>
         </ul>
       </div>
     </section>
 
     <!-- ============================================================
-         SLIDE 60 · MOBCODE — verify replace() doesn't mutate
+         SLIDE 61 · MOBCODE — verify replace() doesn't mutate
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -1398,7 +1403,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 61 · CONCEPT — search methods
+         SLIDE 62 · CONCEPT — search methods
          ============================================================ -->
     <section>
       <div class="slide-inner split split-50">
@@ -1424,29 +1429,29 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 62 · MCQ — find vs index differ
+         SLIDE 63 · MCQ — find vs index differ
          ============================================================ -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:methods-checkpoint-find-index:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"For which value of s do s.find(&#39;q&#39;) and s.index(&#39;q&#39;) behave differently?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"s = &#39;quick&#39;","isCorrect":false},{"id":"q1b","text":"s = &#39;queue&#39;","isCorrect":false},{"id":"q1c","text":"s = &#39;slow&#39;","isCorrect":true},{"id":"q1d","text":"find and index always behave the same","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"For which value of s do s.find(&#39;q&#39;) and s.index(&#39;q&#39;) behave differently?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"s = &#39;slow&#39;","isCorrect":true},{"id":"q1b","text":"s = &#39;quick&#39;","isCorrect":false},{"id":"q1c","text":"s = &#39;queue&#39;","isCorrect":false},{"id":"q1d","text":"find and index always behave the same","isCorrect":false}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
         <h2>Where do <span style="color:var(--accent);">find</span> and <span style="color:var(--warn);">index</span> disagree?</h2>
         <p style="margin:var(--gap) 0;max-width:900px;">For which value of <code>s</code> do <code>s.find('q')</code> and <code>s.index('q')</code> behave differently?</p>
         <ul class="mcq-opts">
-          <li><span class="opt-key">A</span> <code>s = 'quick'</code></li>
-          <li><span class="opt-key">B</span> <code>s = 'queue'</code></li>
-          <li><span class="opt-key">C</span> <code>s = 'slow'</code></li>
+          <li><span class="opt-key">A</span> <code>s = 'slow'</code></li>
+          <li><span class="opt-key">B</span> <code>s = 'quick'</code></li>
+          <li><span class="opt-key">C</span> <code>s = 'queue'</code></li>
           <li><span class="opt-key">D</span> <code>find</code> and <code>index</code> always behave the same</li>
         </ul>
       </div>
     </section>
 
     <!-- ============================================================
-         SLIDE 63 · MOBCODE — explore string methods yourself
+         SLIDE 64 · MOBCODE — explore string methods yourself
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -1463,7 +1468,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 64 · WRAP-UP — 2.4.5 recap
+         SLIDE 65 · WRAP-UP — 2.4.5 recap
          ============================================================ -->
     <section>
       <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
@@ -1483,7 +1488,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 65 · SECTION — 2.4.6 Looping over Strings
+         SLIDE 66 · SECTION — 2.4.6 Looping over Strings
          ============================================================ -->
     <section>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.09) 0%,transparent 70%);top:-100px;right:-60px;"></div>
@@ -1497,7 +1502,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 66 · CONCEPT — for loop without indexes
+         SLIDE 67 · CONCEPT — for loop without indexes
          ============================================================ -->
     <section>
       <div class="slide-inner split split-50">
@@ -1519,7 +1524,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 67 · TRACE — count vowels in 'CODER'
+         SLIDE 68 · TRACE — count vowels in 'CODER'
          ============================================================ -->
     <section data-fragment-trace data-trace-start="1">
       <div class="slide-inner split split-50">
@@ -1577,7 +1582,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 68 · CONCEPT — for loop with indexes
+         SLIDE 69 · CONCEPT — for loop with indexes
          ============================================================ -->
     <section>
       <div class="slide-inner split split-50">
@@ -1601,7 +1606,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 69 · TRACE — for i in range(len(s)) over 'CODE'
+         SLIDE 70 · TRACE — for i in range(len(s)) over 'CODE'
          ============================================================ -->
     <section data-fragment-trace data-trace-start="1">
       <div class="slide-inner split split-50">
@@ -1634,19 +1639,19 @@ hi
           <div class="code-card console-card">
             <div class="code-hdr" style="justify-content:center;">console</div>
             <div class="code-body">
-              <span class="fragment fade-up console-hdr-row" data-fragment-index="0" data-trace-current="2">i&nbsp;&nbsp;s[i]</span>
+              <span class="fragment" data-fragment-index="0" data-trace-current="2" style="display:none;"></span>
               <span class="fragment" data-fragment-index="1" data-trace-current="3" data-var-box="i" style="display:none;"><span class="tok-num">0</span></span>
               <span class="fragment" data-fragment-index="1" data-trace-current="3" data-var-box="char" style="display:none;">C</span>
-              <span class="fragment fade-up" data-fragment-index="2" data-trace-current="2">0&nbsp;&nbsp;C</span>
+              <span class="fragment fade-up" data-fragment-index="2" data-trace-current="2">0 C</span>
               <span class="fragment" data-fragment-index="3" data-trace-current="3" data-var-box="i" style="display:none;"><span class="tok-num">1</span></span>
               <span class="fragment" data-fragment-index="3" data-trace-current="3" data-var-box="char" style="display:none;">O</span>
-              <span class="fragment fade-up" data-fragment-index="4" data-trace-current="2">1&nbsp;&nbsp;O</span>
+              <span class="fragment fade-up" data-fragment-index="4" data-trace-current="2">1 O</span>
               <span class="fragment" data-fragment-index="5" data-trace-current="3" data-var-box="i" style="display:none;"><span class="tok-num">2</span></span>
               <span class="fragment" data-fragment-index="5" data-trace-current="3" data-var-box="char" style="display:none;">D</span>
-              <span class="fragment fade-up" data-fragment-index="6" data-trace-current="2">2&nbsp;&nbsp;D</span>
+              <span class="fragment fade-up" data-fragment-index="6" data-trace-current="2">2 D</span>
               <span class="fragment" data-fragment-index="7" data-trace-current="3" data-var-box="i" style="display:none;"><span class="tok-num">3</span></span>
               <span class="fragment" data-fragment-index="7" data-trace-current="3" data-var-box="char" style="display:none;">E</span>
-              <span class="fragment fade-up" data-fragment-index="8" data-trace-current="4">3&nbsp;&nbsp;E</span>
+              <span class="fragment fade-up" data-fragment-index="8" data-trace-current="4">3 E</span>
             </div>
           </div>
         </div>
@@ -1654,13 +1659,13 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 70 · MCQ — which loop form does this task need
+         SLIDE 71 · MCQ — which loop form does this task need
          ============================================================ -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:looping-checkpoint-form:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"You need to print each character of a string together with its position, counting positions starting at 1 instead of 0. Which loop form fits?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"for c in s:, since you&#39;re printing characters","isCorrect":false},{"id":"q1b","text":"for i in range(len(s)):, then print(i + 1, s[i])","isCorrect":true},{"id":"q1c","text":"Either form works identically here","isCorrect":false},{"id":"q1d","text":"Neither form can produce 1-based positions","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"You need to print each character of a string together with its position, counting positions starting at 1 instead of 0. Which loop form fits?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"for c in s:, since you&#39;re printing characters","isCorrect":false},{"id":"q1b","text":"Either form works identically here","isCorrect":false},{"id":"q1c","text":"Neither form can produce 1-based positions","isCorrect":false},{"id":"q1d","text":"for i in range(len(s)):, then print(i + 1, s[i])","isCorrect":true}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
@@ -1668,15 +1673,15 @@ hi
         <p style="margin:var(--gap) 0;max-width:900px;">You need to print each character of a string together with its position, counting positions starting at <code>1</code> instead of <code>0</code>. Which loop form fits?</p>
         <ul class="mcq-opts">
           <li><span class="opt-key">A</span> <code>for c in s:</code>, since you're printing characters</li>
-          <li><span class="opt-key">B</span> <code>for i in range(len(s)):</code>, then <code>print(i + 1, s[i])</code></li>
-          <li><span class="opt-key">C</span> Either form works identically here</li>
-          <li><span class="opt-key">D</span> Neither form can produce 1-based positions</li>
+          <li><span class="opt-key">B</span> Either form works identically here</li>
+          <li><span class="opt-key">C</span> Neither form can produce 1-based positions</li>
+          <li><span class="opt-key">D</span> <code>for i in range(len(s)):</code>, then <code>print(i + 1, s[i])</code></li>
         </ul>
       </div>
     </section>
 
     <!-- ============================================================
-         SLIDE 71 · CONCEPT — split() for delimited data
+         SLIDE 72 · CONCEPT — split() for delimited data
          ============================================================ -->
     <section>
       <div class="slide-inner split split-50">
@@ -1698,7 +1703,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 72 · TRACE — split() + int() running total
+         SLIDE 73 · TRACE — split() + int() running total
          ============================================================ -->
     <section data-fragment-trace data-trace-start="1">
       <div class="slide-inner split split-50">
@@ -1751,7 +1756,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 73 · MOBCODE — total only the numbers in mixed data
+         SLIDE 74 · MOBCODE — total only the numbers in mixed data
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -1768,7 +1773,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 74 · CONCEPT — any separator works
+         SLIDE 75 · CONCEPT — any separator works
          ============================================================ -->
     <section>
       <div class="slide-inner split split-50">
@@ -1790,7 +1795,7 @@ hi
     </section>
 
     <!-- ============================================================
-         SLIDE 75 · CONCEPT — splitlines() + combined multiline CSV
+         SLIDE 76 · CONCEPT — splitlines() + combined multiline CSV
          ============================================================ -->
     <section>
       <div class="slide-inner split split-50">
@@ -1816,7 +1821,7 @@ Cy,95,89
     </section>
 
     <!-- ============================================================
-         SLIDE 76 · MOBCODE — predict-first, roster averages
+         SLIDE 77 · MOBCODE — predict-first, roster averages
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -1833,18 +1838,18 @@ Cy,95,89
     </section>
 
     <!-- ============================================================
-         SLIDE 77 · MCQ — splitlines() + split() output
+         SLIDE 78 · MCQ — splitlines() + split() output
          ============================================================ -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:looping-checkpoint-splitlines:0"
-      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "What does this print?\n\n```python\ndata = &#39;&#39;&#39;\\\nx,y\nz,w\n&#39;&#39;&#39;\nfor row in data.splitlines():\n    for item in row.split(&#39;,&#39;):\n        print(item)\n```", "order": 0, "responseTimeLimitMs": 40000, "options": [{"id": "q1a", "text": "x, y, z, w: four lines, nothing else", "isCorrect": true}, {"id": "q1b", "text": "x, y, z, w, then one extra blank line", "isCorrect": false}, {"id": "q1c", "text": "x,y then z,w: two lines, commas kept", "isCorrect": false}, {"id": "q1d", "text": "A blank line, then x, y, z, w", "isCorrect": false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does this print?\n\n```python\ndata = &#39;&#39;&#39;\\\nx,y\nz,w\n&#39;&#39;&#39;\nfor row in data.splitlines():\n    for item in row.split(&#39;,&#39;):\n        print(item)\n```","order":0,"responseTimeLimitMs":40000,"options":[{"id":"q1a","text":"x, y, z, w, then one extra blank line","isCorrect":false},{"id":"q1b","text":"x,y then z,w: two lines, commas kept","isCorrect":false},{"id":"q1c","text":"x, y, z, w: four lines, nothing else","isCorrect":true},{"id":"q1d","text":"A blank line, then x, y, z, w","isCorrect":false}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
         <h2>What does <span style="color:var(--accent);">this</span> print?</h2>
-        <div class="code-card" style="max-width:420px;margin:var(--gap) 0;">
+        <div class="code-card" style="width:fit-content;margin:var(--gap) 0;">
           <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
           <div class="code-body"><pre><code><span class="tok-nm">data</span> <span class="tok-op">=</span> <span class="tok-str">'''\
 x,y
@@ -1856,16 +1861,16 @@ z,w
           </div>
         </div>
         <ul class="mcq-opts">
-          <li><span class="opt-key">A</span> <code>x</code>, <code>y</code>, <code>z</code>, <code>w</code>: four lines, nothing else</li>
-          <li><span class="opt-key">B</span> <code>x</code>, <code>y</code>, <code>z</code>, <code>w</code>, then one extra blank line</li>
-          <li><span class="opt-key">C</span> <code>x,y</code> then <code>z,w</code>: two lines, commas kept</li>
+          <li><span class="opt-key">A</span> <code>x</code>, <code>y</code>, <code>z</code>, <code>w</code>, then one extra blank line</li>
+          <li><span class="opt-key">B</span> <code>x,y</code> then <code>z,w</code>: two lines, commas kept</li>
+          <li><span class="opt-key">C</span> <code>x</code>, <code>y</code>, <code>z</code>, <code>w</code>: four lines, nothing else</li>
           <li><span class="opt-key">D</span> A blank line, then <code>x</code>, <code>y</code>, <code>z</code>, <code>w</code></li>
         </ul>
       </div>
     </section>
 
     <!-- ============================================================
-         SLIDE 78 · WRAP-UP — 2.4.6 recap
+         SLIDE 79 · WRAP-UP — 2.4.6 recap
          ============================================================ -->
     <section>
       <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
@@ -1881,7 +1886,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 79 · SECTION — 2.4.8 f-Strings
+         SLIDE 80 · SECTION — 2.4.8 f-Strings
          ============================================================ -->
     <section>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
@@ -1895,7 +1900,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 80 · CONCEPT — f-string basics
+         SLIDE 81 · CONCEPT — f-string basics
          ============================================================ -->
     <section>
       <div class="slide-inner split split-50">
@@ -1919,7 +1924,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 81 · TRACE — build the f-string result
+         SLIDE 82 · TRACE — build the f-string result
          ============================================================ -->
     <section data-fragment-trace data-trace-start="1">
       <div class="slide-inner split split-50">
@@ -1961,7 +1966,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 82 · CONCEPT — expressions inside braces
+         SLIDE 83 · CONCEPT — expressions inside braces
          ============================================================ -->
     <section>
       <div class="slide-inner split split-50">
@@ -1984,7 +1989,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 83 · CONCEPT — quoting rules with apostrophes
+         SLIDE 84 · CONCEPT — quoting rules with apostrophes
          ============================================================ -->
     <section>
       <div class="slide-inner split split-50">
@@ -2006,21 +2011,21 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 84 · MCQ — pick the correctly quoted f-string
+         SLIDE 85 · MCQ — pick the correctly quoted f-string
          ============================================================ -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:fstrings-checkpoint-quotes:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"name = &#39;Zoe&#39;\nfood = &#39;ramen&#39;\n\nWhich line prints: Zoe&#39;s favorite food is ramen.","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"print(f\"{name}&#39;s favorite food is {food}.\")","isCorrect":true},{"id":"q1b","text":"print(f&#39;{name}&#39;s favorite food is {food}.&#39;)","isCorrect":false},{"id":"q1c","text":"print(f\"name&#39;s favorite food is food.\")","isCorrect":false},{"id":"q1d","text":"print(f&#39;name&#39;s favorite food is food.&#39;)","isCorrect":false}]}]}'>
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"name = &#39;Zoe&#39;\nfood = &#39;ramen&#39;\n\nWhich line prints: Zoe&#39;s favorite food is ramen.","order":0,"responseTimeLimitMs":35000,"options":[{"id":"q1a","text":"print(f&#39;{name}&#39;s favorite food is {food}.&#39;)","isCorrect":false},{"id":"q1b","text":"print(f\"{name}&#39;s favorite food is {food}.\")","isCorrect":true},{"id":"q1c","text":"print(f\"name&#39;s favorite food is food.\")","isCorrect":false},{"id":"q1d","text":"print(f&#39;name&#39;s favorite food is food.&#39;)","isCorrect":false}]}]}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);top:-60px;right:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint</span>
         <h2>Which line prints it <span style="color:var(--accent);">correctly</span>?</h2>
         <p style="margin:var(--gap) 0;max-width:900px;"><code>name = 'Zoe'</code>, <code>food = 'ramen'</code>. Which line prints: <em>Zoe's favorite food is ramen.</em></p>
         <ul class="mcq-opts">
-          <li><span class="opt-key">A</span> <code>print(f"{name}'s favorite food is {food}.")</code></li>
-          <li><span class="opt-key">B</span> <code>print(f'{name}'s favorite food is {food}.')</code></li>
+          <li><span class="opt-key">A</span> <code>print(f'{name}'s favorite food is {food}.')</code></li>
+          <li><span class="opt-key">B</span> <code>print(f"{name}'s favorite food is {food}.")</code></li>
           <li><span class="opt-key">C</span> <code>print(f"name's favorite food is food.")</code></li>
           <li><span class="opt-key">D</span> <code>print(f'name's favorite food is food.')</code></li>
         </ul>
@@ -2028,7 +2033,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 85 · MOBCODE — receipt formatter, try it yourself
+         SLIDE 86 · MOBCODE — receipt formatter, try it yourself
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -2045,7 +2050,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 86 · WRAP-UP — 2.4.8 recap
+         SLIDE 87 · WRAP-UP — 2.4.8 recap
          ============================================================ -->
     <section>
       <div class="glow" style="width:460px;height:460px;background:radial-gradient(circle,rgba(124,217,146,0.1) 0%,transparent 70%);bottom:-80px;right:-40px;"></div>
@@ -2061,7 +2066,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 87 · WRAP-UP — full unit recap
+         SLIDE 88 · WRAP-UP — full unit recap
          ============================================================ -->
     <section>
       <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(242,177,52,0.12) 0%,transparent 70%);top:-100px;right:-60px;"></div>
@@ -2080,7 +2085,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 88 · PROMPT — guided exercise, encodeCaesarCipher / decodeCaesarCipher (prescribed)
+         SLIDE 89 · PROMPT — guided exercise, encodeCaesarCipher / decodeCaesarCipher (prescribed)
          ============================================================ -->
     <section>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
@@ -2097,7 +2102,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 89 · MOBCODE — guided exercise, encodeCaesarCipher / decodeCaesarCipher (prescribed)
+         SLIDE 90 · MOBCODE — guided exercise, encodeCaesarCipher / decodeCaesarCipher (prescribed)
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -2117,7 +2122,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 90 · PROMPT — guided exercise, topScorer (prescribed)
+         SLIDE 91 · PROMPT — guided exercise, topScorer (prescribed)
          ============================================================ -->
     <section>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
@@ -2134,7 +2139,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 91 · MOBCODE — guided exercise, topScorer (prescribed)
+         SLIDE 92 · MOBCODE — guided exercise, topScorer (prescribed)
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -2151,7 +2156,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 92 · PROMPT — guided exercise, isPalindrome
+         SLIDE 93 · PROMPT — guided exercise, isPalindrome
          ============================================================ -->
     <section>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
@@ -2166,7 +2171,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 93 · MOBCODE — guided exercise, isPalindrome
+         SLIDE 94 · MOBCODE — guided exercise, isPalindrome
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -2180,7 +2185,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 94 · PROMPT — guided exercise, countVowels
+         SLIDE 95 · PROMPT — guided exercise, countVowels
          ============================================================ -->
     <section>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
@@ -2194,7 +2199,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 95 · MOBCODE — guided exercise, countVowels
+         SLIDE 96 · MOBCODE — guided exercise, countVowels
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -2208,7 +2213,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 96 · PROMPT — guided exercise, capitalizeWords
+         SLIDE 97 · PROMPT — guided exercise, capitalizeWords
          ============================================================ -->
     <section>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
@@ -2222,7 +2227,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 97 · MOBCODE — guided exercise, capitalizeWords
+         SLIDE 98 · MOBCODE — guided exercise, capitalizeWords
          ============================================================ -->
     <section
       data-activity-id="mobcode"
@@ -2239,7 +2244,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 98 · PROMPT — guided exercise, isPangram
+         SLIDE 99 · PROMPT — guided exercise, isPangram
          ============================================================ -->
     <section>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
@@ -2254,7 +2259,7 @@ z,w
     </section>
 
     <!-- ============================================================
-         SLIDE 99 · MOBCODE — guided exercise, isPangram
+         SLIDE 100 · MOBCODE — guided exercise, isPangram
          ============================================================ -->
     <section
       data-activity-id="mobcode"
