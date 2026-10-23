@@ -67,8 +67,15 @@ AUDIT_JS = r"""
   const textEls = [...slide.querySelectorAll('*')].filter(e =>
     [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && visible(e));
 
-  // OVERFLOW
-  for (const e of [...textEls, ...slide.querySelectorAll('img, svg, table, button')]) {
+  // OVERFLOW. Bordered boxes (cards, consoles) count too: their text can stay
+  // on the canvas while the box's bottom edge runs off, which reads as cut off.
+  const bordered = [...slide.querySelectorAll('*')].filter(e => {
+    const cs = getComputedStyle(e);
+    return ['Top', 'Right', 'Bottom', 'Left'].some(s =>
+      parseFloat(cs['border' + s + 'Width']) > 0 && cs['border' + s + 'Style'] !== 'none' &&
+      !/rgba\(.*,\s*0\)$|transparent/.test(cs['border' + s + 'Color']));
+  });
+  for (const e of [...textEls, ...slide.querySelectorAll('img, svg, table, button'), ...bordered]) {
     if (!visible(e) || e.closest('svg') && e.tagName.toLowerCase() !== 'svg') continue;
     const c = canvas(e.getBoundingClientRect());
     if (c.b > H + 0.5 || c.r > W + 0.5 || c.l < -0.5 || c.t < -0.5) {
