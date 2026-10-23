@@ -18,7 +18,7 @@ function escapeHtml(value) {
     .replaceAll('"', '&quot;');
 }
 
-function decodeHtmlEntities(value) {
+export function decodeHtmlEntities(value) {
   return String(value).replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z][a-zA-Z0-9]+);/g, (match, entity) => {
     const named = {
       amp: '&',

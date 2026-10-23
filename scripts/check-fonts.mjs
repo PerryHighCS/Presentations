@@ -27,6 +27,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { collectDeckFiles } from './permalink-utils.mjs';
+import { decodeHtmlEntities } from './site-indexes.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
@@ -54,6 +55,7 @@ const CUSTOM_PROP_RE = /(--[\w-]+)\s*:\s*([^;}]+)/g;
 const FONT_FAMILY_RE = /(?<![\w-])font-family\s*:\s*([^;}]+)/gi;
 const FONT_SHORTHAND_RE = /(?<![\w-])font\s*:\s*([^;}]+)/gi;
 const COMMENT_RE = /\/\*[\s\S]*?\*\//g;
+const HTML_COMMENT_RE = /<!--[\s\S]*?-->/g;
 
 function usageAndExit() {
   console.error('Usage: node scripts/check-fonts.mjs [<deck.html | Decks/subdir> ...]');
@@ -109,7 +111,8 @@ async function readStylesheet(absolutePath, sources, seen) {
 }
 
 async function collectSources(deck) {
-  const html = await fs.readFile(deck.absolutePath, 'utf8');
+  // A commented-out <link> loads nothing and a commented-out rule asks for nothing.
+  const html = (await fs.readFile(deck.absolutePath, 'utf8')).replace(HTML_COMMENT_RE, '');
   const deckFile = `Decks/${deck.publicPath}`;
   const sources = [];
   const remoteUrls = [];
@@ -119,7 +122,8 @@ async function collectSources(deck) {
     sources.push({ file: deckFile, css: css.replace(COMMENT_RE, '') });
   }
   for (const [tag] of html.matchAll(LINK_RE)) {
-    const href = tag.match(HREF_RE)?.[1];
+    const rawHref = tag.match(HREF_RE)?.[1];
+    const href = rawHref && decodeHtmlEntities(rawHref); // ?family=A&amp;family=B
     if (!href || !/rel\s*=\s*["']?stylesheet/i.test(tag)) {
       continue;
     }
@@ -137,18 +141,50 @@ async function collectSources(deck) {
   return { sources, remoteUrls, svgFamilies, deckFile };
 }
 
-// Expands var(--name) (with an optional fallback) into every value the deck
-// defines for it, so a family set in a theme token is checked like a literal.
-function resolveValues(value, customProps, depth = 0) {
-  const match = value.match(/^\s*var\(\s*(--[\w-]+)\s*(?:,\s*([^)]*))?\)\s*$/);
-  if (!match || depth > 10) {
-    return [value];
+// Splits on the first top-level comma, ignoring commas inside quotes or
+// parentheses, so var(--a, b) and "Font, Inc" stay whole.
+function splitFirst(value) {
+  let depth = 0;
+  let quote = null;
+  for (let i = 0; i < value.length; i++) {
+    const ch = value[i];
+    if (quote) {
+      if (ch === quote) quote = null;
+    } else if (ch === '"' || ch === "'") {
+      quote = ch;
+    } else if (ch === '(') {
+      depth++;
+    } else if (ch === ')') {
+      depth--;
+    } else if (ch === ',' && depth === 0) {
+      return [value.slice(0, i), value.slice(i + 1)];
+    }
   }
+  return [value, null];
+}
+
+// Returns every family that could end up first in a font-family value,
+// expanding var(--name) (and its fallback, which may hold more var()s) into
+// each value the deck defines for it, so a family set in a theme token is
+// checked like a literal.
+function firstFamilies(value, customProps, depth = 0) {
+  const [first, rest] = splitFirst(value.replace(/\s*!important\s*$/i, '').trim());
+  const match = first.trim().match(/^var\(\s*(--[\w-]+)\s*(?:,([\s\S]*))?\)$/);
+  if (!match) {
+    return [first.trim()];
+  }
+  if (depth > 10) {
+    return [];
+  }
+  // var() substitutes text, so whatever follows it in the list stays a fallback.
+  const tail = rest === null ? '' : `, ${rest}`;
   const defined = customProps.get(match[1]);
   if (defined?.length) {
-    return defined.flatMap((v) => resolveValues(v, customProps, depth + 1));
+    return defined.flatMap((v) => firstFamilies(v + tail, customProps, depth + 1));
   }
-  return match[2] ? resolveValues(match[2], customProps, depth + 1) : [];
+  // An undefined variable with no fallback makes the declaration invalid,
+  // so the element inherits its font instead; nothing to check here.
+  return match[2] !== undefined ? firstFamilies(match[2] + tail, customProps, depth + 1) : [];
 }
 
 // The family list of a font shorthand follows the size (and optional
@@ -181,7 +217,7 @@ async function checkDeck(deck) {
       usages.push({ value: value.trim(), file, declaration: declaration.trim() });
     }
     for (const [declaration, value] of css.matchAll(FONT_SHORTHAND_RE)) {
-      const families = shorthandFamilies(value.trim());
+      const families = shorthandFamilies(value.replace(/\s*!important\s*$/i, '').trim());
       if (families) {
         usages.push({ value: families, file, declaration: declaration.trim() });
       }
@@ -193,10 +229,10 @@ async function checkDeck(deck) {
 
   const missing = new Map(); // normalized family -> { family, usage } for the first declaration asking for it
   for (const usage of usages) {
-    for (const value of resolveValues(usage.value, customProps)) {
-      const family = value.split(',')[0].trim().replace(/^["']|["']$/g, '');
+    for (const first of firstFamilies(usage.value, customProps)) {
+      const family = first.replace(/^["']|["']$/g, '');
       const key = normalize(family);
-      if (key && !key.startsWith('var(') && !ALWAYS_AVAILABLE.has(key) && !loaded.has(key) && !missing.has(key)) {
+      if (key && !ALWAYS_AVAILABLE.has(key) && !loaded.has(key) && !missing.has(key)) {
         missing.set(key, { family, usage });
       }
     }
