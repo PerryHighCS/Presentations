@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="17nuhie">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.8 Conditionals Make</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: 4.8 Conditionals Make
+   ============================================================ */
+
+:root {
+  /* Body text brighter than the shared theme's 0.6 alpha so prose
+     clears 7:1 on both the page and card backgrounds. */
+  --text-body: #b8cac7;
+}
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+.frq-box p { color: var(--text-body); }
+/* JetBrains Mono draws <= == != as ligatures; students need to see
+   the exact characters they will write, so turn ligatures off. */
+.reveal, .reveal * { font-variant-ligatures: none; }
+
+/* ─── Semantic inline emphasis (matches 4.4 to 4.6) ─────────────────
+   i.n  a variable name or element id, in code font, teal
+   i.f  a command or function name, in code font, white
+   i.v  a number or price, gold
+   i.s  a string value (a day, a discount code), in code font, green
+   i.a  an action students take (open, plan, submit), amber
+   i.c  a concept word (input, output, conditional), teal
+   ─────────────────────────────────────────────────────────────── */
+.reveal i.n, .reveal i.f, .reveal i.s {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: max(0.92em, var(--code));  /* never below the code floor */
+  font-weight: 500;
+}
+.reveal i.n { color: var(--teal); }
+.reveal i.f { color: var(--text); font-weight: 700; }
+.reveal i.s { color: var(--green); }
+.reveal i.v { font-style: normal; color: var(--gold); font-weight: 700; }
+.reveal i.a { font-style: normal; color: var(--amber); font-weight: 600; }
+.reveal i.c { font-style: normal; color: var(--teal); font-weight: 600; }
+
+/* ─── Layout helpers ─────────────────────────────────────────────── */
+.top-inner { justify-content: flex-start !important; padding-top: 52px !important; }
+.media-split {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--gap-lg);
+  align-items: start;
+  margin-top: var(--gap-sm);
+}
+.shot {
+  display: block;
+  border: 1px solid rgba(0,201,177,0.4);
+  border-radius: 6px;
+  background: #fff;
+  max-width: 100%;
+  margin: 0;
+}
+.step-list p { font-size: var(--body); line-height: 1.5; }
+.step-list p + p { margin-top: var(--gap); }
+.step-list p:has(> .step-label) {
+  padding-left: 150px;
+  text-indent: -150px;
+}
+.step-list p > * { text-indent: 0; }
+.step-label {
+  display: inline-block;
+  min-width: 150px;
+  text-indent: 0;
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.prose p { font-size: var(--body); line-height: 1.5; }
+.prose p + p { margin-top: var(--gap); }
+.reveal .prose .bullets li { font-size: var(--body); }
+.reveal .prose h3 { font-size: var(--h3); color: var(--teal); margin: var(--gap) 0 0; }
+
+.prompt-big {
+  font-size: 46px !important;
+  line-height: 1.35 !important;
+  color: var(--text) !important;
+  max-width: 1200px;
+  text-align: center;
+}
+
+/* ─── Pricing rules (slide 5) ───────────────────────────────────── */
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin-top: var(--gap);
+}
+.rule {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  align-items: center;
+  gap: 28px;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 14px 26px;
+}
+.rule-price {
+  font-family: var(--font-mono);
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--gold);
+  text-align: center;
+}
+.reveal .rule p { margin: 0; color: var(--text); }
+
+/* ─── Test case table (slide 6) ─────────────────────────────────── */
+.tc-table {
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 26px;
+}
+.reveal .tc-table th,
+.reveal .tc-table td {
+  border: 1px solid var(--teal-border);
+  padding: 6px 26px;
+  text-align: center;
+  line-height: 1.3;
+}
+.reveal .tc-table th {
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: var(--bg-card);
+  font-weight: 700;
+}
+.reveal .tc-table td { color: var(--text); }
+.tc-table td.code { font-family: var(--font-mono); font-size: var(--code); color: var(--green); }
+.tc-table td.none { color: var(--text-muted); font-style: italic; }
+.tc-table td.price { font-family: var(--font-mono); font-weight: 700; color: var(--gold); }
+
+/* ─── Element ID map: numbered badges on the app screenshot ─────── */
+.id-map {
+  position: relative;
+  width: 360px;
+  flex-shrink: 0;
+}
+.id-map .shot { width: 100%; }
+.id-dot,
+.id-legend .id-num {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--amber);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.id-dot {
+  position: absolute;
+  margin: -20px 0 0 -20px;
+  box-shadow: 0 0 0 3px rgba(9,20,18,0.75);
+}
+.id-legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+.id-legend .id-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.id-legend .id-num { flex-shrink: 0; margin-top: 2px; }
+.reveal .id-legend code {
+  border: 0;
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  color: var(--teal);
+  background: none;
+  padding: 0;
+}
+.reveal .id-legend p { font-size: var(--body); line-height: 1.35; margin: 4px 0 0; }
+
+/* ─── Submission checklist ──────────────────────────────────────── */
+.checklist {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-sm) var(--gap);
+  margin-top: var(--gap);
+}
+.check-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 12px 18px;
+}
+.check-box {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  margin-top: 4px;
+  border: 2px solid var(--teal);
+  border-radius: 4px;
+}
+.check-item h3 {
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin: 0 0 4px;
+}
+.reveal .check-item p { font-size: var(--body); line-height: 1.4; margin: 0; }
+
+/* ─── Sentence starters with fill-in blanks ─────────────────────── */
+.starters {
+  list-style: none;
+  margin: var(--gap) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.reveal .starters li {
+  font-size: var(--body);
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 10px 22px;
+}
+.blank {
+  display: inline-block;
+  min-width: 150px;
+  border-bottom: 2px solid var(--amber);
+  margin: 0 4px;
+  transform: translateY(4px);
+}
+.submit-chip {
+  display: inline-block;
+  padding: 2px 14px;
+  border-radius: 6px;
+  background: #7a45ad;
+  color: #fff;
+  font-weight: 700;
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 4 &middot; Lesson 4.8</span>
+        <h1 class="title-h1">Conditionals Make</h1>
+        <p style="font-size:var(--body);max-width:1100px;line-height:1.6;margin-top:var(--gap);">Today you will <i class="a">build an app</i> on your own, using <i class="c">variables</i> and <i class="c">conditionals</i> to decide what a museum ticket costs.</p>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(255,159,67,0.08),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 70%);"></div>
+      <aside class="notes">Computer Science Principles, Unit 4 Lesson 8. This is the Make lesson that closes out the conditionals sequence: Explore (4.5), Investigate (4.6), Practice (4.7), and now Make. Students work at their computers with this deck as their guide.</aside>
+    </section>
+
+    <!-- SLIDE 2 · THE MUSEUM TICKET GENERATOR -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Conditionals Make</span>
+        <h2 style="margin-bottom:var(--gap);">The Museum Ticket Generator</h2>
+        <div class="media-split">
+          <img class="shot" src="media/museum-ticket-app.png" alt="The Museum Ticket Generator app: dropdowns for Day (Monday) and Age (5), a Discount Code text box, a Create My Ticket! button, and a ticket reading Admit One, Day: Monday, Age: 5, Price: $5" style="height:640px;background:transparent;border:0;">
+          <div class="prose" style="margin-top:var(--gap);">
+            <p>Today you will write the code for the <i class="c">Museum Ticket Generator</i>. The screen is already designed for you.</p>
+            <p>A visitor picks the <i class="a">day</i> they are visiting, picks their <i class="a">age</i>, and can type a <i class="a">discount code</i>. When they click the button, the app works out the <i class="c">price</i> and prints a ticket.</p>
+            <p>Your code will use <i class="c">conditionals</i> to decide which price each visitor pays.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">This lesson has one main level plus the submission. Students can try the app and plan with a partner, but each student builds and submits their own app.</aside>
+    </section>
+
+    <!-- SLIDE 3 · TRY THE APP -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 1</span>
+        <h2 style="margin-bottom:var(--gap);">Try the App</h2>
+        <div class="media-split">
+          <img class="shot" src="media/museum-ticket-app.png" alt="The Museum Ticket Generator app" style="height:600px;background:transparent;border:0;">
+          <div class="prose">
+            <p><a href="https://learn.mycode.run/link/xnyjs" target="_blank" rel="noopener"><i class="a">Open Lesson 8, Level 1</i> on Code.org</a> and <i class="a">make tickets</i> for different combinations of inputs.</p>
+            <ul class="bullets" style="margin-top:var(--gap-sm);">
+              <li>Make a ticket for a weekend.</li>
+              <li>Make a ticket for a weekday (Monday to Friday) for someone 18 or younger.</li>
+              <li>Try the discount code <i class="s">FREEFRIDAY</i> on a Friday.</li>
+            </ul>
+            <h3>Discuss With a Partner</h3>
+            <ul class="bullets" style="margin-top:var(--gap-sm);">
+              <li>What <i class="c">variables</i> would you need to program this app?</li>
+              <li>Where does this app use <i class="c">conditionals</i>?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Variables: the day, the age, the discount code, and the price. Conditionals: deciding the price from the day, the age, and the code. Some students will also notice the app has to check whether the code matches exactly.</aside>
+    </section>
+
+    <!-- SLIDE 4 · WHERE ARE THE CONDITIONALS? -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:4:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Where does the Museum Ticket Generator use conditionals? Describe one decision the app makes and what information it uses to make it.","order":0,"responseTimeLimitMs":90000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Check In</span>
+        <p class="prompt-big">Where does the Museum Ticket Generator use <i class="c">conditionals</i>?</p>
+        <p style="margin-top:var(--gap-lg);max-width:1000px;text-align:center;font-size:var(--body);">Describe one decision the app makes and what information it uses to make it.</p>
+      </div>
+      <aside class="notes">Listen for the price decision and which inputs it depends on (day, age, and code). Group answers that name the same decision; students who only say "the button" are describing the event handler, not a conditional.</aside>
+    </section>
+
+    <!-- SLIDE 5 · THE PRICING RULES -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 2 &middot; Plan</span>
+        <h2 style="margin-bottom:var(--gap-sm);">The Pricing Rules</h2>
+        <p style="font-size:var(--body);max-width:1350px;">Your app has to follow these rules. Plan a <i class="c">flowchart</i> for them in your activity guide before you write any code. There is more than one correct way to draw it.</p>
+        <div class="rules">
+          <div class="rule"><span class="rule-price">$10</span><p>On the weekend (<i class="s">"Saturday"</i> and <i class="s">"Sunday"</i>), everyone pays the full price.</p></div>
+          <div class="rule"><span class="rule-price">$5</span><p>On weekdays (Monday through Friday), visitors who are <i class="v">18</i> or younger pay $5.</p></div>
+          <div class="rule"><span class="rule-price">$0</span><p>The discount code <i class="s">"FREEFRIDAY"</i> gets anyone in free on a Friday. No other code works, and this code only works on Fridays.</p></div>
+        </div>
+      </div>
+      <aside class="notes">The rules never say it outright, but everyone else pays the full $10: adults on weekdays without the code, and anyone with a wrong code. Ask students where that case lives in their flowchart. The FREEFRIDAY check has to come before the age check on Fridays, which is the "most specific case first" idea from 4.6.</aside>
+    </section>
+
+    <!-- SLIDE 6 · TEST CASES -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 2 &middot; Plan</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Test Your Flowchart</h2>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:var(--gap-lg);align-items:start;margin-top:var(--gap-sm);">
+          <div class="prose">
+            <p>Follow your flowchart for each row of this table. If your flowchart gives a <i class="a">different price</i> than the table, fix the flowchart before you start coding.</p>
+            <p>Use the same rows again to <i class="a">test your finished app</i>.</p>
+          </div>
+          <table class="tc-table">
+            <thead><tr><th>Age</th><th>Day</th><th>Code</th><th>Price</th></tr></thead>
+            <tbody>
+              <tr><td>18</td><td>Monday</td><td class="none">none</td><td class="price">$5</td></tr>
+              <tr><td>18</td><td>Saturday</td><td class="none">none</td><td class="price">$10</td></tr>
+              <tr><td>50</td><td>Monday</td><td class="none">none</td><td class="price">$10</td></tr>
+              <tr><td>50</td><td>Saturday</td><td class="none">none</td><td class="price">$10</td></tr>
+              <tr><td>18</td><td>Tuesday</td><td class="code">FREEFRIDAY</td><td class="price">$5</td></tr>
+              <tr><td>50</td><td>Friday</td><td class="code">FREEFRIDAY</td><td class="price">$0</td></tr>
+              <tr><td>18</td><td>Friday</td><td class="code">FREE</td><td class="price">$5</td></tr>
+              <tr><td>50</td><td>Friday</td><td class="code">FREE</td><td class="price">$10</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <aside class="notes">These are the test cases from the activity guide. The tricky rows are the last four: FREEFRIDAY does nothing on a Tuesday, and a code that is only close ("FREE") does not count.</aside>
+    </section>
+
+    <!-- SLIDE 7 · CHECK IN: WEEKEND WITH THE CODE -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:7:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A 15-year-old buys a ticket for Saturday and types the discount code FREEFRIDAY. What price should the app show?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"$0","isCorrect":false},{"id":"q1b","text":"$10","isCorrect":true},{"id":"q1c","text":"$5","isCorrect":false},{"id":"q1d","text":"No price, because the code is not valid","isCorrect":false}]}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Check In</span>
+        <p class="prompt-big">A <i class="v">15</i>-year-old buys a ticket for <i class="s">Saturday</i> and types the discount code <i class="s">FREEFRIDAY</i>. What price should the app show?</p>
+      </div>
+      <aside class="notes">Answer: $10. Saturday is the weekend, so everyone pays full price; the code only works on Fridays, and the $5 youth price only applies on weekdays. Students who answer $0 are ignoring the Friday part of the code rule; students who answer $5 are ignoring the weekday part of the age rule.</aside>
+    </section>
+
+    <!-- SLIDE 8 · SCREEN ELEMENT IDS -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:44px !important;">
+        <span class="slide-tag">Step 2 &middot; Plan</span>
+        <h2 style="margin-bottom:var(--gap);">Screen Element IDs</h2>
+        <div style="display:flex;gap:var(--gap-lg);align-items:flex-start;">
+          <div class="id-map">
+            <img class="shot" src="media/museum-ticket-app.png" alt="The Museum Ticket Generator app with numbered markers on each element the code uses" style="background:transparent;border:0;">
+            <span class="id-dot" style="left:97%;top:30.5%;">1</span>
+            <span class="id-dot" style="left:97%;top:37.7%;">2</span>
+            <span class="id-dot" style="left:97%;top:44.8%;">3</span>
+            <span class="id-dot" style="left:97%;top:53.3%;">4</span>
+            <span class="id-dot" style="left:97%;top:76%;">5</span>
+          </div>
+          <div class="prose" style="flex:1;">
+            <p>Every element on the screen already has an <i class="c">id</i>. Your <i class="f">onEvent</i>, <i class="f">getText</i>, and <i class="f">setText</i> calls will use these names.</p>
+            <div class="id-legend" style="margin-top:var(--gap);">
+              <div class="id-item"><span class="id-num">1</span><div><code>dayDropdown</code><p>An <i class="c">input</i> where the visitor picks the day.</p></div></div>
+              <div class="id-item"><span class="id-num">2</span><div><code>ageDropdown</code><p>An <i class="c">input</i> where the visitor picks their age.</p></div></div>
+              <div class="id-item"><span class="id-num">3</span><div><code>discountInput</code><p>An <i class="c">input</i> where the visitor types a discount code.</p></div></div>
+              <div class="id-item"><span class="id-num">4</span><div><code>calculateButton</code><p>An <i class="c">input</i> that creates the ticket.</p></div></div>
+              <div class="id-item"><span class="id-num">5</span><div><code>ticketOutput</code><p>An <i class="c">output</i> that shows the day, age, and price.</p></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">These are the ids labeled on the activity guide. Only calculateButton needs an event handler; the dropdowns and the code box are read with getText when it is clicked.</aside>
+    </section>
+
+    <!-- SLIDE 9 · MAKE THE MUSEUM TICKET GENERATOR -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Do This</span>
+        <h2 style="margin-bottom:var(--gap);">Make the Museum Ticket Generator</h2>
+        <div class="media-split">
+          <img class="shot" src="media/activity-guide-plan.png" alt="Activity Guide page 1: Step 1, try the app, and Step 2, plan, with a variables table, the pricing rules for the flowchart, and a table of test cases" style="height:640px;">
+          <div class="prose">
+            <p><i class="a">Use the activity guide to plan</i> your code before you start building. Fill in the <i class="c">variables</i> you will create, and draw a <i class="c">flowchart</i> of the conditional statement you will need to write.</p>
+            <p>Step 3 of the activity guide includes steps you can follow to <i class="a">build the app</i>, or you can use your own process.</p>
+            <p>Check your app against the <i class="a">test cases</i> as you go, not just at the end.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Check flowcharts before students start coding. Common problems: checking age before the FREEFRIDAY code on Fridays, and forgetting the default full-price case.</aside>
+    </section>
+
+    <!-- SLIDE 10 · CHECK YOUR WORK -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:44px !important;">
+        <span class="slide-tag">Before You Submit</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Check Your Work</h2>
+        <p style="font-size:var(--body);max-width:1350px;">Check your app against the rubric <i class="a">before</i> you click <span class="submit-chip">Submit</span> on Code.org.</p>
+        <div class="checklist">
+          <div class="check-item"><span class="check-box"></span><div><h3>Input</h3><p>An <i class="f">onEvent</i> is created for every required input.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Variables</h3><p>Variables store every piece of information the app uses.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Conditional Logic</h3><p>The price is correct for every combination of age, day, and code.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Output</h3><p>The ticket shows the day, age, and price.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Runs Without Errors</h3><p>No errors are present in the code.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Coding Comments</h3><p>Comments explain every <i class="f">onEvent</i> and the conditional logic.</p></div></div>
+        </div>
+      </div>
+      <aside class="notes">This is the Extensive Evidence column of the rubric. The conditional logic row is where most points are lost: have students run all eight test cases before submitting.</aside>
+    </section>
+
+    <!-- SLIDE 11 · CREATE PT WRITING PRACTICE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 5</span>
+        <h2 style="margin-bottom:var(--gap);">Create Performance Task Writing Practice</h2>
+        <p style="font-size:var(--body);max-width:1350px;">This question is based on the app you submitted. It is practice for the written part of the <i class="c">Create Performance Task</i>.</p>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1350px;">
+          <p style="font-size:var(--body);color:var(--text);">Describe a <i class="c">Boolean expression</i> in your program that uses a <i class="c">relational operator</i>. Explain what this expression does and how it influences the program&rsquo;s behavior.</p>
+        </div>
+        <p style="font-size:var(--body);max-width:1350px;margin-top:var(--gap-lg);"><i class="a">Submit your completed activity guide</i> along with your completed app.</p>
+      </div>
+      <aside class="notes">The next slide has sentence starters for students who are not sure how to begin.</aside>
+    </section>
+
+    <!-- SLIDE 12 · SENTENCE STARTERS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 5</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Sentence Starters</h2>
+        <p style="font-size:var(--body);max-width:1350px;">These sentence starters may help you write your response. You can use or change some or all of them.</p>
+        <ul class="starters">
+          <li>One of the Boolean expressions in my program is<span class="blank"></span>.</li>
+          <li>This expression uses the relational operator <i class="f">==</i> to check if<span class="blank"></span>.</li>
+          <li>If this expression is true, then<span class="blank"></span>.</li>
+          <li>Otherwise, the program<span class="blank"></span>.</li>
+          <li>This influences the program&rsquo;s behavior by ensuring that<span class="blank"></span>.</li>
+          <li>Without this expression, the program would not be able to<span class="blank"></span>.</li>
+        </ul>
+      </div>
+      <aside class="notes">A strong response quotes a specific expression from their code (such as day == "Friday"), says what happens when it is true and when it is false, and connects it to the price the visitor sees.</aside>
+    </section>
+
+    <!-- SLIDE 13 · GET STARTED -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Do This</span>
+        <h2 style="margin-bottom:var(--gap);">Get Started</h2>
+        <div class="step-list">
+          <p><span class="step-label">Step 1</span><a href="https://learn.mycode.run/link/xnyjs" target="_blank" rel="noopener"><i class="a">Open Lesson 8, Level 1</i> on Code.org</a>, then <i class="a">try the app</i> and discuss the questions with a partner.</p>
+          <p><span class="step-label">Step 2</span><i class="a">Plan</i> your variables and flowchart in the activity guide, and check the flowchart against the test cases.</p>
+          <p><span class="step-label">Step 3</span><i class="a">Build</i> the Museum Ticket Generator.</p>
+          <p><span class="step-label">Step 4</span>Run every test case and check the rubric before you <i class="a">submit</i>.</p>
+          <p><span class="step-label">Step 5</span><i class="a">Complete the writing practice</i> and submit your activity guide.</p>
+        </div>
+      </div>
+      <aside class="notes">This slide stays up while students work so they can see the order of the steps. The step numbers match the activity guide.</aside>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-4-8-conditionals-make',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
