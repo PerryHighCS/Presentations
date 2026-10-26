@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1arlwiq">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.9 Functions Explore and Investigate</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: 4.9 Functions Explore and Investigate
+   ============================================================ */
+
+:root {
+  /* Body text brighter than the shared theme's 0.6 alpha so prose
+     clears 7:1 on both the page and card backgrounds. */
+  --text-body: #b8cac7;
+  /* Declaring a function: violet. Calling a function: green. */
+  --decl:      #b4a0fb;
+  --decl-tint: rgba(180,160,251,0.10);
+  --call:      #69db7c;
+  --call-tint: rgba(105,219,124,0.10);
+}
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+.reveal, .reveal * { font-variant-ligatures: none; }
+
+/* ─── Semantic inline emphasis ──────────────────────────────────────
+   i.n     a variable name or element id, in code font, teal
+   i.f     a function or command name, in code font, white
+   i.decl  declaring (defining) a function, violet
+   i.call  calling a function, green
+   i.a     an action students take, amber
+   i.c     a concept word, teal
+   ─────────────────────────────────────────────────────────────── */
+.reveal i.n, .reveal i.f {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: max(0.92em, var(--code));  /* never below the code floor */
+  font-weight: 500;
+}
+.reveal i.n { color: var(--teal); }
+.reveal i.f { color: var(--text); font-weight: 700; }
+.reveal i.decl, .reveal i.call, .reveal i.a, .reveal i.c { font-style: normal; font-weight: 600; white-space: nowrap; }
+.reveal i.decl { color: var(--decl); }
+.reveal i.call { color: var(--call); }
+.reveal i.a { color: var(--amber); }
+.reveal i.c { color: var(--teal); }
+
+/* ─── Layout helpers ─────────────────────────────────────────────── */
+.top-inner { justify-content: flex-start !important; padding-top: 52px !important; }
+.reveal .top-inner h2 { margin-bottom: var(--gap); }
+.reveal p.lead { font-size: var(--body); line-height: 1.5; max-width: 1300px; }
+.prose p { font-size: var(--body); line-height: 1.5; }
+.prose p + p { margin-top: var(--gap); }
+.media-split {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--gap-lg);
+  align-items: start;
+}
+.shot {
+  display: block;
+  border: 1px solid rgba(0,201,177,0.4);
+  border-radius: 6px;
+  max-width: 100%;
+  margin: 0;
+}
+.prompt-big {
+  font-size: 46px !important;
+  line-height: 1.35 !important;
+  color: var(--text) !important;
+  max-width: 1200px;
+  text-align: center;
+}
+.steps p {
+  font-size: var(--body);
+  line-height: 1.45;
+  padding-left: 64px;
+  position: relative;
+}
+.steps p + p { margin-top: var(--gap); }
+.step-n {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--amber);
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Song lyrics (slide 2) ─────────────────────────────────────── */
+.lyrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+  margin-top: var(--gap);
+}
+.lyric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 16px 24px;
+}
+.lyric-card h3 { margin: 0 0 8px; font-size: var(--h3); color: var(--teal); }
+.lyric-line {
+  display: grid;
+  grid-template-columns: 3ch 1fr;
+  column-gap: 1.2ch;
+  font-size: var(--body);
+  line-height: 1.3;
+  color: var(--text);
+}
+.lyric-line .ln { font-family: var(--font-mono); font-size: var(--code); color: var(--text-muted); text-align: right; }
+.lyric-line.chorus-call { color: var(--call); font-weight: 600; }
+.lyric-line.gap-line { min-height: 1.3em; }
+.lyric-skip { font-family: var(--font-mono); font-size: var(--code); color: var(--text-muted); padding-left: 4.2ch; line-height: 1.4; }
+
+/* ─── Code cards ────────────────────────────────────────────────── */
+.code-card { flex-shrink: 0; }
+.reveal .code-card .code-body pre { font-size: var(--code); line-height: 1.4; }
+.code-body .ln { display: inline-block; width: 2.6ch; margin-right: 1.2ch; text-align: right; color: var(--text-muted); }
+.tk-kw  { color: var(--amber); font-weight: 600; }
+.tk-fn  { color: var(--text); font-weight: 600; }
+.tk-num { color: var(--gold); }
+.tk-str { color: var(--green); }
+.tk-nm  { color: var(--teal); }
+.tk-cm  { color: var(--text-muted); font-style: italic; }
+/* Lines of the updateScreen() pattern: declaration block and call sites */
+.code-body .hl-decl,
+.code-body .hl-call {
+  display: inline-block;
+  width: 100%;
+  border-radius: 3px;
+  transition: background-color 0.3s;
+}
+.reveal .show-decl .hl-decl { background: var(--decl-tint); box-shadow: inset 4px 0 0 var(--decl); }
+.reveal .show-call .hl-call { background: var(--call-tint); box-shadow: inset 4px 0 0 var(--call); }
+.hl-call .tk-fn { color: var(--call); }
+.hl-decl .tk-fn.decl-name { color: var(--decl); }
+
+/* ─── Vocabulary cards (slide 12) ───────────────────────────────── */
+.vocab {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+  margin-top: var(--gap);
+  align-items: start;
+}
+.vocab-card {
+  background: var(--bg-card);
+  border: 2px solid var(--teal-border);
+  border-radius: 10px;
+  padding: 22px 28px;
+}
+.vocab-card.v-decl { border-color: rgba(180,160,251,0.6); }
+.vocab-card.v-call { border-color: rgba(105,219,124,0.6); }
+.vocab-card h3 { margin: 0 0 8px; font-size: var(--h3); }
+.vocab-card.v-decl h3 { color: var(--decl); }
+.vocab-card.v-call h3 { color: var(--call); }
+.reveal .vocab-card p { color: var(--text); }
+.vocab-card .code-card { margin-top: var(--gap); }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 4 &middot; Lesson 4.9</span>
+        <h1 class="title-h1">Functions Explore and Investigate</h1>
+        <p style="font-size:var(--body);max-width:1100px;line-height:1.6;margin-top:var(--gap);">Today you will see how <i class="c">functions</i> let you give a group of instructions a name, write them <i class="decl">once</i>, and use them <i class="call">again and again</i>.</p>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(180,160,251,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(105,219,124,0.08),transparent 70%);"></div>
+      <aside class="notes">Unit 4 Lesson 9 starts the functions sequence. Students work at their computers with this deck as their guide, starting with a paper warm-up in pairs.</aside>
+    </section>
+
+    <!-- SLIDE 2 · WARM UP: SONG LYRICS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Warm Up</span>
+        <h2>Explore Song Lyrics</h2>
+        <p class="lead">You and your partner should have the <i class="a">Song Lyrics activity guide</i>. It shows the same song written in two styles. Here is part of each one.</p>
+        <div class="lyrics">
+          <div class="lyric-card">
+            <h3>Style 1</h3>
+            <div class="lyric-line"><span class="ln">08</span><span>Well that&rsquo;s fine by me</span></div>
+            <div class="lyric-line gap-line"><span class="ln">09</span><span></span></div>
+            <div class="lyric-line"><span class="ln">10</span><span>So wake me up when it&rsquo;s all over</span></div>
+            <div class="lyric-line"><span class="ln">11</span><span>When I&rsquo;m wiser and I&rsquo;m older</span></div>
+            <div class="lyric-line"><span class="ln">12</span><span>All this time I was finding myself</span></div>
+            <div class="lyric-line"><span class="ln">13</span><span>And I didn&rsquo;t know I was lost</span></div>
+            <div class="lyric-line gap-line"><span class="ln">14</span><span></span></div>
+            <div class="lyric-line"><span class="ln">15</span><span>So wake me up when it&rsquo;s all over</span></div>
+            <div class="lyric-line"><span class="ln">16</span><span>When I&rsquo;m wiser and I&rsquo;m older</span></div>
+            <div class="lyric-skip">&hellip;</div>
+          </div>
+          <div class="lyric-card">
+            <h3>Style 2</h3>
+            <div class="lyric-line"><span class="ln">08</span><span>Well that&rsquo;s fine by me</span></div>
+            <div class="lyric-line gap-line"><span class="ln">09</span><span></span></div>
+            <div class="lyric-line chorus-call"><span class="ln">10</span><span>Sing Chorus (the lyrics are below)</span></div>
+            <div class="lyric-line gap-line"><span class="ln">11</span><span></span></div>
+            <div class="lyric-line chorus-call"><span class="ln">12</span><span>Sing Chorus (the lyrics are below)</span></div>
+            <div class="lyric-skip">&hellip;</div>
+            <div class="lyric-line"><span class="ln">35</span><span>Chorus Lyrics:</span></div>
+            <div class="lyric-line"><span class="ln">36</span><span>So wake me up when it&rsquo;s all over</span></div>
+            <div class="lyric-line"><span class="ln">37</span><span>When I&rsquo;m wiser and I&rsquo;m older</span></div>
+            <div class="lyric-line"><span class="ln">38</span><span>All this time I was finding myself</span></div>
+            <div class="lyric-line"><span class="ln">39</span><span>And I didn&rsquo;t know I was lost</span></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Pairs read both styles in the activity guide before answering the questions on the next slide. The excerpt here is lines 08 to 16 of Style 1, and lines 08 to 12 plus the chorus lyrics of Style 2.</aside>
+    </section>
+
+    <!-- SLIDE 3 · WARM UP: DISCUSS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Warm Up</span>
+        <h2>Discuss With Your Partner</h2>
+        <div class="steps">
+          <p><span class="step-n">1</span>In Style 1, what line of the song do you sing after line 09? What about in Style 2?</p>
+          <p><span class="step-n">2</span>Style 2 uses fewer lines to write. Are there fewer lyrics to sing?</p>
+          <p><span class="step-n">3</span>What are the <i class="a">benefits</i> of writing a song in Style 2?</p>
+        </div>
+      </div>
+      <aside class="notes">1: In Style 1 you sing line 10. In Style 2, line 10 says "Sing Chorus," so you jump down to lines 36 to 39, then come back and continue at line 11. 2: No, the song is exactly as long; the chorus is just written once. 3: Listen for less writing, fewer chances for typos, and only one place to change if the chorus changes. Those are exactly the benefits of functions.</aside>
+    </section>
+
+    <!-- SLIDE 4 · WARM UP: BENEFITS OF STYLE 2 -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:4:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What are the benefits of writing a song in Style 2?","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Check In</span>
+        <p class="prompt-big">What are the <i class="a">benefits</i> of writing a song in Style 2?</p>
+      </div>
+      <aside class="notes">Share a few responses. Then tell students that a "Sing Chorus" line works just like a function call in a program, which is what they will explore next.</aside>
+    </section>
+
+    <!-- SLIDE 5 · LEVELS 1 AND 2 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Explore &middot; Levels 1 and 2</span>
+        <h2>Functions in Code</h2>
+        <div class="media-split" style="grid-template-columns:780px 1fr;">
+          <img class="shot" src="media/level1-instructions.png" alt="Lesson 9 Level 1 in App Lab: the instructions say the code uses functions to display the lyrics of a song, and to add code to make the program sing the chorus where comments say to. The workspace shows console.log lines for Verse 1 and singChorus() calls." style="width:780px;">
+          <div class="steps">
+            <p><span class="step-n">1</span><a href="https://learn.mycode.run/link/xnyjn" target="_blank" rel="noopener"><i class="a">Open Lesson 9, Level 1</i> on Code.org</a>.</p>
+            <p><span class="step-n">2</span>Run the program and notice what happens each time it &ldquo;sings&rdquo; the chorus.</p>
+            <p><span class="step-n">3</span><i class="a">Complete Levels 1 and 2</i>.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Level 1 is the song from the warm-up written as a program: singChorus() plays the role of "Sing Chorus." Students add calls where the comments say the chorus is missing.</aside>
+    </section>
+
+    <!-- SLIDE 6 · VIDEO: DEFINING AND CALLING FUNCTIONS -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:6:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=yPWQfa4CHbw&amp;end=98"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Defining and Calling Functions</h2>
+        <p style="font-size:var(--body);margin-bottom:var(--gap);">A short Code.org video about how to define a function once and call it wherever you need it.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <aside class="notes">Code.org, "CS Principles: Defining and Calling Functions." The clip stops at 1:38.</aside>
+    </section>
+
+    <!-- SLIDE 7 · VIDEO: CALLING AND DEFINING FUNCTIONS -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:7:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=NBwlNBE9Fl0"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Calling and Defining Functions</h2>
+        <p style="font-size:var(--body);margin-bottom:var(--gap);">A Code.org video that shows how functions are defined and called in App Lab.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+      <aside class="notes">Code.org, "Calling and Defining Functions." Next, students investigate a program that uses an updateScreen function.</aside>
+    </section>
+
+    <!-- SLIDE 8 · LEVELS 3 TO 5 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Investigate &middot; Levels 3 to 5</span>
+        <h2>The Counting App</h2>
+        <div class="media-split">
+          <img class="shot" src="media/lets-count-app.png" alt="The Let's Count app: a counter showing 0 with a down arrow button and an up arrow button" style="height:600px;">
+          <div class="prose">
+            <p><i class="a">Complete Levels 3 to 5</i>. As you read the code, answer these questions with your partner.</p>
+            <div class="steps" style="margin-top:var(--gap);">
+              <p><span class="step-n">1</span>On what line or lines is the <i class="f">updateScreen</i> function being <i class="decl">declared</i>?</p>
+              <p><span class="step-n">2</span>On what lines is the <i class="f">updateScreen</i> function being <i class="call">called</i>?</p>
+              <p><span class="step-n">3</span>How does the <i class="f">updateScreen</i> function make the program easier to write and understand?</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">The declaration is the block that starts with the word function. Every other line that says updateScreen() is a call. Listen for: the screen-updating code is written once, every button uses it, and changing how the screen looks only means changing one place.</aside>
+    </section>
+
+    <!-- SLIDE 9 · LEVEL 6 -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Investigate &middot; Level 6</span>
+        <h2>Back to Lemon Squeeze</h2>
+        <div class="media-split">
+          <img class="shot" src="media/lemon-squeeze-app.png" alt="The Lemon Squeeze start screen with a username dropdown, a password box, and a Play button" style="height:600px;">
+          <div class="prose">
+            <p>Level 6 returns to the <i class="c">Lemon Squeeze</i> app from Lesson 4.6, now with a new <i class="f">updateScreen</i> function added.</p>
+            <p><i class="a">Complete Level 6</i>, then answer this question with your partner.</p>
+            <div class="callout accent-purple" style="margin-top:var(--gap);">
+              <p>How does the newly added <i class="f">updateScreen</i> function help keep your code better organized or reduce the amount of repeated code?</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Students should notice that the code that sets the score and lives on the screen used to be repeated in several event handlers; now each handler just updates the variables and calls updateScreen.</aside>
+    </section>
+
+    <!-- SLIDE 10 · THE UPDATESCREEN PATTERN -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:40px !important;">
+        <span class="slide-tag">The updateScreen() Pattern</span>
+        <h2 style="margin-bottom:var(--gap-sm);">The updateScreen() Pattern</h2>
+        <div style="display:grid;grid-template-columns:1fr 920px;gap:var(--gap);align-items:start;">
+          <div class="prose">
+            <p>In this pattern, <i class="c">variables</i> hold the information, and one function puts it on the screen.</p>
+            <p class="fragment fade-up" data-fragment-index="0"><i class="f">updateScreen</i> is <i class="decl">declared once</i>. It sets every output from the variables.</p>
+            <p class="fragment fade-up" data-fragment-index="1">It is <i class="call">called</i> when the app starts and after every change to a variable.</p>
+          </div>
+          <div class="code-card pattern-code"><div class="code-hdr"><span class="clang">updateScreen Pattern</span></div><div class="code-body"><pre><code><span class="ln">1</span><span class="tk-kw">var</span> <span class="tk-nm">count</span> = <span class="tk-num">0</span>;
+<span class="hl-call"><span class="ln">2</span><span class="tk-fn">updateScreen</span>();</span>
+<span class="ln">3</span>
+<span class="ln">4</span><span class="tk-fn">onEvent</span>(<span class="tk-str">"upButton"</span>, <span class="tk-str">"click"</span>, <span class="tk-kw">function</span>() {
+<span class="ln">5</span>  <span class="tk-nm">count</span> = <span class="tk-nm">count</span> + <span class="tk-num">1</span>;
+<span class="hl-call"><span class="ln">6</span>  <span class="tk-fn">updateScreen</span>();</span>
+<span class="ln">7</span>});
+<span class="ln">8</span>
+<span class="ln">9</span><span class="tk-fn">onEvent</span>(<span class="tk-str">"downButton"</span>, <span class="tk-str">"click"</span>, <span class="tk-kw">function</span>() {
+<span class="ln">10</span>  <span class="tk-nm">count</span> = <span class="tk-nm">count</span> - <span class="tk-num">1</span>;
+<span class="hl-call"><span class="ln">11</span>  <span class="tk-fn">updateScreen</span>();</span>
+<span class="ln">12</span>});
+<span class="ln">13</span>
+<span class="hl-decl"><span class="ln">14</span><span class="tk-kw">function</span> <span class="tk-fn decl-name">updateScreen</span>() {</span>
+<span class="hl-decl"><span class="ln">15</span>  <span class="tk-fn">setText</span>(<span class="tk-str">"countLabel"</span>, <span class="tk-nm">count</span>);</span>
+<span class="hl-decl"><span class="ln">16</span>  <span class="tk-kw">if</span> (<span class="tk-nm">count</span> &gt; <span class="tk-num">20</span>) {</span>
+<span class="hl-decl"><span class="ln">17</span>    <span class="tk-fn">setProperty</span>(<span class="tk-str">"countLabel"</span>, <span class="tk-str">"text-color"</span>, <span class="tk-str">"green"</span>);</span>
+<span class="hl-decl"><span class="ln">18</span>  }</span>
+<span class="hl-decl"><span class="ln">19</span>}</span></code></pre></div></div>
+        </div>
+      </div>
+      <aside class="notes">The first fragment highlights the declaration (lines 14 to 19); the second highlights the three calls (lines 2, 6, and 11). Point out that the event handlers never call setText themselves: they only change count, and updateScreen does the rest.</aside>
+    </section>
+
+    <!-- SLIDE 11 · CHECK IN: HOW MANY CALLS -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:11:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"How many times is `updateScreen` called in this code?\n\n```javascript\nvar count = 0;\nupdateScreen();\n\nonEvent(\"upButton\", \"click\", function() {\n  count = count + 1;\n  updateScreen();\n});\n\nonEvent(\"downButton\", \"click\", function() {\n  count = count - 1;\n  updateScreen();\n});\n\nfunction updateScreen() {\n  setText(\"countLabel\", count);\n}\n```","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"1","isCorrect":false},{"id":"q1b","text":"2","isCorrect":false},{"id":"q1c","text":"4","isCorrect":false},{"id":"q1d","text":"3","isCorrect":true}]}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Check In</span>
+        <p class="prompt-big">How many times is <i class="f">updateScreen</i> <i class="call">called</i> in the updateScreen pattern code?</p>
+      </div>
+      <aside class="notes">Answer: 3 (once at the top, and once in each event handler). Students who answer 4 are counting the declaration line, which defines the function but does not call it.</aside>
+    </section>
+
+    <!-- SLIDE 12 · VOCABULARY -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Vocabulary</span>
+        <h2>Functions and Function Calls</h2>
+        <div class="vocab">
+          <div class="vocab-card v-decl">
+            <h3>Function</h3>
+            <p>A <i class="decl">named group</i> of programming instructions. A function is also called a <i class="c">procedure</i>.</p>
+            <div class="code-card"><div class="code-body"><pre><code><span class="tk-kw">function</span> <span class="tk-fn" style="color:var(--decl);">updateButton</span>() {
+  <span class="tk-fn">setProperty</span>(<span class="tk-str">"bigButton"</span>, <span class="tk-str">"width"</span>, <span class="tk-num">100</span>);
+  <span class="tk-fn">setProperty</span>(<span class="tk-str">"bigButton"</span>, <span class="tk-str">"height"</span>, <span class="tk-num">200</span>);
+  <span class="tk-fn">setProperty</span>(<span class="tk-str">"bigButton"</span>, <span class="tk-str">"text"</span>, <span class="tk-str">"Click me!"</span>);
+}</code></pre></div></div>
+          </div>
+          <div class="vocab-card v-call">
+            <h3>Function Call</h3>
+            <p>A command that <i class="call">runs the code</i> inside a function.</p>
+            <div class="code-card"><div class="code-body"><pre><code><span class="tk-fn" style="color:var(--call);">updateButton</span>();</code></pre></div></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">These are the AP CSP terms. The College Board uses "procedure" on the exam, so students should recognize both words.</aside>
+    </section>
+
+    <!-- SLIDE 13 · EXIT TICKET -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:13:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"In your own words, what is the difference between declaring a function and calling a function? Why is it useful to declare a function once and call it many times?","order":0,"responseTimeLimitMs":180000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Exit Ticket</span>
+        <p class="prompt-big">What is the difference between <i class="decl">declaring</i> a function and <i class="call">calling</i> a function? Why is it useful to declare it once and call it many times?</p>
+      </div>
+      <aside class="notes">Strong answers say that declaring gives a group of instructions a name without running them, and calling runs them. Writing the code once means less repetition and only one place to fix or change, just like the chorus in Style 2.</aside>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-4-9-functions-explore-and-investigate',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    /* Slide 10: highlight the declaration on fragment 0 and the calls on
+       fragment 1, by toggling classes on the code card. */
+    function syncPattern() {
+      var slide = Reveal.getCurrentSlide();
+      var card = slide && slide.querySelector('.pattern-code');
+      if (!card) return;
+      var shown = slide.querySelectorAll('.fragment.visible').length;
+      card.classList.toggle('show-decl', shown >= 1);
+      card.classList.toggle('show-call', shown >= 2);
+    }
+    Reveal.on('slidechanged', syncPattern);
+    Reveal.on('fragmentshown', syncPattern);
+    Reveal.on('fragmenthidden', syncPattern);
+    syncPattern();
+  },
+});
+</script>
+</body>
+</html>
