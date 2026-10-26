@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1uq0hxs">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.7 Conditionals Practice</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: 4.7 Conditionals Practice
+   ============================================================ */
+
+:root {
+  --text-body: #b8cac7;
+}
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+.reveal, .reveal * { font-variant-ligatures: none; }
+
+/* ─── Semantic inline emphasis ──────────────────────────────────────
+   i.us  user story, teal
+   i.ms  milestone, amber
+   i.tk  task, purple
+   i.ts  testing, green
+   i.a   an action students take, amber (matches 4.5 and 4.6)
+   i.n   a variable name, in code font
+   ─────────────────────────────────────────────────────────────── */
+.reveal i.us, .reveal i.ms, .reveal i.tk, .reveal i.ts, .reveal i.a { font-style: normal; font-weight: 600; white-space: nowrap; }
+.reveal i.us { color: var(--teal); }
+.reveal i.ms { color: var(--amber); }
+.reveal i.tk { color: var(--purple); }
+.reveal i.ts { color: var(--green); }
+.reveal i.a  { color: var(--amber); }
+.reveal i.n {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: max(0.92em, var(--code));
+  font-weight: 500;
+  color: var(--teal);
+}
+
+/* ─── Layout helpers (shared with 4.6) ───────────────────────────── */
+.top-inner { justify-content: flex-start !important; padding-top: 52px !important; }
+.reveal .top-inner h2 { margin-bottom: var(--gap); }
+.reveal p.lead { font-size: var(--body); line-height: 1.55; max-width: 1300px; }
+.prose p + p { margin-top: var(--gap); }
+.prompt-big {
+  font-size: 46px !important;
+  line-height: 1.35 !important;
+  color: var(--text) !important;
+  max-width: 1200px;
+  text-align: center;
+}
+.steps p {
+  font-size: 34px;
+  line-height: 1.45;
+  padding-left: 70px;
+  position: relative;
+}
+.steps p + p { margin-top: var(--gap); }
+.step-n {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid var(--amber);
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── App choice cards (slide 2) ─────────────────────────────────── */
+.apps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 36px;
+  margin-top: var(--gap-lg);
+}
+.app-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.app-card img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  margin: 0;
+  display: block;
+}
+.app-card .app-name {
+  font-family: var(--font-display);
+  font-size: var(--h3);
+  font-weight: 700;
+  color: var(--text);
+  padding: 18px 0 20px;
+}
+
+/* ─── Flow diagrams (slides 3 to 5, 8) ───────────────────────────────
+   .flow holds .node cards with an .arrow between each pair.
+   ─────────────────────────────────────────────────────────────── */
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: var(--gap-lg);
+}
+.flow .arrow { flex: 0 0 90px; height: 32px; }
+.flow .arrow line { stroke: var(--text-muted); stroke-width: 4; }
+.flow .arrow polygon { fill: var(--text-muted); }
+.node {
+  flex: 1 1 0;
+  background: var(--bg-card);
+  border: 2px solid var(--teal-border);
+  border-radius: 10px;
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.node img { width: 110px; height: 110px; margin: 0; flex: 0 0 auto; }
+.node-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.reveal .node p { font-size: var(--body); line-height: 1.4; color: var(--text); }
+.reveal .node p + p { margin-top: 10px; }
+.node.n-us { border-color: rgba(0,201,177,0.6); }
+.node.n-us .node-label { color: var(--teal); }
+.node.n-ms { border-color: rgba(255,212,59,0.6); }
+.node.n-ms .node-label { color: var(--amber); }
+.node.n-tk { border-color: rgba(180,160,251,0.6); }
+.node.n-tk .node-label { color: var(--purple); }
+.node.n-ts { border-color: rgba(105,219,124,0.6); }
+.node.n-ts .node-label { color: var(--green); }
+
+/* Slide 4: the whole process as one row of steps */
+.pipe {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  margin-top: var(--gap);
+  flex-shrink: 0;
+}
+.pipe .arrow { flex: 0 0 44px; height: 32px; align-self: center; }
+.pipe .arrow line { stroke: var(--text-muted); stroke-width: 4; }
+.pipe .arrow polygon { fill: var(--text-muted); }
+.pipe-step {
+  flex: 1 1 0;
+  background: var(--bg-card);
+  border: 2px solid var(--teal-border);
+  border-radius: 10px;
+  padding: 16px 20px;
+}
+.pipe-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.pipe-step img { width: 48px; height: 48px; margin: 0; flex: 0 0 auto; }
+.pipe-step h3 { margin: 0; font-size: var(--h3); }
+.reveal .pipe-step p { font-size: var(--body); line-height: 1.35; }
+.pipe-step.n-us { border-color: rgba(0,201,177,0.6); }
+.pipe-step.n-us h3 { color: var(--teal); }
+.pipe-step.n-ms { border-color: rgba(255,212,59,0.6); }
+.pipe-step.n-ms h3 { color: var(--amber); }
+.pipe-step.n-tk { border-color: rgba(180,160,251,0.6); }
+.pipe-step.n-tk h3 { color: var(--purple); }
+.pipe-step.n-ts { border-color: rgba(105,219,124,0.6); }
+.pipe-step.n-ts h3 { color: var(--green); }
+
+/* Slide 5: one app, many users, one story bubble */
+.users-flow {
+  display: grid;
+  grid-template-columns: 180px 150px 120px 1fr;
+  align-items: center;
+  margin-top: var(--gap-lg);
+}
+.users-flow > img { width: 180px; height: 180px; margin: 0; }
+.users-flow svg line { stroke: var(--text-muted); stroke-width: 4; }
+.users-col { display: flex; flex-direction: column; gap: 18px; }
+.users-col img { width: 100px; height: 100px; margin: 0; }
+.bubble {
+  position: relative;
+  margin-left: 36px;
+  background: var(--bg-card);
+  border: 2px solid rgba(0,201,177,0.6);
+  border-radius: 14px;
+  padding: 24px 30px;
+}
+.bubble::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  margin-top: -14px;
+  border-width: 14px 16px 14px 0;
+  border-style: solid;
+  border-color: transparent rgba(0,201,177,0.6) transparent transparent;
+}
+.reveal .bubble p { font-size: 34px; line-height: 1.4; color: var(--text); }
+
+/* Slide 10: three stages of a level, stacked vertically inside each node */
+.stages .node { flex-direction: column; align-items: flex-start; align-self: stretch; }
+.stages .node img { width: 90px; height: 90px; }
+.stages .node h3 { margin: 0; font-size: var(--h3); }
+.stages .n-us h3 { color: var(--teal); }
+.stages .n-tk h3 { color: var(--purple); }
+.stages .n-ts h3 { color: var(--green); }
+.reveal .stages .node p { color: var(--text-body); }
+
+/* Slide 11: accordion demo */
+.demo {
+  margin-top: var(--gap-lg);
+  border: 2px solid var(--teal-border);
+  border-radius: 8px;
+  overflow: hidden;
+  align-self: center;
+  flex-shrink: 0;
+}
+.demo img { display: block; width: 1180px; height: auto; margin: 0; }
+.tri { color: var(--text); font-size: 0.8em; }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 4 &middot; Lesson 4.7</span>
+        <h1 class="title-h1">Conditionals Practice</h1>
+        <p style="font-size:var(--body);max-width:1100px;line-height:1.6;margin-top:var(--gap);">Today you will follow the <i class="a">App Development Process</i> to build a real app, one <i class="ms">milestone</i> at a time, using the conditionals you learned in 4.6.</p>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(255,212,59,0.08),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 70%);"></div>
+      <aside class="notes">Unit 4 Lesson 7. This is a practice lesson: after a short introduction to user stories, milestones, and tasks, students spend most of the period in Code.org building one of three apps. Students need their devices.</aside>
+    </section>
+
+    <!-- SLIDE 2 · TODAY'S PRACTICE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Today&rsquo;s Lesson</span>
+        <h2>Practice With Conditionals</h2>
+        <div class="prose">
+          <p>Today you will practice programming with many of the concepts and patterns we explored over the <i class="a">last two lessons</i>.</p>
+          <p>You will choose <i class="a">one of three apps</i> to help develop. The design of each app is already complete. Your job is to use what you know about <i class="a">conditional statements</i> to make the app function as intended.</p>
+        </div>
+        <div class="callout accent-amber" style="margin-top:var(--gap);">
+          <h3>Stay With One App</h3>
+          <p>Whichever app you choose, choose that <i class="a">same app</i> on every choice level. Each app has <i class="a">four levels</i> in total.</p>
+        </div>
+        <p style="margin-top:var(--gap);">In our next lesson, you will use many of these skills on an <i class="a">independent project</i>, so today&rsquo;s levels are good practice for what you will find there.</p>
+      </div>
+      <aside class="notes">Students watch this deck at their computers as their getting-started guide. Stress the callout: switching apps partway through leaves them with an app that is missing its earlier milestones.</aside>
+    </section>
+
+    <!-- SLIDE 3 · TODAY'S APPS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">The App Development Process</span>
+        <h2>Choose an App to Build</h2>
+        <p class="lead">Today you will use the <i class="a">App Development Process</i> to build one of these apps. All three practice the same skills, so pick the one that interests you most.</p>
+        <div class="apps">
+          <div class="app-card"><img src="media/app-mindease.png" alt="MindEase app icon: a tree in a calm landscape"><span class="app-name">MindEase</span></div>
+          <div class="app-card"><img src="media/app-velocity.png" alt="VeloCity app icon: a bicycle"><span class="app-name">VeloCity</span></div>
+          <div class="app-card"><img src="media/app-tixfinder.png" alt="Tix Finder app icon: a microphone"><span class="app-name">Tix Finder</span></div>
+        </div>
+      </div>
+      <aside class="notes">Students pick one app in Code.org. All three practice the same skills, so let students choose whichever interests them. Before they start, the next few slides explain how each level is organized.</aside>
+    </section>
+
+    <!-- SLIDE 04 · THE PROCESS AND WHY USER STORIES -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">The App Development Process</span>
+        <h2>How Developers Build an App</h2>
+        <p class="lead">Developers do not start by writing code. They start by learning what <i class="us">users</i> need, then break that work into small pieces to build and test.</p>
+        <div class="pipe">
+          <div class="pipe-step n-us"><div class="pipe-head"><img src="media/user-1.png" alt=""><h3>User Stories</h3></div><p>What do users need?</p></div>
+          <svg class="arrow" viewBox="0 0 44 32" aria-hidden="true"><line x1="0" y1="16" x2="28" y2="16"/><polygon points="24,4 44,16 24,28"/></svg>
+          <div class="pipe-step n-ms"><div class="pipe-head"><img src="media/milestone-flag.png" alt=""><h3>Milestones</h3></div><p>Which features meet those needs?</p></div>
+          <svg class="arrow" viewBox="0 0 44 32" aria-hidden="true"><line x1="0" y1="16" x2="28" y2="16"/><polygon points="24,4 44,16 24,28"/></svg>
+          <div class="pipe-step n-tk"><div class="pipe-head"><img src="media/task-list.png" alt=""><h3>Tasks</h3></div><p>What code builds each feature?</p></div>
+          <svg class="arrow" viewBox="0 0 44 32" aria-hidden="true"><line x1="0" y1="16" x2="28" y2="16"/><polygon points="24,4 44,16 24,28"/></svg>
+          <div class="pipe-step n-ts"><div class="pipe-head"><img src="media/test-bug.png" alt=""><h3>Tests</h3></div><p>Does the code work as intended?</p></div>
+        </div>
+        <div class="callout" style="margin-top:var(--gap);">
+          <h3 style="color:var(--teal);">Why Gather User Stories?</h3>
+          <p>You are not the only person who will use your app, so you cannot just guess what it should do. A user story records a real need in the user&rsquo;s own words. It tells you which features are <i class="a">worth building</i> and when a feature is <i class="a">done</i>.</p>
+        </div>
+      </div>
+      <aside class="notes">This is the big picture for the next three slides, which zoom in on each step. Ask students about an app feature they never use, or one they wish existed: that gap is what user stories are meant to catch.</aside>
+    </section>
+
+    <!-- SLIDE 05 · USER STORIES -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">The App Development Process</span>
+        <h2>Start With User Stories</h2>
+        <p class="lead">A <i class="us">user story</i> describes what someone needs or wants from the app, written from the perspective of a person who might use it. One app has many users, and each one can have their own stories.</p>
+        <div class="users-flow">
+          <img src="media/app-phone.png" alt="A hand holding a phone running an app">
+          <svg viewBox="0 0 150 340" width="150" height="340" aria-hidden="true">
+            <line x1="10" y1="170" x2="140" y2="50"/>
+            <line x1="10" y1="170" x2="140" y2="170"/>
+            <line x1="10" y1="170" x2="140" y2="290"/>
+          </svg>
+          <div class="users-col">
+            <img src="media/user-2.png" alt="A user">
+            <img src="media/user-1.png" alt="A user">
+            <img src="media/user-3.png" alt="A user">
+          </div>
+          <div class="bubble fragment fade-up"><p>&ldquo;I would like to be able to save my favorite items.&rdquo;</p></div>
+        </div>
+      </div>
+      <aside class="notes">One app has many users, and each user has their own needs. Reveal the speech bubble: this is one user story. Ask students for another user story they might write for an app they use every day.</aside>
+    </section>
+
+    <!-- SLIDE 06 · USER STORIES BECOME MILESTONES -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">The App Development Process</span>
+        <h2>User Stories Become Milestones</h2>
+        <p class="lead">Each <i class="us">user story</i> becomes a <i class="ms">milestone</i> in developing the app. A milestone describes <i class="a">one feature</i> to build so that the app meets that user&rsquo;s need.</p>
+        <div class="flow">
+          <div class="node n-us"><img src="media/user-1.png" alt=""><div><span class="node-label">User Story</span><p>&ldquo;I would like to be able to save my favorite items.&rdquo;</p></div></div>
+          <svg class="arrow fragment" data-fragment-index="0" viewBox="0 0 90 32" aria-hidden="true"><line x1="0" y1="16" x2="70" y2="16"/><polygon points="66,4 90,16 66,28"/></svg>
+          <div class="node n-ms fragment" data-fragment-index="0"><img src="media/milestone-flag.png" alt=""><div><span class="node-label">Milestone</span><p>Create the ability to save favorite items within the app.</p></div></div>
+        </div>
+      </div>
+      <aside class="notes">The user story is in the user's words; the milestone restates it as a feature the developer will build.</aside>
+    </section>
+
+    <!-- SLIDE 07 · MILESTONES BECOME TASKS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">The App Development Process</span>
+        <h2>Milestones Become Tasks</h2>
+        <p class="lead">To accomplish a <i class="ms">milestone</i>, we complete <i class="tk">tasks</i>. Each level in today&rsquo;s lesson focuses on a single milestone and the tasks needed to accomplish it.</p>
+        <div class="flow">
+          <div class="node n-ms"><img src="media/milestone-flag.png" alt=""><div><span class="node-label">Milestone</span><p>Create the ability to save favorite items within the app.</p></div></div>
+          <svg class="arrow fragment" data-fragment-index="0" viewBox="0 0 90 32" aria-hidden="true"><line x1="0" y1="16" x2="70" y2="16"/><polygon points="66,4 90,16 66,28"/></svg>
+          <div class="node n-tk fragment" data-fragment-index="0"><img src="media/task-list.png" alt=""><div><span class="node-label">Tasks</span><p>1. Make a favorite button.</p><p>2. Save data into a variable when the user clicks the button.</p></div></div>
+        </div>
+      </div>
+      <aside class="notes">Tasks are the concrete coding steps. In today's levels, most tasks ask students to write a conditional that sets a variable or changes what the screen shows.</aside>
+    </section>
+
+    <!-- SLIDE 08 · CHECK IN: STORY, MILESTONE, OR TASK -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:8:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A MindEase user says, \"I want the app to tell me whether my mood today is high or low.\" What kind of statement is this?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"A milestone","isCorrect":false},{"id":"q1b","text":"A user story","isCorrect":true},{"id":"q1c","text":"A task","isCorrect":false},{"id":"q1d","text":"A test","isCorrect":false}]}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Check In</span>
+        <p class="prompt-big">A MindEase user says, &ldquo;I want the app to tell me whether my mood today is high or low.&rdquo; Is this a <i class="us">user story</i>, a <i class="ms">milestone</i>, a <i class="tk">task</i>, or a <i class="ts">test</i>?</p>
+      </div>
+      <aside class="notes">Answer: a user story. It is written in the user's own words and describes what they want, not how the app will do it.</aside>
+    </section>
+
+    <!-- SLIDE 09 · CHECK IN: PICK THE TASK -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:9:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"The milestone is: Show the user whether their happiness level is High or Low. Which of these is a task for that milestone?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"I want to know whether I am having a good day.","isCorrect":false},{"id":"q1b","text":"Show the user whether their happiness level is High or Low.","isCorrect":false},{"id":"q1c","text":"Run the tests for this level.","isCorrect":false},{"id":"q1d","text":"If the rating is higher than 5, assign happinessLevel a value of \"High\".","isCorrect":true}]}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Check In</span>
+        <p class="prompt-big">The <i class="ms">milestone</i> is &ldquo;Show the user whether their happiness level is High or Low.&rdquo; Which choice is a <i class="tk">task</i> for that milestone?</p>
+      </div>
+      <aside class="notes">Answer: "If the rating is higher than 5, assign happinessLevel a value of High." That is a concrete coding step, and it needs a conditional. "I want to know whether I am having a good day" is a user story, the second choice restates the milestone itself, and running the tests is how you check the tasks, not a task.</aside>
+    </section>
+
+    <!-- SLIDE 10 · WORKING THROUGH A LEVEL -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Working Through a Level</span>
+        <h2>Three Steps in Every Level</h2>
+        <p class="lead">Each level you complete also completes a <i class="ms">milestone</i> in your app. Approach every level the same way.</p>
+        <div class="flow stages">
+          <div class="node n-us"><img src="media/user-1.png" alt=""><h3>1. Read</h3><p>Open the green <i class="us">user story</i> accordion to understand what the user needs.</p></div>
+          <svg class="arrow fragment" data-fragment-index="0" viewBox="0 0 90 32" aria-hidden="true"><line x1="0" y1="16" x2="70" y2="16"/><polygon points="66,4 90,16 66,28"/></svg>
+          <div class="node n-tk fragment" data-fragment-index="0"><img src="media/milestone-flag.png" alt=""><h3>2. Build</h3><p>Complete the <i class="tk">tasks</i>. Each level has one to three tasks that achieve the milestone.</p></div>
+          <svg class="arrow fragment" data-fragment-index="1" viewBox="0 0 90 32" aria-hidden="true"><line x1="0" y1="16" x2="70" y2="16"/><polygon points="66,4 90,16 66,28"/></svg>
+          <div class="node n-ts fragment" data-fragment-index="1"><img src="media/test-bug.png" alt=""><h3>3. Test</h3><p>Run the <i class="ts">tests</i> for the level to make sure your code works as intended.</p></div>
+        </div>
+      </div>
+      <aside class="notes">Stress step 3: a level is not done until its tests pass. If a test fails, go back to the user story and the task hints before asking for help.</aside>
+    </section>
+
+    <!-- SLIDE 11 · ACCORDION HINTS -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Working Through a Level</span>
+        <h2>Open the Accordions</h2>
+        <p class="lead">Each level keeps its important information and hints folded up in <i class="a">accordion tabs</i>. Look for the triangle icon <span class="tri">&#9654;</span> and <i class="a">click it</i> to reveal what is inside.</p>
+        <div class="demo"><img src="media/accordion-demo.gif" alt="Animation of a Code.org level: clicking the triangle beside a task expands it to show more detailed instructions"></div>
+      </div>
+      <aside class="notes">The animation shows a MindEase level. The user story accordion is the green bar at the top, and each task has its own accordion with step-by-step instructions.</aside>
+    </section>
+
+    <!-- SLIDE 12 · GET STARTED -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Practice</span>
+        <h2>Get Started</h2>
+        <div class="steps">
+          <p><span class="step-n">1</span><a href="https://learn.mycode.run/link/xnyjr" target="_blank" rel="noopener"><i class="a">Open Lesson 7</i> on Code.org</a>.</p>
+          <p><span class="step-n">2</span><i class="a">Choose one app</i>: MindEase, VeloCity, or Tix Finder. Choose the same app on all four levels.</p>
+          <p><span class="step-n">3</span>Work through the levels in order. In each one, <i class="a">read</i> the <i class="us">user story</i>, <i class="a">build</i> the <i class="tk">tasks</i>, and <i class="a">test</i> your code before moving on.</p>
+          <p><span class="step-n">4</span>If a <i class="ts">test</i> fails, re-read the user story and open the task accordions for hints.</p>
+        </div>
+      </div>
+      <aside class="notes">Circulate while students work. Common sticking points: a condition at the wrong boundary (&gt; vs. &gt;=, as in 4.5 and 4.6), and an if-else-if whose most specific case is not first.</aside>
+    </section>
+
+    <!-- SLIDE 13 · EXIT TICKET -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:13:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Pick one milestone you completed today. What was the user story behind it, and what conditional did you write to accomplish it?","order":0,"responseTimeLimitMs":240000}]}'>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Exit Ticket</span>
+        <p class="prompt-big">Pick one <i class="ms">milestone</i> you completed today. What was the <i class="us">user story</i> behind it, and what <i class="a">conditional</i> did you write to accomplish it?</p>
+      </div>
+      <aside class="notes">Strong answers name the user's need, then describe the condition they checked and what the code did in each case (for example, "if the rating is higher than 5, happinessLevel is High; otherwise it is Low").</aside>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-4-7-conditionals-practice',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
