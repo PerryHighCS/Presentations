@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1vjiywi">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.11 Functions Make</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: 4.11 Functions Make
+   ============================================================ */
+
+:root {
+  /* Body text brighter than the shared theme's 0.6 alpha so prose
+     clears 7:1 on both the page and card backgrounds. */
+  --text-body: #b8cac7;
+}
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+.frq-box p { color: var(--text-body); }
+/* JetBrains Mono draws <= == != as ligatures; students need to see
+   the exact characters they will write, so turn ligatures off. */
+.reveal, .reveal * { font-variant-ligatures: none; }
+
+/* ─── Semantic inline emphasis (matches 4.4 to 4.9) ─────────────────
+   i.n  a variable name or element id, in code font, teal
+   i.f  a command or function name, in code font, white
+   i.v  a number or price, gold
+   i.s  a string value (a color, a font name), in code font, green
+   i.a  an action students take (open, plan, submit), amber
+   i.c  a concept word (input, output, conditional), teal
+   ─────────────────────────────────────────────────────────────── */
+.reveal i.n, .reveal i.f, .reveal i.s {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: max(0.92em, var(--code));  /* never below the code floor */
+  font-weight: 500;
+}
+.reveal i.n { color: var(--teal); }
+.reveal i.f { color: var(--text); font-weight: 700; }
+.reveal i.s { color: var(--green); }
+.reveal i.v { font-style: normal; color: var(--gold); font-weight: 700; }
+.reveal i.a { font-style: normal; color: var(--amber); font-weight: 600; }
+.reveal i.c { font-style: normal; color: var(--teal); font-weight: 600; }
+
+/* ─── Layout helpers ─────────────────────────────────────────────── */
+.top-inner { justify-content: flex-start !important; padding-top: 52px !important; }
+.media-split {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--gap-lg);
+  align-items: start;
+  margin-top: var(--gap-sm);
+}
+.shot {
+  display: block;
+  border: 1px solid rgba(0,201,177,0.4);
+  border-radius: 6px;
+  background: #fff;
+  max-width: 100%;
+  margin: 0;
+}
+.step-list p { font-size: var(--body); line-height: 1.5; }
+.step-list p + p { margin-top: var(--gap); }
+.step-list p:has(> .step-label) {
+  padding-left: 150px;
+  text-indent: -150px;
+}
+.step-list p > * { text-indent: 0; }
+.step-label {
+  display: inline-block;
+  min-width: 150px;
+  text-indent: 0;
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.prose p { font-size: var(--body); line-height: 1.5; }
+.prose p + p { margin-top: var(--gap); }
+.reveal .prose .bullets li { font-size: var(--body); }
+.reveal .prose h3 { font-size: var(--h3); color: var(--teal); margin: var(--gap) 0 0; }
+
+.prompt-big {
+  font-size: 46px !important;
+  line-height: 1.35 !important;
+  color: var(--text) !important;
+  max-width: 1200px;
+  text-align: center;
+}
+
+/* ─── Element ID map: numbered badges on the app screenshot ─────── */
+.id-map {
+  position: relative;
+  width: 360px;
+  flex-shrink: 0;
+}
+.id-map .shot { width: 100%; }
+.id-dot,
+.id-legend .id-num {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--amber);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.id-dot {
+  position: absolute;
+  margin: -20px 0 0 -20px;
+  box-shadow: 0 0 0 3px rgba(9,20,18,0.75);
+}
+.id-legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+.id-legend .id-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.id-legend .id-num { flex-shrink: 0; margin-top: 2px; }
+.reveal .id-legend code {
+  border: 0;
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  color: var(--teal);
+  background: none;
+  padding: 0;
+}
+.reveal .id-legend p { font-size: var(--body); line-height: 1.35; margin: 4px 0 0; }
+
+/* ─── Submission checklist ──────────────────────────────────────── */
+.checklist {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-sm) var(--gap);
+  margin-top: var(--gap);
+}
+.check-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 12px 18px;
+}
+.check-box {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  margin-top: 4px;
+  border: 2px solid var(--teal);
+  border-radius: 4px;
+}
+.check-item h3 {
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin: 0 0 4px;
+}
+.reveal .check-item p { font-size: var(--body); line-height: 1.4; margin: 0; }
+
+/* ─── Sentence starters with fill-in blanks ─────────────────────── */
+.starters {
+  list-style: none;
+  margin: var(--gap) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.reveal .starters li {
+  font-size: var(--body);
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 10px 22px;
+}
+.blank {
+  display: inline-block;
+  min-width: 150px;
+  border-bottom: 2px solid var(--amber);
+  margin: 0 4px;
+  transform: translateY(4px);
+}
+.submit-chip {
+  display: inline-block;
+  padding: 2px 14px;
+  border-radius: 6px;
+  background: #7a45ad;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ─── Code cards (slides 5 and 6) ───────────────────────────────── */
+.code-card { flex-shrink: 0; }
+.reveal .code-card .code-body pre { font-size: var(--code); line-height: 1.4; }
+.code-body .ln { display: inline-block; width: 2.6ch; margin-right: 1.2ch; text-align: right; color: var(--text-muted); }
+.tk-kw  { color: var(--amber); font-weight: 600; }
+.tk-fn  { color: var(--text); font-weight: 600; }
+.tk-num { color: var(--gold); }
+.tk-str { color: var(--green); }
+.tk-nm  { color: var(--teal); }
+.tk-op  { color: var(--text); font-weight: 700; }
+/* Blanks students fill in on the if-else-if template */
+.code-blank {
+  display: inline-block;
+  min-width: 6ch;
+  border-bottom: 2px solid var(--amber);
+  transform: translateY(-4px);
+}
+/* updateScreen pattern: the declaration and the call sites */
+.code-body .hl-decl,
+.code-body .hl-call { display: inline-block; width: 100%; border-radius: 3px; }
+.code-body .hl-decl { background: rgba(180,160,251,0.10); box-shadow: inset 4px 0 0 #b4a0fb; }
+.code-body .hl-call { background: rgba(105,219,124,0.10); box-shadow: inset 4px 0 0 var(--green); }
+.reveal i.decl, .reveal i.call { font-style: normal; font-weight: 600; white-space: nowrap; }
+.reveal i.decl { color: #b4a0fb; }
+.reveal i.call { color: var(--green); }
+/* Eight sentence starters need tighter rows (slide 12) */
+.starters.starters-tight { gap: 12px; margin-top: var(--gap-sm); }
+.reveal .starters.starters-tight li { padding: 9px 22px; line-height: 1.3; }
+.starters-tight .blank { min-width: 120px; }
+
+/* ─── Numbered discussion questions (slide 4) ───────────────────── */
+.steps p {
+  font-size: var(--body);
+  line-height: 1.45;
+  padding-left: 64px;
+  position: relative;
+}
+.steps p + p { margin-top: var(--gap); }
+.step-n {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--amber);
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Seven ids, grouped into inputs and outputs (slide 5) */
+.id-groups {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+  margin-top: var(--gap);
+}
+.reveal .id-groups h3 { font-size: var(--h3); color: var(--teal); margin: 0 0 var(--gap-sm); }
+.id-groups .id-legend { gap: var(--gap-sm); }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 4 &middot; Lesson 4.11</span>
+        <h1 class="title-h1">Functions Make</h1>
+        <p style="font-size:var(--body);max-width:1100px;line-height:1.6;margin-top:var(--gap);">Today you will <i class="a">build an app</i> on your own, using <i class="c">variables</i>, <i class="c">conditionals</i>, and an <i class="f">updateScreen</i> function to design a quote.</p>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(180,160,251,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 70%);"></div>
+      <aside class="notes">Computer Science Principles, Unit 4 Lesson 11. This is the Make lesson for functions. Students work at their computers with this deck as their guide.</aside>
+    </section>
+
+    <!-- SLIDE 2 · THE QUOTE MAKER -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Functions Make</span>
+        <h2 style="margin-bottom:var(--gap);">The Quote Maker</h2>
+        <div class="media-split">
+          <img class="shot" src="media/quote-maker-app.png" alt="The Quote Maker app: the quote It&#39;s a beautiful day! shown in Palatino on a lavender background, with a Quote text box, a font dropdown set to Palatino, a color dropdown set to lavender, a Font Size slider, and the feedback Nice design!" style="height:640px;background:transparent;border:0;">
+          <div class="prose" style="margin-top:var(--gap);">
+            <p>Today you will write the code for the <i class="c">Quote Maker</i>. The screen is already designed for you.</p>
+            <p>The user types a <i class="a">quote</i>, picks a <i class="a">font</i> and a <i class="a">background color</i>, and slides to set the <i class="a">font size</i>. The app shows the quote with those choices and gives <i class="c">feedback</i> on the design.</p>
+            <p>Your code will use an <i class="f">updateScreen</i> function to keep everything on the screen up to date.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">This lesson has one main level plus the submission. Students can try the app and plan with a partner, but each student builds and submits their own app.</aside>
+    </section>
+
+    <!-- SLIDE 3 · TRY THE APP -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 1</span>
+        <h2 style="margin-bottom:var(--gap);">Try the App</h2>
+        <div class="media-split">
+          <img class="shot" src="media/quote-maker-app.png" alt="The Quote Maker app" style="height:600px;background:transparent;border:0;">
+          <div class="prose">
+            <p><a href="https://learn.mycode.run/link/xnyvm" target="_blank" rel="noopener"><i class="a">Open Lesson 11, Level 1</i> on Code.org</a> and <i class="a">try many of the different options</i>. Watch what happens on the screen when you move the slider or choose from a dropdown. When does the screen update?</p>
+            <ul class="bullets" style="margin-top:var(--gap-sm);">
+              <li>Choose <i class="s">lavender</i> and <i class="s">Lucida Sans</i>. What happens?</li>
+              <li>Choose <i class="s">lightgreen</i> and move the slider until the feedback changes.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">The screen updates every time any input changes, not only when a button is clicked: there is no button in this app. The two combinations trigger special feedback messages, which is the if-else-if statement students will write.</aside>
+    </section>
+
+    <!-- SLIDE 4 · DISCUSS WITH A PARTNER -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 1</span>
+        <h2 style="margin-bottom:var(--gap);">Discuss With a Partner</h2>
+        <div class="steps">
+          <p><span class="step-n">1</span>What does this app do?</p>
+          <p><span class="step-n">2</span>What are the <i class="c">inputs</i>?</p>
+          <p><span class="step-n">3</span>What are the <i class="c">outputs</i>?</p>
+          <p><span class="step-n">4</span>How could a <i class="c">function</i> be used in this app?</p>
+        </div>
+      </div>
+      <aside class="notes">Inputs: the quote text box, the font dropdown, the color dropdown, and the font size slider. Outputs: the quote, its background color, and the feedback message. A function: every input changes the same outputs, so one updateScreen function can set all of them, called from every onEvent.</aside>
+    </section>
+
+    <!-- SLIDE 5 · SCREEN ELEMENT IDS -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:40px !important;">
+        <span class="slide-tag">Step 2 &middot; Plan</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Screen Element IDs</h2>
+        <div style="display:flex;gap:var(--gap-lg);align-items:flex-start;">
+          <div class="id-map" style="margin-left:24px;">
+            <img class="shot" src="media/quote-maker-app.png" alt="The Quote Maker app with numbered markers on each element the code uses" style="background:transparent;border:0;">
+            <span class="id-dot" style="left:92%;top:20%;">1</span>
+            <span class="id-dot" style="left:7%;top:33%;">2</span>
+            <span class="id-dot" style="left:96%;top:61.5%;">3</span>
+            <span class="id-dot" style="left:-4%;top:71%;">4</span>
+            <span class="id-dot" style="left:96%;top:71%;">5</span>
+            <span class="id-dot" style="left:96%;top:78.5%;">6</span>
+            <span class="id-dot" style="left:7%;top:85%;">7</span>
+          </div>
+          <div class="prose" style="flex:1;">
+            <p>Every element on the screen already has an <i class="c">id</i>. Your code will use these names.</p>
+            <div class="id-groups">
+              <div>
+                <h3>Inputs</h3>
+                <div class="id-legend">
+                  <div class="id-item"><span class="id-num">3</span><div><code>quoteInput</code><p>The quote text box</p></div></div>
+                  <div class="id-item"><span class="id-num">4</span><div><code>fontFamilyInput</code><p>The font dropdown</p></div></div>
+                  <div class="id-item"><span class="id-num">5</span><div><code>colorInput</code><p>The color dropdown</p></div></div>
+                  <div class="id-item"><span class="id-num">6</span><div><code>fontSizeInput</code><p>The font size slider</p></div></div>
+                </div>
+              </div>
+              <div>
+                <h3>Outputs</h3>
+                <div class="id-legend">
+                  <div class="id-item"><span class="id-num">1</span><div><code>colorOutput</code><p>The quote&rsquo;s background</p></div></div>
+                  <div class="id-item"><span class="id-num">2</span><div><code>quoteOutput</code><p>The quote itself</p></div></div>
+                  <div class="id-item"><span class="id-num">7</span><div><code>feedbackOutput</code><p>The design feedback</p></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">These are the ids labeled on the activity guide. All four inputs need an event handler; there is no button. Each handler reads its input into a variable and calls updateScreen.</aside>
+    </section>
+
+    <!-- SLIDE 6 · THE UPDATESCREEN PATTERN -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:40px !important;">
+        <span class="slide-tag">Step 2 &middot; Plan</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Use the updateScreen() Pattern</h2>
+        <div style="display:grid;grid-template-columns:1fr 920px;gap:var(--gap);align-items:start;">
+          <div class="prose">
+            <p>Build the Quote Maker with the pattern from Lesson 4.9.</p>
+            <p>Each <i class="f">onEvent</i> stores the new input in a <i class="c">variable</i>, then <i class="call">calls</i> <i class="f">updateScreen</i>.</p>
+            <p><i class="f">updateScreen</i> is <i class="decl">declared once</i> and sets every output.</p>
+          </div>
+          <div class="code-card"><div class="code-hdr"><span class="clang">updateScreen Pattern</span></div><div class="code-body"><pre><code><span class="ln">1</span><span class="tk-kw">var</span> <span class="tk-nm">count</span> = <span class="tk-num">0</span>;
+<span class="hl-call"><span class="ln">2</span><span class="tk-fn">updateScreen</span>();</span>
+<span class="ln">3</span>
+<span class="ln">4</span><span class="tk-fn">onEvent</span>(<span class="tk-str">"upButton"</span>, <span class="tk-str">"click"</span>, <span class="tk-kw">function</span>() {
+<span class="ln">5</span>  <span class="tk-nm">count</span> = <span class="tk-nm">count</span> + <span class="tk-num">1</span>;
+<span class="hl-call"><span class="ln">6</span>  <span class="tk-fn">updateScreen</span>();</span>
+<span class="ln">7</span>});
+<span class="ln">8</span>
+<span class="ln">9</span><span class="tk-fn">onEvent</span>(<span class="tk-str">"downButton"</span>, <span class="tk-str">"click"</span>, <span class="tk-kw">function</span>() {
+<span class="ln">10</span>  <span class="tk-nm">count</span> = <span class="tk-nm">count</span> - <span class="tk-num">1</span>;
+<span class="hl-call"><span class="ln">11</span>  <span class="tk-fn">updateScreen</span>();</span>
+<span class="ln">12</span>});
+<span class="ln">13</span>
+<span class="hl-decl"><span class="ln">14</span><span class="tk-kw">function</span> <span class="tk-fn">updateScreen</span>() {</span>
+<span class="hl-decl"><span class="ln">15</span>  <span class="tk-fn">setText</span>(<span class="tk-str">"countLabel"</span>, <span class="tk-nm">count</span>);</span>
+<span class="hl-decl"><span class="ln">16</span>  <span class="tk-kw">if</span> (<span class="tk-nm">count</span> &gt; <span class="tk-num">20</span>) {</span>
+<span class="hl-decl"><span class="ln">17</span>    <span class="tk-fn">setProperty</span>(<span class="tk-str">"countLabel"</span>, <span class="tk-str">"text-color"</span>, <span class="tk-str">"green"</span>);</span>
+<span class="hl-decl"><span class="ln">18</span>  }</span>
+<span class="hl-decl"><span class="ln">19</span>}</span></code></pre></div></div>
+        </div>
+      </div>
+      <aside class="notes">This is the counter example from 4.9. In the Quote Maker, the four onEvents replace the two buttons, and updateScreen sets the quote, font, color, size, and feedback.</aside>
+    </section>
+
+    <!-- SLIDE 7 · PLAN THE CONDITIONAL -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 2 &middot; Plan</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Plan the Feedback</h2>
+        <div style="display:grid;grid-template-columns:1fr 820px;gap:var(--gap-lg);align-items:start;">
+          <div class="prose">
+            <p>In your activity guide, list a <i class="c">variable</i> for each piece of information, like <i class="n">color</i> and <i class="n">fontFamily</i>.</p>
+            <p>Then fill in this <i class="c">if-else-if</i> statement. Choose your own combinations and feedback messages.</p>
+          </div>
+          <div class="code-card"><div class="code-hdr"><span class="clang">Feedback</span></div><div class="code-body"><pre><code><span class="tk-kw">if</span> (<span class="tk-nm">color</span> <span class="tk-op">==</span> <span class="code-blank"></span> <span class="tk-op">&amp;&amp;</span> <span class="tk-nm">fontFamily</span> <span class="tk-op">==</span> <span class="code-blank"></span>) {
+  <span class="tk-fn">setText</span>(<span class="tk-str">"feedbackOutput"</span>, <span class="code-blank" style="min-width:10ch;"></span>);
+} <span class="tk-kw">else if</span> (<span class="code-blank"></span> <span class="tk-op">==</span> <span class="code-blank"></span> <span class="tk-op">&amp;&amp;</span>
+           <span class="code-blank"></span> <span class="tk-op">==</span> <span class="code-blank"></span>) {
+  <span class="tk-fn">setText</span>(<span class="tk-str">"feedbackOutput"</span>, <span class="code-blank" style="min-width:10ch;"></span>);
+} <span class="tk-kw">else</span> {
+  <span class="tk-fn">setText</span>(<span class="tk-str">"feedbackOutput"</span>, <span class="code-blank" style="min-width:10ch;"></span>);
+}</code></pre></div></div>
+        </div>
+      </div>
+      <aside class="notes">This is the template from the activity guide. A good place for it is inside updateScreen, so the feedback changes every time an input does. The final else gives the default message, like "Nice design!"</aside>
+    </section>
+
+    <!-- SLIDE 8 · MAKE THE QUOTE MAKER -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Do This</span>
+        <h2 style="margin-bottom:var(--gap);">Make the Quote Maker</h2>
+        <div class="media-split">
+          <img class="shot" src="media/activity-guide-plan.png" alt="Activity Guide page 1: Step 1, try the app, with the screen element ids labeled, and Step 2, plan, with a variables table and an if-else-if template for the feedback" style="height:640px;">
+          <div class="prose">
+            <p><i class="a">Use the activity guide to plan</i> your code before you start building. Fill in the <i class="c">variables</i> you will create and the <i class="c">if-else-if</i> statement for the feedback.</p>
+            <p>Step 3 of the activity guide includes steps you can follow to <i class="a">build the app</i>, or you can use your own process.</p>
+            <p>Test each combination from your if-else-if statement to make sure the right <i class="a">feedback</i> appears.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Check plans before students start coding. A good plan has four variables (quote, font, color, and size), an onEvent for each input, and one updateScreen function.</aside>
+    </section>
+
+    <!-- SLIDE 9 · GET STARTED -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Do This</span>
+        <h2 style="margin-bottom:var(--gap);">Get Started</h2>
+        <div class="step-list">
+          <p><span class="step-label">Step 1</span><a href="https://learn.mycode.run/link/xnyvm" target="_blank" rel="noopener"><i class="a">Open Lesson 11, Level 1</i> on Code.org</a>, then <i class="a">try the app</i> and discuss the questions with a partner.</p>
+          <p><span class="step-label">Step 2</span><i class="a">Plan</i> your variables and your if-else-if statement in the activity guide.</p>
+          <p><span class="step-label">Step 3</span><i class="a">Build</i> the Quote Maker with an <i class="f">updateScreen</i> function.</p>
+          <p><span class="step-label">Step 4</span>Test every feedback combination and check the rubric before you <i class="a">submit</i>.</p>
+          <p><span class="step-label">Step 5</span><i class="a">Complete the writing practice</i> and submit your activity guide.</p>
+        </div>
+      </div>
+      <aside class="notes">This slide stays up while students work so they can see the order of the steps. The step numbers match the activity guide.</aside>
+    </section>
+
+    <!-- SLIDE 10 · CHECK YOUR WORK -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:44px !important;">
+        <span class="slide-tag">Before You Submit</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Check Your Work</h2>
+        <p style="font-size:var(--body);max-width:1350px;">Check your app against the rubric <i class="a">before</i> you click <span class="submit-chip">Submit</span> on Code.org.</p>
+        <div class="checklist">
+          <div class="check-item"><span class="check-box"></span><div><h3>Input</h3><p>An <i class="f">onEvent</i> is created for every required input.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Variables</h3><p>Variables store every piece of information the app uses.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Conditionals</h3><p>An if-else-if statement checks the selected options and shows feedback.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Functions</h3><p>A function updates every output, and every <i class="f">onEvent</i> calls it.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Runs Without Errors</h3><p>No errors are present in the code.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Coding Comments</h3><p>Comments explain every <i class="f">onEvent</i> and function.</p></div></div>
+        </div>
+      </div>
+      <aside class="notes">This is the Extensive Evidence column of the rubric. The Functions row is new in this lesson: the function has to update all of the outputs, and it has to be called in every onEvent.</aside>
+    </section>
+
+    <!-- SLIDE 11 · CREATE PT WRITING PRACTICE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 5</span>
+        <h2 style="margin-bottom:var(--gap);">Create Performance Task Writing Practice</h2>
+        <p style="font-size:var(--body);max-width:1350px;">This question is based on the app you submitted. It is practice for the written part of the <i class="c">Create Performance Task</i>.</p>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1350px;">
+          <p style="font-size:var(--body);color:var(--text);">To make sure the feedback message is displayed correctly for the user&rsquo;s inputs, describe a <i class="c">set of inputs</i> you would use to test the <i class="f">updateScreen</i> function. For each set of inputs, give the <i class="c">expected feedback message</i>. How would you verify that each conditional statement in the code behaves as intended?</p>
+        </div>
+        <p style="font-size:var(--body);max-width:1350px;margin-top:var(--gap-lg);"><i class="a">Submit your completed activity guide</i> along with your completed app.</p>
+      </div>
+      <aside class="notes">The next slide has sentence starters for students who are not sure how to begin.</aside>
+    </section>
+
+    <!-- SLIDE 12 · SENTENCE STARTERS -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:40px !important;">
+        <span class="slide-tag">Step 5</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Sentence Starters</h2>
+        <p style="font-size:var(--body);max-width:1350px;">These sentence starters may help you write your response. You can use or change some or all of them.</p>
+        <ul class="starters starters-tight">
+          <li>To test the <i class="f">updateScreen</i> function, I would<span class="blank"></span>.</li>
+          <li>For the first set of inputs, I would choose<span class="blank"></span>because<span class="blank"></span>.</li>
+          <li>The expected feedback message for this set of inputs is<span class="blank"></span>.</li>
+          <li>For the second set of inputs, I would choose<span class="blank"></span>because<span class="blank"></span>.</li>
+          <li>The expected feedback message for this combination is<span class="blank"></span>.</li>
+          <li>For the next set of inputs, I would choose<span class="blank"></span>because<span class="blank"></span>.</li>
+          <li>To verify each conditional statement behaves as intended, I would check if<span class="blank"></span>.</li>
+          <li>If the feedback does not match the expected result, it would indicate that<span class="blank"></span>.</li>
+        </ul>
+      </div>
+      <aside class="notes">A strong response gives one set of inputs for each branch of the if-else-if statement, including one that should fall through to the final else, and says what feedback each should show.</aside>
+    </section>
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'csp-4-11-functions-make',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+</body>
+</html>
