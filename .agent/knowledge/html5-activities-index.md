@@ -170,6 +170,23 @@ mechanism.
 - **Helpers in the same file:** `drawWaves()` fills any `<path data-wave="sin|abs|p1|p3" data-x0 data-x1 data-mid data-amp data-cycles data-phase>` with a computed waveform (sine, commutated DC, single phase power, balanced three phase power), so static slides need no hand-plotted paths. `initTaskPager(el)` turns a hidden `<ol>` inside `.task-pager` into a one-task-at-a-time pager with ◀/▶ buttons (styles in `Decks/AR2/ACMotors/theme.css`).
 - **Reuse:** any rotating-machine or periodic-signal investigation: generator vs. motor, phase shift, frequency vs. amplitude. Swap the stator builder for another geometry and keep the buffer, scope, and loop.
 
+### Motor Starting Lab (single phase starting designs vs. loads, torque-speed chart)
+- **Where:** `Decks/AR2/ACMotors/Day2_Starting_AC_Motors.html`, slide 17 (`.start-lab`, `buildStartLab(root)` in the trailing `<script>`).
+- **Concept:** pick one of six designs (main winding only, shaded pole, split phase, capacitor start, PSC, CSCR) and one of four loads (small fan, blower, compressor, high-inertia conveyor), then Start. The rotor accelerates, stalls and hums, overheats its start winding, runs overloaded at high slip, or runs normally. A live torque-speed chart shows the motor curve (with the drop where the centrifugal switch opens at 75% speed), the dashed load curve, and the moving operating point. A motor cross section lights the energized windings, spins the cage rotor, and draws the field arrow (pulsating when AUX is off or the capacitor is open, elliptical or circular otherwise). A small circuit for the chosen design opens its switch live. Tiles show speed, start-winding time against its limit, efficiency and noise, and relative cost and part count, so no design wins on every measure. A fault checkbox opens the capacitor (a Day 5 diagnosis preview).
+- **Mechanism:** a documented illustrative model. Each design has start and run curves `[T0, Tbd]` (rise to breakdown torque at s = 0.9, then linear to zero at synchronous speed), a switch flag and start-winding time limit, AUX field size and phase for the field arrow, and efficiency, noise, cost, and part count. Each load is a torque function of speed plus an inertia `J`; the rotor integrates `ds/dt = (Tm − Tl) / (100 J)` in real time. States (STARTING, RUNNING, OVERLOADED below 94% speed, STALLED, TRIPPED, COASTING) each produce a specific evidence-based message in a fixed-height feedback box sized for the longest one. The loop is the shared `startSimLoop`, so it only runs while its slide is current.
+- **Reuse:** any "pick a component, see if it meets the load" sizing activity: swap the design table and load functions (pump curves, gear ratios, actuator force vs. stroke).
+
+### Rotating field viewer (pulsating, split phase, counter-rotating halves)
+- **Where:** same file, slides 8, 9, and 10 (`.field-viz`, `buildFieldViz(root)`). The cross section itself is `buildMotorDrawing(svg)`, shared with the lab above.
+- **Concept:** a stator with MAIN coils (top and bottom) and optional AUX coils (left and right). The green field arrow B is `cos(ωt)·up + a·cos(ωt − φ)·right`, with a fading trail of its tip, so students see a line (pulsating), an ellipse, or a circle (rotating). `data-halves` adds two dashed half-size arrows turning in opposite directions whose sum is the pulsating field: the "why it hums" picture. `data-mode="split"` adds 0/30/60/90° phase-shift buttons and tiles for field shape and starting torque (∝ sin φ).
+- **Reuse:** extend `fieldAt` to three windings at 120° for a three phase rotating field (the Day 3 plan), or to any two-axis vector sum demo (phasors, Lissajous figures).
+
+### Ladder schematic builder for starting circuits
+- **Where:** same file, `drawLadder(svg, key, opts)` with the `LADDERS` table; static on slides 12 to 14, live in the lab.
+- **Concept:** draws an AC source over two parallel branches (MAIN, and AUX with its parts: resistor, start or run capacitor, centrifugal switch, or a parallel pair) into an `<svg class="ladder" viewBox="0 0 520 300">`. `opts.switchOpen` draws the switch open and dims the AUX branch.
+- **Mechanism:** symbols are generated paths with fixed widths, laid out centered between the rails; the lower row of a parallel pair puts its labels underneath so they never collide with the upper row.
+- **Reuse:** any small series/parallel schematic described as data (relay rungs, sensor circuits) where hand-placing SVG would be error-prone.
+
 ## Topic-coupled but reusable *mechanism*
 
 ### Drag-to-correct-target credential/tool matching

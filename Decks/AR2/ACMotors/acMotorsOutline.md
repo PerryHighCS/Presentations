@@ -53,18 +53,20 @@ factor shown.
 3. Warm up: three phase output beside a single sine
 4. Resonance (poll + FR): which supply will start a motor more easily, and why
 5. Inside an induction motor: stator, windings, rotor, air gap, shaft, bearings
-6. The squirrel cage rotor: induced currents, no brushes, compared with a PM rotor
-7. Single phase field: field viewer showing a pulsating field on a fixed axis
-8. Why starting torque is a problem: two equal counter-rotating halves, hum, push start either way
-9. Shaded pole
-10. Resistance start split phase (centrifugal switch)
-11. Capacitor start (the capacitor shifts phase; it is not a burst of energy)
-12. PSC and capacitor start capacitor run
-13. Comparison table
-14. Investigation tasks
-15. **Motor Starting Lab simulator**
-16. Resonance: justify a design for the fan, compressor, and blower
-17. Resonance exit ticket (4 questions)
+6. A real induction motor: labeled photo of a motor taken apart (bearings, cooling fan)
+7. The squirrel cage rotor: induced currents, no brushes, compared with a PM rotor
+8. Single phase field: field viewer showing a pulsating field on a fixed axis
+9. Why starting torque is a problem: two equal counter-rotating halves, hum, push start either way
+10. Add a second winding and shift its current: field viewer with 0 to 90° phase shift
+11. Shaded pole
+12. Resistance start split phase (centrifugal switch)
+13. Capacitor start (the capacitor shifts phase; it is not a burst of energy)
+14. PSC and capacitor start capacitor run
+15. Comparison table
+16. Investigation tasks
+17. **Motor Starting Lab simulator**
+18. Resonance: justify a design for the fan, compressor, and blower
+19. Resonance exit ticket (4 questions)
 
 **Motor Starting Lab:** six designs (main winding only, shaded pole, split phase,
 capacitor start, PSC, CSCR) × four loads (small fan, ventilation blower, air
