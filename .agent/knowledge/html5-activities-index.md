@@ -179,13 +179,26 @@ mechanism.
 ### Rotating field viewer (pulsating, split phase, counter-rotating halves)
 - **Where:** same file, slides 8, 9, and 10 (`.field-viz`, `buildFieldViz(root)`). The cross section itself is `buildMotorDrawing(svg)`, shared with the lab above.
 - **Concept:** a stator with MAIN coils (top and bottom) and optional AUX coils (left and right). The green field arrow B is `cos(ωt)·up + a·cos(ωt − φ)·right`, with a fading trail of its tip, so students see a line (pulsating), an ellipse, or a circle (rotating). `data-halves` adds two dashed half-size arrows turning in opposite directions whose sum is the pulsating field: the "why it hums" picture. `data-mode="split"` adds 0/30/60/90° phase-shift buttons and tiles for field shape and starting torque (∝ sin φ).
-- **Reuse:** extend `fieldAt` to three windings at 120° for a three phase rotating field (the Day 3 plan), or to any two-axis vector sum demo (phasors, Lissajous figures).
+- **Three phase version:** `buildMotor3` / `buildFieldViz3` in `Day3_Three_Phase_Motors_and_VFDs.html` (slides 3 to 5) draw A, B, C coil pairs at 120°. Options: `data-mode="single"` connects only A (side-by-side single vs. three phase comparison), `data-waves` adds a phase-current plot with a moving "now" cursor, and `data-rotor` adds a rotor speed selector (stopped, 80%, 97%, 100%) whose bars glow amber in proportion to slip, brightest under the field's poles so the glow sweeps with the field, and go dark at synchronous speed (why slip is needed).
+- **Reuse:** any two-axis or three-axis vector sum demo (phasors, Lissajous figures).
 
 ### Ladder schematic builder for starting circuits
 - **Where:** same file, `drawLadder(svg, key, opts)` with the `LADDERS` table; static on slides 12 to 14, live in the lab.
 - **Concept:** draws an AC source over two parallel branches (MAIN, and AUX with its parts: resistor, start or run capacitor, centrifugal switch, or a parallel pair) into an `<svg class="ladder" viewBox="0 0 520 300">`. `opts.switchOpen` draws the switch open and dims the AUX branch.
 - **Mechanism:** symbols are generated paths with fixed widths, laid out centered between the rails; the lower row of a parallel pair puts its labels underneath so they never collide with the upper row.
 - **Reuse:** any small series/parallel schematic described as data (relay rungs, sensor circuits) where hand-placing SVG would be error-prone.
+
+### VFD Control Room (frequency, poles, load, ramp, stop vs trip vs E-stop)
+- **Where:** `Decks/AR2/ACMotors/Day3_Three_Phase_Motors_and_VFDs.html`, slide 13 (`.vfd-lab`, `buildVfdLab(root)`).
+- **Concept:** a simulated drive and induction motor. Sliders set frequency (10 to 90 Hz), load (0 to 150%), and ramp time (1 to 20 s); a 2/4/6 pole selector swaps in a different motor and redraws its nameplate (disabled while the shaft turns, because a VFD cannot change poles). Displays: the drive's three phase output waveforms with live Hz and V, sync vs. shaft speed bars, a field-and-rotor dial, and tiles for slip, torque, current against FLA, and motor heat. Start ramps up, Stop ramps down under control, an overcurrent or overload trip coasts and needs Reset fault, and E-STOP latches until released and reset; nothing ever restarts on its own.
+- **Mechanism:** an educational model. Output frequency ramps at 60 Hz per ramp time; sync = 120f/P; torque demand = load + 5% friction + inertia × ramp rate (inertia grows with load); slip RPM ∝ torque (rated slip at 100%, the same at any frequency, so slip % rises at low frequency); above 60 Hz voltage caps at 460 V and available torque falls as 60/f. Demand over the 150% current limit for 0.5 s trips OC (or a stall above base speed); current above 115% FLA heats an I²t accumulator that trips OL at 100%. The running commentary in the fixed-height feedback box shows the 120f/P arithmetic with live numbers.
+- **Reuse:** any drive or controller where students set parameters and watch protective limits act (servo drives, pump curves, battery chargers).
+
+### Three wire start/stop holding circuit
+- **Where:** same file, slide 15 (`.tw-sim`, `buildThreeWire(root)`), right after an intro slide on motor starters and why a holding circuit beats an on/off switch.
+- **Concept:** a ladder diagram with an NC Stop button, an NO Start button with a holding contact M in parallel, the M coil, and an NC overload contact, plus a power rung where the M contacts run a spinning motor. Start and Stop are hold-to-press buttons (pointer and keyboard); toggles trip the overload and fail the power. Live wires turn green, contacts show closed bridges, buttons move, chips report coil, holding contact, and motor, and each event explains itself, including "power is back, but no surprise restart."
+- **Mechanism:** one boolean, `coil = power && !stop && !ol && (start || sealed)`, with `sealed` latched to the coil each update; every `[data-w]` wire and `[data-when]` contact toggles `.on` from a small lookup of conditions. Same hold-button pattern as the EX4 relay simulator.
+- **Reuse:** jog vs. run circuits, interlocked forward/reverse starters, or any seal-in rung.
 
 ## Topic-coupled but reusable *mechanism*
 

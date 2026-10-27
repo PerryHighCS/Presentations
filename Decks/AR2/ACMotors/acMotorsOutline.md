@@ -93,10 +93,11 @@ noise of each design. One fault switch (open capacitor) previews Day 5.
 11. Resonance prediction: synchronous speed at 30 Hz, and what a VFD changes
 12. Investigation tasks A to G
 13. **VFD Control Room simulator**
-14. Starting and stopping an industrial motor: **three wire start/stop simulator**
-15. Overload protection, and stop vs trip vs emergency stop
-16. Resonance: investigation results
-17. Resonance exit ticket
+14. Starting a motor without a VFD: contactor, overload relay, pushbuttons, and why not an on/off switch
+15. Starting and stopping an industrial motor: **three wire start/stop simulator**
+16. Overload protection, and stop vs trip vs emergency stop
+17. Resonance: investigation results
+18. Resonance exit ticket
 
 **VFD Control Room:** frequency 10 to 90 Hz, 2/4/6 poles (each swaps in a
 different motor and nameplate), load 0 to 150 %, accel/decel ramp 1 to 20 s,
