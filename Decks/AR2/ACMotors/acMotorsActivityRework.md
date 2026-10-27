@@ -79,7 +79,7 @@ customer brief.
 | auxiliary + start capacitor, no switch | The start capacitor stays in and fails (fault). |
 | capacitor or switch without the auxiliary winding | Nothing to connect to: no effect, money wasted. |
 | shading rings plus an auxiliary design | Behaves like the auxiliary design, with extra losses. |
-| auxiliary + switch + run capacitor, no start capacitor | Decide during the build (likely: runs like split phase, run capacitor wasted). |
+| auxiliary + switch + run capacitor, no start capacitor | Starts with about PSC-level torque (the small run capacitor gives a modest phase shift), so it starts a fan or blower but stalls the compressor. At 75 % speed the switch removes the auxiliary winding **and** the run capacitor, so it runs and scores like split phase. The result card explains: "Your switch removed the run capacitor once the motor reached speed, so you paid for a capacitor that never runs." This sets up why a CSCR's switch drops only the start capacitor. |
 
 ### Customer briefs (numbers to tune during the build)
 
@@ -114,7 +114,8 @@ start winding overheats).
 
 ### Checklist
 
-- [ ] Settle the open combination rule and the brief numbers against the model.
+- [ ] Tune the brief numbers against the model (the auxiliary + switch + run
+  capacitor rule is settled above).
 - [ ] Build the workshop UI on slide 17 (reuse `buildMotorDrawing`, `drawLadder`,
   the torque-speed chart).
 - [ ] Combination rules, including the fault and no-effect cases.
@@ -172,8 +173,11 @@ command, under one shared load, with one shared Bump.
 - One command (target, speed, load) drives all three at once.
 - Students lock in a prediction ("which arms end within 1° of the target after a
   bump?") before Run unlocks.
-- One position-vs-time graph with three actual traces and the command, or three
-  small graphs; decide during the build by what fits.
+- One shared position-vs-time graph: the dashed command plus three actual
+  traces. Each system gets its own line thickness, drawn thickest first, so
+  when the traces overlap (light loads) every line still shows as a stripe
+  inside the one beneath it. Each trace also has its own color and a label at
+  its right end, so nothing depends on color alone.
 - Scoreboard after each run: final error, lost steps, settle time, cost.
 
 ### Deck changes
@@ -206,12 +210,17 @@ The Work Orders already differ the most. Lean further into deliberate diagnosis.
   are still flagged. Running out of time ends the investigation.
 - **Machine history:** a log for each ticket (recent work, changes upstream,
   past failures), including some entries that do not matter.
-- **Eliminate:** the possible causes are listed during the investigation, and
-  students strike out the ones the evidence rules out.
+- **Eliminate (scored):** the possible causes are listed during the
+  investigation, and students strike out the ones the evidence rules out.
+  Strikes count in the record: the elimination point needs at least one wrong
+  cause struck out and the true cause never struck out at submission. Striking
+  out the true cause shows in the record as the evidence that was misread.
 - **Defend:** before submitting, students tag the evidence chips that support
   their diagnosis. The record checks that the tagged evidence includes a key
   reading.
-- **Record:** adds downtime used against the budget and the defended evidence.
+- **Record:** scored out of 6: key evidence, safety, elimination, diagnosis,
+  repair, and defended evidence. It also shows downtime used against the
+  budget.
 
 ### Interface notes
 
@@ -233,10 +242,7 @@ status chip.
 
 ## Open questions
 
-- Day 2: what the auxiliary + switch + run capacitor combination should do.
-- Day 4: one shared graph with three traces, or three small graphs.
-- Day 5: whether struck-out causes count in the score (for example, striking
-  out the true cause loses a point) or stay as working notes.
+None right now. Add new ones here as they come up during the build.
 
 ## Progress
 
