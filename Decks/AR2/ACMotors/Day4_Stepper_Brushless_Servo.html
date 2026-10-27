@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1dwl4ux">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 4: Stepper, Brushless, and Servo Motors</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: AC Motors Day 4 · Stepper, Brushless, Servo
+
+   Colour use in this deck:
+   stator phases A / B / C    -> --ph-a / --ph-b / --ph-c with letters
+   stator magnetic field      -> --accent (green)
+   commanded position         -> --text (white, dashed)
+   actual position            -> --result (cyan)
+   target                     -> --warn (amber)
+   faults, lost steps, error  -> --fault (red)
+   ============================================================ */
+
+/* ─── Commutation demo ─── */
+.cm .stator { fill: none; stroke: #1f2c38; stroke-width: 52; }
+.cm .stator-edge { fill: none; stroke: rgba(230,247,234,0.3); stroke-width: 2; }
+.cm .coil { stroke-width: 3; }
+.cm .coil-a { stroke: var(--ph-a); fill: var(--ph-a); }
+.cm .coil-b { stroke: var(--ph-b); fill: var(--ph-b); }
+.cm .coil-c { stroke: var(--ph-c); fill: var(--ph-c); }
+.cm .wlbl { font-family: var(--font-mono); font-size: 34px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+.cm .pol { font-family: var(--font-mono); font-size: 36px; font-weight: 700; fill: #0d1117; text-anchor: middle; dominant-baseline: central; }
+.cm .rotor-n { fill: rgba(255,138,128,0.4); stroke: var(--fault); stroke-width: 2; }
+.cm .rotor-s { fill: rgba(230,247,234,0.14); stroke: rgba(230,247,234,0.6); stroke-width: 2; }
+.cm .pole-lbl { font-family: var(--font-mono); font-size: 34px; font-weight: 700; fill: var(--text); text-anchor: middle; dominant-baseline: central; }
+.cm .shaft { fill: var(--bg); stroke: rgba(230,247,234,0.6); stroke-width: 3; }
+.cm .b-arrow { stroke: var(--accent); stroke-width: 7; stroke-linecap: round; }
+.cm .b-head { fill: var(--accent); }
+.cm .hall { fill: #2a3440; stroke: var(--text-muted); stroke-width: 2; }
+.cm .hall.on { fill: var(--warn); stroke: var(--warn); }
+.cm .hall-lbl { font-family: var(--font-mono); font-size: 32px; fill: var(--text); text-anchor: middle; dominant-baseline: central; }
+.cm-wrap { display: grid; grid-template-columns: 440px 1fr; gap: 28px; align-items: start; }
+.comm-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 24px; }
+.comm-table th { font-size: var(--small); color: var(--accent); text-align: left; padding: 4px 10px; border-bottom: 1px solid var(--accent-border); letter-spacing: 0.08em; }
+.comm-table td { padding: 3px 10px; color: var(--text-muted); border-bottom: 1px solid rgba(57,211,83,0.1); }
+.comm-table tr.now td { background: rgba(57,211,83,0.16); color: var(--text); font-weight: 700; }
+
+/* ─── Block diagrams ─── */
+.blk { fill: var(--bg-card); stroke: var(--accent-border); stroke-width: 2; }
+.blk-hot { fill: rgba(57,211,83,0.10); stroke: var(--accent); stroke-width: 2.5; }
+.blk-name { font-family: var(--font-mono); font-size: 28px; font-weight: 700; fill: var(--text); text-anchor: middle; dominant-baseline: central; }
+.blk-sub { font-family: var(--font-mono); font-size: 25px; fill: var(--text-muted); text-anchor: middle; }
+.flow { fill: none; stroke: rgba(230,247,234,0.65); stroke-width: 3.5; }
+.flow-head { fill: rgba(230,247,234,0.65); }
+.flow-fb { fill: none; stroke: var(--result); stroke-width: 3.5; }
+.flow-fb-head { fill: var(--result); }
+.missing { fill: none; stroke: var(--fault); stroke-width: 3; stroke-dasharray: 10 8; }
+
+/* ─── Precision Under Pressure ─── */
+.pp .pp-grid { display: grid; grid-template-columns: 430px 1fr; gap: 18px; align-items: start; }
+.pp .pp-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.pp .pp-tiles { grid-template-columns: 1fr 1fr; }
+.pp .t-sub { display: block; font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted); white-space: nowrap; }
+.pp .arm-disc { fill: #16202a; stroke: rgba(230,247,234,0.4); stroke-width: 2; }
+.pp .arm-ticks { stroke: rgba(230,247,234,0.3); stroke-width: 2; }
+.pp .arm-actual { stroke: var(--result); stroke-width: 16; stroke-linecap: round; }
+.pp .arm-cmd { stroke: var(--text); stroke-width: 4; stroke-dasharray: 10 8; stroke-linecap: round; }
+.pp .arm-target { stroke: var(--warn); stroke-width: 6; stroke-linecap: round; }
+.pp .arm-hub { fill: var(--bg); stroke: rgba(230,247,234,0.6); stroke-width: 3; }
+.pp .arm-lbl { font-family: var(--font-mono); font-size: 24px; fill: var(--text-muted); text-anchor: middle; dominant-baseline: central; }
+.pp .g-lbl { font-family: var(--font-mono); font-size: 26px; fill: var(--text-muted); }
+.pp .g-cmd { fill: none; stroke: var(--text); stroke-width: 3; stroke-dasharray: 10 7; }
+.pp .g-act { fill: none; stroke: var(--result); stroke-width: 4.5; stroke-linejoin: round; }
+.pp .g-tgt { stroke: var(--warn); stroke-width: 3; }
+.pp .lg-cmd, .pp .lg-act, .pp .lg-tgt { display: inline-block; width: 34px; height: 0; vertical-align: middle; margin: 0 6px 0 12px; }
+.pp .lg-cmd { border-top: 3px dashed var(--text); }
+.pp .lg-act { border-top: 5px solid var(--result); }
+.pp .lg-tgt { border-top: 3px solid var(--warn); }
+.pp .ctrl-line { font-family: var(--font-mono); font-size: var(--small); color: var(--text); min-height: 64px; line-height: 1.45; }
+.pp .ctrl-line b { color: var(--accent); }
+.pp .drive-bar { height: 14px; background: rgba(230,247,234,0.08); border: 1px solid var(--accent-border); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+.pp .drive-fill { height: 100%; width: 0; background: var(--accent); }
+.pp .drive-fill.sat { background: var(--fault); }
+.pp [data-role="feedback"] { height: 112px; }
+.pp .status-row { display: flex; align-items: center; gap: 12px; }
+.pp .status-row .sim-feedback { flex: 1; }
+.pp .cost-chip { font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted); }
+.pp .cost-chip b { color: var(--warn); }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(94,234,212,0.10),transparent 70%);"></div>
+  <div class="glow" style="width:420px;height:420px;bottom:-90px;right:12%;background:radial-gradient(circle,rgba(255,138,128,0.07),transparent 70%);"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; AC Motors &nbsp;·&nbsp; Day 4</span>
+    <h1 class="title-h1">Stepper, Brushless, and <span class="accent">Servo</span> Motors</h1>
+    <p class="subtitle">// Electronic commutation &nbsp;·&nbsp; Steps and lost steps &nbsp;·&nbsp; Feedback and control</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · ESSENTIAL QUESTION AND OBJECTIVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Essential Question &amp; Objectives</span>
+    <div class="eq-box" style="margin-bottom:var(--gap-lg);">
+      <span class="eq-label">Essential question</span>
+      Why aren&#39;t all robotic systems powered by <span class="accent">ordinary induction motors</span>?
+    </div>
+    <div class="split split-50 split-top" style="flex:0 0 auto;">
+      <div>
+        <h3>By the end of class you can <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Explain <strong>mechanical</strong> vs. <strong>electronic</strong> commutation.</li>
+          <li>Calculate <strong>steps</strong> for a stepper move, and explain <strong>lost steps</strong>.</li>
+          <li>Explain how a <strong>servo</strong> uses feedback.</li>
+          <li><strong>Select</strong> a motor system for an application.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today&#39;s <span class="accent">path</span></h3>
+        <div class="agenda-grid">
+          <a class="agenda-item" href="#/5"><span class="agenda-num">01</span><span class="agenda-text"><strong>Brushed</strong> and <strong>brushless</strong> motors</span></a>
+          <a class="agenda-item" href="#/8"><span class="agenda-num">02</span><span class="agenda-text"><strong>Stepper</strong> motors</span></a>
+          <a class="agenda-item" href="#/12"><span class="agenda-num">03</span><span class="agenda-text"><strong>Servo</strong> systems</span></a>
+          <a class="agenda-item" href="#/14"><span class="agenda-num">04</span><span class="agenda-text">Investigate: <strong>Precision Under Pressure</strong></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · HOOK -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Hook · Different Machines, Different Motors</span>
+    <h2>What Each Machine <span class="accent">Needs From Its Motor</span></h2>
+    <div class="row-3" style="margin-bottom:var(--gap-lg);">
+      <div class="card"><span class="card-name">Industrial ventilation fan</span><p class="card-body">Spin at a <strong>steady speed</strong> for hours. Exact position does not matter.</p></div>
+      <div class="card"><span class="card-name">3D printer axis</span><p class="card-body">Move the print head an <strong>exact distance</strong>, thousands of times, quickly.</p></div>
+      <div class="card"><span class="card-name">Robotic arm joint</span><p class="card-body">Reach a precise angle and <strong>hold it</strong> while the load pushes back.</p></div>
+    </div>
+    <p class="slide-intro">An induction motor would run the fan beautifully. So why wouldn&#39;t we use the <span class="key">same motor</span> for all three?</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · HOOK RESPONSE (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:3:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Three machines: an industrial ventilation fan (steady speed for hours), a 3D printer axis (move an exact distance, quickly, thousands of times), and a robotic arm joint (reach a precise angle and hold it while the load pushes back). Why wouldn&#39;t we use the same motor for all three?","order":0,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Hook · Your Thinking</span>
+    <h2>Why Not the <span class="accent">Same Motor?</span></h2>
+    <div class="frq-box" style="max-width:1300px;">A ventilation fan, a 3D printer axis, and a robotic arm joint each need something different from their motor. Why wouldn&#39;t we use the same motor for all three?</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · BRUSHED DC REVIEW -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Brushed and Brushless · Topic 01 · Review</span>
+    <h2>The Brushed <span class="accent">DC Motor</span></h2>
+    <div class="split" style="grid-template-columns:640px 1fr;flex:0 0 auto;align-items:center;">
+      <figure class="fig">
+        <svg viewBox="0 0 560 420" role="img" aria-label="Brushed DC motor: a coil turns between N and S magnets; its ends connect to a split ring commutator, and two brushes connect the commutator to a DC battery">
+          <rect x="10" y="40" width="70" height="200" rx="8" fill="rgba(255,138,128,0.35)" stroke="var(--fault)" stroke-width="2"/>
+          <text x="45" y="148" class="pole-lbl" style="font-family:var(--font-mono);font-size:34px;font-weight:700;fill:var(--text)" text-anchor="middle">N</text>
+          <rect x="480" y="40" width="70" height="200" rx="8" fill="rgba(230,247,234,0.14)" stroke="rgba(230,247,234,0.6)" stroke-width="2"/>
+          <text x="515" y="148" style="font-family:var(--font-mono);font-size:34px;font-weight:700;fill:var(--text)" text-anchor="middle">S</text>
+          <path d="M270 210 H130 V70 H430 V210 H290" fill="none" stroke="var(--ph-a)" stroke-width="6" stroke-linejoin="round"/>
+          <text x="280" y="148" class="svg-lbl" text-anchor="middle">armature coil</text>
+          <path d="M270 210 V262 L274 272 M290 210 V262 L286 272" fill="none" stroke="var(--ph-a)" stroke-width="4"/>
+          <path d="M274 271 A44 18 0 0 0 274 307" fill="none" stroke="var(--warn)" stroke-width="8"/>
+          <path d="M286 271 A44 18 0 0 1 286 307" fill="none" stroke="var(--warn)" stroke-width="8"/>
+          <rect x="196" y="279" width="36" height="20" rx="3" fill="#9aa5ad"/>
+          <rect x="328" y="279" width="36" height="20" rx="3" fill="#9aa5ad"/>
+          <path d="M196 289 H150 V370 H250 M364 289 H410 V370 H310" fill="none" stroke="rgba(230,247,234,0.6)" stroke-width="3"/>
+          <path d="M250 352 V388 M266 360 V380 M294 352 V388 M310 360 V380" stroke="var(--text)" stroke-width="4"/>
+          <path d="M266 370 H294" stroke="var(--text)" stroke-width="2" stroke-dasharray="4 4"/>
+          <text x="236" y="350" class="svg-lbl-b" text-anchor="middle">+</text>
+          <text x="326" y="350" class="svg-lbl-b" text-anchor="middle">&minus;</text>
+          <text x="280" y="414" class="svg-lbl" text-anchor="middle">DC supply</text>
+          <text x="214" y="332" class="svg-lbl" text-anchor="middle">brush</text>
+          <text x="346" y="332" class="svg-lbl" text-anchor="middle">brush</text>
+          <text x="330" y="254" class="svg-lbl" style="fill:var(--warn)">commutator</text>
+        </svg>
+      </figure>
+      <div>
+        <p class="slide-intro">You met the <span class="warn">commutator</span> in the generator lesson. In a motor it <strong>reverses the coil current</strong> every half turn, so the magnets keep pushing the coil the same direction.</p>
+        <p class="pc-line pro fragment fade-up"><b>Pros</b>Cheap and simple: apply DC and it spins. More voltage=more speed.</p>
+        <p class="pc-line con fragment fade-up"><b>Cons</b>Brushes rub and spark, so they <strong>wear out</strong>, waste energy, and make electrical noise.</p>
+        <p class="pc-line use fragment fade-up"><b>Uses</b>Toys, small appliances, and the motors in your AR1 kits.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · BRUSHLESS CONSTRUCTION -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Brushed and Brushless · Topic 01 · Brushless Motors</span>
+    <h2>The Brushless Motor Turns It <span class="accent">Inside Out</span></h2>
+    <div class="split" style="grid-template-columns:1fr 1fr;flex:0 0 auto;align-items:start;">
+      <div>
+        <p class="slide-intro">A <span class="key">brushless DC (BLDC)</span> motor swaps the parts around: the <strong>magnets spin</strong> on the rotor, and the <strong>windings stay still</strong> on the stator. Nothing needs to rub.</p>
+        <div class="card fragment fade-up" style="margin-bottom:var(--gap-sm);"><span class="card-name">Electronic speed controller (ESC)</span><p class="card-body">Transistors take over the commutator&#39;s job, switching current between the windings in the right order. DC goes in, timed pulses come out.</p></div>
+        <div class="card fragment fade-up"><span class="card-name">Rotor position sensing</span><p class="card-body">To switch at the right moment, the ESC needs to know where the rotor is: <strong>Hall sensors</strong> detect the magnets, or it estimates position from the windings.</p></div>
+      </div>
+      <div>
+        <div class="row-2" style="gap:12px;">
+          <div class="card is-key fragment fade-up"><span class="card-name">Gains</span><p class="card-body">No brush wear, <strong>higher efficiency</strong>, and more power for its size.</p></div>
+          <div class="card is-fault fragment fade-up"><span class="card-name">Costs</span><p class="card-body">Needs an ESC: <strong>more complex</strong> and more expensive to control.</p></div>
+        </div>
+        <div class="callout-result fragment fade-up" style="margin-top:var(--gap);">Drones, cordless tools, computer fans, and electric cars all use brushless motors.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · ELECTRONIC COMMUTATION -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Brushed and Brushless · Topic 01 · Electronic Commutation</span>
+    <h2>Electronic <span class="accent">Commutation</span></h2>
+    <div class="cm-wrap cm-demo" data-mode="bldc">
+      <div class="sim-panel"><svg class="cm" data-role="motor" viewBox="-40 -20 540 500" role="img" aria-label="Brushless motor: three stator phases around a two pole magnet rotor, three Hall sensors, and a green arrow for the stator field; two phases are energized at a time"></svg></div>
+      <div>
+        <p class="slide-intro">The ESC energizes <strong>two phases at a time</strong>, making a stator field (green) a little <strong>ahead</strong> of the rotor magnet. The magnet turns toward it, the <span class="warn">Hall sensors</span> report the new position, and the ESC switches to the next pair.</p>
+        <div class="ctl-row" style="margin-bottom:var(--gap-sm);">
+          <button class="sim-btn" data-role="run" type="button">Run</button>
+          <button class="sim-btn alt" data-role="step" type="button">Next step</button>
+          <span class="sim-model-note">six steps per turn</span>
+        </div>
+        <table class="comm-table" data-role="table">
+          <thead><tr><th>Hall code</th><th>Current in</th><th>Current out</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · STEPPER OPERATION -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Stepper Motors · Topic 02</span>
+    <h2>A Stepper Moves in <span class="accent">Steps</span></h2>
+    <div class="cm-wrap cm-demo" data-mode="stepper">
+      <div class="sim-panel"><svg class="cm" data-role="motor" viewBox="-40 -20 540 500" role="img" aria-label="Stepper motor: two stator phases, A and B, around a magnet rotor; each step moves the green stator field and the rotor snaps to line up with it"></svg></div>
+      <div>
+        <p class="slide-intro">A stepper uses the same idea, but the driver <strong>does not wait</strong> for a sensor. Each pulse energizes the next phase, the field jumps, and the rotor <span class="key">snaps</span> to line up. Count the pulses and you know the angle.</p>
+        <div class="ctl-row" style="margin-bottom:var(--gap-sm);">
+          <button class="sim-btn" data-role="fwd" type="button">Step +</button>
+          <button class="sim-btn alt" data-role="back" type="button">Step &minus;</button>
+          <label class="chk"><input type="checkbox" data-role="half"> Half steps</label>
+        </div>
+        <div class="tiles" style="grid-template-columns:1fr 1fr;margin-bottom:var(--gap-sm);">
+          <div class="tile"><span class="t-name">Steps sent</span><span class="t-val" data-tile="steps">0</span></div>
+          <div class="tile is-result"><span class="t-name">Rotor angle</span><span class="t-val" data-tile="angle">0&deg;</span></div>
+        </div>
+        <p class="slide-intro fragment fade-up" style="margin:0;">This model has only 4 positions, so each full step is <strong>90&deg;</strong>. A real hybrid stepper has a toothed rotor with <strong>50 teeth</strong>, which shrinks each step to <span class="res">1.8&deg;</span>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · STEP ANGLE CALCULATION -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Stepper Motors · Topic 02 · Calculating Steps</span>
+    <h2>Step Angle <span class="accent">Calculations</span></h2>
+    <div class="split" style="grid-template-columns:1fr 1fr;flex:0 0 auto;align-items:start;">
+      <div>
+        <div class="eq-box" style="margin-bottom:var(--gap);">
+          <span class="eq-label">Steps for a move</span>
+          steps = angle &divide; step angle
+        </div>
+        <p class="eq-line fragment fade-up">One revolution: 360&deg; &divide; 1.8&deg; = <span class="res">200 steps</span></p>
+        <p class="eq-line fragment fade-up" style="margin-top:10px;">A 90&deg; turn: 90&deg; &divide; 1.8&deg; = <span class="res">50 steps</span></p>
+      </div>
+      <div>
+        <div class="card fragment fade-up" style="margin-bottom:var(--gap);"><span class="card-name">3D printer example</span><p class="card-body">A belt moves the head <strong>40 mm</strong> per revolution. One step moves it 40 &divide; 200 = <span class="res">0.2 mm</span>.</p></div>
+        <div class="card fragment fade-up"><span class="card-name">Microstepping</span><p class="card-body">Drivers can split each step into smaller ones, such as <strong>16 microsteps</strong>, for 3,200 positions per turn and smoother motion.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · STEP CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:9:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A stepper motor moves 1.8° per full step. How many full steps does it take to turn 45°?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"81 steps","isCorrect":false},{"id":"q1b","text":"50 steps","isCorrect":false},{"id":"q1c","text":"25 steps","isCorrect":true},{"id":"q1d","text":"45 steps","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"The same 1.8° stepper turns 3 full revolutions. How many full steps is that?","order":1,"responseTimeLimitMs":60000,"options":[{"id":"q2a","text":"600 steps","isCorrect":true},{"id":"q2b","text":"200 steps","isCorrect":false},{"id":"q2c","text":"540 steps","isCorrect":false},{"id":"q2d","text":"1,080 steps","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check Your Understanding</span>
+    <h2>Step <span class="accent">Check</span></h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>A stepper motor moves 1.8&deg; per full step. How many full steps does it take to turn 45&deg;?</div>
+      <div class="frq-box"><span class="q-num">2</span>The same 1.8&deg; stepper turns 3 full revolutions. How many full steps is that?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · OPEN LOOP AND LOST STEPS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Stepper Motors · Topic 02 · Lost Steps</span>
+    <h2>Open Loop Control and <span class="fault">Lost Steps</span></h2>
+    <svg viewBox="0 0 1440 250" style="width:100%;height:auto;margin-bottom:var(--gap);" role="img" aria-label="Open loop: controller sends step pulses to a driver, which drives the stepper motor, which moves the load. No line comes back from the load to the controller.">
+      <rect x="10" y="40" width="270" height="110" rx="10" class="blk"/><text x="145" y="80" class="blk-name">Controller</text><text x="145" y="122" class="blk-sub">counts steps sent</text>
+      <path d="M282 95 H352" class="flow"/><polygon points="370,95 350,84 350,106" class="flow-head"/>
+      <rect x="372" y="40" width="270" height="110" rx="10" class="blk"/><text x="507" y="80" class="blk-name">Driver</text><text x="507" y="122" class="blk-sub">powers each phase</text>
+      <path d="M644 95 H714" class="flow"/><polygon points="732,95 712,84 712,106" class="flow-head"/>
+      <rect x="734" y="40" width="270" height="110" rx="10" class="blk"/><text x="869" y="95" class="blk-name">Stepper</text>
+      <path d="M1006 95 H1076" class="flow"/><polygon points="1094,95 1074,84 1074,106" class="flow-head"/>
+      <rect x="1096" y="40" width="270" height="110" rx="10" class="blk"/><text x="1231" y="95" class="blk-name">Load</text>
+      <g class="fragment" data-fragment-index="1">
+        <path d="M1231 152 V190 H145 V152" class="missing"/>
+        <text x="688" y="232" class="blk-sub" style="fill:var(--fault)">no feedback: the controller never checks where the load really is</text>
+      </g>
+    </svg>
+    <div class="row-3">
+      <div class="card fragment fade-up" data-fragment-index="1"><span class="card-name">Assumes it worked</span><p class="card-body">The controller sent 50 steps, so it <strong>believes</strong> the shaft turned 90&deg;.</p></div>
+      <div class="card is-fault fragment fade-up" data-fragment-index="2"><span class="card-name">Torque runs out</span><p class="card-body">A stepper makes <strong>less torque at high speed</strong>. Too much load or too fast a start, and the rotor slips.</p></div>
+      <div class="card is-warn fragment fade-up" data-fragment-index="3"><span class="card-name">The error stays</span><p class="card-body">Every later move is off by the same amount. On a 3D printer this is a <strong>layer shift</strong>.</p></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · SERVO FEEDBACK -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Servo Systems · Topic 03</span>
+    <h2>A Servo Is a <span class="accent">Feedback System</span></h2>
+    <svg viewBox="0 0 1440 260" style="width:100%;height:auto;margin-bottom:var(--gap);" role="img" aria-label="Closed loop: commanded position enters a summing point, which subtracts the measured position to get error; error goes to the controller, then the drive, motor, and load; an encoder measures the load and feeds back to the summing point">
+      <text x="70" y="62" class="blk-sub" style="fill:var(--text)">command</text>
+      <path d="M20 90 H150" class="flow"/><polygon points="168,90 148,79 148,101" class="flow-head"/>
+      <circle cx="196" cy="90" r="26" fill="var(--bg-card)" stroke="var(--accent)" stroke-width="3"/>
+      <text x="196" y="92" class="blk-name">&Sigma;</text>
+      <text x="164" y="66" class="blk-sub" style="fill:var(--text)">+</text>
+      <text x="218" y="140" class="blk-sub" style="fill:var(--text)">&minus;</text>
+      <path d="M222 90 H292" class="flow"/><polygon points="310,90 290,79 290,101" class="flow-head"/>
+      <text x="262" y="66" class="blk-sub" style="fill:var(--fault)">error</text>
+      <rect x="312" y="40" width="240" height="100" rx="10" class="blk-hot"/><text x="432" y="90" class="blk-name">Controller</text>
+      <path d="M554 90 H614" class="flow"/><polygon points="632,90 612,79 612,101" class="flow-head"/>
+      <rect x="634" y="40" width="200" height="100" rx="10" class="blk"/><text x="734" y="90" class="blk-name">Drive</text>
+      <path d="M836 90 H896" class="flow"/><polygon points="914,90 894,79 894,101" class="flow-head"/>
+      <rect x="916" y="40" width="200" height="100" rx="10" class="blk"/><text x="1016" y="90" class="blk-name">Motor</text>
+      <path d="M1118 90 H1178" class="flow"/><polygon points="1196,90 1176,79 1176,101" class="flow-head"/>
+      <rect x="1198" y="40" width="200" height="100" rx="10" class="blk"/><text x="1298" y="90" class="blk-name">Load</text>
+      <path d="M1298 142 V200" class="flow-fb"/>
+      <rect x="1178" y="200" width="240" height="56" rx="10" class="blk"/><text x="1298" y="228" class="blk-name" style="fill:var(--result)">Encoder</text>
+      <path d="M1176 228 H196 V136" class="flow-fb"/><polygon points="196,118 185,138 207,138" class="flow-fb-head"/>
+      <text x="690" y="216" class="blk-sub" style="fill:var(--result)">measured position</text>
+    </svg>
+    <p class="slide-intro">A <span class="key">servo</span> is not one kind of motor. It is a <strong>system</strong>: a sensor such as an <span class="res">encoder</span> measures the actual position, the controller compares it with the command, and drives the motor to shrink the <span class="fault">error</span>.</p>
+    <div class="callout fragment fade-up">The motor inside can be brushed, brushless, or even a stepper. What makes it a servo is the <strong>feedback</strong> that lets it detect an error.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · SERVO CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:12:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What makes a motion system a servo?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"It uses a brushless motor","isCorrect":false},{"id":"q1b","text":"It moves in fixed steps","isCorrect":false},{"id":"q1c","text":"It runs on AC power","isCorrect":false},{"id":"q1d","text":"It measures the actual motion and corrects the error","isCorrect":true}]},{"id":"q2","type":"multiple-choice","text":"A servo&#39;s encoder stops working. What can the controller no longer do?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"Send power to the motor","isCorrect":false},{"id":"q2b","text":"Know the actual position, so it cannot correct errors","isCorrect":true},{"id":"q2c","text":"Receive a commanded position","isCorrect":false},{"id":"q2d","text":"Make the motor spin in reverse","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check Your Understanding</span>
+    <h2>Servo <span class="accent">Check</span></h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>What makes a motion system a servo?</div>
+      <div class="frq-box"><span class="q-num">2</span>A servo&#39;s encoder stops working. What can the controller no longer do?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · PRECISION UNDER PRESSURE: THE CHALLENGE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Virtual Activity 4 · Precision Under Pressure · The Challenge</span>
+    <h2>Precision Under <span class="accent">Pressure</span></h2>
+    <p class="slide-intro">A robot arm joint must swing to a <span class="warn">target angle</span>. You will give the same command to three systems, then add load and <strong>bump</strong> the arm to see which one still ends up on target.</p>
+    <div class="row-3" style="margin-bottom:var(--gap);">
+      <div class="card"><span class="card-name">A · Open loop stepper</span><p class="card-body">Counts steps. <strong>No sensor</strong>. Cheapest and simplest.</p></div>
+      <div class="card"><span class="card-name">B · Brushless, speed control</span><p class="card-body">Holds a <strong>speed</strong> for a set time. Measures speed, not position.</p></div>
+      <div class="card"><span class="card-name">C · Servo with encoder</span><p class="card-body">Measures <strong>position</strong> and corrects error. Most complex.</p></div>
+    </div>
+    <div class="task-grid">
+      <div class="task-item"><span class="t-key">1</span><span>Predict which systems reach the target under a heavy load.</span></div>
+      <div class="task-item"><span class="t-key">2</span><span>Record commanded, actual, and error for each run.</span></div>
+      <div class="task-item" style="grid-column:span 2;"><span class="t-key">3</span><span>Recommend a system for a precise arm joint. Are extra sensors or controls worth the cost?</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · PRECISION UNDER PRESSURE (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="padding-top:44px;padding-bottom:40px;">
+    <span class="slide-tag" style="margin-bottom:10px;">Virtual Activity 4 · Precision Under Pressure · Simplified educational model</span>
+    <div class="pp">
+      <div class="pp-grid">
+        <div class="pp-col">
+          <div class="sim-panel">
+            <div class="sim-head"><span>Arm joint</span></div>
+            <svg data-role="arm" viewBox="0 0 400 330" role="img" aria-label="The arm joint: a cyan arm shows the actual angle, a dashed white line the commanded angle, and an amber mark the target"></svg>
+          </div>
+          <div class="tiles pp-tiles">
+            <div class="tile"><span class="t-name">Commanded</span><span class="t-val" data-tile="cmd">0.0&deg;</span></div>
+            <div class="tile is-result"><span class="t-name">Actual</span><span class="t-val" data-tile="act">0.0&deg;</span></div>
+            <div class="tile"><span class="t-name">Error</span><span class="t-val" data-tile="err">0.0&deg;</span></div>
+            <div class="tile"><span class="t-name">Feedback signal</span><span class="t-val" data-tile="fb">none</span></div>
+          </div>
+          <div class="sim-panel">
+            <div class="sim-head"><span>Controller</span></div>
+            <div class="ctrl-line" data-role="ctrl"></div>
+            <div class="drive-bar"><div class="drive-fill" data-role="drive"></div></div>
+          </div>
+        </div>
+        <div class="pp-col">
+          <div class="sim-panel">
+            <div class="sim-head"><span>Position vs time</span><span class="sim-note"><span class="lg-cmd"></span>commanded<span class="lg-act"></span>actual<span class="lg-tgt"></span>target</span></div>
+            <svg data-role="graph" viewBox="0 0 1000 200" role="img" aria-label="Graph of commanded and actual angle over the last 8 seconds"></svg>
+          </div>
+          <div class="sim-panel">
+            <div class="ctl-row">
+              <span class="ctl-label">System</span>
+              <span class="seg" data-role="system">
+                <button class="seg-btn" type="button" data-val="stepper" aria-pressed="true">A Stepper</button>
+                <button class="seg-btn" type="button" data-val="bldc" aria-pressed="false">B Brushless</button>
+                <button class="seg-btn" type="button" data-val="servo" aria-pressed="false">C Servo</button>
+              </span>
+              <span class="cost-chip" data-role="cost"></span>
+            </div>
+            <div class="ctl-row">
+              <span class="ctl-label">Load</span>
+              <span class="seg" data-role="load">
+                <button class="seg-btn" type="button" data-val="light" aria-pressed="true">Light</button>
+                <button class="seg-btn" type="button" data-val="medium" aria-pressed="false">Medium</button>
+                <button class="seg-btn" type="button" data-val="heavy" aria-pressed="false">Heavy</button>
+                <button class="seg-btn" type="button" data-val="over" aria-pressed="false">Overloaded</button>
+              </span>
+            </div>
+            <div class="ctl-row">
+              <span class="ctl-label">Target</span>
+              <input class="sim-range" data-role="target" type="range" min="15" max="270" step="15" value="90" aria-label="Target angle in degrees" style="width:170px;">
+              <span class="range-val" data-role="target-val">90&deg;</span>
+              <span class="ctl-label">Speed</span>
+              <input class="sim-range" data-role="speed" type="range" min="30" max="360" step="30" value="90" aria-label="Commanded speed in degrees per second" style="width:170px;">
+              <span class="range-val" data-role="speed-val">90&deg;/s</span>
+            </div>
+            <div class="ctl-row">
+              <button class="sim-btn" data-role="move" type="button">Move</button>
+              <button class="sim-btn warn-btn" data-role="bump" type="button">Bump!</button>
+              <button class="sim-btn alt" data-role="pause" type="button">Pause</button>
+              <button class="sim-btn alt" data-role="reset" type="button">Reset</button>
+            </div>
+          </div>
+          <div class="status-row">
+            <span class="status-chip" data-role="status">IDLE</span>
+            <div class="sim-feedback" data-role="feedback" aria-live="polite">Pick a system and a load, set a target, then press Move.</div>
+          </div>
+          <div class="task-pager" data-role="tasks">
+            <div class="tp-head">
+              <span class="tp-count"></span>
+              <button class="tp-nav tp-prev" type="button" aria-label="Previous task">&#9664;</button>
+              <button class="tp-nav tp-next" type="button" aria-label="Next task">&#9654;</button>
+            </div>
+            <div class="tp-text" aria-live="polite"></div>
+            <ol hidden>
+              <li><b>A.</b> Stepper, light load, 90&deg;/s: Move to 90&deg; and record the error.</li>
+              <li><b>B.</b> Stepper, heavy load: Move at 90&deg;/s, then Reset and try 180&deg;/s.</li>
+              <li><b>C.</b> Brushless, medium load: Move, then Bump! Does it get back?</li>
+              <li><b>D.</b> Servo, medium load: Move, then Bump! What does it do?</li>
+              <li><b>E.</b> Servo, heavy load: how long does it take to recover from a bump?</li>
+              <li><b>F.</b> Overloaded: try all three systems. How does each one fail?</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 16 · MOTOR SELECTION COMPARISON -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Motor Selection · Comparison</span>
+    <h2>Choosing a <span class="accent">Motor System</span></h2>
+    <table class="data-table">
+      <thead><tr><th></th><th>Brushed DC</th><th>Brushless (BLDC)</th><th>Stepper (open loop)</th><th>Servo system</th></tr></thead>
+      <tbody>
+        <tr><td>Cost</td><td><strong>Lowest</strong></td><td>Moderate</td><td>Low</td><td>Highest</td></tr>
+        <tr class="fragment fade-up"><td>Control</td><td>Just apply voltage</td><td>Needs an ESC</td><td>Step pulses, no sensor</td><td>Drive, encoder, tuning</td></tr>
+        <tr class="fragment fade-up"><td>Position accuracy</td><td>Poor alone</td><td>Poor alone</td><td>Good, until it <strong>loses steps</strong></td><td><strong>Best</strong>, corrects errors</td></tr>
+        <tr class="fragment fade-up"><td>Speed and power</td><td>Good</td><td><strong>Best</strong> for its size</td><td>Weak at high speed</td><td>Good to excellent</td></tr>
+        <tr class="fragment fade-up"><td>Maintenance</td><td>Brushes wear</td><td>Very low</td><td>Very low</td><td>Low</td></tr>
+      </tbody>
+    </table>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap);">The <strong>motor</strong> alone does not guarantee precision. The controller, the feedback, the load, and the mechanics all matter, and more than one answer can be right if you justify the tradeoff.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 17 · EXIT TICKET: MOTOR SELECTION (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:16:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"**Low cost toy vehicle.** Which motor or motor system would you choose? Justify it with two engineering criteria (such as cost, control complexity, position accuracy, speed and power, or maintenance).","order":0,"responseTimeLimitMs":150000},{"id":"q2","type":"free-response","text":"**Drone propulsion.** Which motor or motor system would you choose? Justify it with two engineering criteria (such as cost, control complexity, position accuracy, speed and power, or maintenance).","order":1,"responseTimeLimitMs":150000},{"id":"q3","type":"free-response","text":"**Precision robotic arm joint.** Which motor or motor system would you choose? Justify it with two engineering criteria (such as cost, control complexity, position accuracy, speed and power, or maintenance).","order":2,"responseTimeLimitMs":150000},{"id":"q4","type":"free-response","text":"**Small 3D printer axis.** Which motor or motor system would you choose? Justify it with two engineering criteria (such as cost, control complexity, position accuracy, speed and power, or maintenance).","order":3,"responseTimeLimitMs":150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket · Motor Selection</span>
+    <h2>Pick the <span class="accent">Motor</span></h2>
+    <p class="slide-intro">For each application, choose a motor or motor system and justify it with <strong>two engineering criteria</strong>. More than one answer can be right.</p>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>Low cost toy vehicle</div>
+      <div class="frq-box"><span class="q-num">2</span>Drone propulsion</div>
+      <div class="frq-box"><span class="q-num">3</span>Precision robotic arm joint</div>
+      <div class="frq-box"><span class="q-num">4</span>Small 3D printer axis</div>
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+var NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+}
+
+var SIMS = [];
+
+// ─── Commutation demo (slides 7 and 8) ───────────────────────
+// BLDC mode: three phases (A at 0°, B at 120°, C at 240°, each with a
+// return coil 180° away) and a two pole magnet rotor. Six-step commutation
+// energizes two phases at a time; the stator field points 60° to 120° ahead
+// of the rotor, and Hall sensors trigger the next step as the rotor turns.
+// Stepper mode: two phases (A at 0°, B at 90°); each pulse moves the field
+// 90° (or 45° in half steps) and the rotor snaps to it.
+// The Hall code for each step is filled in from the sensor geometry below.
+var BLDC_STEPS = [
+    { pos: 'A', neg: 'B' },
+    { pos: 'A', neg: 'C' },
+    { pos: 'B', neg: 'C' },
+    { pos: 'B', neg: 'A' },
+    { pos: 'C', neg: 'A' },
+    { pos: 'C', neg: 'B' },
+];
+var HALL_ANGLES = [0, 120, 240];   // each changes state exactly when the ESC should switch
+function hallCode(rotDeg) {
+    return HALL_ANGLES.map(function (a) {
+        var d = ((rotDeg - a) % 360 + 540) % 360 - 180;
+        return Math.abs(d) < 90 ? '1' : '0';
+    }).join('');
+}
+function buildCommDemo(root) {
+    var stepper = root.dataset.mode === 'stepper';
+    var svg = root.querySelector('[data-role="motor"]');
+    var CX = 230, CY = 230;
+    function polar(r, deg) { var a = deg * Math.PI / 180; return [CX + r * Math.sin(a), CY - r * Math.cos(a)]; }
+    var PH = stepper ? [{ n: 'A', c: 'a', ang: 0 }, { n: 'B', c: 'b', ang: 90 }]
+                     : [{ n: 'A', c: 'a', ang: 0 }, { n: 'B', c: 'b', ang: 120 }, { n: 'C', c: 'c', ang: 240 }];
+    svgEl('circle', { cx: CX, cy: CY, r: 176, class: 'stator' }, svg);
+    svgEl('circle', { cx: CX, cy: CY, r: 202, class: 'stator-edge' }, svg);
+    svgEl('circle', { cx: CX, cy: CY, r: 150, class: 'stator-edge' }, svg);
+    // Each phase: a coil at ang (drawn "+" when current goes in) and a return
+    // coil at ang + 180.
+    PH.forEach(function (p) {
+        p.coils = [];
+        p.pols = [];
+        [p.ang, p.ang + 180].forEach(function (a, j) {
+            var g = svgEl('g', { transform: 'rotate(' + a + ' ' + CX + ' ' + CY + ')' }, svg);
+            p.coils.push(svgEl('rect', { x: CX - 32, y: CY - 168, width: 64, height: 34, rx: 6, class: 'coil coil-' + p.c }, g));
+            var l = polar(228, a);
+            svgEl('text', { x: l[0], y: l[1], class: 'wlbl', fill: 'var(--ph-' + p.c + ')' }, svg).textContent = p.n + (j ? '′' : '');
+            var pp = polar(152, a);   // centered on the coil
+            p.pols.push(svgEl('text', { x: pp[0], y: pp[1], class: 'pol' }, svg));
+        });
+    });
+    var halls = [];
+    if (!stepper) {
+        HALL_ANGLES.forEach(function (a, i) {
+            // In the stator iron just outside the coil; label set off to one side.
+            var p = polar(186, a);
+            halls.push(svgEl('rect', { x: p[0] - 12, y: p[1] - 12, width: 24, height: 24, rx: 4, class: 'hall' }, svg));
+            var l = polar(196, a - 20);
+            svgEl('text', { x: l[0], y: l[1], class: 'hall-lbl' }, svg).textContent = 'H' + (i + 1);
+        });
+    }
+    var rotorG = svgEl('g', {}, svg);
+    svgEl('path', { d: 'M' + (CX - 108) + ' ' + CY + ' A108 108 0 0 1 ' + (CX + 108) + ' ' + CY + ' Z', class: 'rotor-n' }, rotorG);
+    svgEl('path', { d: 'M' + (CX - 108) + ' ' + CY + ' A108 108 0 0 0 ' + (CX + 108) + ' ' + CY + ' Z', class: 'rotor-s' }, rotorG);
+    // Pole labels sit 40° off the magnet's axis so the field arrow never covers them.
+    svgEl('text', { x: CX - 42, y: CY - 51, class: 'pole-lbl' }, rotorG).textContent = 'N';
+    svgEl('text', { x: CX - 42, y: CY + 51, class: 'pole-lbl' }, rotorG).textContent = 'S';
+    svgEl('circle', { cx: CX, cy: CY, r: 16, class: 'shaft' }, rotorG);
+    var arrow = svgEl('line', { class: 'b-arrow', x1: CX, y1: CY, x2: CX, y2: CY - 100 }, svg);
+    var head = svgEl('polygon', { class: 'b-head', points: '' }, svg);
+
+    // st.field: stator field angle; st.rot: rotor N-pole angle (degrees).
+    var st = { running: false, idx: 0, field: 0, rot: 0, half: false, steps: 0, target: 0 };
+    var tbody = root.querySelector('[data-role="table"] tbody');
+
+    // Current in each phase for the present state: +1, -1, or 0.
+    function currents() {
+        var cur = {};
+        if (stepper) {
+            var a = ((st.field % 360) + 360) % 360;
+            cur.A = Math.round(Math.cos(a * Math.PI / 180) * 100) / 100;
+            cur.B = Math.round(Math.sin(a * Math.PI / 180) * 100) / 100;
+            cur.A = cur.A > 0.1 ? 1 : cur.A < -0.1 ? -1 : 0;
+            cur.B = cur.B > 0.1 ? 1 : cur.B < -0.1 ? -1 : 0;
+        } else {
+            var s = BLDC_STEPS[st.idx];
+            cur[s.pos] = 1; cur[s.neg] = -1;
+        }
+        return cur;
+    }
+    function fieldAngle() {
+        if (stepper) return st.field;
+        // Current in at X, out at Y: field along u_X - u_Y.
+        var cur = currents(), bx = 0, by = 0;
+        PH.forEach(function (p) {
+            var i = cur[p.n] || 0, a = p.ang * Math.PI / 180;
+            bx += i * Math.sin(a); by += i * Math.cos(a);
+        });
+        return Math.atan2(bx, by) * 180 / Math.PI;
+    }
+    function render() {
+        var cur = currents();
+        PH.forEach(function (p) {
+            var i = cur[p.n] || 0;
+            p.coils.forEach(function (c) { c.setAttribute('fill-opacity', i ? 0.8 : 0.08); });
+            p.pols[0].textContent = i > 0 ? '+' : i < 0 ? '−' : '';
+            p.pols[1].textContent = i > 0 ? '−' : i < 0 ? '+' : '';
+        });
+        // Tip stops in the air gap, short of the coils and their +/- marks.
+        var fa = fieldAngle() * Math.PI / 180, tx = CX + 100 * Math.sin(fa), ty = CY - 100 * Math.cos(fa);
+        arrow.setAttribute('x2', tx.toFixed(1)); arrow.setAttribute('y2', ty.toFixed(1));
+        var ux = Math.sin(fa), uy = -Math.cos(fa), px = -uy, py = ux;
+        head.setAttribute('points', [[tx + ux * 18, ty + uy * 18], [tx - ux * 10 + px * 14, ty - uy * 10 + py * 14], [tx - ux * 10 - px * 14, ty - uy * 10 - py * 14]]
+            .map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' '));
+        rotorG.setAttribute('transform', 'rotate(' + st.rot.toFixed(2) + ' ' + CX + ' ' + CY + ')');
+        if (!stepper) {
+            // Hall sensor k reads 1 while the N pole is within 90° of it.
+            var code = hallCode(st.rot);
+            halls.forEach(function (h, k) { h.classList.toggle('on', code[k] === '1'); });
+            Array.prototype.forEach.call(tbody.children, function (tr, i) { tr.classList.toggle('now', i === st.idx); });
+        } else {
+            root.querySelector('[data-tile="steps"]').textContent = st.steps;
+            var ang = Math.round(((st.target % 360) + 360) % 360);
+            root.querySelector('[data-tile="angle"]').textContent = ang + '°';
+        }
+    }
+    function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
+    if (stepper) {
+        function move(dir) {
+            var inc = st.half ? 45 : 90;
+            if (!st.half && st.field % 90 !== 0) inc = 45;   // finish a half step first
+            st.field += dir * inc;
+            st.target = st.field;
+            st.steps += dir;
+            render();
+        }
+        q('fwd').addEventListener('click', function () { move(1); });
+        q('back').addEventListener('click', function () { move(-1); });
+        q('half').addEventListener('change', function () { st.half = this.checked; });
+    } else {
+        // Each step's Hall code: what the sensors read with the rotor 90° behind its field.
+        var save = st.idx;
+        BLDC_STEPS.forEach(function (s, i) {
+            st.idx = i;
+            s.hall = hallCode(fieldAngle() - 90);
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + s.hall + '</td><td>' + s.pos + '</td><td>' + s.neg + '</td>';
+            tbody.appendChild(tr);
+        });
+        st.idx = save;
+        q('run').addEventListener('click', function () {
+            st.running = !st.running;
+            st.manual = false;
+            this.textContent = st.running ? 'Pause' : 'Run';
+            q('step').disabled = st.running;
+        });
+        q('step').addEventListener('click', function () { st.idx = (st.idx + 1) % 6; st.manual = true; render(); });
+        // Start with the rotor lined up 90° behind the first step's field.
+        st.rot = fieldAngle() - 90;
+    }
+    render();
+    SIMS.push({ root: root, tick: function (dt) {
+        if (stepper) {
+            // Rotor snaps toward the field (eased).
+            var d = st.target - st.rot;
+            if (Math.abs(d) > 0.05) { st.rot += d * Math.min(1, dt * 6); render(); }
+            return;
+        }
+        if (st.running) {
+            st.rot += 40 * dt;   // about 0.1 rev/s
+            // Hall sensors pick the step whose field leads the rotor by 60° to 120°.
+            for (var i = 0; i < 6; i++) {
+                st.idx = i;
+                var lead = ((fieldAngle() - st.rot) % 360 + 360) % 360;
+                if (lead >= 60 && lead < 120) break;
+            }
+            render();
+        } else if (st.manual) {
+            // Stepping by hand: the rotor turns to line up with the field.
+            var d2 = ((fieldAngle() - st.rot) % 360 + 540) % 360 - 180;
+            if (Math.abs(d2) > 0.05) { st.rot += d2 * Math.min(1, dt * 3); render(); }
+        }
+    } });
+}
+
+// ─── Precision Under Pressure ────────────────────────────────
+// Torque is in units of the motor's rating. The arm angle a (degrees) obeys
+// a'' = (motor torque - friction - bump) / J × 1200. The command profile moves
+// from the old target to the new one at the chosen speed with a 600°/s²
+// ramp.
+// Stepper: follows the command exactly in 1.8° steps unless demanded torque
+//   (friction + acceleration) exceeds the pull-out torque, which falls with
+//   speed; then it slips 4 steps (7.2°) at a time and never knows. A bump
+//   stronger than the holding torque knocks it back 4 steps.
+// Brushless: a speed loop runs at the commanded speed for the computed time,
+//   then brakes. It never measures position, so lag, coasting, and bumps
+//   leave errors uncorrected.
+// Servo: a torque-limited PID position loop on the encoder reading. It
+//   recovers from bumps over time and faults if the error stays over 20°
+//   for 1.5 s.
+var LOADS4 = {
+    light:  { name: 'light',      fr: 0.15, J: 1.0 },
+    medium: { name: 'medium',     fr: 0.35, J: 1.6 },
+    heavy:  { name: 'heavy',      fr: 0.6,  J: 2.4 },
+    over:   { name: 'overloaded', fr: 1.65, J: 2.4 },
+};
+var SYSTEMS = {
+    stepper: { name: 'open loop stepper', cost: '<b>$</b> · driver only · no sensor' },
+    bldc:    { name: 'brushless speed control', cost: '<b>$$</b> · ESC · speed sensing' },
+    servo:   { name: 'servo', cost: '<b>$$$</b> · drive · encoder · tuning' },
+};
+function buildPrecision(root) {
+    function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
+    function setText(sel, t) { var e = root.querySelector(sel); if (e.textContent !== t) e.textContent = t; }
+    var STEP = 1.8, ACC = 600, TMAX = 1.5, HOLD = 1.0, WIN = 8;
+
+    // Arm drawing
+    var arm = q('arm'), AX = 200, AY = 165, AR = 140;
+    svgEl('circle', { cx: AX, cy: AY, r: AR, class: 'arm-disc' }, arm);
+    for (var t = 0; t < 360; t += 15) {
+        var a = t * Math.PI / 180, r0 = t % 90 ? AR - 10 : AR - 22;
+        svgEl('line', { x1: AX + r0 * Math.sin(a), y1: AY - r0 * Math.cos(a), x2: AX + AR * Math.sin(a), y2: AY - AR * Math.cos(a), class: 'arm-ticks' }, arm);
+    }
+    [[0, '0°'], [90, '90°'], [180, '180°'], [270, '270°']].forEach(function (p) {
+        var a = p[0] * Math.PI / 180;
+        svgEl('text', { x: AX + (AR - 46) * Math.sin(a), y: AY - (AR - 46) * Math.cos(a), class: 'arm-lbl' }, arm).textContent = p[1];
+    });
+    var tgtLine = svgEl('line', { class: 'arm-target', x1: AX, y1: AY, x2: AX, y2: AY }, arm);
+    var actLine = svgEl('line', { class: 'arm-actual', x1: AX, y1: AY, x2: AX, y2: AY - 120 }, arm);
+    var cmdLine = svgEl('line', { class: 'arm-cmd', x1: AX, y1: AY, x2: AX, y2: AY - 130 }, arm);
+    svgEl('circle', { cx: AX, cy: AY, r: 16, class: 'arm-hub' }, arm);
+    function aim(line, deg, r0, r1) {
+        var a = deg * Math.PI / 180;
+        line.setAttribute('x1', (AX + r0 * Math.sin(a)).toFixed(1)); line.setAttribute('y1', (AY - r0 * Math.cos(a)).toFixed(1));
+        line.setAttribute('x2', (AX + r1 * Math.sin(a)).toFixed(1)); line.setAttribute('y2', (AY - r1 * Math.cos(a)).toFixed(1));
+    }
+
+    // Graph
+    var graph = q('graph'), GX0 = 90, GX1 = 990, GY0 = 186, GH = 172, GMAX = 300;
+    function gy(v) { return GY0 - Math.max(-20, Math.min(GMAX, v)) / GMAX * GH; }
+    [0, 90, 180, 270].forEach(function (v) {
+        svgEl('path', { d: 'M' + GX0 + ' ' + gy(v) + ' H' + GX1, class: v ? 'dw-grid' : 'dw-axis' }, graph);
+        svgEl('text', { x: GX0 - 10, y: gy(v) + 9, class: 'g-lbl', 'text-anchor': 'end' }, graph).textContent = v + '°';
+    });
+    var gTgt = svgEl('line', { class: 'g-tgt', x1: GX0, x2: GX1 }, graph);
+    var gCmd = svgEl('polyline', { class: 'g-cmd', points: '' }, graph);
+    var gAct = svgEl('polyline', { class: 'g-act', points: '' }, graph);
+
+    var st;
+    function reset() {
+        st = { sys: st ? st.sys : 'stepper', load: st ? st.load : 'light',
+               target: st ? st.target : 90, speed: st ? st.speed : 90,
+               paused: false, t: 0, hist: [],
+               cmd: 0, cmdV: 0, from: 0, moving: false, moveT: 0,
+               a: 0, w: 0, bump: 0, drive: 0,
+               lost: 0, slipLost: 0, sent: 0, slipping: false, settleT: 0, moveClock: 0,
+               bTimer: 0, vSet: 0, integ: 0,
+               errTime: 0, fault: false, settled: true, report: null };
+    }
+    reset();
+
+    // Trapezoidal command profile from st.from to st.target.
+    function profile(t) {
+        var D = st.target - st.from, dir = D >= 0 ? 1 : -1, d = Math.abs(D), v = st.speed;
+        var ta = v / ACC, da = 0.5 * ACC * ta * ta;
+        if (2 * da > d) { ta = Math.sqrt(d / ACC); v = ACC * ta; da = d / 2; }
+        var tc = (d - 2 * da) / v, T = 2 * ta + tc, p, vel, acc;
+        if (t <= 0) { p = 0; vel = 0; acc = 0; }
+        else if (t < ta) { p = 0.5 * ACC * t * t; vel = ACC * t; acc = ACC; }
+        else if (t < ta + tc) { p = da + v * (t - ta); vel = v; acc = 0; }
+        else if (t < T) { var r = T - t; p = d - 0.5 * ACC * r * r; vel = ACC * r; acc = -ACC; }
+        else { p = d; vel = 0; acc = 0; }
+        return { p: st.from + dir * p, v: dir * vel, acc: dir * acc, T: T, done: t >= T };
+    }
+
+    // Arm dynamics under a motor torque with Coulomb friction (and stiction).
+    function physics(tau, dt) {
+        var L = LOADS4[st.load];
+        var ext = st.bump > 0 ? -1.6 : 0;
+        var net = tau + ext;
+        if (Math.abs(st.w) < 0.5 && Math.abs(net) <= L.fr) { st.w = 0; return; }
+        var dirW = Math.abs(st.w) >= 0.5 ? Math.sign(st.w) : Math.sign(net);
+        var accel = (net - L.fr * dirW) / L.J * 1200;
+        var w0 = st.w;
+        st.w += accel * dt;
+        // Friction stops a moving arm; it cannot push it backward.
+        if (w0 !== 0 && Math.sign(w0) !== Math.sign(st.w)) st.w = 0;
+        st.a += st.w * dt;
+    }
+
+    function say(msg, cls) {
+        var fb = q('feedback');
+        if (fb.textContent !== msg) fb.textContent = msg;
+        fb.className = 'sim-feedback' + (cls ? ' ' + cls : '');
+    }
+
+    function finishReport() {
+        var err = st.target - st.a, sys = SYSTEMS[st.sys].name;
+        if (st.sys === 'stepper') {
+            if (st.lost) say('Done. The controller sent every step and believes the arm is at ' + st.cmd.toFixed(1) + '°, but it is at ' + st.a.toFixed(1) + '°: ' + Math.abs(st.lost) + ' steps lost (' + Math.abs(st.lost * STEP).toFixed(1) + '°), and it has no way to know.', 'bad');
+            else say('Done. Every step landed: the arm is at ' + st.a.toFixed(1) + '°, right on target. The stepper had enough torque at this speed and load.');
+        } else if (st.sys === 'bldc') {
+            say('Done. The motor ran at speed for the computed time, then braked. It ended at ' + st.a.toFixed(1) + '°, off by ' + Math.abs(err).toFixed(1) + '°: it measures speed, not position, so it cannot fix that.', Math.abs(err) > 3 ? 'caution' : '');
+        } else {
+            say('Settled at ' + st.a.toFixed(1) + '°, error ' + Math.abs(err).toFixed(1) + '°. The encoder measured the error and the drive kept pushing until it shrank. A heavier load takes longer.');
+        }
+    }
+
+    function step(dt) {
+        st.t += dt;
+        var L = LOADS4[st.load];
+        if (st.bump > 0) st.bump -= dt;
+        var pr = profile(st.moveT);
+        if (st.moving) {
+            st.moveT += dt;
+            pr = profile(st.moveT);
+            st.cmd = pr.p; st.cmdV = pr.v;
+        } else { st.cmdV = 0; }
+
+        if (st.fault) { st.drive = 0; physics(0, dt); return; }
+
+        if (st.sys === 'stepper') {
+            // Pull-out torque falls with step rate; demand = friction + accel torque.
+            var pull = HOLD * (1 - 0.6 * Math.abs(pr.v) / 360);
+            var demand = L.fr + L.J * 0.1 * Math.abs(pr.acc) / ACC;
+            var cmdSteps = Math.round(st.cmd / STEP);
+            var newSent = cmdSteps - st.sent;
+            st.sent = cmdSteps;
+            var overloaded = (st.moving && demand > pull) || L.fr > HOLD;
+            if (overloaded && newSent !== 0) { st.slipLost += newSent; st.slipping = true; }
+            else if (st.slipping) {
+                // The rotor catches a stable position a whole number of rotor
+                // teeth (4 full steps) behind, never more than it was sent.
+                var ep = Math.round(st.slipLost / 4) * 4;
+                if (Math.abs(ep) > Math.abs(st.slipLost)) ep -= 4 * Math.sign(ep);
+                st.lost += ep === 0 ? st.slipLost : ep;
+                st.slipLost = 0;
+                st.slipping = false;
+            }
+            if (st.bump > 0 && !st.bumpHandled) {
+                if (1.6 + L.fr > HOLD) st.lost += 4;   // knocked back one rotor tooth
+                st.bumpHandled = true;
+            }
+            var lag = st.moving && !st.slipping ? Math.min(0.9, demand / pull * 0.9) * Math.sign(pr.v || 1) : 0;
+            st.a = (st.sent - st.lost - st.slipLost) * STEP - lag;
+            st.w = st.slipping ? 0 : pr.v;
+            st.drive = Math.min(1, demand / Math.max(pull, 0.01));
+            if (st.moving && pr.done) {
+                if (st.slipping) { st.lost += st.slipLost; st.slipLost = 0; st.slipping = false; }
+                st.moving = false; finishReport();
+            }
+            return;
+        }
+
+        if (st.sys === 'bldc') {
+            // Run at the commanded speed for the computed time; no position loop.
+            if (st.moving) {
+                st.vSet = pr.done ? 0 : pr.v;
+                if (pr.done) { st.moving = false; st.bTimer = 0.6; }
+            } else st.vSet = 0;
+            var e = st.vSet - st.w;
+            if (st.moving) st.integ = Math.max(-1, Math.min(1, st.integ + e * 0.002 * dt * 60)); else st.integ = 0;
+            var tau = Math.max(-TMAX, Math.min(TMAX, 0.02 * e + st.integ));
+            st.drive = Math.abs(tau) / TMAX;
+            physics(tau, dt);
+            if (!st.moving && st.bTimer > 0) { st.bTimer -= dt; if (st.bTimer <= 0 && st.reportPending) { st.reportPending = false; finishReport(); } }
+            return;
+        }
+
+        // Servo: PID on encoder position, torque limited.
+        var err = st.cmd - st.a;
+        st.integ = Math.max(-0.8, Math.min(0.8, st.integ + err * 0.12 * dt));
+        var tauS = 0.08 * err + 0.016 * (st.cmdV - st.w) + st.integ;
+        var sat = Math.abs(tauS) >= TMAX;
+        tauS = Math.max(-TMAX, Math.min(TMAX, tauS));
+        st.drive = Math.abs(tauS) / TMAX;
+        physics(tauS, dt);
+        if (Math.abs(err) > 20 && sat) {
+            st.errTime += dt;
+            if (st.errTime > 1.5) {
+                st.fault = true; st.moving = false;
+                say('FOLLOWING ERROR FAULT. The drive was at its torque limit with the arm more than 20° from the command for 1.5 s, so it shut off to protect the motor and the machine.', 'bad');
+            }
+        } else st.errTime = 0;
+        if (st.moving && pr.done) st.moving = false;
+        if (!st.moving && st.reportPending) {
+            st.moveClock += dt;
+            st.settleT = Math.abs(err) < 1 && Math.abs(st.w) < 2 ? st.settleT + dt : 0;
+            if (st.settleT > 0.4 || st.moveClock > 4) { st.reportPending = false; st.moveClock = 0; finishReport(); }
+        }
+    }
+
+    function render() {
+        aim(tgtLine, st.target, AR - 30, AR + 4);
+        aim(actLine, st.a, 0, 118);
+        aim(cmdLine, st.cmd, 0, 132);
+        // Graph
+        var t1 = st.t, t0 = t1 - WIN;
+        function gx(t) { return GX0 + (t - t0) / WIN * (GX1 - GX0); }
+        gTgt.setAttribute('y1', gy(st.target)); gTgt.setAttribute('y2', gy(st.target));
+        gCmd.setAttribute('points', st.hist.map(function (h) { return gx(h.t).toFixed(1) + ',' + gy(h.c).toFixed(1); }).join(' '));
+        gAct.setAttribute('points', st.hist.map(function (h) { return gx(h.t).toFixed(1) + ',' + gy(h.a).toFixed(1); }).join(' '));
+        var err = st.cmd - st.a;
+        setText('[data-tile="cmd"]', st.cmd.toFixed(1) + '°');
+        setText('[data-tile="act"]', st.a.toFixed(1) + '°');
+        setText('[data-tile="err"]', (Math.abs(err) < 0.05 ? 0 : err).toFixed(1) + '°');
+        setText('[data-tile="fb"]', st.sys === 'servo' ? st.a.toFixed(1) + '°' : st.sys === 'bldc' ? Math.round(st.w) + '°/s' : 'none');
+        var ctrl = q('ctrl'), html;
+        if (st.sys === 'stepper') html = '<b>Steps sent:</b> ' + st.sent + ' (' + (st.sent * STEP).toFixed(1) + '°)<br><b>Controller believes:</b> ' + (st.sent * STEP).toFixed(1) + '°';
+        else if (st.sys === 'bldc') html = '<b>Speed set:</b> ' + Math.round(st.vSet) + '°/s &nbsp; <b>measured:</b> ' + Math.round(st.w) + '°/s<br><b>Position:</b> not measured';
+        else html = '<b>Encoder:</b> ' + st.a.toFixed(1) + '° &nbsp; <b>error:</b> ' + err.toFixed(1) + '°<br><b>Drive output</b> (bar below)';
+        if (ctrl.innerHTML !== html) ctrl.innerHTML = html;
+        var fill = q('drive');
+        fill.style.width = Math.round(st.drive * 100) + '%';
+        fill.classList.toggle('sat', st.drive > 0.98);
+        var correcting = st.sys === 'servo' && (Math.abs(err) > 1 || Math.abs(st.w) > 2);
+        var status = st.fault ? 'FAULT' : st.paused ? 'PAUSED' : st.moving ? 'MOVING' : st.bump > 0 ? 'BUMPED' : correcting ? 'CORRECTING' : 'IDLE';
+        var chip = q('status');
+        if (chip.textContent !== status) chip.textContent = status;
+        chip.className = 'status-chip ' + ({ MOVING: 'busy', CORRECTING: 'busy', BUMPED: 'caution', FAULT: 'bad' }[status] || '');
+    }
+
+    function syncButtons() {
+        root.querySelectorAll('[data-role="system"] .seg-btn').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.val === st.sys); });
+        root.querySelectorAll('[data-role="load"] .seg-btn').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.val === st.load); });
+        q('cost').innerHTML = SYSTEMS[st.sys].cost;
+        q('pause').textContent = st.paused ? 'Resume' : 'Pause';
+    }
+    function fullReset() { reset(); syncButtons(); render(); say('Pick a system and a load, set a target, then press Move.'); }
+
+    root.querySelectorAll('[data-role="system"] .seg-btn').forEach(function (b) {
+        b.addEventListener('click', function () { st.sys = b.dataset.val; fullReset(); });
+    });
+    root.querySelectorAll('[data-role="load"] .seg-btn').forEach(function (b) {
+        b.addEventListener('click', function () { st.load = b.dataset.val; fullReset(); });
+    });
+    q('target').addEventListener('input', function () { st.target = +this.value; q('target-val').textContent = st.target + '°'; render(); });
+    q('speed').addEventListener('input', function () { st.speed = +this.value; q('speed-val').textContent = st.speed + '°/s'; });
+    q('move').addEventListener('click', function () {
+        if (st.fault) { say('The servo drive is faulted. Press Reset.', 'bad'); return; }
+        if (st.moving) return;
+        st.from = st.cmd; st.moveT = 0; st.moving = true; st.integ = 0; st.reportPending = true;
+        if (Math.abs(st.target - st.from) < 0.01) { st.moving = false; say('Already commanded to ' + st.target + '°. Pick a new target.'); return; }
+        say('Moving the ' + SYSTEMS[st.sys].name + ' to ' + st.target + '° at ' + st.speed + '°/s with a ' + LOADS4[st.load].name + ' load.');
+    });
+    q('bump').addEventListener('click', function () {
+        if (st.fault) return;
+        st.bump = 0.3; st.bumpHandled = false;
+        if (!st.moving) st.reportPending = true;
+        if (st.sys === 'stepper') say('Bump! The hit was stronger than the holding torque, so the rotor jumped back 4 steps. The controller did not notice.', 'caution');
+        else if (st.sys === 'bldc') say('Bump! The speed loop only fights motion while it lasts. Once the arm stops, nothing pulls it back to the angle.', 'caution');
+        else say('Bump! The encoder sees the error and the drive pushes back, within its torque limit.', 'caution');
+        if (st.sys === 'bldc') st.bTimer = 0.9;
+    });
+    q('pause').addEventListener('click', function () { st.paused = !st.paused; syncButtons(); });
+    q('reset').addEventListener('click', fullReset);
+    initTaskPager(q('tasks'));
+    syncButtons();
+    render();
+
+    SIMS.push({ root: root, tick: function (dt) {
+        if (st.paused) { render(); return; }
+        var n = 10;
+        for (var i = 0; i < n; i++) step(dt / n);
+        st.hist.push({ t: st.t, c: st.cmd, a: st.a });
+        while (st.hist.length && st.hist[0].t < st.t - WIN) st.hist.shift();
+        render();
+    } });
+}
+
+// Prev / next pager over the hidden <li> tasks inside a .task-pager.
+function initTaskPager(el) {
+    var items = Array.prototype.map.call(el.querySelectorAll('ol > li'), function (li) { return li.innerHTML; });
+    var i = 0;
+    var count = el.querySelector('.tp-count'), text = el.querySelector('.tp-text');
+    var prev = el.querySelector('.tp-prev'), next = el.querySelector('.tp-next');
+    function show() {
+        count.textContent = 'TASK ' + (i + 1) + ' OF ' + items.length;
+        text.innerHTML = items[i];
+        prev.disabled = i === 0;
+        next.disabled = i === items.length - 1;
+    }
+    prev.addEventListener('click', function () { if (i > 0) { i--; show(); } });
+    next.addEventListener('click', function () { if (i < items.length - 1) { i++; show(); } });
+    show();
+}
+
+function startSimLoop(Reveal) {
+    var last = performance.now();
+    function frame(now) {
+        var dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        var cur = Reveal.getCurrentSlide();
+        SIMS.forEach(function (s) { if (cur && cur.contains(s.root)) s.tick(dt); });
+        requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+}
+
+document.querySelectorAll('.cm-demo').forEach(buildCommDemo);
+document.querySelectorAll('.pp').forEach(buildPrecision);
+
+initSyncDeckReveal({
+    deckId: 'day4-stepper-brushless-servo',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        startSimLoop(Reveal);
+    },
+});
+</script>
+</body>
+</html>

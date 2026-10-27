@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1iytxku">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 1: Generators, AC, and Electrical Phases</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: AC Motors Day 1 · Generators and Phases
+   ============================================================ */
+
+/* ─── Generator Lab ─────────────────────────────────────────
+   Root: .gen-lab. The engine draws the stator, windings, rotor,
+   and oscilloscope into the empty SVGs marked data-role="gen"
+   and data-role="scope". data-mode="demo" locks it to one
+   winding with only run and speed controls.
+   ───────────────────────────────────────────────────────── */
+.gen-lab .stator { fill: none; stroke: #1f2c38; stroke-width: 52; }
+.gen-lab .stator-edge { fill: none; stroke: rgba(230,247,234,0.3); stroke-width: 2; }
+.gen-lab .coil { stroke-width: 3; }
+.gen-lab .coil-a { stroke: var(--ph-a); fill: var(--ph-a); }
+.gen-lab .coil-b { stroke: var(--ph-b); fill: var(--ph-b); }
+.gen-lab .coil-c { stroke: var(--ph-c); fill: var(--ph-c); }
+.gen-lab .coil-lbl { font-family: var(--font-mono); font-size: 30px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+.gen-lab .rotor-n { fill: rgba(255,138,128,0.35); stroke: var(--fault); stroke-width: 2; }
+.gen-lab .rotor-s { fill: rgba(230,247,234,0.12); stroke: rgba(230,247,234,0.6); stroke-width: 2; }
+.gen-lab .pole-lbl { font-family: var(--font-mono); font-size: 30px; font-weight: 700; fill: var(--text); text-anchor: middle; dominant-baseline: central; }
+.gen-lab .angle-mark { fill: none; stroke: var(--text); stroke-width: 3; stroke-dasharray: 8 6; }
+.gen-lab .shaft { fill: var(--bg); stroke: rgba(230,247,234,0.6); stroke-width: 3; }
+.gen-lab .scope-lbl { font-family: var(--font-mono); font-size: 28px; fill: var(--text-muted); }
+.gen-lab .scope-pwr { visibility: hidden; }
+.gen-lab.show-power .scope-pwr { visibility: visible; }
+
+.gen-grid { display: grid; grid-template-columns: 440px 1fr; gap: 20px; align-items: start; }
+.gen-left { display: flex; flex-direction: column; gap: 10px; }
+.gen-right { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.gen-tiles { grid-template-columns: 1fr 1fr; }
+.gen-tiles .wide { grid-column: span 2; }
+.gen-tiles .t-sub { display: block; font-family: var(--font-mono); font-size: var(--small); color: var(--text); }
+.gen-lab [data-role="feedback"] { height: 76px; }
+
+/* Hook drawings */
+.hook-figs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+.hook-figs .card { display: flex; gap: 18px; align-items: center; }
+.hook-figs svg { flex: 0 0 auto; }
+
+/* AC vs DC generator: connection diagram beside its output waveform */
+.gen-pair { display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; align-items: center; margin: 8px 0; }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(255,209,102,0.10),transparent 70%);"></div>
+  <div class="glow" style="width:420px;height:420px;bottom:-90px;right:12%;background:radial-gradient(circle,rgba(94,234,212,0.08),transparent 70%);"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; AC Motors &nbsp;·&nbsp; Day 1</span>
+    <h1 class="title-h1">Generators and <span class="accent">Electrical Phases</span></h1>
+    <p class="subtitle">// Electromagnetic induction &nbsp;·&nbsp; AC and DC generators &nbsp;·&nbsp; Single phase and three phase</p>
+    <svg viewBox="0 0 900 140" style="width:900px;margin-top:40px;" aria-hidden="true">
+      <path data-wave="sin" data-x0="0" data-x1="900" data-mid="70" data-amp="55" data-cycles="2.5" data-phase="0" class="tr-a" style="opacity:0.7"/>
+      <path data-wave="sin" data-x0="0" data-x1="900" data-mid="70" data-amp="55" data-cycles="2.5" data-phase="120" class="tr-b" style="opacity:0.7"/>
+      <path data-wave="sin" data-x0="0" data-x1="900" data-mid="70" data-amp="55" data-cycles="2.5" data-phase="-120" class="tr-c" style="opacity:0.7"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · ESSENTIAL QUESTION AND OBJECTIVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Essential Question &amp; Objectives</span>
+    <div class="eq-box" style="margin-bottom:var(--gap-lg);">
+      <span class="eq-label">Essential question</span>
+      Why does industry use <span class="accent">three phase</span> electrical power instead of just one phase?
+    </div>
+    <div class="split split-50 split-top" style="flex:0 0 auto;">
+      <div>
+        <h3>By the end of class you can <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Explain how a moving magnet <strong>induces voltage</strong> in a coil.</li>
+          <li>Tell the output of an <strong>AC generator</strong> from a <strong>DC generator</strong>.</li>
+          <li>Explain how extra windings create separate <strong>phases</strong>.</li>
+          <li>Read single phase and three phase <strong>waveforms</strong>.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today&#39;s <span class="accent">path</span></h3>
+        <div class="agenda-grid">
+          <a class="agenda-item" href="#/5"><span class="agenda-num">01</span><span class="agenda-text">How a <strong>generator</strong> works</span></a>
+          <a class="agenda-item" href="#/8"><span class="agenda-num">02</span><span class="agenda-text">Frequency and <strong>phases</strong></span></a>
+          <a class="agenda-item" href="#/12"><span class="agenda-num">03</span><span class="agenda-text">Investigate: the <strong>Generator Lab</strong></span></a>
+          <a class="agenda-item" href="#/13"><span class="agenda-num">04</span><span class="agenda-text">Why industry uses <strong>three phase</strong></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · THE INDUSTRIAL POWER MYSTERY -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Hook · The Industrial Power Mystery</span>
+    <h2>Home Power and <span class="accent">Industrial Power</span></h2>
+    <div class="hook-figs">
+      <div class="card">
+        <svg viewBox="0 0 250 250" width="250" height="250" role="img" aria-label="A household outlet fed by three wires: one hot wire, a neutral, and a safety ground">
+          <path d="M8 66 H132" class="tr-a" style="stroke-width:5"/>
+          <path d="M8 126 H132" stroke="#e6f7ea" stroke-width="5" fill="none"/>
+          <path d="M8 186 H132" stroke="var(--accent)" stroke-width="5" fill="none"/>
+          <text x="8" y="54" class="svg-lbl-b" style="font-size:22px;fill:var(--ph-a)">HOT</text>
+          <text x="8" y="114" class="svg-lbl-b" style="font-size:22px;">NEUTRAL</text>
+          <text x="8" y="174" class="svg-lbl-b" style="font-size:22px;fill:var(--accent)">GROUND</text>
+          <rect x="132" y="16" width="108" height="220" rx="16" fill="#e9efe9" stroke="rgba(230,247,234,0.6)" stroke-width="3"/>
+          <rect x="158" y="58" width="11" height="36" rx="3" fill="#202a33"/>
+          <rect x="203" y="54" width="12" height="44" rx="3" fill="#202a33"/>
+          <path d="M175 132 a11 11 0 0 1 22 0 v14 h-22 z" fill="#202a33"/>
+          <circle cx="186" cy="196" r="8" fill="#9aa5ad"/>
+        </svg>
+        <div>
+          <span class="card-name">Home outlet</span>
+          <p class="card-body"><strong>120 V</strong> on <strong>one hot wire</strong>. The neutral is the return path and the ground is for safety.</p>
+        </div>
+      </div>
+      <div class="card">
+        <svg viewBox="0 0 240 250" width="240" height="250" role="img" aria-label="An industrial motor fed by four wires: three hot wires labeled L1, L2, and L3, and a safety ground">
+          <path d="M20 40 H120 V95" class="tr-a" style="stroke-width:5"/>
+          <path d="M20 80 H105 V95" class="tr-b" style="stroke-width:5"/>
+          <path d="M20 120 H90 V95" class="tr-c" style="stroke-width:5" />
+          <path d="M20 196 H60" stroke="var(--accent)" stroke-width="5" fill="none"/>
+          <text x="20" y="30" class="svg-lbl-b" style="font-size:22px;fill:var(--ph-a)">L1</text>
+          <text x="20" y="72" class="svg-lbl-b" style="font-size:22px;fill:var(--ph-b)">L2</text>
+          <text x="20" y="112" class="svg-lbl-b" style="font-size:22px;fill:var(--ph-c)">L3</text>
+          <text x="20" y="186" class="svg-lbl-b" style="font-size:22px;fill:var(--accent)">GND</text>
+          <rect x="78" y="92" width="58" height="34" rx="4" fill="#2a3440" stroke="rgba(230,247,234,0.6)" stroke-width="2"/>
+          <rect x="60" y="126" width="160" height="100" rx="14" fill="#2a3440" stroke="rgba(230,247,234,0.6)" stroke-width="3"/>
+          <path d="M80 140 V212 M100 140 V212 M120 140 V212 M140 140 V212 M160 140 V212 M180 140 V212 M200 140 V212" stroke="rgba(230,247,234,0.25)" stroke-width="3"/>
+          <rect x="220" y="166" width="20" height="20" fill="#9aa5ad"/>
+        </svg>
+        <div>
+          <span class="card-name">Industrial motor</span>
+          <p class="card-body"><strong>480 V</strong> on <strong>three hot wires</strong>, L1, L2, and L3, plus a safety ground.</p>
+        </div>
+      </div>
+    </div>
+    <p class="slide-intro" style="margin-top:var(--gap-lg);">Both use <span class="key">alternating current</span>. The difference is how many of the supply wires are <span class="warn">hot</span>. Think about three questions before we answer anything:</p>
+    <ul class="bullets">
+      <li class="fragment fade-up">Why might these two devices need <strong>different</strong> electrical supplies?</li>
+      <li class="fragment fade-up">What do you think the word <span class="accent">phase</span> means?</li>
+      <li class="fragment fade-up">Does three phase mean the electricity moves <strong>three times faster</strong>?</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · PREDICTIONS (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:3:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Prediction: does three phase power mean the electricity moves three times faster than single phase power?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"Yes, three phase is three times faster","isCorrect":false},{"id":"q1b","text":"No, it means something else","isCorrect":false},{"id":"q1c","text":"I am not sure yet","isCorrect":false}]},{"id":"q2","type":"free-response","text":"A home outlet and an industrial motor both use alternating current. Why might they need different electrical supplies? What do you think the word phase means?","order":1,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predictions · No Wrong Answers Yet</span>
+    <h2>Make Your <span class="accent">Prediction</span></h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>Does three phase power mean the electricity moves three times faster than single phase power? (Yes, No, or Not sure)</div>
+      <div class="frq-box"><span class="q-num">2</span>A home outlet and an industrial motor both use alternating current. Why might they need different electrical supplies? What do you think the word <em>phase</em> means?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · GENERATOR ENERGY CONVERSION -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">How a Generator Works · Topic 01</span>
+    <h2>A Generator <span class="accent">Converts Energy</span></h2>
+    <p class="slide-intro">A generator does not create energy. It turns <strong>mechanical</strong> energy into <strong>electrical</strong> energy by moving a magnetic field and a coil of wire relative to each other.</p>
+    <div class="row-3">
+      <div class="card is-key fragment fade-up">
+        <span class="card-name">1 · Mechanical input</span>
+        <p class="card-body">A turbine, engine, or your hand <strong>turns a shaft</strong>. Steam, water, and wind are common sources.</p>
+      </div>
+      <div class="card is-key fragment fade-up">
+        <span class="card-name">2 · Changing flux</span>
+        <p class="card-body">As the magnet spins, the <strong>magnetic flux</strong> through the coil keeps changing in size and direction.</p>
+      </div>
+      <div class="card is-key fragment fade-up">
+        <span class="card-name">3 · Electrical output</span>
+        <p class="card-body">A changing flux <strong>induces a voltage</strong> across the coil. This is <span class="accent">Faraday&#39;s law</span>.</p>
+      </div>
+    </div>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);">
+      The induced voltage is larger when the flux changes <strong>faster</strong> via <span class="accent">faster rotation</span>, a <span class="accent">stronger magnet</span>, or <span class="accent">more turns of wire</span> in the coil. Motors run on the same principle in reverse: current in a coil makes a force on a magnet.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · ALTERNATOR ANIMATION -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">How a Generator Works · Topic 01 · The Alternator</span>
+    <h2>Watch One Coil <span class="pa">(A)</span></h2>
+    <div class="gen-lab" data-mode="demo">
+      <div class="gen-grid">
+        <div class="gen-left">
+          <div class="sim-panel"><svg data-role="gen" viewBox="-10 -10 480 480" role="img" aria-label="Generator cross section: a magnet rotor spins inside a stator with coil A at the top"></svg></div>
+          <div class="ctl-row">
+            <button class="sim-btn" data-role="run" type="button">Pause</button>
+            <span class="ctl-label">Speed</span>
+            <input class="sim-range" data-role="speed" type="range" min="0" max="1800" step="60" value="600" aria-label="Rotor speed in RPM" style="width:110px;">
+            <span class="range-val" data-role="speed-val">600 RPM</span>
+          </div>
+        </div>
+        <div class="gen-right">
+          <div class="sim-panel">
+            <div class="sim-head"><span>Coil A voltage</span><span class="sim-note">100 ms window, slowed 60&times;</span></div>
+            <svg data-role="scope" viewBox="0 0 1000 250" role="img" aria-label="Oscilloscope trace of coil A voltage"></svg>
+          </div>
+          <p class="slide-intro" style="margin:0;">When the <span class="fault">N pole</span> points straight at coil A, the flux through A is at its peak but is <strong>not changing</strong>, so the voltage is zero. The voltage peaks a quarter turn later, when the flux is changing fastest. Once the <strong>S pole</strong> comes around, the voltage <span class="accent">reverses</span>: that is alternating current.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · AC VERSUS DC GENERATOR OUTPUT -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">How a Generator Works · Topic 01 · AC and DC</span>
+    <h2>AC and DC <span class="accent">Generators</span></h2>
+    <p class="slide-intro">Every spinning coil produces an alternating voltage inside the machine. What changes is <strong>how the coil connects to the outside</strong>.</p>
+    <div class="row-2">
+      <div class="card">
+        <span class="card-name">Alternator: slip rings</span>
+        <div class="gen-pair">
+        <svg viewBox="0 0 310 290" style="width:100%;height:auto;" role="img" aria-label="Alternator: a coil turns between N and S magnet poles. Each end of the coil connects to its own continuous slip ring, and a brush rides on each ring to carry the output out.">
+          <rect x="6" y="30" width="44" height="120" rx="6" fill="rgba(255,138,128,0.35)" stroke="var(--fault)" stroke-width="2"/>
+          <text x="28" y="100" class="svg-lbl-b" text-anchor="middle" style="font-size:28px;">N</text>
+          <rect x="234" y="30" width="44" height="120" rx="6" fill="rgba(230,247,234,0.12)" stroke="rgba(230,247,234,0.6)" stroke-width="2"/>
+          <text x="256" y="100" class="svg-lbl-b" text-anchor="middle" style="font-size:28px;">S</text>
+          <path d="M130 140 H70 V40 H210 V140 H150" fill="none" stroke="var(--text)" stroke-width="4" stroke-linejoin="round"/>
+          <text x="140" y="98" class="svg-lbl" text-anchor="middle">coil</text>
+          <path d="M140 150 V262" stroke="rgba(230,247,234,0.25)" stroke-width="2" stroke-dasharray="6 6"/>
+          <path d="M150 140 V228" fill="none" stroke="var(--text)" stroke-width="3"/>
+          <ellipse cx="140" cy="190" rx="42" ry="12" fill="none" stroke="var(--warn)" stroke-width="6"/>
+          <ellipse cx="140" cy="240" rx="42" ry="12" fill="none" stroke="var(--warn)" stroke-width="6"/>
+          <path d="M130 140 V178" fill="none" stroke="var(--text)" stroke-width="3"/>
+          <circle cx="130" cy="178.3" r="5" fill="var(--text)"/>
+          <circle cx="150" cy="228.3" r="5" fill="var(--text)"/>
+          <rect x="184" y="180" width="30" height="20" rx="3" fill="#9aa5ad"/>
+          <rect x="184" y="230" width="30" height="20" rx="3" fill="#9aa5ad"/>
+          <path d="M214 190 H292 M214 240 H292" fill="none" stroke="var(--ph-a)" stroke-width="3"/>
+          <circle cx="294" cy="190" r="6" fill="var(--ph-a)"/><circle cx="294" cy="240" r="6" fill="var(--ph-a)"/>
+          <text x="92" y="208" class="svg-lbl" text-anchor="end" style="fill:var(--warn)">slip</text>
+          <text x="92" y="234" class="svg-lbl" text-anchor="end" style="fill:var(--warn)">rings</text>
+          <text x="199" y="282" class="svg-lbl" text-anchor="middle">brushes</text>
+          <text x="300" y="174" class="svg-lbl" text-anchor="end">AC out</text>
+        </svg>
+        <svg viewBox="0 0 280 220" style="width:100%;height:auto;" role="img" aria-label="Alternator output: a sine wave that swings above and below zero">
+          <path d="M6 110 H274" class="dw-axis"/>
+          <path data-wave="sin" data-x0="6" data-x1="274" data-mid="110" data-amp="85" data-cycles="2" data-phase="0" class="tr-a"/>
+          <text x="274" y="100" class="svg-lbl" text-anchor="end">0 V</text>
+        </svg>
+        </div>
+        <p class="card-body">Continuous <strong>slip rings</strong> keep each brush connected to the same end of the coil. The output reverses polarity every half turn: <span class="accent">AC</span>.</p>
+      </div>
+      <div class="card fragment fade-up">
+        <span class="card-name">DC generator: commutator</span>
+        <div class="gen-pair">
+        <svg viewBox="0 0 310 290" style="width:100%;height:auto;" role="img" aria-label="DC generator: a coil turns between N and S magnet poles. Its two ends connect to the two halves of a split ring commutator, and two fixed brushes press on opposite sides of the split ring.">
+          <rect x="6" y="30" width="44" height="120" rx="6" fill="rgba(255,138,128,0.35)" stroke="var(--fault)" stroke-width="2"/>
+          <text x="28" y="100" class="svg-lbl-b" text-anchor="middle" style="font-size:28px;">N</text>
+          <rect x="234" y="30" width="44" height="120" rx="6" fill="rgba(230,247,234,0.12)" stroke="rgba(230,247,234,0.6)" stroke-width="2"/>
+          <text x="256" y="100" class="svg-lbl-b" text-anchor="middle" style="font-size:28px;">S</text>
+          <path d="M130 140 H70 V40 H210 V140 H150" fill="none" stroke="var(--text)" stroke-width="4" stroke-linejoin="round"/>
+          <text x="140" y="98" class="svg-lbl" text-anchor="middle">coil</text>
+          <path d="M130 140 V176 L134 184 M150 140 V176 L146 184" fill="none" stroke="var(--text)" stroke-width="3"/>
+          <circle cx="134" cy="184.2" r="5" fill="var(--text)"/>
+          <circle cx="146" cy="184.2" r="5" fill="var(--text)"/>
+          <path d="M134 184.2 A42 16 0 0 0 134 215.8" fill="none" stroke="var(--warn)" stroke-width="7"/>
+          <path d="M146 184.2 A42 16 0 0 1 146 215.8" fill="none" stroke="var(--warn)" stroke-width="7"/>
+          <rect x="66" y="190" width="30" height="20" rx="3" fill="#9aa5ad"/>
+          <rect x="184" y="190" width="30" height="20" rx="3" fill="#9aa5ad"/>
+          <path d="M66 200 H30 V256 M214 200 H250 V256" fill="none" stroke="var(--ph-b)" stroke-width="3"/>
+          <circle cx="30" cy="260" r="6" fill="var(--ph-b)"/><circle cx="250" cy="260" r="6" fill="var(--ph-b)"/>
+          <text x="30" y="290" class="svg-lbl-b" text-anchor="middle" style="font-size:30px;fill:var(--ph-b)">&minus;</text>
+          <text x="250" y="290" class="svg-lbl-b" text-anchor="middle" style="font-size:30px;fill:var(--ph-b)">+</text>
+          <text x="81" y="180" class="svg-lbl" text-anchor="middle">brush</text>
+          <text x="199" y="180" class="svg-lbl" text-anchor="middle">brush</text>
+          <text x="140" y="246" class="svg-lbl" text-anchor="middle" style="fill:var(--warn)">split ring</text>
+        </svg>
+        <svg viewBox="0 0 280 236" style="width:100%;height:auto;" role="img" aria-label="DC generator output: a pulsing wave that stays above zero">
+          <path d="M6 200 H274" class="dw-axis"/>
+          <path data-wave="abs" data-x0="6" data-x1="274" data-mid="200" data-amp="170" data-cycles="2" data-phase="0" class="tr-b"/>
+          <text x="274" y="230" class="svg-lbl" text-anchor="end">0 V</text>
+        </svg>
+        </div>
+        <p class="card-body">A split ring <strong>commutator</strong> swaps the brush connections every half turn, so the output always has the same polarity: <span class="res">pulsing DC</span>.</p>
+      </div>
+    </div>
+    <div class="callout-result fragment fade-up" style="margin-top:var(--gap);">
+      The <strong>commutator</strong> is a mechanical switch. This will come up again when we compare brushed DC motors with brushless ones.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · ONE GENERATOR WINDING -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Frequency and Phases · Topic 02</span>
+    <h2>One Winding: <span class="accent">Frequency</span> and <span class="accent">Period</span></h2>
+    <div class="split" style="grid-template-columns:1.05fr 1fr;flex:0 0 auto;align-items:start;">
+      <div>
+        <svg viewBox="0 0 700 270" style="width:100%;height:auto;" role="img" aria-label="Two cycles of a sine wave with one period marked">
+          <path d="M20 120 H690" class="dw-axis"/>
+          <path data-wave="sin" data-x0="20" data-x1="680" data-mid="120" data-amp="90" data-cycles="2" data-phase="0" class="tr-a"/>
+          <path d="M20 256 H350" stroke="var(--accent)" stroke-width="3"/>
+          <path d="M20 246 V266 M350 246 V266" stroke="var(--accent)" stroke-width="3"/>
+          <text x="185" y="244" class="svg-lbl-b" text-anchor="middle" style="fill:var(--accent)">one cycle = period T</text>
+        </svg>
+        <p class="slide-intro" style="margin-top:var(--gap-sm);"><span class="key">Frequency</span> is the number of complete cycles per second, measured in <strong>hertz (Hz)</strong>. The <span class="key">period</span> is the time for one cycle. In North America the grid runs at 60 Hz, so T = 1/60 s, about 16.7 ms.</p>
+      </div>
+      <div>
+        <div class="eq-box fragment fade-up" data-fragment-index="1">
+          <span class="eq-label">Frequency of a generator</span>
+          f = RPM &times; P / 120
+          <div style="font-size:var(--small);color:var(--text-muted);margin-top:4px;">P = number of magnetic poles on the rotor</div>
+        </div>
+        <table class="data-table fragment fade-up" data-fragment-index="2" style="margin-top:var(--gap);">
+          <thead><tr><th>Poles</th><th>Shaft speed</th><th>Frequency</th></tr></thead>
+          <tbody>
+            <tr><td>2</td><td>1,800 RPM</td><td><strong>30 Hz</strong></td></tr>
+            <tr><td>2</td><td>3,600 RPM</td><td><strong>60 Hz</strong></td></tr>
+            <tr><td>4</td><td>1,800 RPM</td><td><strong>60 Hz</strong></td></tr>
+          </tbody>
+        </table>
+        <p class="slide-intro fragment fade-up" data-fragment-index="3" style="margin-top:var(--gap);">One shaft revolution is <strong>not always</strong> one electrical cycle. A 4 pole rotor passes two N poles by each coil per turn.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · ADDING A SECOND WINDING -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Frequency and Phases · Topic 02 · A Second Winding</span>
+    <h2>Adding a <span class="pb">Second Winding (B)</span></h2>
+    <p class="slide-intro"><strong>Predict:</strong> we add coil B one third of the way around the stator. Will its voltage have the same shape and frequency as coil A? When will it peak?</p>
+    <div class="gen-lab" data-mode="demo" data-phases="2" data-mark-angle data-run-fragment>
+      <div class="gen-grid" style="grid-template-columns:400px 1fr;">
+        <div class="gen-left">
+          <div class="sim-panel"><svg data-role="gen" viewBox="-10 -10 480 480" role="img" aria-label="Generator cross section: coil A at the top and coil B 120 degrees clockwise around the stator, with a magnet rotor in the middle"></svg></div>
+          <div class="ctl-row">
+            <button class="sim-btn" data-role="run" type="button">Run</button>
+          </div>
+        </div>
+        <div class="gen-right">
+          <svg class="fragment fade-up" data-fragment-index="1" data-gen-run viewBox="0 0 1000 280" style="width:100%;height:auto;" role="img" aria-label="Two sine waves of equal size and frequency, with B peaking one third of a cycle after A">
+            <path d="M20 130 H990" class="dw-axis"/>
+            <path data-wave="sin" data-x0="20" data-x1="980" data-mid="130" data-amp="100" data-cycles="2" data-phase="0" class="tr-a"/>
+            <path data-wave="sin" data-x0="20" data-x1="980" data-mid="130" data-amp="100" data-cycles="2" data-phase="120" class="tr-b"/>
+            <path d="M140 18 V250 M300 18 V250" stroke="var(--text-muted)" stroke-width="2" stroke-dasharray="6 6"/>
+            <path d="M146 262 H294" stroke="var(--text)" stroke-width="3"/>
+            <text x="220" y="252" class="svg-lbl-b" text-anchor="middle" style="font-size:28px;">120&deg;</text>
+            <text x="150" y="22" class="svg-lbl-b" style="font-size:28px;fill:var(--ph-a)">A peak</text>
+            <text x="310" y="22" class="svg-lbl-b" style="font-size:28px;fill:var(--ph-b)">B peak</text>
+          </svg>
+          <p class="slide-intro fragment fade-up" data-fragment-index="2" style="margin:var(--gap) 0 0;">Same shape, same frequency, but B peaks later. The <span class="key">phase difference</span> is the time shift between two repeating signals, measured in <strong>degrees of one electrical cycle</strong> (360&deg; is a full cycle). Coil B sits 120&deg; around the stator, so each pole reaches B a third of a turn after A, and B lags A by <span class="accent">120 electrical degrees</span>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · THREE WINDINGS, THREE PHASES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Frequency and Phases · Topic 02 · Three Phases</span>
+    <h2>Three Windings Make <span class="accent">Three Phases</span></h2>
+    <div class="split" style="grid-template-columns:1fr 1fr;flex:0 0 auto;align-items:start;">
+      <div>
+        <svg viewBox="0 0 700 300" style="width:100%;height:auto;" role="img" aria-label="Three sine waves, A, B, and C, each one third of a cycle apart">
+          <path d="M20 150 H690" class="dw-axis"/>
+          <path data-wave="sin" data-x0="20" data-x1="680" data-mid="150" data-amp="110" data-cycles="1.5" data-phase="0" class="tr-a"/>
+          <path data-wave="sin" data-x0="20" data-x1="680" data-mid="150" data-amp="110" data-cycles="1.5" data-phase="120" class="tr-b"/>
+          <path data-wave="sin" data-x0="20" data-x1="680" data-mid="150" data-amp="110" data-cycles="1.5" data-phase="240" class="tr-c"/>
+          <text x="130" y="30" class="svg-lbl-b" style="fill:var(--ph-a)">A</text>
+          <text x="277" y="30" class="svg-lbl-b" style="fill:var(--ph-b)">B</text>
+          <text x="424" y="30" class="svg-lbl-b" style="fill:var(--ph-c)">C</text>
+        </svg>
+        <p class="slide-intro" style="margin-top:var(--gap-sm);">Coil C goes another 120&deg; around. Now the peaks arrive in the order <span class="pa">A</span>, <span class="pb">B</span>, <span class="pc">C</span>, evenly spaced. That order is the <span class="key">phase sequence</span>.</p>
+      </div>
+      <table class="data-table">
+        <tbody>
+          <tr class="fragment fade-up"><td>Frequency</td><td>Cycles per second, in <strong>hertz</strong></td></tr>
+          <tr class="fragment fade-up"><td>Period</td><td>Time for <strong>one</strong> complete cycle</td></tr>
+          <tr class="fragment fade-up"><td>Phase angle</td><td>Where a waveform is <strong>within its cycle</strong>, compared with another</td></tr>
+          <tr class="fragment fade-up"><td>Single phase</td><td><strong>One</strong> alternating voltage</td></tr>
+          <tr class="fragment fade-up"><td>Three phase</td><td><strong>Three</strong> alternating voltages, 120 electrical degrees apart</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout-warn fragment fade-up" style="margin-top:var(--gap);">
+      <strong>Three phase is not faster.</strong> All three waveforms have the same frequency. Three phase means three related waveforms that take turns peaking.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · INVESTIGATION TASKS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Virtual Activity 1 · Generator Lab · Tasks</span>
+    <h2>Build an <span class="accent">Alternator</span></h2>
+    <div class="poe-row">
+      <span class="poe-chip"><b>P</b>redict before each change</span>
+      <span class="poe-chip"><b>O</b>bserve the generator and the scope</span>
+      <span class="poe-chip"><b>E</b>xplain what caused the change</span>
+    </div>
+    <div class="task-grid">
+      <div class="task-item"><span class="t-key">A</span><span>One coil: record the waveform shape and frequency.</span></div>
+      <div class="task-item"><span class="t-key">B</span><span>Raise the speed. What changes? What stays the same?</span></div>
+      <div class="task-item"><span class="t-key">C</span><span>Add winding B, 120&deg; away. Predict, then observe.</span></div>
+      <div class="task-item"><span class="t-key">D</span><span>Add winding C to make a balanced three phase system.</span></div>
+      <div class="task-item"><span class="t-key">E</span><span>Compare the timing of the three voltage peaks.</span></div>
+      <div class="task-item"><span class="t-key">F</span><span>Reverse the rotation. What happens to the phase sequence?</span></div>
+      <div class="task-item" style="grid-column:span 2;"><span class="t-key">G</span><span>Turn on total power. Why does a balanced three phase system deliver steadier power than one phase?</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · GENERATOR LAB (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="padding-top:44px;padding-bottom:40px;">
+    <span class="slide-tag" style="margin-bottom:10px;">Virtual Activity 1 · Generator Lab · Simplified educational model</span>
+    <div class="gen-lab" data-mode="full">
+      <div class="gen-grid">
+        <div class="gen-left">
+          <div class="sim-panel"><svg data-role="gen" viewBox="-10 -10 480 480" role="img" aria-label="Generator cross section: a magnet rotor inside a stator with one, two, or three windings"></svg></div>
+          <div class="tiles gen-tiles">
+            <div class="tile"><span class="t-name">Rotor speed</span><span class="t-val" data-tile="rpm">600 RPM</span></div>
+            <div class="tile is-result"><span class="t-name">Frequency</span><span class="t-val" data-tile="freq">10.0 Hz</span></div>
+            <div class="tile"><span class="t-name">Period</span><span class="t-val" data-tile="period">100 ms</span></div>
+            <div class="tile is-result"><span class="t-name">Peak voltage</span><span class="t-val" data-tile="vpk">28 V</span></div>
+            <div class="tile wide"><span class="t-name">Phase sequence</span><span class="t-val" data-tile="seq">A only</span><span class="t-sub" data-tile="angles">A 0&deg;</span></div>
+          </div>
+        </div>
+        <div class="gen-right">
+          <div class="sim-panel">
+            <div class="sim-head"><span>Oscilloscope</span><span class="sim-note">100 ms window &middot; animation slowed 60&times;</span></div>
+            <svg data-role="scope" viewBox="0 0 1000 330" role="img" aria-label="Oscilloscope traces of the phase voltages and total power"></svg>
+          </div>
+          <div class="sim-panel">
+            <div class="ctl-row">
+              <button class="sim-btn" data-role="run" type="button">Run</button>
+              <button class="sim-btn alt" data-role="step" type="button">Step 15&deg;</button>
+              <button class="sim-btn alt" data-role="reset" type="button">Reset</button>
+              <span class="ctl-label">Windings</span>
+              <span class="seg" data-role="phases">
+                <button class="seg-btn" type="button" data-val="1" aria-pressed="true">A</button>
+                <button class="seg-btn" type="button" data-val="2" aria-pressed="false">A+B</button>
+                <button class="seg-btn" type="button" data-val="3" aria-pressed="false">A+B+C</button>
+              </span>
+              <button class="sim-btn alt" data-role="reverse" type="button" aria-pressed="false">Reverse</button>
+            </div>
+            <div class="ctl-row">
+              <span class="ctl-label">Speed</span>
+              <input class="sim-range" data-role="speed" type="range" min="0" max="1800" step="60" value="600" aria-label="Rotor speed in RPM">
+              <span class="range-val" data-role="speed-val">600 RPM</span>
+              <span class="ctl-label">Field</span>
+              <input class="sim-range" data-role="field" type="range" min="50" max="130" step="10" value="100" aria-label="Magnetic field strength in percent" style="width:150px;">
+              <span class="range-val" data-role="field-val">100%</span>
+              <span class="ctl-label">Poles</span>
+              <span class="seg" data-role="poles">
+                <button class="seg-btn" type="button" data-val="2" aria-pressed="true">2</button>
+                <button class="seg-btn" type="button" data-val="4" aria-pressed="false">4</button>
+              </span>
+            </div>
+            <div class="ctl-row">
+              <span class="ctl-label">Show</span>
+              <label class="chk"><input type="checkbox" data-trace="a" checked> A</label>
+              <label class="chk"><input type="checkbox" data-trace="b" checked> B</label>
+              <label class="chk"><input type="checkbox" data-trace="c" checked> C</label>
+              <label class="chk"><input type="checkbox" data-role="power"> Total power</label>
+            </div>
+          </div>
+          <div class="sim-feedback" data-role="feedback" aria-live="polite">Press Run. Coil A is the only winding so far.</div>
+          <div class="task-pager" data-role="tasks">
+            <div class="tp-head">
+              <span class="tp-count"></span>
+              <button class="tp-nav tp-prev" type="button" aria-label="Previous task">&#9664;</button>
+              <button class="tp-nav tp-next" type="button" aria-label="Next task">&#9654;</button>
+            </div>
+            <div class="tp-text" aria-live="polite"></div>
+            <ol hidden>
+              <li><b>A.</b> With winding A only at 600 RPM, sketch the waveform and record the frequency.</li>
+              <li><b>B.</b> Predict, then raise the speed to 1,800 RPM. What changed? What stayed the same?</li>
+              <li><b>C.</b> Predict B&#39;s waveform, then add winding B. Where did it appear? When does it peak?</li>
+              <li><b>D.</b> Add winding C. Do all three phases still share one frequency?</li>
+              <li><b>E.</b> Pause and use Step 15&deg;. In what order do the A, B, and C peaks arrive?</li>
+              <li><b>F.</b> Press Reverse. What happens to the phase sequence?</li>
+              <li><b>G.</b> Show total power with A only, then with A+B+C. Which one is steady?</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · WHY INDUSTRY USES THREE PHASE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Why Three Phase · Topic 04</span>
+    <h2>Why Industry Uses <span class="accent">Three Phase</span></h2>
+    <div class="row-2" style="margin-bottom:var(--gap);">
+      <div class="card">
+        <span class="card-name">Single phase: total power</span>
+        <svg viewBox="0 0 640 170" style="width:100%;height:auto;" role="img" aria-label="Single phase power pulses between zero and a peak twice every cycle">
+          <path d="M20 150 H620" class="dw-axis"/>
+          <path data-wave="p1" data-x0="20" data-x1="620" data-mid="150" data-amp="130" data-cycles="2" data-phase="0" class="tr-p"/>
+          <text x="610" y="140" class="svg-lbl" text-anchor="end">0</text>
+        </svg>
+        <p class="card-body">Power drops to <span class="fault">zero</span> twice every cycle.</p>
+      </div>
+      <div class="card">
+        <span class="card-name">Three phase: total power</span>
+        <svg viewBox="0 0 640 170" style="width:100%;height:auto;" role="img" aria-label="Balanced three phase power is a flat, constant line">
+          <path d="M20 150 H620" class="dw-axis"/>
+          <path data-wave="p3" data-x0="20" data-x1="620" data-mid="150" data-amp="130" data-cycles="2" data-phase="0" class="tr-p"/>
+          <text x="610" y="140" class="svg-lbl" text-anchor="end">0</text>
+        </svg>
+        <p class="card-body">The three phases add up to a <span class="res">constant</span> total.</p>
+      </div>
+    </div>
+    <div class="row-3">
+      <div class="card is-key fragment fade-up"><span class="card-name">Steady power</span><p class="card-body">A balanced load gets <strong>constant</strong> power, so big motors run smoothly.</p></div>
+      <div class="card is-key fragment fade-up"><span class="card-name">Rotating field</span><p class="card-body">Three windings make a field that <strong>rotates on its own</strong>. We pick that up next lesson.</p></div>
+      <div class="card is-key fragment fade-up"><span class="card-name">Efficient delivery</span><p class="card-body">For the same amount of copper, three wires deliver <strong>more power</strong> than a single phase pair.</p></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · SPLIT PHASE IS NOT TWO PHASE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Why Three Phase · Topic 04 · Your House</span>
+    <h2>What Comes Into <span class="accent">Your House?</span></h2>
+    <div class="split" style="grid-template-columns:1fr 1.1fr;flex:0 0 auto;align-items:center;">
+      <svg viewBox="0 0 560 360" style="width:100%;height:auto;" role="img" aria-label="A center-tapped transformer secondary: L1 to neutral is 120 volts, neutral to L2 is 120 volts, L1 to L2 is 240 volts">
+        <path d="M120 40 C160 40 160 90 120 90 C160 90 160 140 120 140 C160 140 160 190 120 190 C160 190 160 240 120 240 C160 240 160 290 120 290 C160 290 160 340 120 340" class="dw"/>
+        <path d="M120 40 H330" class="tr-a"/>
+        <path d="M120 190 H330" stroke="rgba(230,247,234,0.8)" stroke-width="4"/>
+        <path d="M120 340 H330" class="tr-b"/>
+        <circle cx="330" cy="40" r="8" fill="var(--ph-a)"/><circle cx="330" cy="190" r="8" fill="var(--text)"/><circle cx="330" cy="340" r="8" fill="var(--ph-b)"/>
+        <text x="345" y="48" class="svg-lbl-b" style="fill:var(--ph-a)">L1</text>
+        <text x="345" y="198" class="svg-lbl-b">N</text>
+        <text x="345" y="348" class="svg-lbl-b" style="fill:var(--ph-b)">L2</text>
+        <text x="410" y="120" class="svg-lbl">120 V</text>
+        <text x="410" y="270" class="svg-lbl">120 V</text>
+        <path d="M400 46 V184 M400 196 V334" stroke="var(--text-muted)" stroke-width="2"/>
+        <path d="M70 46 V334" stroke="var(--text-muted)" stroke-width="2"/>
+        <text x="50" y="190" class="svg-lbl" text-anchor="middle" transform="rotate(-90 50 190)">240 V</text>
+      </svg>
+      <div>
+        <p class="slide-intro">North American homes get <span class="key">120/240 V split phase</span> service from one transformer winding with a center tap. L1 to neutral is 120 V, neutral to L2 is 120 V, and L1 to L2 is 240 V for the dryer and the oven.</p>
+        <p class="slide-intro fragment fade-up">The two halves are mirror images of <strong>one</strong> winding&#39;s voltage, so they swing in opposite directions. That is still single phase. It is <span class="fault">not two phase</span>, and it is not the same as three phase.</p>
+        <div class="callout-result fragment fade-up">Factories, hospitals, and large buildings pay for a <strong>three phase</strong> service so they can run large motors.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · REAL GENERATORS USE MANY COILS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Why Three Phase · Topic 04 · Real Generators</span>
+    <h2>Real Generators Use <span class="accent">Many Coils</span></h2>
+    <div class="split" style="grid-template-columns:400px 1fr;flex:0 0 auto;align-items:start;">
+      <figure class="fig">
+        <svg viewBox="0 0 400 400" role="img" aria-label="A four pole generator: a rotor with N, S, N, S poles inside a stator with six coils labeled A, B, C, A, B, C, so each phase has two coils on opposite sides">
+          <circle cx="200" cy="200" r="137" fill="none" stroke="#1f2c38" stroke-width="46"/>
+          <circle cx="200" cy="200" r="160" class="dw-thin"/>
+          <circle cx="200" cy="200" r="114" class="dw-thin"/>
+          <rect x="177" y="56" width="46" height="26" rx="5" transform="rotate(0 200 200)" fill="var(--ph-a)" fill-opacity="0.45" stroke="var(--ph-a)" stroke-width="3"/>
+          <text x="200.0" y="19.0" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-mono);font-size:30px;font-weight:700;fill:var(--ph-a)">A</text>
+          <rect x="177" y="56" width="46" height="26" rx="5" transform="rotate(60 200 200)" fill="var(--ph-b)" fill-opacity="0.45" stroke="var(--ph-b)" stroke-width="3"/>
+          <text x="356.8" y="109.5" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-mono);font-size:30px;font-weight:700;fill:var(--ph-b)">B</text>
+          <rect x="177" y="56" width="46" height="26" rx="5" transform="rotate(120 200 200)" fill="var(--ph-c)" fill-opacity="0.45" stroke="var(--ph-c)" stroke-width="3"/>
+          <text x="356.8" y="290.5" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-mono);font-size:30px;font-weight:700;fill:var(--ph-c)">C</text>
+          <rect x="177" y="56" width="46" height="26" rx="5" transform="rotate(180 200 200)" fill="var(--ph-a)" fill-opacity="0.45" stroke="var(--ph-a)" stroke-width="3"/>
+          <text x="200.0" y="381.0" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-mono);font-size:30px;font-weight:700;fill:var(--ph-a)">A</text>
+          <rect x="177" y="56" width="46" height="26" rx="5" transform="rotate(240 200 200)" fill="var(--ph-b)" fill-opacity="0.45" stroke="var(--ph-b)" stroke-width="3"/>
+          <text x="43.2" y="290.5" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-mono);font-size:30px;font-weight:700;fill:var(--ph-b)">B</text>
+          <rect x="177" y="56" width="46" height="26" rx="5" transform="rotate(300 200 200)" fill="var(--ph-c)" fill-opacity="0.45" stroke="var(--ph-c)" stroke-width="3"/>
+          <text x="43.2" y="109.5" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-mono);font-size:30px;font-weight:700;fill:var(--ph-c)">C</text>
+          <path d="M200 200 L132.8 132.8 A95 95 0 0 1 267.2 132.8 Z" fill="rgba(255,138,128,0.35)" stroke="var(--fault)" stroke-width="2"/>
+          <path d="M200 200 L267.2 132.8 A95 95 0 0 1 267.2 267.2 Z" fill="rgba(230,247,234,0.12)" stroke="rgba(230,247,234,0.6)" stroke-width="2"/>
+          <path d="M200 200 L267.2 267.2 A95 95 0 0 1 132.8 267.2 Z" fill="rgba(255,138,128,0.35)" stroke="var(--fault)" stroke-width="2"/>
+          <path d="M200 200 L132.8 267.2 A95 95 0 0 1 132.8 132.8 Z" fill="rgba(230,247,234,0.12)" stroke="rgba(230,247,234,0.6)" stroke-width="2"/>
+          <text x="200" y="146" class="svg-lbl-b" text-anchor="middle" dominant-baseline="central" style="font-size:28px;">N</text>
+          <text x="254" y="200" class="svg-lbl-b" text-anchor="middle" dominant-baseline="central" style="font-size:28px;">S</text>
+          <text x="200" y="254" class="svg-lbl-b" text-anchor="middle" dominant-baseline="central" style="font-size:28px;">N</text>
+          <text x="146" y="200" class="svg-lbl-b" text-anchor="middle" dominant-baseline="central" style="font-size:28px;">S</text>
+          <circle cx="200" cy="200" r="14" fill="var(--bg)" stroke="rgba(230,247,234,0.6)" stroke-width="3"/>
+        </svg>
+        <figcaption class="fig-caption">4 poles, two coils per phase</figcaption>
+        <div class="callout-result" style="margin-top:var(--gap);text-align:left;">In the <strong>Generator Lab</strong>, set Poles to 4 and each phase gets two coils.</div>
+      </figure>
+      <div>
+        <p class="slide-intro">Our lab used one coil per phase to keep things simple. Real generators spread each phase across <span class="key">many coils</span> in slots around the stator. Coils with the same letter are <strong>wired in series</strong>, so their voltages add up into one strong, smooth phase.</p>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="card fragment fade-up"><span class="card-name">Power plant turbine generator</span><p class="card-body">Steam turbines spin fast: <strong>2 poles at 3,600 RPM</strong> makes 60 Hz. Each phase is a long chain of coils in dozens of stator slots.</p></div>
+          <div class="card fragment fade-up"><span class="card-name">Hydroelectric generator</span><p class="card-body">Water turbines turn slowly, so the rotor needs many poles: <strong>40 poles at 180 RPM</strong> also makes 60 Hz.</p></div>
+          <div class="card fragment fade-up"><span class="card-name">Car alternator</span><p class="card-body">A <strong>12 pole</strong> rotor inside a three phase stator. Diodes convert its output to DC to charge the battery.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 16 · REVIEW -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · Single Phase and Three Phase</span>
+    <h2>Single Phase and <span class="accent">Three Phase</span> Compared</h2>
+    <table class="data-table" style="font-size:var(--body);">
+      <thead><tr><th></th><th>Single phase</th><th>Three phase</th></tr></thead>
+      <tbody>
+        <tr><td>Phase windings in the generator</td><td>One group of coils</td><td>Three groups, 120 electrical degrees apart</td></tr>
+        <tr class="fragment fade-up"><td>Frequency</td><td>60 Hz</td><td><strong>Also 60 Hz</strong> on every phase</td></tr>
+        <tr class="fragment fade-up"><td>Total power to a balanced load</td><td>Pulses to zero twice per cycle</td><td><strong>Constant</strong></td></tr>
+        <tr class="fragment fade-up"><td>Field in a motor</td><td>Pulses on one axis</td><td><strong>Rotates</strong> by itself</td></tr>
+        <tr class="fragment fade-up"><td>Typical use</td><td>Homes, small appliances</td><td>Industrial motors, large buildings</td></tr>
+      </tbody>
+    </table>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);">
+      <strong>Next lesson:</strong> what happens when we connect these supplies to windings arranged around a motor? Why can&#39;t every AC motor start by itself?
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 17 · EXIT TICKET (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:16:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Why does rotating a magnet near a coil generate an **alternating** voltage?","order":0,"responseTimeLimitMs":120000},{"id":"q2","type":"multiple-choice","text":"What does the 120° phase difference in a three phase supply describe?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"Three phase power runs at three times the frequency of single phase power","isCorrect":false},{"id":"q2b","text":"Each phase carries 120 V","isCorrect":false},{"id":"q2c","text":"The timing offset between the three voltage waveforms, as a fraction of one cycle","isCorrect":true},{"id":"q2d","text":"The physical angle between the three wires in the cable","isCorrect":false}]},{"id":"q3","type":"multiple-choice","text":"If the generator spins faster, what happens to the output frequency?","order":2,"responseTimeLimitMs":45000,"options":[{"id":"q3a","text":"It stays at 60 Hz no matter what","isCorrect":false},{"id":"q3b","text":"It increases","isCorrect":true},{"id":"q3c","text":"It decreases","isCorrect":false},{"id":"q3d","text":"The frequency stays the same, but the phase angle grows","isCorrect":false}]},{"id":"q4","type":"free-response","text":"Identify one practical advantage of three phase power, and explain why it matters in a factory.","order":3,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Exit <span class="accent">Ticket</span></h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>Why does rotating a magnet near a coil generate an <strong>alternating</strong> voltage?</div>
+      <div class="frq-box"><span class="q-num">2</span>What does the 120&deg; phase difference in a three phase supply describe?</div>
+      <div class="frq-box"><span class="q-num">3</span>If the generator spins faster, what happens to the output frequency?</div>
+      <div class="frq-box"><span class="q-num">4</span>Identify one practical advantage of three phase power, and explain why it matters in a factory.</div>
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+// Static waveform paths. Any <path data-wave="fn"> gets its d attribute from
+// x0..x1, a midline, an amplitude, a cycle count, and a phase lag in degrees.
+// fn: sin, abs (commutated DC), p1 (single phase power, sin^2),
+// p3 (balanced three phase power, constant).
+function drawWaves() {
+    var FN = {
+        sin: function (x) { return Math.sin(x); },
+        abs: function (x) { return Math.abs(Math.sin(x)); },
+        p1: function (x) { return Math.pow(Math.sin(x), 2); },
+        p3: function (x) {
+            var s = 0;
+            for (var k = 0; k < 3; k++) s += Math.pow(Math.sin(x - k * 2 * Math.PI / 3), 2);
+            return s / 3;
+        },
+    };
+    document.querySelectorAll('path[data-wave]').forEach(function (p) {
+        var d = p.dataset, f = FN[d.wave];
+        var x0 = +d.x0, x1 = +d.x1, mid = +d.mid, amp = +d.amp, cyc = +d.cycles;
+        var lag = (+d.phase || 0) * Math.PI / 180;
+        var pts = [];
+        for (var i = 0; i <= 240; i++) {
+            var u = i / 240;
+            var y = mid - amp * f(u * cyc * 2 * Math.PI - lag);
+            pts.push((x0 + u * (x1 - x0)).toFixed(1) + ' ' + y.toFixed(1));
+        }
+        p.setAttribute('d', 'M' + pts.join(' L'));
+    });
+}
+
+// Prev / next pager over the hidden <li> tasks inside a .task-pager.
+function initTaskPager(el) {
+    var items = Array.prototype.map.call(el.querySelectorAll('ol > li'), function (li) { return li.innerHTML; });
+    var i = 0;
+    var count = el.querySelector('.tp-count'), text = el.querySelector('.tp-text');
+    var prev = el.querySelector('.tp-prev'), next = el.querySelector('.tp-next');
+    function show() {
+        count.textContent = 'TASK ' + (i + 1) + ' OF ' + items.length;
+        text.innerHTML = items[i];
+        prev.disabled = i === 0;
+        next.disabled = i === items.length - 1;
+    }
+    prev.addEventListener('click', function () { if (i > 0) { i--; show(); } });
+    next.addEventListener('click', function () { if (i < items.length - 1) { i++; show(); } });
+    show();
+}
+
+// Generator Lab. A P-pole magnet rotor spins inside a stator. Each selected
+// phase adds its winding to the drawing (A at 0, B at 120, C at 240 electrical
+// degrees). Coil k sees V = Vpk sin(P/2 * theta - k * 120 deg), with
+// Vpk = 100 V * (f / 30 Hz) * field, and f = RPM * P / 120. The animation runs
+// SLOW times slower than real time; the scope shows the last 100 ms of real
+// time, so faster rotation fits more cycles into the window.
+var SIMS = [];
+function buildGenLab(root) {
+    var NS = 'http://www.w3.org/2000/svg';
+    var demo = root.dataset.mode === 'demo';
+    var SLOW = 60, WIN = 0.1, CX = 230, CY = 230;
+    var COLORS = ['a', 'b', 'c'];
+    var SX0 = 112, SX1 = 990, VMID = 128, VSCALE = 0.45, PBASE = 320, PH = 64;
+
+    function q(role) { return root.querySelector('[data-role="' + role + '"]'); }
+    function el(tag, attrs, parent) {
+        var e = document.createElementNS(NS, tag);
+        for (var k in attrs) e.setAttribute(k, attrs[k]);
+        if (parent) parent.appendChild(e);
+        return e;
+    }
+    function polar(r, deg) {
+        var a = deg * Math.PI / 180;
+        return [CX + r * Math.sin(a), CY - r * Math.cos(a)];
+    }
+
+    var gen = q('gen'), scope = q('scope');
+    el('circle', { cx: CX, cy: CY, r: 176, class: 'stator' }, gen);
+    el('circle', { cx: CX, cy: CY, r: 202, class: 'stator-edge' }, gen);
+    el('circle', { cx: CX, cy: CY, r: 150, class: 'stator-edge' }, gen);
+    var windG = el('g', {}, gen);
+    var rotorG = el('g', {}, gen);
+    el('circle', { cx: CX, cy: CY, r: 16, class: 'shaft' }, gen);
+
+    // Scope grid (a demo may omit the scope and show only the generator)
+    var traces = [], pwrG, pTrace;
+    if (scope) {
+    var grid = el('g', {}, scope);
+    [-200, -100, 0, 100, 200].forEach(function (v) {
+        var y = VMID - v * VSCALE;
+        el('path', { d: 'M' + SX0 + ' ' + y + ' H' + SX1, class: v === 0 ? 'dw-axis' : 'dw-grid' }, grid);
+        if (v !== 0) el('text', { x: SX0 - 8, y: y + 8, class: 'scope-lbl', 'text-anchor': 'end' }, grid).textContent = (v > 0 ? '+' : '') + v;
+    });
+    el('text', { x: SX0 - 8, y: VMID + 8, class: 'scope-lbl', 'text-anchor': 'end' }, grid).textContent = '0 V';
+    traces = COLORS.map(function (c) { return el('polyline', { class: 'tr-' + c, points: '' }, scope); });
+    pwrG = el('g', { class: 'scope-pwr' }, scope);
+    if (!demo) {
+        el('path', { d: 'M' + SX0 + ' ' + PBASE + ' H' + SX1, class: 'dw-axis' }, pwrG);
+        el('text', { x: SX0 - 8, y: PBASE - 30, class: 'scope-lbl', 'text-anchor': 'end' }, pwrG).textContent = 'Pwr';
+        pTrace = el('polyline', { class: 'tr-p', points: '' }, pwrG);
+    }
+    }
+
+    var st;
+    // data-phases sets the starting winding count. data-run-fragment keeps a
+    // demo frozen until a fragment marked data-gen-run on its slide is shown.
+    function defaults() {
+        st = { running: demo && !root.hasAttribute('data-run-fragment'), rpm: 600, dir: 1,
+               phases: +(root.dataset.phases || 1), poles: 2, field: 1,
+               show: { a: true, b: true, c: true }, theta: 0, t: 0, buf: [] };
+    }
+    defaults();
+
+    function freq() { return st.rpm * st.poles / 120; }
+    function vpk() { return 100 * freq() / 30 * st.field; }
+    function volts(theta) {
+        var e = st.poles / 2 * theta * Math.PI / 180, V = vpk();
+        return [0, 1, 2].map(function (k) { return V * Math.sin(e - k * 2 * Math.PI / 3); });
+    }
+
+    function buildStator() {
+        while (windG.firstChild) windG.removeChild(windG.firstChild);
+        while (rotorG.firstChild) rotorG.removeChild(rotorG.firstChild);
+        var pairs = st.poles / 2;
+        st.coils = [];
+        for (var k = 0; k < st.phases; k++) {
+            for (var m = 0; m < pairs; m++) {
+                var ang = (k * 120) / pairs + m * 360 / pairs;
+                var g = el('g', { transform: 'rotate(' + ang + ' ' + CX + ' ' + CY + ')' }, windG);
+                var r = el('rect', { x: CX - 30, y: CY - 166, width: 60, height: 32, rx: 6, class: 'coil coil-' + COLORS[k] }, g);
+                st.coils.push({ k: k, rect: r });
+                var p = polar(226, ang);
+                el('text', { x: p[0], y: p[1], class: 'coil-lbl', fill: 'var(--ph-' + COLORS[k] + ')' }, windG).textContent = COLORS[k].toUpperCase();
+            }
+        }
+        // data-mark-angle: a dashed arc and label for the 120 degrees between A and B
+        if (root.hasAttribute('data-mark-angle') && st.phases > 1 && st.poles === 2) {
+            var m0 = polar(134, 0), m1 = polar(134, 120), lp = polar(228, 60);
+            el('path', { d: 'M' + m0[0] + ' ' + m0[1] + ' A134 134 0 0 1 ' + m1[0] + ' ' + m1[1], class: 'angle-mark' }, windG);
+            el('text', { x: lp[0], y: lp[1], class: 'coil-lbl', fill: 'var(--text)' }, windG).textContent = '120\u00b0';
+        }
+        var n = st.poles, span = 360 / n;
+        for (var i = 0; i < n; i++) {
+            var a0 = i * span - span / 2, a1 = a0 + span;
+            var p0 = polar(118, a0), p1 = polar(118, a1);
+            el('path', { d: 'M' + CX + ' ' + CY + ' L' + p0[0] + ' ' + p0[1] + ' A118 118 0 0 1 ' + p1[0] + ' ' + p1[1] + ' Z',
+                         class: i % 2 ? 'rotor-s' : 'rotor-n' }, rotorG);
+            var pl = polar(80, i * span);
+            el('text', { x: pl[0], y: pl[1], class: 'pole-lbl' }, rotorG).textContent = i % 2 ? 'S' : 'N';
+        }
+    }
+
+    function sample() {
+        var v = volts(st.theta);
+        st.buf.push({ t: st.t, v: v });
+        while (st.buf.length && st.buf[0].t < st.t - WIN) st.buf.shift();
+    }
+
+    function advance(dtReal) {
+        st.t += dtReal;
+        st.theta += 360 * st.rpm / 60 * dtReal * st.dir;
+        st.theta = ((st.theta % 360) + 360) % 360;
+    }
+
+    function setText(sel, txt) { var e = root.querySelector(sel); if (e && e.textContent !== txt) e.textContent = txt; }
+
+    function render() {
+        rotorG.setAttribute('transform', 'rotate(' + st.theta.toFixed(2) + ' ' + CX + ' ' + CY + ')');
+        var v = volts(st.theta), vmax = Math.max(vpk(), 1);
+        if (!scope) {
+            st.coils.forEach(function (c) {
+                c.rect.setAttribute('fill-opacity', (0.12 + 0.88 * Math.abs(v[c.k]) / Math.max(vmax, 127)).toFixed(2));
+            });
+            return;
+        }
+        st.coils.forEach(function (c) {
+            c.rect.setAttribute('fill-opacity', (0.12 + 0.88 * Math.abs(v[c.k]) / Math.max(vmax, 255 * 0.5)).toFixed(2));
+        });
+        var t0 = st.t - WIN;
+        function x(t) { return SX0 + (t - t0) / WIN * (SX1 - SX0); }
+        traces.forEach(function (tr, k) {
+            var on = k < st.phases && st.show[COLORS[k]];
+            tr.setAttribute('visibility', on ? 'visible' : 'hidden');
+            if (!on) return;
+            tr.setAttribute('points', st.buf.map(function (b) {
+                return x(b.t).toFixed(1) + ',' + (VMID - b.v[k] * VSCALE).toFixed(1);
+            }).join(' '));
+        });
+        if (!demo) {
+            // Total instantaneous power into a balanced resistive load,
+            // relative to its own average (PH / 2 is the average line).
+            var avg = Math.max(vpk() * vpk() * st.phases / 2, 1e-9);
+            pTrace.setAttribute('points', st.buf.map(function (b) {
+                var p = 0;
+                for (var k = 0; k < st.phases; k++) p += b.v[k] * b.v[k];
+                return x(b.t).toFixed(1) + ',' + (PBASE - Math.min(p / avg, 2) * PH / 2).toFixed(1);
+            }).join(' '));
+            var f = freq();
+            setText('[data-tile="rpm"]', st.rpm.toLocaleString() + ' RPM');
+            setText('[data-tile="freq"]', f.toFixed(1) + ' Hz');
+            setText('[data-tile="period"]', f > 0 ? (1000 / f).toFixed(1) + ' ms' : 'none');
+            setText('[data-tile="vpk"]', Math.round(vpk()) + ' V');
+            var fwd = st.dir > 0, lagB = (fwd ? '−' : '+') + '120°', lagC = (fwd ? '+' : '−') + '120°';
+            setText('[data-tile="seq"]', ['A only', fwd ? 'A then B' : 'B then A', fwd ? 'A → B → C' : 'A → C → B'][st.phases - 1]);
+            setText('[data-tile="angles"]', ['A 0°', 'A 0°, B ' + lagB, 'A 0°, B ' + lagB + ', C ' + lagC][st.phases - 1]);
+        }
+    }
+
+    function say(msg, cls) {
+        var fb = q('feedback');
+        if (!fb) return;
+        fb.textContent = msg;
+        fb.className = 'sim-feedback' + (cls ? ' ' + cls : '');
+    }
+
+    function syncControls() {
+        var run = q('run');
+        run.textContent = st.running ? 'Pause' : 'Run';
+        var step = q('step');
+        if (step) step.disabled = st.running;
+        if (q('speed')) {
+            q('speed').value = st.rpm;
+            q('speed-val').textContent = st.rpm.toLocaleString() + ' RPM';
+        }
+        if (demo) return;
+        q('field').value = Math.round(st.field * 100);
+        q('field-val').textContent = Math.round(st.field * 100) + '%';
+        root.querySelectorAll('[data-role="phases"] .seg-btn').forEach(function (b) { b.setAttribute('aria-pressed', +b.dataset.val === st.phases); });
+        root.querySelectorAll('[data-role="poles"] .seg-btn').forEach(function (b) { b.setAttribute('aria-pressed', +b.dataset.val === st.poles); });
+        q('reverse').setAttribute('aria-pressed', st.dir < 0);
+        root.querySelectorAll('[data-trace]').forEach(function (c) {
+            var k = COLORS.indexOf(c.dataset.trace);
+            c.disabled = k >= st.phases;
+            c.checked = st.show[c.dataset.trace];
+        });
+        root.classList.toggle('show-power', !!q('power').checked);
+    }
+
+    q('run').addEventListener('click', function () { st.running = !st.running; syncControls(); });
+    if (q('speed')) q('speed').addEventListener('input', function () {
+        st.rpm = +this.value;
+        syncControls();
+        render();
+        if (!demo) say(st.rpm === 0
+            ? 'Rotor stopped: no changing flux, so no voltage at all.'
+            : 'At ' + st.rpm.toLocaleString() + ' RPM: f = ' + st.rpm + ' × ' + st.poles + ' / 120 = ' + freq().toFixed(1) + ' Hz. Faster rotation gives more cycles per window and taller peaks.');
+    });
+    if (!demo) {
+        q('step').addEventListener('click', function () {
+            // Crank the rotor 15 mechanical degrees as if turning at the set
+            // speed (600 RPM if the speed is 0), sampling along the way.
+            var rpm = st.rpm || 600, saved = st.rpm;
+            st.rpm = rpm;
+            var dt = 15 / (360 * rpm / 60);
+            for (var i = 0; i < 10; i++) { advance(dt / 10); sample(); }
+            st.rpm = saved;
+            render();
+            say('Rotor at ' + Math.round(st.theta) + '°. Watch which coil glows brightest as each pole sweeps past.');
+        });
+        q('reset').addEventListener('click', function () {
+            defaults(); buildStator(); syncControls(); render();
+            say('Reset: winding A only, 600 RPM, 2 poles, forward rotation.');
+        });
+        root.querySelectorAll('[data-role="phases"] .seg-btn').forEach(function (b) {
+            b.addEventListener('click', function () {
+                st.phases = +b.dataset.val;
+                buildStator(); syncControls(); render();
+                say(['One winding: one voltage that alternates as N and S poles pass coil A.',
+                     'Winding B sits 120 electrical degrees from A. Same shape and frequency as A, but it peaks later.',
+                     'Three windings, 120 electrical degrees apart: three phases with the same frequency. Nothing got faster.'][st.phases - 1]);
+            });
+        });
+        root.querySelectorAll('[data-role="poles"] .seg-btn').forEach(function (b) {
+            b.addEventListener('click', function () {
+                st.poles = +b.dataset.val;
+                buildStator(); syncControls(); render();
+                say(st.poles === 4
+                    ? 'Four poles: two N poles pass each coil per turn, and each phase now has two coils. Same RPM, double the frequency.'
+                    : 'Two poles: one electrical cycle per shaft revolution.');
+            });
+        });
+        q('reverse').addEventListener('click', function () {
+            st.dir = -st.dir; syncControls(); render();
+            say(st.dir < 0
+                ? 'Reversed: the poles now reach C before B, so the phase sequence becomes A → C → B.'
+                : 'Forward again: the phase sequence is A → B → C.', 'caution');
+        });
+        q('field').addEventListener('input', function () {
+            st.field = +this.value / 100; syncControls(); render();
+            say('Field ' + Math.round(st.field * 100) + '%: the peak voltage changes, but the frequency does not.');
+        });
+        root.querySelectorAll('[data-trace]').forEach(function (c) {
+            c.addEventListener('change', function () { st.show[c.dataset.trace] = c.checked; render(); });
+        });
+        q('power').addEventListener('change', function () {
+            syncControls();
+            if (this.checked) say('Dashed line: total power into a balanced load. One phase drops to zero twice per cycle; three phases add up to a constant.');
+        });
+        initTaskPager(q('tasks'));
+    }
+
+    buildStator();
+    syncControls();
+    render();
+
+    SIMS.push({
+        root: root,
+        tick: function (dt) {
+            if (!st.running) return;
+            var steps = 4, d = dt / SLOW / steps;
+            for (var i = 0; i < steps; i++) { advance(d); sample(); }
+            render();
+        },
+        setRunning: function (on) {
+            st.running = on;
+            if (!on) { st.theta = 0; st.t = 0; st.buf = []; }
+            syncControls();
+            render();
+        },
+    });
+}
+
+// Demos with data-run-fragment start turning when their slide's
+// [data-gen-run] fragment is shown, and freeze back at 0 degrees when it is
+// hidden again or the slide is entered with that fragment still hidden.
+function wireRunFragments(Reveal) {
+    function sync(section) {
+        if (!section || section.closest('#storyboard')) return;
+        var trigger = section.querySelector('[data-gen-run]');
+        if (!trigger) return;
+        SIMS.forEach(function (s) {
+            if (section.contains(s.root) && s.root.hasAttribute('data-run-fragment')) {
+                s.setRunning(trigger.classList.contains('visible'));
+            }
+        });
+    }
+    function onFragment(e) {
+        var f = e.fragment;
+        if (f && f.closest && (f.hasAttribute('data-gen-run') || f.querySelector('[data-gen-run]'))) sync(f.closest('section'));
+    }
+    Reveal.on('fragmentshown', onFragment);
+    Reveal.on('fragmenthidden', onFragment);
+    Reveal.on('slidechanged', function (e) { sync(e.currentSlide); });
+    sync(Reveal.getCurrentSlide());   // a reload can restore the fragment state before these listeners exist
+}
+
+function startSimLoop(Reveal) {
+    var last = performance.now();
+    function frame(now) {
+        var dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        var cur = Reveal.getCurrentSlide();
+        SIMS.forEach(function (s) { if (cur && cur.contains(s.root)) s.tick(dt); });
+        requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+}
+
+drawWaves();
+document.querySelectorAll('.gen-lab').forEach(buildGenLab);
+
+initSyncDeckReveal({
+    deckId: 'day1-generators-and-phases',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        startSimLoop(Reveal);
+        wireRunFragments(Reveal);
+    },
+});
+</script>
+</body>
+</html>

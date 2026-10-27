@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="ujgzq">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 3: Three Phase Induction Motors and Speed Control</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: AC Motors Day 3 · Three Phase and VFDs
+
+   Colour use in this deck:
+   phases A / B / C           -> --ph-a / --ph-b / --ph-c with letters
+   magnetic field (B)         -> --accent (green)
+   rotor / shaft speed        -> --result (cyan)
+   induced rotor current      -> --warn (amber)
+   faults, trips, E-stop      -> --fault (red)
+   ============================================================ */
+
+/* ─── Three phase motor cross section ─── */
+.motor3 .stator { fill: none; stroke: #1f2c38; stroke-width: 52; }
+.motor3 .stator-edge { fill: none; stroke: rgba(230,247,234,0.3); stroke-width: 2; }
+.motor3 .coil { stroke-width: 3; }
+.motor3 .coil-a { stroke: var(--ph-a); fill: var(--ph-a); }
+.motor3 .coil-b { stroke: var(--ph-b); fill: var(--ph-b); }
+.motor3 .coil-c { stroke: var(--ph-c); fill: var(--ph-c); }
+.motor3 .wlbl { font-family: var(--font-mono); font-size: 34px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+.motor3 .rotor-body { fill: #16202a; stroke: rgba(230,247,234,0.5); stroke-width: 2; }
+.motor3 .rotor-bar { fill: #9aa5ad; }
+.motor3 .bar-glow { fill: var(--warn); }
+.motor3 .rotor-mark { stroke: var(--result); stroke-width: 6; stroke-linecap: round; }
+.motor3 .shaft { fill: var(--bg); stroke: rgba(230,247,234,0.6); stroke-width: 3; }
+.motor3 .b-arrow { stroke: var(--accent); stroke-width: 7; stroke-linecap: round; }
+.motor3 .b-head { fill: var(--accent); }
+.motor3 .b-trail { fill: none; stroke: rgba(57,211,83,0.45); stroke-width: 3; }
+.motor3 .b-lbl { font-family: var(--font-mono); font-size: 34px; font-weight: 700; fill: var(--accent); text-anchor: middle; dominant-baseline: central; }
+.motor3 .off { opacity: 0.18; }
+
+.fv3 { display: grid; grid-template-columns: 440px 1fr; gap: 28px; align-items: start; }
+.fv3-tiles { grid-template-columns: 1fr 1fr; }
+.fv3 .wave-cursor { stroke: var(--text); stroke-width: 3; }
+
+/* ─── VFD block diagram (slide 10) ─── */
+.vfd-blk { fill: var(--bg-card); stroke: var(--accent-border); stroke-width: 2; }
+.vfd-blk-name { font-family: var(--font-mono); font-size: 28px; font-weight: 700; fill: var(--accent); text-anchor: middle; }
+.vfd-sub { font-family: var(--font-mono); font-size: 24px; fill: var(--text-muted); text-anchor: middle; }
+.vfd-arrow { fill: none; stroke: rgba(230,247,234,0.6); stroke-width: 4; }
+.vfd-arrow-head { fill: rgba(230,247,234,0.6); }
+.pwm { fill: var(--result); opacity: 0.55; }
+
+/* ─── VFD Control Room ─── */
+.vfd-lab .vl-grid { display: grid; grid-template-columns: 430px 1fr; gap: 18px; align-items: start; }
+.vfd-lab .vl-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.vfd-lab .vl-tiles { grid-template-columns: 1fr 1fr; }
+.vfd-lab .t-sub { display: block; font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted); white-space: nowrap; }
+.vfd-lab .dial-ring { fill: none; stroke: #1f2c38; stroke-width: 30; }
+.vfd-lab .dial-rotor { fill: #16202a; stroke: rgba(230,247,234,0.45); stroke-width: 2; }
+.vfd-lab .dial-lbl { font-family: var(--font-mono); font-size: 24px; fill: var(--text-muted); }
+.vfd-lab .bar-bg { fill: rgba(230,247,234,0.06); stroke: var(--accent-border); stroke-width: 1.5; }
+.vfd-lab .bar-sync { fill: none; stroke: var(--accent); stroke-width: 4; }
+.vfd-lab .bar-shaft { fill: var(--result); }
+.vfd-lab .bar-lbl { font-family: var(--font-mono); font-size: 30px; fill: var(--text-muted); }
+.vfd-lab .bar-val { font-family: var(--font-mono); font-size: 30px; font-weight: 700; fill: var(--text); text-anchor: end; }
+.vfd-lab .wave-lbl { font-family: var(--font-mono); font-size: 24px; fill: var(--text-muted); }
+.vfd-lab [data-role="feedback"] { height: 112px; }
+.vfd-lab .status-row { display: flex; align-items: center; gap: 12px; }
+.vfd-lab .status-row .sim-feedback { flex: 1; }
+.vfd-lab .estop-btn { background: var(--fault); border-radius: 999px; padding: 8px 16px; }
+.vfd-lab .estop-btn[aria-pressed="true"] { background: #b3261e; color: var(--text); box-shadow: inset 0 0 0 3px var(--warn); }
+.nameplate {
+  background: #c9ced2;
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #11181f;
+  font-family: var(--font-mono);
+  box-shadow: inset 0 0 0 2px #8b949b;
+}
+.nameplate .np-title { font-size: var(--small); font-weight: 700; letter-spacing: 0.08em; text-align: center; border-bottom: 2px solid #8b949b; padding-bottom: 4px; margin-bottom: 4px; }
+.nameplate .np-grid { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 2px 10px; font-size: var(--small); }
+.nameplate .np-k { color: #2f3a42; }
+.nameplate .np-v { font-weight: 700; color: #0d1117; }
+
+/* ─── Three wire control ─── */
+.tw-sim { display: grid; grid-template-columns: 880px 1fr; gap: 28px; align-items: start; }
+.tw-sim .w { fill: none; stroke: rgba(230,247,234,0.45); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.tw-sim .w.on { stroke: var(--accent); }
+.tw-sim .rail { fill: none; stroke: rgba(230,247,234,0.45); stroke-width: 5; }
+.tw-sim .rail.on { stroke: var(--accent); }
+.tw-sim .term { fill: var(--bg); stroke: var(--text); stroke-width: 3; }
+.tw-sim .pb-bar { stroke: var(--text); stroke-width: 5; stroke-linecap: round; transition: transform 0.12s ease; }
+.tw-sim .pb-stem { stroke: var(--text); stroke-width: 3; transition: transform 0.12s ease; }
+.tw-sim .plate { stroke: var(--text); stroke-width: 5; }
+.tw-sim .bridge { stroke: var(--accent); stroke-width: 5; visibility: hidden; }
+.tw-sim .bridge.on { visibility: visible; }
+.tw-sim .slash { stroke: var(--text); stroke-width: 3; }
+.tw-sim .coil-c { fill: var(--bg); stroke: var(--text); stroke-width: 4; }
+.tw-sim .coil-c.on { fill: rgba(57,211,83,0.35); stroke: var(--accent); }
+.tw-sim .tw-lbl { font-family: var(--font-mono); font-size: 26px; font-weight: 700; fill: var(--text); text-anchor: middle; }
+.tw-sim .tw-sub { font-family: var(--font-mono); font-size: 24px; fill: var(--text-muted); text-anchor: middle; }
+.tw-sim .motor-ring { fill: #16202a; stroke: rgba(230,247,234,0.5); stroke-width: 3; }
+.tw-sim .motor-mark { stroke: var(--result); stroke-width: 6; stroke-linecap: round; }
+.tw-sim .tw-chips { display: grid; grid-template-columns: 1fr; gap: 8px; margin: var(--gap-sm) 0; }
+.tw-sim [data-role="feedback"] { height: 144px; }
+.tw-sim .hold-btn { user-select: none; touch-action: none; }
+.tw-sim .hold-btn.pressed { transform: translateY(2px); box-shadow: inset 0 0 0 3px var(--warn); }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(196,181,253,0.10),transparent 70%);"></div>
+  <div class="glow" style="width:420px;height:420px;bottom:-90px;right:12%;background:radial-gradient(circle,rgba(94,234,212,0.08),transparent 70%);"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; AC Motors &nbsp;·&nbsp; Day 3</span>
+    <h1 class="title-h1">Three Phase Motors and <span class="accent">Speed Control</span></h1>
+    <p class="subtitle">// Rotating fields &nbsp;·&nbsp; Slip &nbsp;·&nbsp; Variable frequency drives &nbsp;·&nbsp; Start and stop controls</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · ESSENTIAL QUESTION AND OBJECTIVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Essential Question &amp; Objectives</span>
+    <div class="eq-box" style="margin-bottom:var(--gap-lg);">
+      <span class="eq-label">Essential question</span>
+      How can we control the speed of an industrial AC motor <span class="accent">without changing its gearing</span>?
+    </div>
+    <div class="split split-50 split-top" style="flex:0 0 auto;">
+      <div>
+        <h3>By the end of class you can <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Explain how three phase currents make a <strong>rotating field</strong>.</li>
+          <li>Calculate <strong>synchronous speed</strong> and <strong>slip</strong>.</li>
+          <li>Explain what a <strong>VFD</strong> changes to control speed.</li>
+          <li>Describe <strong>start, stop, overload</strong>, and emergency stop functions.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today&#39;s <span class="accent">path</span></h3>
+        <div class="agenda-grid">
+          <a class="agenda-item" href="#/3"><span class="agenda-num">01</span><span class="agenda-text">The <strong>rotating field</strong></span></a>
+          <a class="agenda-item" href="#/6"><span class="agenda-num">02</span><span class="agenda-text"><strong>Speed</strong>, poles, and slip</span></a>
+          <a class="agenda-item" href="#/9"><span class="agenda-num">03</span><span class="agenda-text">The <strong>VFD</strong> and the Control Room</span></a>
+          <a class="agenda-item" href="#/14"><span class="agenda-num">04</span><span class="agenda-text"><strong>Starting and stopping</strong> safely</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · REVIEW CHALLENGE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Rotating Field · Topic 01 · Review Challenge</span>
+    <h2>One Winding or <span class="accent">Three?</span></h2>
+    <div class="row-2" style="gap:var(--gap-lg);">
+      <div class="fv3 fv3-pair" data-mode="single" style="grid-template-columns:1fr;">
+        <div class="sim-panel">
+          <div class="sim-head"><span>Single phase</span><span class="sim-note">one winding</span></div>
+          <svg class="motor3" data-role="motor" viewBox="-40 -20 540 500" role="img" aria-label="Single phase motor: only winding A is connected, and the green field arrow pulses up and down"></svg>
+        </div>
+      </div>
+      <div class="fv3 fv3-pair" data-mode="three" style="grid-template-columns:1fr;">
+        <div class="sim-panel">
+          <div class="sim-head"><span>Three phase</span><span class="sim-note">windings A, B, C</span></div>
+          <svg class="motor3" data-role="motor" viewBox="-40 -20 540 500" role="img" aria-label="Three phase motor: windings A, B, and C are connected, and the green field arrow turns steadily around the stator"></svg>
+        </div>
+      </div>
+    </div>
+    <p class="slide-intro" style="margin-top:var(--gap);">Why does the single phase motor need a <strong>starting arrangement</strong>, while the three phase motor makes a <span class="key">rotating field</span> all by itself?</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · THREE PHASE STATOR FIELDS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Rotating Field · Topic 01 · Three Phase Windings</span>
+    <h2>Three Phases Take Turns, the <span class="accent">Field Turns</span></h2>
+    <div class="fv3" data-mode="three" data-waves>
+      <div class="sim-panel"><svg class="motor3" data-role="motor" viewBox="-40 -20 540 500" role="img" aria-label="Three phase stator: each coil glows as its current rises, and the field arrow points toward whichever phase is strongest"></svg></div>
+      <div>
+        <p class="slide-intro">Three winding groups sit 120&deg; apart around the stator. Each carries one phase, so their currents peak <strong>one after another</strong>: <span class="pa">A</span>, then <span class="pb">B</span>, then <span class="pc">C</span>.</p>
+        <div class="sim-panel" style="margin-bottom:var(--gap);">
+          <div class="sim-head"><span>Phase currents</span><span class="sim-note">white line = now</span></div>
+          <svg data-role="waves" viewBox="0 0 900 220" role="img" aria-label="One cycle of the three phase currents with a moving line marking the present moment">
+            <path d="M20 110 H880" class="dw-axis"/>
+            <path data-wave="cos" data-x0="20" data-x1="880" data-mid="110" data-amp="90" data-cycles="1" data-phase="0" class="tr-a"/>
+            <path data-wave="cos" data-x0="20" data-x1="880" data-mid="110" data-amp="90" data-cycles="1" data-phase="120" class="tr-b"/>
+            <path data-wave="cos" data-x0="20" data-x1="880" data-mid="110" data-amp="90" data-cycles="1" data-phase="240" class="tr-c"/>
+            <line class="wave-cursor" data-role="cursor" x1="20" y1="10" x2="20" y2="210"/>
+          </svg>
+        </div>
+        <p class="slide-intro fragment fade-up">The combined field points toward the strongest phase. As the peak moves A &rarr; B &rarr; C, the field <span class="key">rotates</span> at a steady strength, with no capacitor or switch needed.</p>
+        <div class="ctl-row"><button class="sim-btn" data-role="run" type="button">Pause</button><span class="sim-model-note">shown 300&times; slower than 60 Hz</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · HOW THE SQUIRREL CAGE MAKES TORQUE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Rotating Field · Topic 01 · Why Slip Is Needed</span>
+    <h2>The Rotor Chases the Field but <span class="accent">Never Catches It</span></h2>
+    <div class="fv3" data-mode="three" data-rotor>
+      <div class="sim-panel"><svg class="motor3" data-role="motor" viewBox="-40 -20 540 500" role="img" aria-label="Three phase motor with a turning rotor; rotor bars glow amber when the field sweeps past them faster than the rotor turns"></svg></div>
+      <div>
+        <p class="slide-intro">The field sweeps past the <strong>rotor bars</strong> and induces current in them (the <span class="warn">amber glow</span>). That current in the field makes a force, so the rotor turns <strong>the same way</strong> as the field.</p>
+        <div class="ctl-row" style="margin-bottom:var(--gap);">
+          <span class="ctl-label">Rotor speed</span>
+          <span class="seg" data-role="rotor">
+            <button class="seg-btn" type="button" data-val="0" aria-pressed="true">Stopped</button>
+            <button class="seg-btn" type="button" data-val="0.8" aria-pressed="false">80%</button>
+            <button class="seg-btn" type="button" data-val="0.97" aria-pressed="false">97%</button>
+            <button class="seg-btn" type="button" data-val="1" aria-pressed="false">100%</button>
+          </span>
+          <button class="sim-btn" data-role="run" type="button">Pause</button>
+        </div>
+        <div class="tiles fv3-tiles" style="margin-bottom:var(--gap);">
+          <div class="tile"><span class="t-name">Field passes bars at</span><span class="t-val" data-tile="rel">100% of sync</span></div>
+          <div class="tile is-result"><span class="t-name">Induced current, torque</span><span class="t-val" data-tile="torque">Strong</span></div>
+        </div>
+        <p class="slide-intro fragment fade-up">At <strong>100%</strong> the rotor turns with the field, so nothing sweeps past the bars: no induced current, <span class="fault">no torque</span>. A real rotor always runs a little slower. That difference is called <span class="key">slip</span>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · SYNCHRONOUS SPEED AND SLIP -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Speed, Poles, and Slip · Topic 02</span>
+    <h2>Synchronous Speed and <span class="accent">Slip</span></h2>
+    <div class="row-2" style="margin-bottom:var(--gap-lg);">
+      <div class="card is-key"><span class="card-name">Synchronous speed</span><p class="card-body">How fast the stator&#39;s <span class="key">field</span> rotates. It is set by the supply frequency and the motor&#39;s pole count.</p></div>
+      <div class="card"><span class="card-name">Rotor speed</span><p class="card-body">How fast the <span class="res">shaft</span> actually turns. Under load it is always a little slower than synchronous speed.</p></div>
+    </div>
+    <div class="split" style="grid-template-columns:1fr 1fr;flex:0 0 auto;align-items:start;">
+      <div class="eq-box">
+        <span class="eq-label">Slip</span>
+        slip = <span class="frac"><span class="num">sync RPM &minus; rotor RPM</span><span class="den">sync RPM</span></span> &times; 100%
+      </div>
+      <div class="calc-steps">
+        <p class="slide-intro fragment fade-up" style="margin-bottom:8px;">A 4 pole motor: <strong>1,800 RPM</strong> synchronous, <strong>1,750 RPM</strong> on the shaft.</p>
+        <p class="eq-line fragment fade-up">(1,800 &minus; 1,750) / 1,800 &times; 100%</p>
+        <p class="eq-line fragment fade-up">= 50 / 1,800 &times; 100% = <span class="res">2.78% slip</span></p>
+      </div>
+    </div>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);">More load means more slip: the rotor drops back a bit further so the field sweeps the bars faster, inducing the extra current it needs for more torque.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · FREQUENCY AND POLE COUNT -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Speed, Poles, and Slip · Topic 02 · Calculating Speed</span>
+    <h2>Frequency and <span class="accent">Pole Count</span></h2>
+    <div class="split" style="grid-template-columns:1fr 1.1fr;flex:0 0 auto;align-items:start;">
+      <div>
+        <div class="eq-box" style="margin-bottom:var(--gap);">
+          <span class="eq-label">Synchronous speed</span>
+          sync RPM = 120 &times; f / P
+          <div style="font-size:var(--small);color:var(--text-muted);margin-top:4px;">f = frequency in Hz &nbsp;·&nbsp; P = number of poles</div>
+        </div>
+        <p class="slide-intro">This is the generator formula from the first lesson, turned around. More poles means the field takes <strong>smaller steps</strong> each cycle, so it turns more slowly.</p>
+      </div>
+      <div>
+        <table class="data-table" style="font-size:var(--body);">
+          <thead><tr><th>Poles</th><th>At 60 Hz</th><th>Typical nameplate</th></tr></thead>
+          <tbody>
+            <tr class="fragment fade-up"><td>2</td><td>120 &times; 60 / 2 = <strong>3,600</strong></td><td>about 3,500 RPM</td></tr>
+            <tr class="fragment fade-up"><td>4</td><td>120 &times; 60 / 4 = <strong>1,800</strong></td><td>about 1,750 RPM</td></tr>
+            <tr class="fragment fade-up"><td>6</td><td>120 &times; 60 / 6 = <strong>1,200</strong></td><td>about 1,160 RPM</td></tr>
+          </tbody>
+        </table>
+        <div class="callout-result fragment fade-up" style="margin-top:var(--gap);">The nameplate speed is always a bit below synchronous speed because of <strong>slip</strong>.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · SPEED CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:7:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A 4 pole motor on 60 Hz power has a synchronous speed of 1,800 RPM. Its shaft turns at 1,725 RPM. What is its slip?","order":0,"responseTimeLimitMs":90000,"options":[{"id":"q1a","text":"75%","isCorrect":false},{"id":"q1b","text":"4.2%","isCorrect":true},{"id":"q1c","text":"1.04%","isCorrect":false},{"id":"q1d","text":"95.8%","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"What is the synchronous speed of a 6 pole motor on 60 Hz power? (sync RPM = 120 × f / P)","order":1,"responseTimeLimitMs":60000,"options":[{"id":"q2a","text":"3,600 RPM","isCorrect":false},{"id":"q2b","text":"1,800 RPM","isCorrect":false},{"id":"q2c","text":"720 RPM","isCorrect":false},{"id":"q2d","text":"1,200 RPM","isCorrect":true}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check Your Understanding</span>
+    <h2>Speed <span class="accent">Check</span></h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>A 4 pole motor on 60 Hz power has a synchronous speed of 1,800 RPM. Its shaft turns at 1,725 RPM. What is its slip?</div>
+      <div class="frq-box"><span class="q-num">2</span>What is the synchronous speed of a 6 pole motor on 60 Hz power? (sync RPM = 120 &times; f / P)</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · INTRODUCING THE VFD -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The VFD · Topic 03</span>
+    <h2>Running a Motor <span class="accent">Slower</span></h2>
+    <p class="slide-intro">The plant receives <strong>60 Hz</strong> power. A conveyor&#39;s 4 pole motor must run at about half speed today. How can we do that?</p>
+    <div class="row-3">
+      <div class="card fragment fade-up"><span class="card-name">Change the gearing</span><p class="card-body">A gearbox or pulleys work, but the speed is <strong>fixed</strong> until someone swaps parts.</p></div>
+      <div class="card is-fault fragment fade-up"><span class="card-name">Lower the voltage</span><p class="card-body">The motor loses torque and <strong>slips more</strong>, drawing extra current and overheating.</p></div>
+      <div class="card is-key fragment fade-up"><span class="card-name">Lower the frequency</span><p class="card-body">Sync speed follows frequency: 30 Hz gives <strong>900 RPM</strong>. This is what a VFD does.</p></div>
+    </div>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);">A <span class="key">variable frequency drive</span> (VFD) makes its own AC at whatever frequency the job needs. It can also <strong>ramp</strong> speed up and down gently and protect the motor.</div>
+    <div class="callout-result fragment fade-up" style="margin-top:var(--gap-sm);">Because a VFD builds its own output, it can even run a <span class="res">three phase motor</span> from a <strong>single phase</strong> supply, as long as the drive is rated for single phase input.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · AC TO DC TO CONTROLLED AC -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The VFD · Topic 03 · Inside the Drive</span>
+    <h2>AC to DC to <span class="accent">Controlled AC</span></h2>
+    <svg viewBox="0 30 1440 260" style="width:100%;height:auto;" role="img" aria-label="VFD block diagram: incoming 60 hertz three phase AC goes into a rectifier, then a DC link with a capacitor, then an inverter, which outputs pulses that average to AC at a new frequency">
+      <path d="M10 140 H250" class="dw-axis"/>
+      <path data-wave="sin" data-x0="10" data-x1="250" data-mid="140" data-amp="70" data-cycles="2" data-phase="0" class="tr-a"/>
+      <path data-wave="sin" data-x0="10" data-x1="250" data-mid="140" data-amp="70" data-cycles="2" data-phase="120" class="tr-b"/>
+      <path data-wave="sin" data-x0="10" data-x1="250" data-mid="140" data-amp="70" data-cycles="2" data-phase="240" class="tr-c"/>
+      <text x="130" y="250" class="vfd-sub">60 Hz in</text>
+      <text x="1325" y="250" class="vfd-sub">new f out</text>
+
+      <path d="M262 140 H300" class="vfd-arrow"/><polygon points="314,140 298,130 298,150" class="vfd-arrow-head"/>
+      <rect x="320" y="70" width="230" height="140" rx="10" class="vfd-blk"/>
+      <text x="435" y="130" class="vfd-blk-name">Rectifier</text>
+      <text x="435" y="168" class="vfd-sub">diodes</text>
+      
+      <path d="M562 140 H600" class="vfd-arrow"/><polygon points="614,140 598,130 598,150" class="vfd-arrow-head"/>
+      <rect x="620" y="70" width="230" height="140" rx="10" class="vfd-blk"/>
+      <text x="735" y="112" class="vfd-blk-name">DC link</text>
+      <path d="M660 160 H810" stroke="var(--warn)" stroke-width="5"/>
+      <path d="M715 168 V196 M755 168 V196 M715 182 H690 M755 182 H780" stroke="rgba(230,247,234,0.7)" stroke-width="4"/>
+            
+      <path d="M862 140 H900" class="vfd-arrow"/><polygon points="914,140 898,130 898,150" class="vfd-arrow-head"/>
+      <rect x="920" y="70" width="230" height="140" rx="10" class="vfd-blk"/>
+      <text x="1035" y="130" class="vfd-blk-name">Inverter</text>
+      <text x="1035" y="168" class="vfd-sub">fast switches</text>
+            
+      <path d="M1162 140 H1200" class="vfd-arrow"/><polygon points="1214,140 1198,130 1198,150" class="vfd-arrow-head"/>
+      <g data-pwm data-x0="1220" data-x1="1430" data-mid="140" data-amp="70" data-cycles="1.5"></g>
+      <path data-wave="sin" data-x0="1220" data-x1="1430" data-mid="140" data-amp="62" data-cycles="1.5" data-phase="0" class="tr-b"/>
+                </svg>
+    <div class="row-4" style="margin-top:var(--gap);">
+      <div class="step-card fragment fade-up" data-fragment-index="1"><div class="sc-num">1</div><p class="sc-body">The <strong>rectifier</strong> turns incoming AC, single or three phase, into DC.</p></div>
+      <div class="step-card fragment fade-up" data-fragment-index="2"><div class="sc-num">2</div><p class="sc-body">The <strong>DC link</strong> capacitor stores and smooths it.</p></div>
+      <div class="step-card fragment fade-up" data-fragment-index="3"><div class="sc-num">3</div><p class="sc-body">The <strong>inverter</strong> switches chop the DC into fast pulses.</p></div>
+      <div class="step-card fragment fade-up" data-fragment-index="4"><div class="sc-num">4</div><p class="sc-body">The pulses <strong>average out</strong> to AC at the new frequency.</p></div>
+    </div>
+    <div class="callout fragment fade-up" data-fragment-index="5" style="margin-top:var(--gap);">The drive changes <strong>frequency</strong> to set speed, and changes <strong>voltage along with it</strong> so the motor&#39;s magnetic field stays healthy. It does <strong>not</strong> change the motor&#39;s pole count.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · VFD PREDICTION (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:10:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A 4 pole motor has a synchronous speed of 1,800 RPM at 60 Hz. Predict: if a VFD lowers the frequency to 30 Hz, what is the new synchronous speed?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"3,600 RPM","isCorrect":false},{"id":"q1b","text":"1,800 RPM","isCorrect":false},{"id":"q1c","text":"900 RPM","isCorrect":true},{"id":"q1d","text":"450 RPM","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"When the VFD drops the frequency from 60 Hz to 30 Hz, what happens to the motor&#39;s pole count?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"It stays the same; poles are built into the motor","isCorrect":true},{"id":"q2b","text":"It doubles","isCorrect":false},{"id":"q2c","text":"It is cut in half","isCorrect":false},{"id":"q2d","text":"The VFD rewires the motor to change it","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict Before You Investigate</span>
+    <h2>Make Your <span class="accent">Prediction</span></h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>A 4 pole motor has a synchronous speed of 1,800 RPM at 60 Hz. Predict: if a VFD lowers the frequency to 30 Hz, what is the new synchronous speed?</div>
+      <div class="frq-box"><span class="q-num">2</span>When the VFD drops the frequency from 60 Hz to 30 Hz, what happens to the motor&#39;s pole count?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · INVESTIGATION TASKS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Virtual Activity 3 · VFD Control Room · Tasks</span>
+    <h2>The VFD <span class="accent">Control Room</span></h2>
+    <div class="poe-row">
+      <span class="poe-chip"><b>P</b>redict the speed before you change it</span>
+      <span class="poe-chip"><b>O</b>bserve sync speed, shaft speed, and slip</span>
+      <span class="poe-chip"><b>E</b>xplain with 120f/P and torque</span>
+    </div>
+    <div class="task-grid">
+      <div class="task-item"><span class="t-key">A</span><span>Run at 60 Hz. Predict, then check sync speed.</span></div>
+      <div class="task-item"><span class="t-key">B</span><span>Drop to 30 Hz. Predict the new sync speed.</span></div>
+      <div class="task-item"><span class="t-key">C</span><span>Compare the 2, 4, and 6 pole motors.</span></div>
+      <div class="task-item"><span class="t-key">D</span><span>Raise the load. What happens to slip?</span></div>
+      <div class="task-item"><span class="t-key">E</span><span>Full load, 1 s ramp: why does it trip?</span></div>
+      <div class="task-item"><span class="t-key">F</span><span>Run at 130% load. Watch the overload.</span></div>
+      <div class="task-item" style="grid-column:span 2;"><span class="t-key">G</span><span>Compare Stop, a protective trip, and the E-stop. How does each one stop the motor, and how do you restart?</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · VFD CONTROL ROOM (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="padding-top:44px;padding-bottom:40px;">
+    <span class="slide-tag" style="margin-bottom:10px;">Virtual Activity 3 · VFD Control Room · Educational model, not a commissioning tool</span>
+    <div class="vfd-lab">
+      <div class="vl-grid">
+        <div class="vl-col">
+          <div class="sim-panel">
+            <div class="sim-head"><span>Field and rotor</span><span class="sim-note">60&times; slower</span></div>
+            <svg data-role="dial" viewBox="0 0 400 270" role="img" aria-label="Dial: the green arrow is the rotating field and the cyan line is the rotor"></svg>
+          </div>
+          <div class="nameplate" data-role="nameplate"></div>
+          <div class="tiles vl-tiles">
+            <div class="tile"><span class="t-name">Slip</span><span class="t-val" data-tile="slip">0.0%</span><span class="t-sub" data-tile="slip-rpm">0 RPM behind</span></div>
+            <div class="tile"><span class="t-name">Torque</span><span class="t-val" data-tile="torque">0%</span><span class="t-sub" data-tile="torque-sub">of rated</span></div>
+            <div class="tile"><span class="t-name">Current</span><span class="t-val" data-tile="amps">0.0 A</span><span class="t-sub" data-tile="amps-sub">of 6.7 A FLA</span></div>
+            <div class="tile"><span class="t-name">Motor heat</span><span class="t-val" data-tile="heat">0%</span><span class="t-sub">trips at 100%</span></div>
+          </div>
+        </div>
+        <div class="vl-col">
+          <div class="sim-panel">
+            <div class="sim-head"><span>Drive output</span><span class="sim-note" data-role="out-note">0.0 Hz &middot; 0 V</span></div>
+            <svg data-role="waves" viewBox="0 0 1000 170" role="img" aria-label="The three phase voltage waveforms coming out of the drive"></svg>
+            <svg data-role="bars" viewBox="0 0 1000 110" role="img" aria-label="Bars comparing synchronous speed and shaft speed" style="margin-top:6px;"></svg>
+          </div>
+          <div class="sim-panel">
+            <div class="ctl-row">
+              <span class="ctl-label">Frequency</span>
+              <input class="sim-range" data-role="freq" type="range" min="10" max="90" step="1" value="60" aria-label="Frequency setpoint in hertz" style="width:200px;">
+              <span class="range-val" data-role="freq-val">60 Hz</span>
+              <span class="ctl-label">Load</span>
+              <input class="sim-range" data-role="load" type="range" min="0" max="150" step="5" value="50" aria-label="Load in percent of rated torque" style="width:170px;">
+              <span class="range-val" data-role="load-val">50%</span>
+            </div>
+            <div class="ctl-row">
+              <span class="ctl-label">Poles</span>
+              <span class="seg" data-role="poles">
+                <button class="seg-btn" type="button" data-val="2" aria-pressed="false">2</button>
+                <button class="seg-btn" type="button" data-val="4" aria-pressed="true">4</button>
+                <button class="seg-btn" type="button" data-val="6" aria-pressed="false">6</button>
+              </span>
+              <span class="ctl-label">Ramp 0&rarr;60 Hz</span>
+              <input class="sim-range" data-role="ramp" type="range" min="1" max="20" step="1" value="5" aria-label="Acceleration and deceleration ramp time in seconds" style="width:170px;">
+              <span class="range-val" data-role="ramp-val">5 s</span>
+            </div>
+            <div class="ctl-row">
+              <button class="sim-btn" data-role="start" type="button">Start</button>
+              <button class="sim-btn alt" data-role="stop" type="button">Stop</button>
+              <button class="sim-btn alt" data-role="reset" type="button">Reset fault</button>
+              <button class="sim-btn estop-btn" data-role="estop" type="button" aria-pressed="false">E-STOP</button>
+            </div>
+          </div>
+          <div class="status-row">
+            <span class="status-chip" data-role="status">READY</span>
+            <div class="sim-feedback" data-role="feedback" aria-live="polite">Set the frequency and load, then press Start.</div>
+          </div>
+          <div class="task-pager" data-role="tasks">
+            <div class="tp-head">
+              <span class="tp-count"></span>
+              <button class="tp-nav tp-prev" type="button" aria-label="Previous task">&#9664;</button>
+              <button class="tp-nav tp-next" type="button" aria-label="Next task">&#9654;</button>
+            </div>
+            <div class="tp-text" aria-live="polite"></div>
+            <ol hidden>
+              <li><b>A.</b> 4 poles, 60 Hz: predict sync speed, then Start and check.</li>
+              <li><b>B.</b> Predict the sync speed at 30 Hz, then slide down to 30 Hz.</li>
+              <li><b>C.</b> Stop, then compare the 2, 4, and 6 pole motors at 60 Hz.</li>
+              <li><b>D.</b> At 60 Hz, raise the load from 0% to 120%. Record the slip.</li>
+              <li><b>E.</b> 100% load, 1 s ramp: Start. Then try a 10 s ramp.</li>
+              <li><b>F.</b> Run at 130% load and watch the motor heat tile.</li>
+              <li><b>G.</b> Compare Stop, a trip, and E-STOP. How does each restart?</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · STARTING A MOTOR WITHOUT A VFD -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Starting and Stopping · Topic 04</span>
+    <h2>Starting a Motor <span class="accent">Without a VFD</span></h2>
+    <p class="slide-intro">Many motors run at one fixed speed, connected straight to the power lines through a <span class="key">motor starter</span>. A motor can draw too much current for a pushbutton to switch directly, so a small <strong>control circuit</strong> switches a big one.</p>
+    <div class="row-3" style="margin-bottom:var(--gap-lg);">
+      <div class="card is-key fragment fade-up"><span class="card-name">Contactor (M)</span><p class="card-body">A heavy duty relay. When its <strong>coil</strong> is energized, its main <strong>contacts</strong> close and connect the motor.</p></div>
+      <div class="card is-key fragment fade-up"><span class="card-name">Overload relay (OL)</span><p class="card-body">Senses motor current. Too much for too long opens its <strong>NC contact</strong> and de-energizes the coil.</p></div>
+      <div class="card is-key fragment fade-up"><span class="card-name">Start and Stop</span><p class="card-body"><strong>Momentary</strong> pushbuttons: they only change state while you press them.</p></div>
+    </div>
+    <div class="row-2">
+      <div class="card is-warn fragment fade-up"><span class="card-name">Why not a simple on/off switch?</span><p class="card-body">If the power fails while the switch is left on, the motor <strong>restarts by itself</strong> when power returns, maybe while someone is clearing a jam.</p></div>
+      <div class="card fragment fade-up"><span class="card-name">The fix: a holding circuit</span><p class="card-body">Start energizes the coil, and a <strong>holding contact</strong> keeps it on. Lose power and the hold is lost too, so the motor <strong>stays off</strong>.</p></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · STARTING AND STOPPING (THREE WIRE CONTROL) -->
+<section>
+  <div class="slide-inner" style="padding-top:48px;">
+    <span class="slide-tag">Starting and Stopping · Topic 04 · Three Wire Control</span>
+    <h2>The <span class="accent">Start/Stop</span> Holding Circuit</h2>
+    <div class="tw-sim">
+      <div class="sim-panel">
+        <svg data-role="ladder" viewBox="0 0 860 470" role="img" aria-label="Ladder diagram: between L1 and L2, a normally closed Stop button, a normally open Start button with a holding contact M in parallel, the M coil, and a normally closed overload contact OL; a second rung shows the motor and its M contacts">
+          <text x="60" y="34" class="tw-lbl">L1</text>
+          <text x="800" y="34" class="tw-lbl">L2</text>
+          <path d="M60 50 V430" class="rail" data-w="l1"/>
+          <path d="M800 50 V430" class="rail" data-w="l2"/>
+          <!-- rung 1: L1 - STOP - START - M coil - OL - L2 -->
+          <path d="M60 130 H120" class="w" data-w="l1"/>
+          <path d="M184 130 H250 M250 130 V250 H322" class="w" data-w="afterStop"/>
+          <path d="M250 130 H310" class="w" data-w="afterStop"/>
+          <path d="M374 130 H440" class="w" data-w="startOut"/>
+          <path d="M378 250 H440 V130" class="w" data-w="holdOut"/>
+          <path d="M440 130 H522" class="w" data-w="coilIn"/>
+          <path d="M582 130 H650" class="w" data-w="coil"/>
+          <path d="M706 130 H800" class="w" data-w="coil"/>
+          <!-- STOP pushbutton (NC) -->
+          <circle cx="126" cy="130" r="6" class="term"/><circle cx="178" cy="130" r="6" class="term"/>
+          <g data-pb="stop"><path d="M152 106 V137" class="pb-stem"/><path d="M140 106 H164" class="pb-stem"/><path d="M114 137 H190" class="pb-bar"/></g>
+          <text x="152" y="186" class="tw-sub">STOP</text>
+          <text x="152" y="210" class="tw-sub">(NC)</text>
+          <!-- START pushbutton (NO) -->
+          <circle cx="316" cy="130" r="6" class="term"/><circle cx="368" cy="130" r="6" class="term"/>
+          <g data-pb="start"><path d="M342 92 V116" class="pb-stem"/><path d="M330 92 H354" class="pb-stem"/><path d="M304 116 H380" class="pb-bar"/></g>
+          <text x="342" y="72" class="tw-sub">START (NO)</text>
+          <!-- holding contact M (NO) -->
+          <path d="M328 228 V272 M372 228 V272" class="plate"/>
+          <path d="M322 250 H328 M372 250 H378" class="w" data-w="afterStop"/>
+          <path d="M330 250 H370" class="bridge" data-when="hold"/>
+          <text x="350" y="306" class="tw-sub">holding contact M</text>
+          <!-- coil M -->
+          <circle cx="552" cy="130" r="30" class="coil-c" data-when-coil/>
+          <text x="552" y="140" class="tw-lbl">M</text>
+          <text x="552" y="196" class="tw-sub">coil</text>
+          <!-- OL contact (NC) -->
+          <path d="M656 108 V152 M700 108 V152" class="plate"/>
+          <path d="M650 130 H656 M700 130 H706" class="w" data-w="coil"/>
+          <path d="M658 130 H698" class="bridge" data-when="ol"/>
+          <path d="M650 156 L706 104" class="slash"/>
+          <text x="678" y="196" class="tw-sub">OL (NC)</text>
+          <!-- rung 2: motor power through M contacts -->
+          <path d="M60 380 H330" class="w" data-w="l1"/>
+          <path d="M330 358 V402 M374 358 V402" class="plate"/>
+          <path d="M332 380 H372" class="bridge" data-when="coil"/>
+          <path d="M374 380 H520" class="w" data-w="motor"/>
+          <path d="M640 380 H800" class="w" data-w="motor"/>
+          <text x="352" y="436" class="tw-sub">M contacts</text>
+          <circle cx="580" cy="380" r="56" class="motor-ring"/>
+          <g data-role="motor-rot"><path d="M580 380 L580 334" class="motor-mark"/></g>
+          <text x="580" y="462" class="tw-sub">motor</text>
+        </svg>
+      </div>
+      <div>
+        <div class="ctl-row">
+          <button class="sim-btn hold-btn" data-hold="start" type="button">Start</button>
+          <button class="sim-btn stop-btn hold-btn" data-hold="stop" type="button">Stop</button>
+        </div>
+        <div class="ctl-row">
+          <button class="sim-btn alt" data-role="ol" type="button" aria-pressed="false">Overload trips</button>
+          <button class="sim-btn alt" data-role="power" type="button" aria-pressed="false">Power fails</button>
+        </div>
+        <div class="tw-chips">
+          <span class="status-chip" data-chip="coil">COIL M: OFF</span>
+          <span class="status-chip" data-chip="hold">HOLDING: OPEN</span>
+          <span class="status-chip" data-chip="motor">MOTOR: STOPPED</span>
+        </div>
+        <div class="sim-feedback" data-role="feedback" aria-live="polite">Press and release Start. Watch what keeps the coil energized after you let go.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 16 · OVERLOAD PROTECTION AND STOPPING -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Starting and Stopping · Topic 04 · Protection and Safety</span>
+    <h2>Three Ways a Motor <span class="accent">Stops</span></h2>
+    <table class="data-table" style="font-size:var(--body);">
+      <thead><tr><th></th><th>Ordinary stop</th><th>Protective trip</th><th>Emergency stop</th></tr></thead>
+      <tbody>
+        <tr><td>Triggered by</td><td>Operator presses Stop</td><td><strong>Overload relay</strong> or drive fault</td><td>Anyone, in an emergency</td></tr>
+        <tr class="fragment fade-up"><td>Purpose</td><td>Normal end of a job</td><td>Protect the <strong>motor</strong> from damage</td><td>Protect <strong>people</strong></td></tr>
+        <tr class="fragment fade-up"><td>How it stops</td><td>Controlled, can ramp down</td><td>Removes power, motor coasts</td><td>Safety circuit removes power</td></tr>
+        <tr class="fragment fade-up"><td>Restart</td><td>Press Start</td><td>Fix the cause, reset, press Start</td><td>Release, reset, press Start</td></tr>
+      </tbody>
+    </table>
+    <div class="callout-warn fragment fade-up" style="margin-top:var(--gap);">An <strong>overload relay</strong> trips on current that is too high for too long, which heats the windings. Fuses and breakers handle short circuits. An <strong>E-stop</strong> must be a <strong>safety rated</strong> circuit: a software stop or a VFD stop command is not an emergency stop by itself, and none of these replace lockout/tagout before maintenance.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 17 · INVESTIGATION RESULTS (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:16:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"From the VFD Control Room: what were the synchronous speeds of the 4 pole motor at 60 Hz and at 30 Hz? What changed when you lowered the frequency, and what did not change?","order":0,"responseTimeLimitMs":180000},{"id":"q2","type":"free-response","text":"What happened to slip when you increased the load? Explain why an induction motor must slip to make torque.","order":1,"responseTimeLimitMs":180000},{"id":"q3","type":"free-response","text":"Why did the fully loaded motor trip the drive with a 1 s ramp but not with a 10 s ramp?","order":2,"responseTimeLimitMs":180000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Virtual Activity 3 · Investigation Results</span>
+    <h2>Record Your <span class="accent">Results</span></h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>What were the synchronous speeds of the 4 pole motor at 60 Hz and at 30 Hz? What changed when you lowered the frequency, and what did not?</div>
+      <div class="frq-box"><span class="q-num">2</span>What happened to slip when you increased the load? Explain why an induction motor must slip to make torque.</div>
+      <div class="frq-box"><span class="q-num">3</span>Why did the fully loaded motor trip the drive with a 1 s ramp but not with a 10 s ramp?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 18 · EXIT TICKET (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:17:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Calculate the synchronous speed of a 4 pole motor on 50 Hz power. (sync RPM = 120 × f / P)","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"1,800 RPM","isCorrect":false},{"id":"q1b","text":"3,000 RPM","isCorrect":false},{"id":"q1c","text":"1,200 RPM","isCorrect":false},{"id":"q1d","text":"1,500 RPM","isCorrect":true}]},{"id":"q2","type":"free-response","text":"Why is the actual speed of an induction motor generally below its synchronous speed?","order":1,"responseTimeLimitMs":120000},{"id":"q3","type":"multiple-choice","text":"What electrical property does a VFD change to control motor speed?","order":2,"responseTimeLimitMs":45000,"options":[{"id":"q3a","text":"The resistance of the motor windings","isCorrect":false},{"id":"q3b","text":"The frequency of its output, with the voltage adjusted to match","isCorrect":true},{"id":"q3c","text":"The number of poles in the motor","isCorrect":false},{"id":"q3d","text":"Only the current, by limiting it","isCorrect":false}]},{"id":"q4","type":"free-response","text":"Explain one safety or operational advantage of a three wire start/stop control with a holding contact.","order":3,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Exit <span class="accent">Ticket</span></h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>Calculate the synchronous speed of a 4 pole motor on 50 Hz power.</div>
+      <div class="frq-box"><span class="q-num">2</span>Why is the actual speed of an induction motor generally below its synchronous speed?</div>
+      <div class="frq-box"><span class="q-num">3</span>What electrical property does a VFD change to control motor speed?</div>
+      <div class="frq-box"><span class="q-num">4</span>Explain one safety or operational advantage of a three wire start/stop control with a holding contact.</div>
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+var NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+}
+
+// Static waveform paths: <path data-wave="sin|cos" ...> (as in Days 1 and 2).
+function drawWaves() {
+    var FN = { sin: Math.sin, cos: Math.cos };
+    document.querySelectorAll('path[data-wave]').forEach(function (p) {
+        var d = p.dataset, f = FN[d.wave];
+        var x0 = +d.x0, x1 = +d.x1, mid = +d.mid, amp = +d.amp, cyc = +d.cycles;
+        var lag = (+d.phase || 0) * Math.PI / 180;
+        var pts = [];
+        for (var i = 0; i <= 240; i++) {
+            var u = i / 240;
+            pts.push((x0 + u * (x1 - x0)).toFixed(1) + ' ' + (mid - amp * f(u * cyc * 2 * Math.PI - lag)).toFixed(1));
+        }
+        p.setAttribute('d', 'M' + pts.join(' L'));
+    });
+    // PWM pulses: equal time slots, each pulse as wide as |sin| in its slot.
+    document.querySelectorAll('g[data-pwm]').forEach(function (g) {
+        var d = g.dataset, x0 = +d.x0, x1 = +d.x1, mid = +d.mid, amp = +d.amp, cyc = +d.cycles, N = 36;
+        var slot = (x1 - x0) / N;
+        for (var i = 0; i < N; i++) {
+            var v = Math.sin((i + 0.5) / N * cyc * 2 * Math.PI), w = Math.abs(v) * slot * 0.9;
+            svgEl('rect', { x: (x0 + i * slot + (slot - w) / 2).toFixed(1), y: v >= 0 ? mid - amp : mid, width: w.toFixed(1), height: amp, class: 'pwm' }, g);
+        }
+    });
+}
+
+var SIMS = [];
+var FIELD_W = 2 * Math.PI * 0.2;   // a 60 Hz field shown at 0.2 rev/s (300x slower)
+
+// ─── Three phase motor cross section ─────────────────────────
+// Coil pairs for A (0°/180°), B (120°/300°), and C (240°/60°). The field is
+// the sum of each phase current times its axis: i_k = cos(wt - k·120°).
+function buildMotor3(svg) {
+    var CX = 230, CY = 230, RB = 150;
+    var COL = ['a', 'b', 'c'];
+    function polar(r, deg) { var a = deg * Math.PI / 180; return [CX + r * Math.sin(a), CY - r * Math.cos(a)]; }
+    svgEl('circle', { cx: CX, cy: CY, r: 176, class: 'stator' }, svg);
+    svgEl('circle', { cx: CX, cy: CY, r: 202, class: 'stator-edge' }, svg);
+    svgEl('circle', { cx: CX, cy: CY, r: 150, class: 'stator-edge' }, svg);
+    var groups = [0, 1, 2].map(function (k) {
+        var g = svgEl('g', {}, svg), rects = [];
+        [k * 120, k * 120 + 180].forEach(function (a, j) {
+            var cg = svgEl('g', { transform: 'rotate(' + a + ' ' + CX + ' ' + CY + ')' }, g);
+            rects.push(svgEl('rect', { x: CX - 32, y: CY - 168, width: 64, height: 34, rx: 6, class: 'coil coil-' + COL[k] }, cg));
+            var p = polar(228, a);
+            svgEl('text', { x: p[0], y: p[1], class: 'wlbl', fill: 'var(--ph-' + COL[k] + ')' }, g).textContent = COL[k].toUpperCase() + (j ? '′' : '');
+        });
+        return { g: g, rects: rects };
+    });
+    var rotorG = svgEl('g', {}, svg);
+    svgEl('circle', { cx: CX, cy: CY, r: 120, class: 'rotor-body' }, rotorG);
+    var glows = [];
+    for (var i = 0; i < 16; i++) {
+        var p = polar(104, i * 22.5);
+        svgEl('circle', { cx: p[0], cy: p[1], r: 8, class: 'rotor-bar' }, rotorG);
+        glows.push(svgEl('circle', { cx: p[0], cy: p[1], r: 12, class: 'bar-glow', opacity: 0 }, rotorG));
+    }
+    svgEl('line', { x1: CX, y1: CY - 20, x2: CX, y2: CY - 84, class: 'rotor-mark' }, rotorG);
+    svgEl('circle', { cx: CX, cy: CY, r: 16, class: 'shaft' }, rotorG);
+    var trail = svgEl('polyline', { class: 'b-trail', points: '' }, svg);
+    var arrow = svgEl('line', { class: 'b-arrow', x1: CX, y1: CY, x2: CX, y2: CY }, svg);
+    var head = svgEl('polygon', { class: 'b-head', points: '' }, svg);
+    var bLbl = svgEl('text', { class: 'b-lbl', x: CX, y: CY }, svg);
+    bLbl.textContent = 'B';
+    var trailPts = [];
+    return {
+        // phases: 1 (A only) or 3. Returns nothing; draws the state at wt.
+        set: function (wt, phases, rotorDeg, glow) {
+            var bx = 0, by = 0;
+            groups.forEach(function (gr, k) {
+                var on = k < phases;
+                gr.g.classList.toggle('off', !on);
+                var i = on ? Math.cos(wt - k * 2 * Math.PI / 3) : 0;
+                gr.rects.forEach(function (r) { r.setAttribute('fill-opacity', (0.08 + 0.75 * Math.abs(i)).toFixed(2)); });
+                var a = k * 2 * Math.PI / 3;
+                bx += i * Math.sin(a);
+                by += i * Math.cos(a);
+            });
+            var norm = phases === 3 ? 1.5 : 1;
+            var x = bx / norm * RB, y = -by / norm * RB, len = Math.hypot(x, y);
+            arrow.setAttribute('x2', (CX + x).toFixed(1));
+            arrow.setAttribute('y2', (CY + y).toFixed(1));
+            if (len > 6) {
+                var ux = x / len, uy = y / len, px = -uy, py = ux, tx = CX + x, ty = CY + y;
+                head.setAttribute('points', [[tx + ux * 18, ty + uy * 18], [tx - ux * 11 + px * 14, ty - uy * 11 + py * 14], [tx - ux * 11 - px * 14, ty - uy * 11 - py * 14]]
+                    .map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' '));
+                bLbl.setAttribute('x', (tx + ux * 34).toFixed(1));
+                bLbl.setAttribute('y', (ty + uy * 34).toFixed(1));
+                bLbl.style.visibility = 'visible';
+            } else {
+                head.setAttribute('points', '');
+                bLbl.style.visibility = 'hidden';
+            }
+            trailPts.push((CX + x).toFixed(1) + ',' + (CY + y).toFixed(1));
+            if (trailPts.length > 320) trailPts.shift();
+            trail.setAttribute('points', trailPts.join(' '));
+            rotorG.setAttribute('transform', 'rotate(' + (rotorDeg || 0).toFixed(2) + ' ' + CX + ' ' + CY + ')');
+            // Induced current is strongest in the bars under the field's poles,
+            // so each bar's glow follows the field as it sweeps around.
+            var fieldDeg = wt * 180 / Math.PI;
+            glows.forEach(function (gl, i) {
+                var rel = (i * 22.5 + (rotorDeg || 0) - fieldDeg) * Math.PI / 180;
+                gl.setAttribute('opacity', ((glow || 0) * (0.15 + 0.85 * Math.abs(Math.cos(rel)))).toFixed(2));
+            });
+        },
+    };
+}
+
+// ─── Field viewers (slides 3 to 5) ───────────────────────────
+function buildFieldViz3(root) {
+    var phases = root.dataset.mode === 'single' ? 1 : 3;
+    var m = buildMotor3(root.querySelector('[data-role="motor"]'));
+    var st = { running: true, wt: 0, rotor: 0, rot: 0 };
+    var cursor = root.querySelector('[data-role="cursor"]');
+    function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
+    function render() {
+        // Field turns clockwise at 1 (relative); the rotor at st.rotor of that.
+        var slip = 1 - st.rotor;
+        // Brightness grows with slip: none at 100%, full from 80% down.
+        var glow = root.hasAttribute('data-rotor') && slip > 0 ? 0.5 + 0.5 * Math.min(1, slip / 0.2) : 0;
+        m.set(st.wt, phases, st.rot, glow);
+        if (cursor) {
+            var u = ((st.wt / (2 * Math.PI)) % 1 + 1) % 1, x = 20 + u * 860;
+            cursor.setAttribute('x1', x.toFixed(1));
+            cursor.setAttribute('x2', x.toFixed(1));
+        }
+        if (root.hasAttribute('data-rotor')) {
+            var rel = Math.round(slip * 100);
+            root.querySelector('[data-tile="rel"]').textContent = rel + '% of sync';
+            root.querySelector('[data-tile="torque"]').textContent = slip >= 0.5 ? 'Strong' : slip > 0 ? 'Enough to run' : 'None';
+        }
+    }
+    if (q('run')) q('run').addEventListener('click', function () {
+        st.running = !st.running;
+        this.textContent = st.running ? 'Pause' : 'Run';
+    });
+    root.querySelectorAll('[data-role="rotor"] .seg-btn').forEach(function (b) {
+        b.addEventListener('click', function () {
+            st.rotor = +b.dataset.val;
+            root.querySelectorAll('[data-role="rotor"] .seg-btn').forEach(function (o) { o.setAttribute('aria-pressed', o === b); });
+            render();
+        });
+    });
+    render();
+    SIMS.push({ root: root, tick: function (dt) {
+        if (!st.running) return;
+        st.wt += FIELD_W * dt;
+        st.rot += st.rotor * FIELD_W * dt * 180 / Math.PI;
+        render();
+    } });
+}
+
+// ─── VFD Control Room ────────────────────────────────────────
+// Educational model. Output frequency ramps toward the setpoint at 60 Hz per
+// ramp time. sync = 120 f / P. Torque demand = load + 5% friction +
+// acceleration torque (inertia grows with load). Slip RPM is proportional to
+// torque (rated slip at 100%), the same at any frequency, so slip % rises at
+// low frequency. Above 60 Hz the voltage is capped at 460 V, so available
+// torque falls as 60 / f. Demand above the 150% current limit for 0.5 s trips
+// an overcurrent fault; current above 115% heats the motor (I squared t) and
+// trips the overload at 100% heat.
+var MOTORS = {
+    2: { rpm: 3500, fla: 6.2 },
+    4: { rpm: 1750, fla: 6.7 },
+    6: { rpm: 1160, fla: 7.2 },
+};
+function buildVfdLab(root) {
+    function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
+    function setText(sel, t) { var e = root.querySelector(sel); if (e.textContent !== t) e.textContent = t; }
+    var dial = q('dial'), waves = q('waves'), bars = q('bars');
+
+    // Dial
+    var DX = 200, DY = 128, DR = 110;
+    svgEl('circle', { cx: DX, cy: DY, r: DR, class: 'dial-ring' }, dial);
+    svgEl('circle', { cx: DX, cy: DY, r: 82, class: 'dial-rotor' }, dial);
+    var rotorLine = svgEl('line', { x1: DX, y1: DY, x2: DX, y2: DY - 76, stroke: 'var(--result)', 'stroke-width': 7, 'stroke-linecap': 'round' }, dial);
+    var fieldLine = svgEl('line', { x1: DX, y1: DY, x2: DX, y2: DY - 120, stroke: 'var(--accent)', 'stroke-width': 6, 'stroke-linecap': 'round', 'stroke-dasharray': '2 0' }, dial);
+    svgEl('circle', { cx: DX, cy: DY, r: 10, fill: 'var(--bg)', stroke: 'rgba(230,247,234,0.6)', 'stroke-width': 3 }, dial);
+    svgEl('path', { d: 'M10 262 H40', stroke: 'var(--accent)', 'stroke-width': 6 }, dial);
+    svgEl('text', { x: 48, y: 270, class: 'dial-lbl' }, dial).textContent = 'field';
+    svgEl('path', { d: 'M200 262 H230', stroke: 'var(--result)', 'stroke-width': 7 }, dial);
+    svgEl('text', { x: 238, y: 270, class: 'dial-lbl' }, dial).textContent = 'rotor';
+
+    // Output waveforms: 50 ms window
+    svgEl('path', { d: 'M10 80 H990', class: 'dw-axis' }, waves);
+    var wTraces = ['a', 'b', 'c'].map(function (c) { return svgEl('polyline', { class: 'tr-' + c, points: '' }, waves); });
+
+    // Speed bars
+    var BX0 = 250, BX1 = 790;
+    svgEl('text', { x: 0, y: 38, class: 'bar-lbl' }, bars).textContent = 'Sync speed';
+    svgEl('text', { x: 0, y: 96, class: 'bar-lbl' }, bars).textContent = 'Shaft speed';
+    svgEl('rect', { x: BX0, y: 12, width: BX1 - BX0, height: 30, rx: 4, class: 'bar-bg' }, bars);
+    svgEl('rect', { x: BX0, y: 70, width: BX1 - BX0, height: 30, rx: 4, class: 'bar-bg' }, bars);
+    var barSync = svgEl('rect', { x: BX0, y: 12, width: 0, height: 30, rx: 4, class: 'bar-sync' }, bars);
+    var barShaft = svgEl('rect', { x: BX0, y: 70, width: 0, height: 30, rx: 4, class: 'bar-shaft' }, bars);
+    var syncVal = svgEl('text', { x: 1000, y: 38, class: 'bar-val' }, bars);
+    var shaftVal = svgEl('text', { x: 1000, y: 96, class: 'bar-val' }, bars);
+
+    var st = { set: 60, P: 4, load: 50, ramp: 5, f: 0, n: 0, running: false, stopping: false,
+               fault: null, estop: false, heat: 0, ocTime: 0, wt: 0, fieldDeg: 0, rotorDeg: 0, T: 0 };
+
+    function motor() { return MOTORS[st.P]; }
+    function slipRated() { return 120 * 60 / st.P - motor().rpm; }
+    function volts() { return Math.round(460 * Math.min(st.f, 60) / 60); }
+    function inertia() { return 0.4 + 0.6 * st.load / 100; }
+
+    function drawNameplate() {
+        var mtr = motor();
+        q('nameplate').innerHTML = '<div class="np-title">3 PHASE INDUCTION MOTOR</div><div class="np-grid">' +
+            [['HP', '5'], ['VOLTS', '460'], ['RPM', mtr.rpm.toLocaleString()], ['FLA', mtr.fla + ' A'], ['HZ', '60'], ['SF', '1.15'], ['ENCL', 'TEFC'], ['INS', 'CLASS F']]
+            .map(function (kv) { return '<span class="np-k">' + kv[0] + '</span><span class="np-v">' + kv[1] + '</span>'; }).join('') + '</div>';
+    }
+
+    function say(msg, cls) {
+        var fb = q('feedback');
+        if (fb.textContent !== msg) fb.textContent = msg;
+        fb.className = 'sim-feedback' + (cls ? ' ' + cls : '');
+    }
+
+    function trip(code, msg) {
+        st.running = false; st.stopping = false; st.fault = code;
+        say(msg, 'bad');
+    }
+
+    function step(dt) {
+        var target = st.running && !st.stopping ? st.set : 0;
+        var rate = 60 / st.ramp, prevSync = 120 * st.f / st.P;
+        var powered = st.running && !st.fault && !st.estop;
+        if (powered) {
+            if (st.f < target) st.f = Math.min(target, st.f + rate * dt);
+            else if (st.f > target) st.f = Math.max(target, st.f - rate * dt);
+        } else st.f = 0;
+        var sync = 120 * st.f / st.P;
+
+        if (powered) {
+            var accel = (sync - prevSync) / dt;                       // RPM per second
+            var Ta = inertia() * accel / 18;                          // % torque
+            var tAvail = 150 * (st.f > 60 ? 60 / st.f : 1);
+            var demand = st.load + 5 + Ta;
+            if (st.stopping) demand = Math.max(0, demand);
+            st.T = Math.max(0, demand);
+            if (demand > tAvail) {
+                st.ocTime += dt;
+                st.T = tAvail;
+                if (st.ocTime > 0.5) {
+                    if (st.f > 60 && Ta < 20) trip('OL', 'FAULT: motor stalled. Above 60 Hz the drive is already at 460 V, so available torque falls to ' + Math.round(tAvail) + '%, less than the ' + Math.round(demand) + '% this load needs.');
+                    else trip('OC', 'FAULT OC (overcurrent). Speeding up this load in ' + st.ramp + ' s needs ' + Math.round(demand) + '% torque, above the drive’s 150% current limit. Try a longer ramp.');
+                    return;
+                }
+            } else st.ocTime = 0;
+            var slip = slipRated() * st.T / 100;
+            st.n = Math.max(0, sync - slip);
+            if (st.stopping && st.f <= 0.01) {
+                st.running = false; st.stopping = false; st.n = 0;
+                say('Stopped. The drive ramped the frequency down to 0 Hz, a controlled stop. Press Start to run again.');
+            }
+        } else {
+            st.T = 0;
+            // Coasting: the load and friction slow the shaft.
+            if (st.n > 0) st.n = Math.max(0, st.n - (st.load + 10) * 18 / inertia() * dt);
+        }
+
+        // Motor heating (I squared t): current in per unit of FLA.
+        var amps = powered ? Math.max(0.35, st.T / 100) : 0;
+        var over = amps * amps - 1.15 * 1.15;
+        st.heat = Math.max(0, Math.min(1.05, st.heat + (over > 0 ? over / 10 : over / 12) * dt));
+        if (st.heat >= 1 && powered) trip('OL', 'FAULT OL (motor overload). Current stayed above 115% of FLA long enough to overheat the windings. Reduce the load, let it cool, then reset.');
+
+        st.wt += 2 * Math.PI * st.f * dt / 120;               // waveform phase, slowed
+        st.fieldDeg += sync / 3600 * 360 * dt;                 // 1,800 RPM = 0.5 rev/s
+        st.rotorDeg += st.n / 3600 * 360 * dt;
+    }
+
+    function stateName() {
+        if (st.estop) return 'E-STOP';
+        if (st.fault) return 'FAULT ' + st.fault;
+        if (!st.running) return st.n > 1 ? 'COASTING' : 'READY';
+        if (st.stopping) return 'DECEL';
+        if (Math.abs(st.f - st.set) > 0.05) return st.f < st.set ? 'ACCEL' : 'DECEL';
+        return 'RUN';
+    }
+
+    function render() {
+        var sync = 120 * st.f / st.P, mtr = motor(), powered = st.running && !st.fault && !st.estop;
+        var maxRpm = 120 * 90 / st.P;
+        barSync.setAttribute('width', ((BX1 - BX0) * sync / maxRpm).toFixed(1));
+        barShaft.setAttribute('width', ((BX1 - BX0) * st.n / maxRpm).toFixed(1));
+        syncVal.textContent = Math.round(sync).toLocaleString() + ' RPM';
+        shaftVal.textContent = Math.round(st.n).toLocaleString() + ' RPM';
+        // Waveforms: 50 ms of output at the present frequency and voltage.
+        var amp = 70 * volts() / 460;
+        wTraces.forEach(function (tr, k) {
+            var pts = [];
+            for (var i = 0; i <= 160; i++) {
+                var t = i / 160 * 0.05;
+                pts.push((10 + i / 160 * 980).toFixed(1) + ',' + (80 - amp * Math.sin(2 * Math.PI * st.f * t + st.wt - k * 2 * Math.PI / 3)).toFixed(1));
+            }
+            tr.setAttribute('points', pts.join(' '));
+        });
+        setText('[data-role="out-note"]', st.f.toFixed(1) + ' Hz · ' + volts() + ' V');
+        var fr = st.fieldDeg * Math.PI / 180, rr = st.rotorDeg * Math.PI / 180;
+        fieldLine.setAttribute('x2', (DX + 120 * Math.sin(fr)).toFixed(1));
+        fieldLine.setAttribute('y2', (DY - 120 * Math.cos(fr)).toFixed(1));
+        rotorLine.setAttribute('x2', (DX + 76 * Math.sin(rr)).toFixed(1));
+        rotorLine.setAttribute('y2', (DY - 76 * Math.cos(rr)).toFixed(1));
+        fieldLine.style.visibility = powered ? 'visible' : 'hidden';
+        var slipRpm = Math.max(0, sync - st.n);
+        setText('[data-tile="slip"]', (sync > 1 && powered ? slipRpm / sync * 100 : 0).toFixed(1) + '%');
+        setText('[data-tile="slip-rpm"]', Math.round(powered ? slipRpm : 0) + ' RPM behind');
+        setText('[data-tile="torque"]', Math.round(st.T) + '%');
+        var amps = powered ? Math.max(0.35, st.T / 100) * mtr.fla : 0;
+        setText('[data-tile="amps"]', amps.toFixed(1) + ' A');
+        setText('[data-tile="amps-sub"]', 'of ' + mtr.fla + ' A FLA');
+        setText('[data-tile="heat"]', Math.round(st.heat * 100) + '%');
+        var name = stateName(), chip = q('status');
+        if (chip.textContent !== name) chip.textContent = name;
+        chip.className = 'status-chip ' + ({ RUN: 'ok', ACCEL: 'busy', DECEL: 'busy', COASTING: 'busy' }[name] || (name === 'READY' ? '' : 'bad'));
+        // Running commentary (only while no fault or E-stop message is up)
+        if (powered && !st.stopping && name === 'RUN') {
+            var load = st.T, warn = '';
+            if (st.f > 60) warn = ' Above 60 Hz the voltage is capped at 460 V, so the motor can only make ' + Math.round(150 * 60 / st.f) + '% torque at most.';
+            else if (amps / mtr.fla > 1.15) warn = ' Current is above 115% of FLA: the motor is heating toward an overload trip.';
+            say('Running: ' + st.f.toFixed(0) + ' Hz × 120 / ' + st.P + ' = ' + Math.round(sync).toLocaleString() + ' RPM sync, shaft ' + Math.round(st.n).toLocaleString() + ' RPM, slip ' + (slipRpm / sync * 100).toFixed(1) + '%.' + warn, warn ? 'caution' : '');
+        }
+        q('estop').setAttribute('aria-pressed', st.estop);
+        q('estop').textContent = st.estop ? 'RELEASE E-STOP' : 'E-STOP';
+        root.querySelectorAll('[data-role="poles"] .seg-btn').forEach(function (b) {
+            b.setAttribute('aria-pressed', +b.dataset.val === st.P);
+            b.disabled = st.running || st.n > 1;
+        });
+    }
+
+    q('freq').addEventListener('input', function () { st.set = +this.value; q('freq-val').textContent = st.set + ' Hz'; });
+    q('load').addEventListener('input', function () { st.load = +this.value; q('load-val').textContent = st.load + '%'; });
+    q('ramp').addEventListener('input', function () { st.ramp = +this.value; q('ramp-val').textContent = st.ramp + ' s'; });
+    root.querySelectorAll('[data-role="poles"] .seg-btn').forEach(function (b) {
+        b.addEventListener('click', function () {
+            if (st.running || st.n > 1) return;
+            st.P = +b.dataset.val;
+            drawNameplate();
+            say('Swapped in a ' + st.P + ' pole motor (see the nameplate). A VFD cannot change a motor’s poles; a different pole count means a different motor.');
+        });
+    });
+    q('start').addEventListener('click', function () {
+        if (st.estop) { say('The E-stop is latched. Release it, then press Reset fault before starting.', 'bad'); return; }
+        if (st.fault) { say('The drive is faulted. Fix the cause, then press Reset fault.', 'bad'); return; }
+        if (st.running && !st.stopping) return;
+        st.running = true; st.stopping = false; st.ocTime = 0;
+        say('Accelerating: the drive raises the frequency at ' + (60 / st.ramp).toFixed(1) + ' Hz per second.');
+    });
+    q('stop').addEventListener('click', function () {
+        if (!st.running || st.fault || st.estop) return;
+        st.stopping = true;
+        say('Stop: the drive ramps the frequency down over the decel time. The motor is slowed under control, not just turned off.');
+    });
+    q('reset').addEventListener('click', function () {
+        if (st.estop) { say('Release the E-stop first.', 'bad'); return; }
+        if (!st.fault && !st.estopWas) return;
+        st.fault = null; st.estopWas = false; st.ocTime = 0;
+        say('Fault reset. The motor does not restart by itself: press Start when it is safe.');
+    });
+    q('estop').addEventListener('click', function () {
+        if (!st.estop) {
+            st.estop = true; st.running = false; st.stopping = false;
+            say('E-STOP: the safety circuit removed power. The motor coasts to a stop. Release the E-stop and reset before anything can restart.', 'bad');
+        } else {
+            st.estop = false; st.estopWas = true;
+            say('E-stop released, but the system stays off. Press Reset fault, then Start.', 'caution');
+        }
+    });
+    initTaskPager(q('tasks'));
+    drawNameplate();
+    render();
+    SIMS.push({ root: root, tick: function (dt) { step(dt); render(); } });
+}
+
+// ─── Three wire start/stop control ───────────────────────────
+function buildThreeWire(root) {
+    var st = { start: false, stop: false, ol: false, powerOff: false, sealed: false, rot: 0 };
+    var prev = null;
+    function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
+    function coil() { return !st.powerOff && !st.stop && !st.ol && (st.start || st.sealed); }
+    function say(msg, cls) {
+        var fb = q('feedback');
+        fb.textContent = msg;
+        fb.className = 'sim-feedback' + (cls ? ' ' + cls : '');
+    }
+    function update(reason) {
+        var on = coil();
+        st.sealed = on;
+        var power = !st.powerOff, afterStop = power && !st.stop;
+        var lit = {
+            l1: power, l2: on, afterStop: afterStop,
+            startOut: afterStop && st.start, holdOut: afterStop && st.sealed,
+            coilIn: on, coil: on, motor: on,
+        };
+        root.querySelectorAll('[data-w]').forEach(function (e) { e.classList.toggle('on', !!lit[e.dataset.w]); });
+        root.querySelector('[data-when="hold"]').classList.toggle('on', on);
+        root.querySelector('[data-when="coil"]').classList.toggle('on', on);
+        root.querySelector('[data-when="ol"]').classList.toggle('on', !st.ol);
+        root.querySelector('[data-when-coil]').classList.toggle('on', on);
+        root.querySelector('[data-pb="start"]').setAttribute('transform', st.start ? 'translate(0 14)' : '');
+        root.querySelector('[data-pb="stop"]').setAttribute('transform', st.stop ? 'translate(0 16)' : '');
+        function chip(name, txt, ok) {
+            var c = root.querySelector('[data-chip="' + name + '"]');
+            c.textContent = txt;
+            c.className = 'status-chip ' + (ok ? 'ok' : '');
+        }
+        chip('coil', 'COIL M: ' + (on ? 'ENERGIZED' : 'OFF'), on);
+        chip('hold', 'HOLDING: ' + (on ? 'CLOSED' : 'OPEN'), on);
+        chip('motor', 'MOTOR: ' + (on ? 'RUNNING' : 'STOPPED'), on);
+        q('ol').textContent = st.ol ? 'Reset overload' : 'Overload trips';
+        q('ol').setAttribute('aria-pressed', st.ol);
+        q('power').textContent = st.powerOff ? 'Power returns' : 'Power fails';
+        q('power').setAttribute('aria-pressed', st.powerOff);
+        if (reason) reason(on, prev);
+        prev = on;
+    }
+    function hold(btn, key) {
+        function down(e) {
+            e.preventDefault();
+            if (st[key]) return;
+            st[key] = true; btn.classList.add('pressed');
+            update(function (on) {
+                if (key === 'start') {
+                    if (st.powerOff) say('No power on L1: nothing happens.', 'bad');
+                    else if (st.ol) say('Start does nothing: the overload contact is open. Fix the cause and reset the overload first.', 'bad');
+                    else if (st.stop) say('Stop is held, so the circuit is open no matter what Start does.');
+                    else say('Start is pressed: coil M energizes, the motor contacts close, and the holding contact closes too.');
+                } else say('Stop opens the circuit: coil M de-energizes and the holding contact opens.');
+            });
+        }
+        function up() {
+            if (!st[key]) return;
+            st[key] = false; btn.classList.remove('pressed');
+            update(function (on) {
+                if (key === 'start' && on) say('Start released, but the motor keeps running. The closed holding contact keeps coil M energized: this is the seal-in, or holding, circuit.');
+                else if (key === 'stop') say('Stop released, and the motor stays off. The holding contact already opened, so only Start can bring the coil back.');
+            });
+        }
+        btn.addEventListener('pointerdown', down);
+        btn.addEventListener('pointerup', up);
+        btn.addEventListener('pointerleave', up);
+        btn.addEventListener('pointercancel', up);
+        btn.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') down(e); });
+        btn.addEventListener('keyup', function (e) { if (e.key === ' ' || e.key === 'Enter') up(); });
+    }
+    hold(root.querySelector('[data-hold="start"]'), 'start');
+    hold(root.querySelector('[data-hold="stop"]'), 'stop');
+    q('ol').addEventListener('click', function () {
+        st.ol = !st.ol;
+        update(function (on) {
+            say(st.ol ? 'The overload relay sensed too much current for too long and opened its NC contact. Coil M de-energizes and the motor stops.'
+                      : 'Overload reset. The motor stays off until someone presses Start.', st.ol ? 'bad' : '');
+        });
+    });
+    q('power').addEventListener('click', function () {
+        st.powerOff = !st.powerOff;
+        update(function (on) {
+            say(st.powerOff ? 'Power lost: coil M de-energizes and the holding contact opens.'
+                            : 'Power is back, but the motor stays off. The holding contact is open, so nothing restarts until someone presses Start. No surprise restart.', st.powerOff ? 'bad' : 'caution');
+        });
+    });
+    update();
+    SIMS.push({ root: root, tick: function (dt) {
+        if (coil()) {
+            st.rot += 180 * dt;
+            q('motor-rot').setAttribute('transform', 'rotate(' + st.rot.toFixed(1) + ' 580 380)');
+        }
+    } });
+}
+
+// Prev / next pager over the hidden <li> tasks inside a .task-pager.
+function initTaskPager(el) {
+    var items = Array.prototype.map.call(el.querySelectorAll('ol > li'), function (li) { return li.innerHTML; });
+    var i = 0;
+    var count = el.querySelector('.tp-count'), text = el.querySelector('.tp-text');
+    var prev = el.querySelector('.tp-prev'), next = el.querySelector('.tp-next');
+    function show() {
+        count.textContent = 'TASK ' + (i + 1) + ' OF ' + items.length;
+        text.innerHTML = items[i];
+        prev.disabled = i === 0;
+        next.disabled = i === items.length - 1;
+    }
+    prev.addEventListener('click', function () { if (i > 0) { i--; show(); } });
+    next.addEventListener('click', function () { if (i < items.length - 1) { i++; show(); } });
+    show();
+}
+
+function startSimLoop(Reveal) {
+    var last = performance.now();
+    function frame(now) {
+        var dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        var cur = Reveal.getCurrentSlide();
+        SIMS.forEach(function (s) { if (cur && cur.contains(s.root)) s.tick(dt); });
+        requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+}
+
+drawWaves();
+document.querySelectorAll('.fv3').forEach(buildFieldViz3);
+document.querySelectorAll('.vfd-lab').forEach(buildVfdLab);
+document.querySelectorAll('.tw-sim').forEach(buildThreeWire);
+
+initSyncDeckReveal({
+    deckId: 'day3-three-phase-motors-and-vfds',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        startSimLoop(Reveal);
+    },
+});
+</script>
+</body>
+</html>

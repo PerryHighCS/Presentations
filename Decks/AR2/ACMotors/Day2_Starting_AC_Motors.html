@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1yafn7e">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 2: Single Phase AC Motors and the Starting Problem</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: AC Motors Day 2 · Starting AC Motors
+
+   Colour use in this deck:
+   main winding        -> --ph-a (amber), always labeled MAIN
+   auxiliary winding   -> --ph-b (cyan), always labeled AUX
+   capacitors          -> --violet
+   magnetic field (B)  -> --accent (green)
+   ============================================================ */
+
+/* ─── Motor cross section (shared by the field viewer and the lab) ─── */
+.motor-x .stator { fill: none; stroke: #1f2c38; stroke-width: 52; }
+.motor-x .stator-edge { fill: none; stroke: rgba(230,247,234,0.3); stroke-width: 2; }
+.motor-x .coil { stroke-width: 3; transition: fill-opacity 0.2s ease, opacity 0.2s ease; }
+.motor-x .coil-main { stroke: var(--ph-a); fill: var(--ph-a); }
+.motor-x .coil-aux  { stroke: var(--ph-b); fill: var(--ph-b); }
+.motor-x .wlbl { font-family: var(--font-mono); font-size: 32px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+.motor-x .aux-off { opacity: 0.25; }
+.motor-x .shade-ring { fill: none; stroke: var(--warn); stroke-width: 5; }
+.motor-x .rotor-body { fill: #16202a; stroke: rgba(230,247,234,0.5); stroke-width: 2; }
+.motor-x .rotor-bar { fill: #9aa5ad; }
+.motor-x .shaft { fill: var(--bg); stroke: rgba(230,247,234,0.6); stroke-width: 3; }
+.motor-x .b-arrow { stroke: var(--accent); stroke-width: 7; stroke-linecap: round; }
+.motor-x .b-head { fill: var(--accent); }
+.motor-x .b-trail { fill: none; stroke: rgba(57,211,83,0.45); stroke-width: 3; }
+.motor-x .b-lbl { font-family: var(--font-mono); font-size: 34px; font-weight: 700; fill: var(--accent); text-anchor: middle; dominant-baseline: central; }
+.motor-x .half-cw { stroke: var(--ph-b); stroke-width: 4; stroke-dasharray: 10 6; }
+.motor-x .half-ccw { stroke: var(--violet); stroke-width: 4; stroke-dasharray: 10 6; }
+.motor-x .half-head-cw { fill: var(--ph-b); }
+.motor-x .half-head-ccw { fill: var(--violet); }
+.motor-x .halves { visibility: hidden; }
+.motor-x.show-halves .halves { visibility: visible; }
+
+.field-viz { display: grid; grid-template-columns: 440px 1fr; gap: 28px; align-items: start; }
+.field-viz .fv-tiles { grid-template-columns: 1fr 1fr; }
+
+/* ─── Ladder schematics (drawLadder) ─── */
+.ladder .lw { fill: none; stroke: rgba(230,247,234,0.6); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.ladder .l-main { fill: none; stroke: var(--ph-a); stroke-width: 4; stroke-linecap: round; }
+.ladder .l-aux  { fill: none; stroke: var(--ph-b); stroke-width: 4; stroke-linecap: round; }
+.ladder .l-cap  { fill: none; stroke: var(--violet); stroke-width: 4; stroke-linecap: round; }
+.ladder .l-res  { fill: none; stroke: var(--text); stroke-width: 3; stroke-linejoin: round; }
+.ladder .l-sw   { fill: none; stroke: var(--text); stroke-width: 3; stroke-linecap: round; }
+.ladder .l-dot  { fill: var(--bg); stroke: var(--text); stroke-width: 2.5; }
+.ladder .l-src  { fill: var(--bg); stroke: rgba(230,247,234,0.7); stroke-width: 3; }
+.ladder .l-lbl  { font-family: var(--font-mono); font-size: 24px; fill: var(--text-muted); text-anchor: middle; }
+.ladder .l-lbl-main { fill: var(--ph-a); font-weight: 700; }
+.ladder .l-lbl-aux  { fill: var(--ph-b); font-weight: 700; }
+.ladder .l-lbl-cap  { fill: var(--violet); }
+.ladder .aux-branch.off { opacity: 0.3; }
+.start-lab .ladder .l-lbl, .start-lab .ladder .l-note { font-size: 30px; }
+.ladder .l-note { font-family: var(--font-mono); font-size: 24px; fill: var(--warn); text-anchor: middle; }
+
+/* ─── Motor Starting Lab ─── */
+.start-lab .sl-grid { display: grid; grid-template-columns: 420px 1fr; gap: 18px; align-items: start; }
+.start-lab .sl-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.start-lab .sl-tiles { grid-template-columns: 1fr 1fr; }
+.start-lab [data-role="motor"] { width: 320px; margin: 0 auto; }
+.start-lab .motor-x .wlbl { font-size: 40px; }
+.lg-motor, .lg-load { display: inline-block; width: 40px; height: 0; vertical-align: middle; margin: 0 6px 0 14px; }
+.lg-motor { border-top: 5px solid var(--accent); }
+.lg-load { border-top: 4px dashed var(--warn); }
+.start-lab .t-sub { display: block; font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted); white-space: nowrap; }
+.start-lab .chart-lbl { font-family: var(--font-mono); font-size: 28px; fill: var(--text-muted); }
+.start-lab .curve-motor { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linejoin: round; }
+.start-lab .curve-motor-jump { fill: none; stroke: var(--accent); stroke-width: 3; stroke-dasharray: 6 6; }
+.start-lab .curve-load { fill: none; stroke: var(--warn); stroke-width: 4; stroke-dasharray: 12 7; }
+.start-lab .op-line { stroke: rgba(230,247,234,0.35); stroke-width: 2; }
+.start-lab .op-motor { fill: var(--accent); stroke: var(--bg); stroke-width: 3; }
+.start-lab .op-load { fill: var(--warn); stroke: var(--bg); stroke-width: 3; }
+.start-lab [data-role="feedback"] { height: 112px; }
+.start-lab .status-row { display: flex; align-items: center; gap: 12px; }
+.start-lab .status-row .sim-feedback { flex: 1; }
+.start-lab .seg-btn { padding: 8px 10px; }
+
+/* Labeled photo (slide 6): leaders get a dark halo so they read on the
+   white photo and on the dark slide alike */
+.ph-lbl { font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; fill: var(--text); }
+.ph-halo { fill: none; stroke: #0d1117; stroke-width: 3.4; stroke-linecap: round; }
+.ph-lead { fill: none; stroke: var(--text); stroke-width: 1.5; stroke-linecap: round; }
+.ph-dot { fill: var(--accent); stroke: #0d1117; stroke-width: 1.2; }
+
+/* Shaded pole drawing */
+.sp-core { fill: #2a3440; stroke: rgba(230,247,234,0.6); stroke-width: 2; }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(94,234,212,0.10),transparent 70%);"></div>
+  <div class="glow" style="width:420px;height:420px;bottom:-90px;right:12%;background:radial-gradient(circle,rgba(255,209,102,0.08),transparent 70%);"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; AC Motors &nbsp;·&nbsp; Day 2</span>
+    <h1 class="title-h1">Single Phase Motors and the <span class="accent">Starting Problem</span></h1>
+    <p class="subtitle">// Induction motors &nbsp;·&nbsp; Pulsating fields &nbsp;·&nbsp; Five ways to get a motor turning</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · ESSENTIAL QUESTION AND OBJECTIVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Essential Question &amp; Objectives</span>
+    <div class="eq-box" style="margin-bottom:var(--gap-lg);">
+      <span class="eq-label">Essential question</span>
+      If alternating current creates magnetic fields, why can&#39;t every AC motor <span class="accent">start spinning by itself</span>?
+    </div>
+    <div class="split split-50 split-top" style="flex:0 0 auto;">
+      <div>
+        <h3>By the end of class you can <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Identify the <strong>stator</strong> and <strong>rotor</strong> of an induction motor.</li>
+          <li>Explain why one winding makes a <strong>pulsating</strong> field with no starting direction.</li>
+          <li>Compare <strong>five</strong> single phase starting designs.</li>
+          <li>Select a motor using <strong>load, cost, efficiency</strong>, and starting torque.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today&#39;s <span class="accent">path</span></h3>
+        <div class="agenda-grid">
+          <a class="agenda-item" href="#/5"><span class="agenda-num">01</span><span class="agenda-text">Inside an <strong>induction motor</strong></span></a>
+          <a class="agenda-item" href="#/8"><span class="agenda-num">02</span><span class="agenda-text">The <strong>starting problem</strong></span></a>
+          <a class="agenda-item" href="#/11"><span class="agenda-num">03</span><span class="agenda-text">Five <strong>starting designs</strong></span></a>
+          <a class="agenda-item" href="#/17"><span class="agenda-num">04</span><span class="agenda-text">Investigate: the <strong>Motor Starting Lab</strong></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · WARM UP -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Warm Up</span>
+    <h2>Which Supply Starts a Motor <span class="accent">More Easily?</span></h2>
+    <div class="row-2">
+      <div class="card">
+        <span class="card-name">Three phase (from the Generator Lab)</span>
+        <svg viewBox="0 0 640 220" style="width:100%;height:auto;margin-top:8px;" role="img" aria-label="Three sine waves, A, B, and C, a third of a cycle apart">
+          <path d="M10 110 H630" class="dw-axis"/>
+          <path data-wave="sin" data-x0="10" data-x1="630" data-mid="110" data-amp="90" data-cycles="2" data-phase="0" class="tr-a"/>
+          <path data-wave="sin" data-x0="10" data-x1="630" data-mid="110" data-amp="90" data-cycles="2" data-phase="120" class="tr-b"/>
+          <path data-wave="sin" data-x0="10" data-x1="630" data-mid="110" data-amp="90" data-cycles="2" data-phase="240" class="tr-c"/>
+        </svg>
+      </div>
+      <div class="card">
+        <span class="card-name">Single phase (a home outlet)</span>
+        <svg viewBox="0 0 640 220" style="width:100%;height:auto;margin-top:8px;" role="img" aria-label="One sine wave">
+          <path d="M10 110 H630" class="dw-axis"/>
+          <path data-wave="sin" data-x0="10" data-x1="630" data-mid="110" data-amp="90" data-cycles="2" data-phase="0" class="tr-a"/>
+        </svg>
+      </div>
+    </div>
+    <p class="slide-intro" style="margin-top:var(--gap-lg);">Imagine connecting each supply to coils arranged around a motor. Which one do you think will be easier to use to <span class="key">start</span> a rotor turning from a standstill? Be ready to explain why.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · WARM UP PREDICTION (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:3:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Prediction: which supply will be easier to use to start a motor turning from a standstill?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"Single phase","isCorrect":false},{"id":"q1b","text":"Three phase","isCorrect":false},{"id":"q1c","text":"No difference","isCorrect":false}]},{"id":"q2","type":"free-response","text":"Explain your prediction. What is different about one alternating voltage compared with three that take turns peaking?","order":1,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Warm Up · Prediction</span>
+    <h2>Make Your <span class="accent">Prediction</span></h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>Which supply will be easier to use to start a motor turning from a standstill: single phase, three phase, or no difference?</div>
+      <div class="frq-box"><span class="q-num">2</span>Explain your prediction. What is different about one alternating voltage compared with three that take turns peaking?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · INSIDE AN INDUCTION MOTOR -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Inside an Induction Motor · Topic 01</span>
+    <h2>Inside an <span class="accent">Induction Motor</span></h2>
+    <div class="split" style="grid-template-columns:760px 1fr;flex:0 0 auto;align-items:center;">
+      <svg viewBox="0 0 800 520" style="width:100%;height:auto;" role="img" aria-label="Cross section of an induction motor with labels: stator iron core, stator windings in slots, air gap, rotor, rotor bars, and shaft">
+        <circle cx="260" cy="260" r="200" fill="none" stroke="#1f2c38" stroke-width="80"/>
+        <circle cx="260" cy="260" r="240" class="dw-thin"/>
+        <circle cx="260" cy="260" r="160" class="dw-thin"/>
+        <g id="d2-slots"></g>
+        <circle cx="260" cy="260" r="150" fill="#16202a" stroke="rgba(230,247,234,0.5)" stroke-width="2"/>
+        <g id="d2-bars"></g>
+        <circle cx="260" cy="260" r="34" fill="var(--bg)" stroke="rgba(230,247,234,0.7)" stroke-width="3"/>
+        <!-- leader lines -->
+        <path d="M430 120 L560 60" stroke="rgba(230,247,234,0.6)" stroke-width="2"/>
+        <circle cx="430" cy="120" r="5" fill="var(--text)"/>
+        <path d="M401 178 L560 140" stroke="rgba(230,247,234,0.6)" stroke-width="2"/>
+        <circle cx="401" cy="178" r="5" fill="var(--text)"/>
+        <path d="M414 240 L560 220" stroke="rgba(230,247,234,0.6)" stroke-width="2"/>
+        <circle cx="414" cy="240" r="5" fill="var(--text)"/>
+        <path d="M395 309 L560 300" stroke="rgba(230,247,234,0.6)" stroke-width="2"/>
+        <circle cx="395" cy="309" r="5" fill="var(--text)"/>
+        <path d="M371 324 L560 380" stroke="rgba(230,247,234,0.6)" stroke-width="2"/>
+        <circle cx="371" cy="324" r="5" fill="var(--text)"/>
+        <path d="M286 282 L375 356 L560 460" fill="none" stroke="rgba(230,247,234,0.6)" stroke-width="2"/>
+        <circle cx="286" cy="282" r="5" fill="var(--text)"/>
+        <text x="570" y="68" class="svg-lbl-b">Stator core</text>
+        <text x="570" y="148" class="svg-lbl-b" style="fill:var(--ph-a)">Stator windings</text>
+        <text x="570" y="228" class="svg-lbl-b">Air gap</text>
+        <text x="570" y="308" class="svg-lbl-b">Rotor</text>
+        <text x="570" y="388" class="svg-lbl-b">Rotor bars</text>
+        <text x="570" y="468" class="svg-lbl-b">Shaft</text>
+      </svg>
+      <div>
+        <p class="slide-intro">The <span class="key">stator</span> is the stationary part: a core of thin, laminated iron sheets with copper <strong>windings</strong> laid in slots. The <span class="key">rotor</span> turns on bearings inside it, separated by a narrow <strong>air gap</strong>.</p>
+        <div class="callout fragment fade-up">There are <strong>no brushes</strong> and no wires to the rotor. The stator&#39;s changing field <span class="accent">induces</span> current in the rotor, which is why it is called an induction motor.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · A REAL INDUCTION MOTOR -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Inside an Induction Motor · Topic 01 · A Real Motor</span>
+    <h2>A Real <span class="accent">Induction Motor</span></h2>
+    <figure class="fig" style="width:1300px;margin:0 auto;">
+      <svg viewBox="-140 -30 620 220" role="img" aria-label="Photo of an induction motor taken apart, with the rotor slid out of the stator. Labels: frame and cooling fins, ball bearing, and stator windings on the stator; rotor, end ring, cooling fan, and shaft on the rotor assembly.">
+        <image href="media/inductionMotorCutaway.jpg" x="0" y="0" width="431" height="184"/>
+          <path d="M-8 10 L83 22" class="ph-halo"/><path d="M-8 10 L83 22" class="ph-lead"/><circle cx="83" cy="22" r="3.2" class="ph-dot"/>
+          <text x="-12" y="14" text-anchor="end" class="ph-lbl">Frame and fins</text>
+          <path d="M-8 66 L25 93" class="ph-halo"/><path d="M-8 66 L25 93" class="ph-lead"/><circle cx="25" cy="93" r="3.2" class="ph-dot"/>
+          <text x="-12" y="70" text-anchor="end" class="ph-lbl">Ball bearing</text>
+          <path d="M-8 136 L87 112" class="ph-halo"/><path d="M-8 136 L87 112" class="ph-lead"/><circle cx="87" cy="112" r="3.2" class="ph-dot"/>
+          <text x="-12" y="140" text-anchor="end" class="ph-lbl">Stator windings</text>
+          <path d="M200 -8 L200 82" class="ph-halo"/><path d="M200 -8 L200 82" class="ph-lead"/><circle cx="200" cy="82" r="3.2" class="ph-dot"/>
+          <text x="200" y="-12" text-anchor="middle" class="ph-lbl">Rotor</text>
+          <path d="M268 -8 L243 100" class="ph-halo"/><path d="M268 -8 L243 100" class="ph-lead"/><circle cx="243" cy="100" r="3.2" class="ph-dot"/>
+          <text x="268" y="-12" text-anchor="middle" class="ph-lbl">End ring</text>
+          <path d="M380 -8 L375 92" class="ph-halo"/><path d="M380 -8 L375 92" class="ph-lead"/><circle cx="375" cy="92" r="3.2" class="ph-dot"/>
+          <text x="380" y="-12" text-anchor="middle" class="ph-lbl">Cooling fan</text>
+          <path d="M433 120 L410 120" class="ph-halo"/><path d="M433 120 L410 120" class="ph-lead"/><circle cx="410" cy="120" r="3.2" class="ph-dot"/>
+          <text x="437" y="124" text-anchor="start" class="ph-lbl">Shaft</text>
+      </svg>
+    </figure>
+    <p class="slide-intro" style="margin-top:var(--gap);">This motor has been taken apart, with the <span class="key">rotor</span> slid out of the <span class="key">stator</span>. When it is assembled, the rotor sits inside the copper windings with only a narrow air gap between them.</p>
+    <ul class="bullets">
+      <li class="fragment fade-up">The <strong>bearings</strong> keep the shaft centered, so the spinning rotor never rubs the stator.</li>
+      <li class="fragment fade-up">The <strong>fan</strong> on the shaft blows air over the finned frame to carry away heat from the windings.</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 07 · THE SQUIRREL CAGE ROTOR -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Inside an Induction Motor · Topic 01 · The Rotor</span>
+    <h2>The <span class="accent">Squirrel Cage</span> Rotor</h2>
+    <div class="split" style="grid-template-columns:1fr 1fr;flex:0 0 auto;align-items:center;">
+      <figure class="fig">
+        <svg viewBox="0 0 680 340" role="img" aria-label="A squirrel cage: two round end rings joined by straight bars, like a hamster wheel, with a shaft through the middle">
+          <path d="M20 170 H660" stroke="rgba(230,247,234,0.5)" stroke-width="10" stroke-linecap="round"/>
+          <g id="d2-cage"></g>
+          <text x="140" y="330" class="svg-lbl" text-anchor="middle">end ring</text>
+          <text x="540" y="330" class="svg-lbl" text-anchor="middle">end ring</text>
+          <text x="340" y="30" class="svg-lbl" text-anchor="middle">aluminum or copper bars</text>
+        </svg>
+        <figcaption class="fig-caption">The cage with the iron core removed</figcaption>
+      </figure>
+      <div>
+        <p class="slide-intro">Take away the iron and the rotor&#39;s conductors look like a hamster wheel: <span class="key">bars</span> shorted together by an <span class="key">end ring</span> at each end.</p>
+        <p class="slide-intro fragment fade-up">The stator&#39;s changing field <strong>induces voltage</strong> in the bars, so current circulates around the cage. Current in a magnetic field feels a <strong>force</strong>, and that force turns the rotor.</p>
+        <div class="callout-result fragment fade-up">The small DC motors from AR1 use <strong>permanent magnets</strong> and <strong>brushes</strong>. A cage rotor has neither, so it is rugged, cheap, and nearly maintenance free.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 08 · ONE WINDING, A PULSATING FIELD -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Starting Problem · Topic 02</span>
+    <h2>One Winding Makes a <span class="accent">Pulsating Field</span></h2>
+    <div class="field-viz" data-mode="single">
+      <div class="sim-panel"><svg class="motor-x" data-role="motor" viewBox="-40 -20 540 500" role="img" aria-label="Induction motor cross section with one main winding at top and bottom; a green arrow shows the magnetic field growing, shrinking, and reversing along the vertical axis"></svg></div>
+      <div>
+        <p class="slide-intro">Connect single phase AC to the <span class="pa">MAIN</span> winding. The field (green arrow, <span class="key">B</span>) grows, collapses, reverses, and repeats, but it always points <strong>up or down along one axis</strong>.</p>
+        <div class="ctl-row" style="margin-bottom:var(--gap);">
+          <button class="sim-btn" data-role="run" type="button">Pause</button>
+          <span class="sim-model-note">field shown 120&times; slower than 60 Hz</span>
+        </div>
+        <div class="callout-warn fragment fade-up"><strong>Think:</strong> the rotor is sitting still. Which way should it start turning: clockwise or counterclockwise?</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 09 · WHY STARTING TORQUE IS A PROBLEM -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Starting Problem · Topic 02 · No Starting Torque</span>
+    <h2>Why It <span class="fault">Hums</span> Instead of Turning</h2>
+    <div class="field-viz" data-mode="single" data-halves>
+      <div class="sim-panel"><svg class="motor-x show-halves" data-role="motor" viewBox="-40 -20 540 500" role="img" aria-label="The pulsating field drawn as the sum of two half-size arrows, one turning clockwise and one counterclockwise"></svg></div>
+      <div>
+        <p class="slide-intro">A pulsating field is the same as <strong>two half-size fields</strong> spinning in opposite directions: one <span class="pb">clockwise</span>, one <span class="pc">counterclockwise</span>. Add them and you get the green arrow.</p>
+        <ul class="bullets">
+          <li class="fragment fade-up">At a standstill each half pulls the rotor <strong>equally hard</strong> in opposite directions, so the net starting torque is <span class="fault">zero</span>. The motor just hums.</li>
+          <li class="fragment fade-up">Give the shaft a push either way and the half turning that way <strong>wins</strong>. The motor runs, in whichever direction you pushed.</li>
+          <li class="fragment fade-up">Every single phase motor needs a <span class="accent">starting mechanism</span> that favors one direction.</li>
+        </ul>
+        <div class="ctl-row" style="margin-top:var(--gap);">
+          <button class="sim-btn" data-role="run" type="button">Pause</button>
+          <label class="chk"><input type="checkbox" data-role="halves" checked> Show the two halves</label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · A SECOND WINDING AND A PHASE SHIFT -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Starting Problem · Topic 02 · The Fix</span>
+    <h2>Add a Second Winding, <span class="accent">Shift Its Current</span></h2>
+    <div class="field-viz" data-mode="split">
+      <div class="sim-panel"><svg class="motor-x" data-role="motor" viewBox="-40 -20 540 500" role="img" aria-label="Induction motor cross section with a main winding at top and bottom and an auxiliary winding at left and right; the field arrow traces a line, an ellipse, or a circle depending on the phase shift"></svg></div>
+      <div>
+        <p class="slide-intro">Put an <span class="pb">AUX</span> (auxiliary) winding 90&deg; around the stator from <span class="pa">MAIN</span>. If its current peaks <strong>at a different time</strong>, the two fields combine into one that <span class="key">rotates</span>. The faint trail shows the path of the arrow&#39;s tip.</p>
+        <div class="ctl-row" style="margin-bottom:var(--gap);">
+          <span class="ctl-label">AUX current shifted by</span>
+          <span class="seg" data-role="shift">
+            <button class="seg-btn" type="button" data-val="0" aria-pressed="true">0&deg;</button>
+            <button class="seg-btn" type="button" data-val="30" aria-pressed="false">30&deg;</button>
+            <button class="seg-btn" type="button" data-val="60" aria-pressed="false">60&deg;</button>
+            <button class="seg-btn" type="button" data-val="90" aria-pressed="false">90&deg;</button>
+          </span>
+          <button class="sim-btn" data-role="run" type="button">Pause</button>
+        </div>
+        <div class="tiles fv-tiles">
+          <div class="tile"><span class="t-name">Field</span><span class="t-val" data-tile="field">Pulsating</span></div>
+          <div class="tile is-result"><span class="t-name">Starting torque (vs 90&deg;)</span><span class="t-val" data-tile="torque">0%</span></div>
+        </div>
+        <p class="slide-intro" style="margin-top:var(--gap);">The more the currents are shifted, up to <strong>90&deg;</strong>, the rounder the field and the stronger the starting torque. Each starting design is a different way to make that shift.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · SHADED POLE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Five Starting Designs · Topic 03 · 1 of 5</span>
+    <h2>The <span class="accent">Shaded Pole</span> Motor</h2>
+    <div class="split" style="grid-template-columns:600px 1fr;flex:0 0 auto;align-items:center;">
+      <figure class="fig">
+        <svg viewBox="0 0 600 420" role="img" aria-label="A shaded pole motor: a C-shaped iron core with the main winding on one leg; each of the two pole faces has a copper shading ring around one corner, and an arrow shows the field sweeping toward the shaded corner">
+          <path d="M150 70 H460 V140 H400 V122 H190 V278 H400 V260 H460 V330 H150 Z" class="sp-core"/>
+          <path d="M100 140 H240 M100 165 H240 M100 190 H240 M100 215 H240 M100 240 H240 M100 265 H240" stroke="var(--ph-a)" stroke-width="10" stroke-linecap="round" opacity="0.85"/>
+          <circle cx="400" cy="200" r="70" fill="#16202a" stroke="rgba(230,247,234,0.5)" stroke-width="2"/>
+          <rect x="420" y="112" width="52" height="40" rx="4" fill="none" stroke="var(--warn)" stroke-width="7"/>
+          <rect x="420" y="248" width="52" height="40" rx="4" fill="none" stroke="var(--warn)" stroke-width="7"/>
+          <path d="M350 100 Q 400 84 446 96" fill="none" stroke="var(--accent)" stroke-width="4"/>
+          <polygon points="446,96 432,86 434,104" fill="var(--accent)"/>
+          <text x="170" y="380" class="svg-lbl-b" text-anchor="middle" style="fill:var(--ph-a)">MAIN winding</text>
+          <text x="480" y="380" class="svg-lbl-b" text-anchor="middle" style="fill:var(--warn)">shading rings</text>
+          <text x="400" y="40" class="svg-lbl" text-anchor="middle" style="fill:var(--accent)">field sweeps &rarr;</text>
+          <text x="400" y="208" class="svg-lbl" text-anchor="middle">rotor</text>
+        </svg>
+      </figure>
+      <div>
+        <p class="slide-intro">A <span class="warn">copper ring</span> around one corner of each pole is a shorted turn. Current induced in the ring <strong>delays</strong> the field in that corner, so the field <strong>sweeps across</strong> the pole face toward the shaded part, and the rotor follows.</p>
+        <p class="pc-line pro fragment fade-up"><b>Pros</b>Extremely simple and cheap: no capacitor, no switch, no extra winding.</p>
+        <p class="pc-line con fragment fade-up"><b>Cons</b>Very low starting torque and poor efficiency.</p>
+        <p class="pc-line use fragment fade-up"><b>Uses</b>Small fans, bathroom exhaust fans, and other low power appliances.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · RESISTANCE START SPLIT PHASE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Five Starting Designs · Topic 03 · 2 of 5</span>
+    <h2>The Resistance Start <span class="accent">Split Phase</span> Motor</h2>
+    <div class="split" style="grid-template-columns:640px 1fr;flex:0 0 auto;align-items:center;">
+      <figure class="fig">
+        <svg class="ladder" data-ladder="split" viewBox="0 0 520 300" role="img" aria-label="Circuit: the AC source feeds two parallel branches; the main winding alone, and the auxiliary winding in series with a resistor and a centrifugal switch"></svg>
+        <figcaption class="fig-caption">CS = centrifugal switch</figcaption>
+      </figure>
+      <div>
+        <p class="slide-intro">The <span class="pb">AUX</span> winding uses thinner wire, so it has <strong>more resistance</strong> than <span class="pa">MAIN</span>. Its current peaks earlier, roughly <strong>25 to 30&deg;</strong> ahead: a modest shift and a weak rotating field.</p>
+        <p class="slide-intro fragment fade-up">At about <strong>75% speed</strong> a <span class="key">centrifugal switch</span> on the shaft opens and drops the AUX winding out, because it would overheat if left on.</p>
+        <p class="pc-line pro fragment fade-up"><b>Pros</b>Inexpensive, with moderate starting torque.</p>
+        <p class="pc-line use fragment fade-up"><b>Uses</b>Some small pumps, tools, and machinery.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · CAPACITOR START -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Five Starting Designs · Topic 03 · 3 of 5</span>
+    <h2>The <span class="accent">Capacitor Start</span> Motor</h2>
+    <div class="split" style="grid-template-columns:640px 1fr;flex:0 0 auto;align-items:center;">
+      <figure class="fig">
+        <svg class="ladder" data-ladder="capstart" viewBox="0 0 520 300" role="img" aria-label="Circuit: the main winding in one branch; the auxiliary winding in series with a start capacitor and a centrifugal switch in the other"></svg>
+        <figcaption class="fig-caption">C start = start capacitor<br>CS = centrifugal switch</figcaption>
+      </figure>
+      <div>
+        <p class="slide-intro">A <span class="pc">capacitor</span> in series with AUX pushes its current to peak nearly <strong>90&deg;</strong> ahead of MAIN. That is close to the ideal shift, so the field rotates strongly and the starting torque is <span class="key">high</span>.</p>
+        <div class="callout-warn fragment fade-up">The capacitor does <strong>not</strong> deliver an extra burst of electricity. Its job is to change the <strong>timing</strong> of the AUX current.</div>
+        <p class="pc-line con fragment fade-up"><b>Cons</b>The start capacitor and switch add cost and parts that can fail.</p>
+        <p class="pc-line use fragment fade-up"><b>Uses</b>Compressors, pumps, and machines that start under heavy load.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · PSC AND CAPACITOR START CAPACITOR RUN -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Five Starting Designs · Topic 03 · 4 and 5 of 5</span>
+    <h2>Keeping a <span class="accent">Capacitor</span> While Running</h2>
+    <div class="row-2">
+      <div class="card">
+        <span class="card-name">Permanent split capacitor (PSC)</span>
+        <svg class="ladder" data-ladder="psc" viewBox="0 0 520 300" style="width:100%;height:auto;" role="img" aria-label="Circuit: main winding in one branch; auxiliary winding in series with a run capacitor, with no switch, in the other"></svg>
+        <p class="card-body">A smaller <span class="pc">run capacitor</span> stays connected all the time. Quiet and efficient, but <strong>low to moderate</strong> starting torque. Used in fans and blowers.</p>
+      </div>
+      <div class="card fragment fade-up">
+        <span class="card-name">Capacitor start capacitor run (CSCR)</span>
+        <svg class="ladder" data-ladder="cscr" viewBox="0 0 520 300" style="width:100%;height:auto;" role="img" aria-label="Circuit: main winding in one branch; auxiliary winding in series with a run capacitor, which has a start capacitor and centrifugal switch in parallel with it"></svg>
+        <p class="card-body">A <span class="pc">start capacitor</span> for a strong start, then a <span class="pc">run capacitor</span> for efficient running. Best of both, at the <strong>highest cost</strong>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · COMPARISON -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Five Starting Designs · Topic 03 · Comparison</span>
+    <h2>Comparing the <span class="accent">Five Designs</span></h2>
+    <table class="data-table" style="font-size:var(--body);">
+      <thead><tr><th>Design</th><th>Starting torque</th><th>Efficiency</th><th>Extra parts</th><th>Typical use</th></tr></thead>
+      <tbody>
+        <tr><td>Shaded pole</td><td>Very low</td><td>Poor</td><td>Shading rings</td><td>Small fans</td></tr>
+        <tr><td>Split phase</td><td>Moderate</td><td>Fair</td><td>AUX, switch</td><td>Small pumps, tools</td></tr>
+        <tr><td>Capacitor start</td><td><strong>High</strong></td><td>Fair</td><td>AUX, C start, switch</td><td>Compressors</td></tr>
+        <tr><td>PSC</td><td>Low to moderate</td><td>Good</td><td>AUX, C run</td><td>Fans, blowers</td></tr>
+        <tr><td>CSCR</td><td><strong>High</strong></td><td><strong>Best</strong></td><td>AUX, both C, switch</td><td>Large single phase loads</td></tr>
+      </tbody>
+    </table>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);">These are <strong>relative categories</strong>, not specifications: real values depend on the motor&#39;s design and rating. Notice that <strong>no design wins every column</strong>. Choosing one is a tradeoff.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 16 · INVESTIGATION TASKS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Virtual Activity 2 · Motor Starting Lab · Tasks</span>
+    <h2>The Motor <span class="accent">Starting Challenge</span></h2>
+    <div class="poe-row">
+      <span class="poe-chip"><b>P</b>redict whether it will start</span>
+      <span class="poe-chip"><b>O</b>bserve the torque chart and status</span>
+      <span class="poe-chip"><b>E</b>xplain using torque, cost, and efficiency</span>
+    </div>
+    <div class="task-grid">
+      <div class="task-item"><span class="t-key">A</span><span>Try to start the fan with the main winding only.</span></div>
+      <div class="task-item"><span class="t-key">B</span><span>Shaded pole: start the fan, then the blower.</span></div>
+      <div class="task-item"><span class="t-key">C</span><span>Split phase, then capacitor start, on the compressor.</span></div>
+      <div class="task-item"><span class="t-key">D</span><span>Compare PSC and capacitor start on the blower.</span></div>
+      <div class="task-item"><span class="t-key">E</span><span>Which designs can start the heavy conveyor?</span></div>
+      <div class="task-item"><span class="t-key">F</span><span>Turn on the open capacitor fault. What happens?</span></div>
+      <div class="task-item" style="grid-column:span 2;"><span class="t-key">G</span><span>Choose a design for the fan, the compressor, and the blower, and record your evidence.</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 17 · MOTOR STARTING LAB (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="padding-top:44px;padding-bottom:40px;">
+    <span class="slide-tag" style="margin-bottom:10px;">Virtual Activity 2 · Motor Starting Lab · Illustrative model, not motor specifications</span>
+    <div class="start-lab">
+      <div class="sl-grid">
+        <div class="sl-col">
+          <div class="sim-panel"><svg class="motor-x" data-role="motor" viewBox="-40 -20 540 500" role="img" aria-label="Motor cross section showing which windings are energized, the rotor turning, and the magnetic field arrow"></svg></div>
+          <div class="sim-panel" style="padding:6px 8px;"><svg class="ladder" data-role="ladder" viewBox="0 0 520 300" role="img" aria-label="Circuit for the selected design"></svg></div>
+          <div class="tiles sl-tiles">
+            <div class="tile is-result"><span class="t-name">Speed</span><span class="t-val" data-tile="rpm">0 RPM</span><span class="t-sub" data-tile="pct">0% of 1,800</span></div>
+            <div class="tile"><span class="t-name">Start winding</span><span class="t-val" data-tile="sw">none</span><span class="t-sub" data-tile="sw-sub">no switch</span></div>
+            <div class="tile"><span class="t-name">Efficiency</span><span class="t-val" data-tile="eff">n/a</span><span class="t-sub" data-tile="noise">hums</span></div>
+            <div class="tile"><span class="t-name">Relative cost</span><span class="t-val" data-tile="cost">n/a</span><span class="t-sub" data-tile="parts">1 part</span></div>
+          </div>
+        </div>
+        <div class="sl-col">
+          <div class="sim-panel">
+            <div class="sim-head"><span>Torque vs speed (% of rated)</span><span class="sim-note"><span class="lg-motor"></span>motor<span class="lg-load"></span>load</span></div>
+            <svg data-role="chart" viewBox="0 0 1000 340" role="img" aria-label="Chart of motor torque and load torque against speed, with the current operating point"></svg>
+          </div>
+          <div class="sim-panel">
+            <div class="ctl-row">
+              <span class="ctl-label">Design</span>
+              <span class="seg" data-role="design">
+                <button class="seg-btn" type="button" data-val="main" aria-pressed="true">Main only</button>
+                <button class="seg-btn" type="button" data-val="shaded" aria-pressed="false">Shaded</button>
+                <button class="seg-btn" type="button" data-val="split" aria-pressed="false">Split</button>
+                <button class="seg-btn" type="button" data-val="capstart" aria-pressed="false">Cap start</button>
+                <button class="seg-btn" type="button" data-val="psc" aria-pressed="false">PSC</button>
+                <button class="seg-btn" type="button" data-val="cscr" aria-pressed="false">CSCR</button>
+              </span>
+            </div>
+            <div class="ctl-row">
+              <span class="ctl-label">Load</span>
+              <span class="seg" data-role="load">
+                <button class="seg-btn" type="button" data-val="fan" aria-pressed="true">Small fan</button>
+                <button class="seg-btn" type="button" data-val="blower" aria-pressed="false">Blower</button>
+                <button class="seg-btn" type="button" data-val="compressor" aria-pressed="false">Compressor</button>
+                <button class="seg-btn" type="button" data-val="conveyor" aria-pressed="false">Conveyor</button>
+              </span>
+            </div>
+            <div class="ctl-row">
+              <button class="sim-btn" data-role="start" type="button">Start</button>
+              <button class="sim-btn stop-btn" data-role="stop" type="button">Stop</button>
+              <button class="sim-btn alt" data-role="reset" type="button">Reset</button>
+              <label class="chk"><input type="checkbox" data-role="fault"> Fault: open capacitor</label>
+            </div>
+          </div>
+          <div class="status-row">
+            <span class="status-chip" data-role="status">READY</span>
+            <div class="sim-feedback" data-role="feedback" aria-live="polite">Choose a design and a load, then press Start.</div>
+          </div>
+          <div class="task-pager" data-role="tasks">
+            <div class="tp-head">
+              <span class="tp-count"></span>
+              <button class="tp-nav tp-prev" type="button" aria-label="Previous task">&#9664;</button>
+              <button class="tp-nav tp-next" type="button" aria-label="Next task">&#9654;</button>
+            </div>
+            <div class="tp-text" aria-live="polite"></div>
+            <ol hidden>
+              <li><b>A.</b> Main only + Small fan: press Start. What happens, and why?</li>
+              <li><b>B.</b> Shaded pole: start the fan, then the blower. Compare their speeds.</li>
+              <li><b>C.</b> Predict, then try the compressor with Split, then Cap start.</li>
+              <li><b>D.</b> Blower: compare PSC and Cap start. Which is better for all day running?</li>
+              <li><b>E.</b> Conveyor (heavy, slow to speed up): which designs start it in time?</li>
+              <li><b>F.</b> PSC + Small fan with the open capacitor fault. What do you observe?</li>
+              <li><b>G.</b> Choose a design for the fan, compressor, and blower. Record your evidence.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 18 · JUSTIFY YOUR SELECTIONS (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:17:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"**Small ventilation fan.** Which starting design did you choose? Justify it with evidence from the Motor Starting Lab: starting torque compared with the load, efficiency, and cost.","order":0,"responseTimeLimitMs":180000},{"id":"q2","type":"free-response","text":"**Workshop air compressor.** Which starting design did you choose? Justify it with evidence from the Motor Starting Lab: starting torque compared with the load, efficiency, and cost.","order":1,"responseTimeLimitMs":180000},{"id":"q3","type":"free-response","text":"**Continuous duty ventilation blower.** Which starting design did you choose? Justify it with evidence from the Motor Starting Lab: starting torque compared with the load, efficiency, and cost.","order":2,"responseTimeLimitMs":180000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Virtual Activity 2 · Engineering Justification</span>
+    <h2>Justify Your <span class="accent">Selections</span></h2>
+    <p class="slide-intro">For each application, name the starting design you chose and justify it with evidence from the lab: <strong>starting torque compared with the load</strong>, <strong>efficiency</strong>, and <strong>cost</strong>.</p>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>Small ventilation fan</div>
+      <div class="frq-box"><span class="q-num">2</span>Workshop air compressor</div>
+      <div class="frq-box"><span class="q-num">3</span>Continuous duty ventilation blower</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 19 · EXIT TICKET (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:18:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Why does a single phase induction motor need a starting mechanism?","order":0,"responseTimeLimitMs":120000},{"id":"q2","type":"multiple-choice","text":"What does the capacitor accomplish in a capacitor start motor?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"It stores energy and releases a burst of electricity to kick the rotor","isCorrect":false},{"id":"q2b","text":"It raises the supply voltage during startup","isCorrect":false},{"id":"q2c","text":"It filters electrical noise out of the supply","isCorrect":false},{"id":"q2d","text":"It shifts the timing of the auxiliary winding current, so the two windings make a rotating field","isCorrect":true}]},{"id":"q3","type":"free-response","text":"Why might a shaded pole motor be selected even though it is inefficient?","order":2,"responseTimeLimitMs":120000},{"id":"q4","type":"multiple-choice","text":"Which starting design is appropriate for a load that needs high starting torque, such as an air compressor?","order":3,"responseTimeLimitMs":45000,"options":[{"id":"q4a","text":"Capacitor start","isCorrect":true},{"id":"q4b","text":"Shaded pole","isCorrect":false},{"id":"q4c","text":"Permanent split capacitor (PSC)","isCorrect":false},{"id":"q4d","text":"Main winding only","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Exit <span class="accent">Ticket</span></h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>Why does a single phase induction motor need a starting mechanism?</div>
+      <div class="frq-box"><span class="q-num">2</span>What does the capacitor accomplish in a capacitor start motor?</div>
+      <div class="frq-box"><span class="q-num">3</span>Why might a shaded pole motor be selected even though it is inefficient?</div>
+      <div class="frq-box"><span class="q-num">4</span>Which starting design is appropriate for a load that needs high starting torque?</div>
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+var NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+}
+
+// Static waveform paths (same helper as Day 1).
+function drawWaves() {
+    var FN = { sin: function (x) { return Math.sin(x); } };
+    document.querySelectorAll('path[data-wave]').forEach(function (p) {
+        var d = p.dataset, f = FN[d.wave];
+        var x0 = +d.x0, x1 = +d.x1, mid = +d.mid, amp = +d.amp, cyc = +d.cycles;
+        var lag = (+d.phase || 0) * Math.PI / 180;
+        var pts = [];
+        for (var i = 0; i <= 240; i++) {
+            var u = i / 240;
+            pts.push((x0 + u * (x1 - x0)).toFixed(1) + ' ' + (mid - amp * f(u * cyc * 2 * Math.PI - lag)).toFixed(1));
+        }
+        p.setAttribute('d', 'M' + pts.join(' L'));
+    });
+}
+
+// Static drawings that are easier to compute than to hand-place: the stator
+// slots and rotor bars on slide 5, and the squirrel cage on slide 6.
+function drawStaticFigures() {
+    var slots = document.getElementById('d2-slots'), bars = document.getElementById('d2-bars');
+    for (var i = 0; i < 24; i++) {
+        var a = i * 15;
+        svgEl('rect', { x: 251, y: 82, width: 18, height: 30, rx: 3, transform: 'rotate(' + a + ' 260 260)', fill: 'var(--ph-a)', 'fill-opacity': 0.8 }, slots);
+    }
+    for (var j = 0; j < 18; j++) {
+        var b = j * 20 * Math.PI / 180;
+        svgEl('circle', { cx: 260 + 128 * Math.sin(b), cy: 260 - 128 * Math.cos(b), r: 9, fill: '#9aa5ad' }, bars);
+    }
+    // Squirrel cage: end rings at x = 140 and 540, bars every 30 degrees.
+    var cage = document.getElementById('d2-cage');
+    var RY = 120, RX = 38, CY = 170;
+    for (var k = 0; k < 12; k++) {
+        var t = k * 30 * Math.PI / 180;
+        var y = CY - RY * Math.cos(t), dx = RX * Math.sin(t), front = Math.sin(t) > -0.01;
+        svgEl('path', { d: 'M' + (140 + dx) + ' ' + y + ' H' + (540 + dx), stroke: '#9aa5ad', 'stroke-width': front ? 7 : 4, opacity: front ? 1 : 0.35 }, cage);
+    }
+    [140, 540].forEach(function (x) {
+        svgEl('ellipse', { cx: x, cy: CY, rx: RX, ry: RY, fill: 'none', stroke: '#c8d0d6', 'stroke-width': 10 }, cage);
+    });
+}
+
+// ─── Ladder schematics ───────────────────────────────────────
+// Draws the AC source and two parallel branches (MAIN, and AUX with its
+// starting parts) into an <svg class="ladder" viewBox="0 0 520 300">.
+// opts.switchOpen draws the centrifugal switch open and dims the AUX branch.
+var LADDERS = {
+    main:     { aux: null },
+    shaded:   { aux: null, note: 'shading rings on the poles' },
+    split:    { aux: [{ t: 'coil', label: 'AUX' }, { t: 'res', label: 'high R' }, { t: 'sw', label: 'CS' }] },
+    capstart: { aux: [{ t: 'coil', label: 'AUX' }, { t: 'cap', label: 'C start' }, { t: 'sw', label: 'CS' }] },
+    psc:      { aux: [{ t: 'coil', label: 'AUX' }, { t: 'cap', label: 'C run' }] },
+    cscr:     { aux: [{ t: 'coil', label: 'AUX' }, { t: 'par', rows: [[{ t: 'cap', label: 'C run' }], [{ t: 'cap', label: 'C start' }, { t: 'sw', label: 'CS' }]] }] },
+};
+var LW = { coil: 110, res: 80, cap: 90, sw: 80 };
+function drawLadder(svg, key, opts) {
+    opts = opts || {};
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var spec = LADDERS[key], L = 40, R = 480, YM = 112, YA = 214;
+    function width(item) {
+        if (item.t === 'par') return Math.max.apply(null, item.rows.map(rowWidth)) + 40;
+        return LW[item.t];
+    }
+    function rowWidth(row) { return row.reduce(function (s, it) { return s + width(it); }, 0) + 16 * (row.length - 1); }
+    // below: put the label under the symbol (used for the lower row of a parallel pair)
+    function sym(item, x, y, g, branch, below) {
+        var w = width(item), x0 = x - w / 2, ly = below ? y + 46 : y - 26;
+        if (item.t === 'coil') {
+            var d = 'M' + x0 + ' ' + y + ' h11';
+            for (var i = 0; i < 4; i++) d += ' a11 11 0 0 1 22 0';
+            d += ' h11';
+            svgEl('path', { d: d, class: branch === 'main' ? 'l-main' : 'l-aux' }, g);
+            svgEl('text', { x: x, y: y - 22, class: 'l-lbl ' + (branch === 'main' ? 'l-lbl-main' : 'l-lbl-aux') }, g).textContent = item.label;
+        } else if (item.t === 'res') {
+            svgEl('path', { d: 'M' + x0 + ' ' + y + ' h10 l5 -12 l10 24 l10 -24 l10 24 l10 -24 l10 24 l5 -12 h10', class: 'l-res' }, g);
+            svgEl('text', { x: x, y: ly, class: 'l-lbl' }, g).textContent = item.label;
+        } else if (item.t === 'cap') {
+            svgEl('path', { d: 'M' + x0 + ' ' + y + ' H' + (x - 7) + ' M' + (x - 7) + ' ' + (y - 18) + ' V' + (y + 18) + ' M' + (x + 7) + ' ' + (y - 18) + ' V' + (y + 18) + ' M' + (x + 7) + ' ' + y + ' H' + (x0 + w), class: 'l-cap' }, g);
+            svgEl('text', { x: x, y: ly, class: 'l-lbl l-lbl-cap' }, g).textContent = item.label;
+        } else if (item.t === 'sw') {
+            var open = !!opts.switchOpen;
+            svgEl('path', { d: 'M' + x0 + ' ' + y + ' H' + (x - 16) + ' M' + (x + 16) + ' ' + y + ' H' + (x0 + w), class: 'lw' }, g);
+            svgEl('path', { d: 'M' + (x - 16) + ' ' + y + ' L' + (x + 16) + ' ' + (open ? y - 20 : y - 3), class: 'l-sw' }, g);
+            svgEl('circle', { cx: x - 16, cy: y, r: 4, class: 'l-dot' }, g);
+            svgEl('circle', { cx: x + 16, cy: y, r: 4, class: 'l-dot' }, g);
+            svgEl('text', { x: x, y: ly, class: 'l-lbl' }, g).textContent = item.label;
+        } else if (item.t === 'par') {
+            var rows = item.rows, dy = 28, xa = x0 + 8, xb = x0 + w - 8;
+            svgEl('path', { d: 'M' + x0 + ' ' + y + ' H' + xa + ' M' + xb + ' ' + y + ' H' + (x0 + w) + ' M' + xa + ' ' + (y - dy) + ' V' + (y + dy) + ' M' + xb + ' ' + (y - dy) + ' V' + (y + dy), class: 'lw' }, g);
+            rows.forEach(function (row, r) { drawRow(row, xa, xb, y + (r === 0 ? -dy : dy), g, branch, r === 1); });
+        }
+    }
+    function drawRow(row, xa, xb, y, g, branch, below) {
+        var w = rowWidth(row), x = (xa + xb) / 2 - w / 2, wires = 'M' + xa + ' ' + y + ' H' + x;
+        row.forEach(function (it, i) {
+            var iw = width(it);
+            sym(it, x + iw / 2, y, g, branch, below);
+            x += iw;
+            if (i < row.length - 1) { wires += ' M' + x + ' ' + y + ' H' + (x + 16); x += 16; }
+        });
+        wires += ' M' + x + ' ' + y + ' H' + xb;
+        svgEl('path', { d: wires, class: 'lw' }, g);
+    }
+    // Source and rails
+    svgEl('path', { d: 'M' + L + ' ' + YM + ' V36 H238 M282 36 H' + R + ' V' + YM, class: 'lw' }, svg);
+    svgEl('circle', { cx: 260, cy: 36, r: 22, class: 'l-src' }, svg);
+    svgEl('path', { d: 'M246 36 q7 -12 14 0 t14 0', class: 'lw' }, svg);
+    var mainG = svgEl('g', {}, svg);
+    drawRow([{ t: 'coil', label: 'MAIN' }], L, R, YM, mainG, 'main');
+    if (spec.aux) {
+        svgEl('path', { d: 'M' + L + ' ' + YM + ' V' + YA + ' M' + R + ' ' + YM + ' V' + YA, class: 'lw' }, svg);
+        var auxG = svgEl('g', { class: 'aux-branch' + (opts.switchOpen || opts.auxDead ? ' off' : '') }, svg);
+        drawRow(spec.aux, L, R, YA, auxG, 'aux');
+    } else if (spec.note) {
+        svgEl('text', { x: 260, y: 214, class: 'l-note' }, svg).textContent = spec.note;
+    }
+}
+
+// ─── Motor cross section ─────────────────────────────────────
+// Draws stator, MAIN coils (top and bottom), AUX coils (left and right),
+// optional shading rings, a cage rotor, and the field arrow B into
+// <svg class="motor-x" viewBox="-40 -20 540 500">. Returns setters.
+function buildMotorDrawing(svg) {
+    var CX = 230, CY = 230, RB = 150;
+    function polar(r, deg) { var a = deg * Math.PI / 180; return [CX + r * Math.sin(a), CY - r * Math.cos(a)]; }
+    svgEl('circle', { cx: CX, cy: CY, r: 176, class: 'stator' }, svg);
+    svgEl('circle', { cx: CX, cy: CY, r: 202, class: 'stator-edge' }, svg);
+    svgEl('circle', { cx: CX, cy: CY, r: 150, class: 'stator-edge' }, svg);
+    function coils(angles, cls, g) {
+        return angles.map(function (a) {
+            var c = svgEl('g', { transform: 'rotate(' + a + ' ' + CX + ' ' + CY + ')' }, g);
+            return svgEl('rect', { x: CX - 32, y: CY - 168, width: 64, height: 34, rx: 6, class: 'coil ' + cls }, c);
+        });
+    }
+    var mainG = svgEl('g', {}, svg), auxG = svgEl('g', {}, svg), shadeG = svgEl('g', {}, svg);
+    var mainCoils = coils([0, 180], 'coil-main', mainG), auxCoils = coils([90, 270], 'coil-aux', auxG);
+    svgEl('text', { x: CX, y: CY - 226, class: 'wlbl', fill: 'var(--ph-a)' }, mainG).textContent = 'MAIN';
+    svgEl('text', { x: CX + 236, y: CY, class: 'wlbl', fill: 'var(--ph-b)' }, auxG).textContent = 'AUX';
+    svgEl('text', { x: CX - 236, y: CY, class: 'wlbl', fill: 'var(--ph-b)' }, auxG).textContent = 'AUX';
+    [28, 208].forEach(function (a) {
+        var p = polar(156, a);
+        svgEl('circle', { cx: p[0], cy: p[1], r: 13, class: 'shade-ring' }, shadeG);
+    });
+    var rotorG = svgEl('g', {}, svg);
+    svgEl('circle', { cx: CX, cy: CY, r: 120, class: 'rotor-body' }, rotorG);
+    for (var i = 0; i < 16; i++) {
+        var p = polar(104, i * 22.5);
+        svgEl('circle', { cx: p[0], cy: p[1], r: 8, class: 'rotor-bar' }, rotorG);
+    }
+    svgEl('circle', { cx: CX, cy: CY, r: 16, class: 'shaft' }, rotorG);
+    var trail = svgEl('polyline', { class: 'b-trail', points: '' }, svg);
+    var halvesG = svgEl('g', { class: 'halves' }, svg);
+    var hCw = svgEl('line', { class: 'half-cw', x1: CX, y1: CY, x2: CX, y2: CY }, halvesG);
+    var hCwHead = svgEl('polygon', { class: 'half-head-cw', points: '' }, halvesG);
+    var hCcw = svgEl('line', { class: 'half-ccw', x1: CX, y1: CY, x2: CX, y2: CY }, halvesG);
+    var hCcwHead = svgEl('polygon', { class: 'half-head-ccw', points: '' }, halvesG);
+    var arrow = svgEl('line', { class: 'b-arrow', x1: CX, y1: CY, x2: CX, y2: CY }, svg);
+    var head = svgEl('polygon', { class: 'b-head', points: '' }, svg);
+    var bLbl = svgEl('text', { class: 'b-lbl', x: CX, y: CY }, svg);
+    bLbl.textContent = 'B';
+    var trailPts = [];
+
+    function point(line, headEl, x, y, hs) {
+        var tx = CX + x, ty = CY + y, len = Math.hypot(x, y);
+        line.setAttribute('x2', tx.toFixed(1));
+        line.setAttribute('y2', ty.toFixed(1));
+        if (len < 6) { headEl.setAttribute('points', ''); return; }
+        var ux = x / len, uy = y / len, px = -uy, py = ux;
+        headEl.setAttribute('points', [
+            [tx + ux * hs, ty + uy * hs],
+            [tx - ux * hs * 0.6 + px * hs * 0.8, ty - uy * hs * 0.6 + py * hs * 0.8],
+            [tx - ux * hs * 0.6 - px * hs * 0.8, ty - uy * hs * 0.6 - py * hs * 0.8],
+        ].map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' '));
+    }
+    return {
+        setAux: function (present, lit) {
+            auxG.style.display = present ? '' : 'none';
+            auxCoils.forEach(function (c) { c.setAttribute('fill-opacity', lit ? 0.75 : 0.08); });
+            auxG.classList.toggle('aux-off', present && !lit);
+        },
+        setMain: function (lit) { mainCoils.forEach(function (c) { c.setAttribute('fill-opacity', lit ? 0.75 : 0.08); }); },
+        setShaded: function (on) { shadeG.style.display = on ? '' : 'none'; },
+        setRotor: function (deg, jitter) {
+            var j = jitter ? (Math.random() - 0.5) * 3 : 0;
+            rotorG.setAttribute('transform', 'translate(' + j.toFixed(1) + ' 0) rotate(' + deg.toFixed(2) + ' ' + CX + ' ' + CY + ')');
+        },
+        // Field in units of the full arrow length (1 = RB px): +y is up.
+        setField: function (bx, by, show) {
+            var x = bx * RB, y = -by * RB;
+            arrow.style.display = head.style.display = bLbl.style.display = show ? '' : 'none';
+            point(arrow, head, x, y, 18);
+            var len = Math.hypot(x, y) || 1;
+            bLbl.setAttribute('x', (CX + x + x / len * 30).toFixed(1));
+            bLbl.setAttribute('y', (CY + y + y / len * 30).toFixed(1));
+            bLbl.style.visibility = len > 30 ? 'visible' : 'hidden';
+            if (show) {
+                trailPts.push((CX + x).toFixed(1) + ',' + (CY + y).toFixed(1));
+                if (trailPts.length > 150) trailPts.shift();
+            } else trailPts = [];
+            trail.setAttribute('points', trailPts.join(' '));
+        },
+        clearTrail: function () { trailPts = []; trail.setAttribute('points', ''); },
+        // Two half-size counter-rotating fields at electrical angle wt.
+        setHalves: function (wt) {
+            var h = RB / 2;
+            point(hCw, hCwHead, h * Math.sin(wt), -h * Math.cos(wt), 13);
+            point(hCcw, hCcwHead, -h * Math.sin(wt), -h * Math.cos(wt), 13);
+        },
+    };
+}
+
+// The field each design makes: AUX current relative to MAIN (a = size,
+// phi = phase lead in degrees). B = cos(wt) up + a cos(wt - phi) right.
+function fieldAt(wt, a, phiDeg) {
+    var phi = phiDeg * Math.PI / 180;
+    return [a * Math.cos(wt - phi), Math.cos(wt)];
+}
+
+var SIMS = [];
+var FIELD_W = 2 * Math.PI * 0.5;  // 60 Hz shown as 0.5 Hz (120x slower)
+
+// ─── Field viewer (slides 7 to 9) ────────────────────────────
+function buildFieldViz(root) {
+    var split = root.dataset.mode === 'split';
+    var svg = root.querySelector('[data-role="motor"]');
+    var m = buildMotorDrawing(svg);
+    var st = { running: true, wt: 0, shift: 0 };
+    m.setShaded(false);
+    m.setMain(true);
+    m.setAux(split, split);
+    m.setRotor(0, false);
+
+    function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
+    function render() {
+        var a = split ? 1 : 0;
+        var B = fieldAt(st.wt, a, st.shift);
+        m.setField(B[0], B[1], true);
+        m.setHalves(st.wt);
+        var mag = Math.abs(Math.cos(st.wt)) * 0.75 + 0.15;
+        m.setMain(true);
+        if (split) {
+            var torque = Math.round(Math.sin(st.shift * Math.PI / 180) * 100);
+            var t = root.querySelector('[data-tile="torque"]'), f = root.querySelector('[data-tile="field"]');
+            t.textContent = torque + '%';
+            f.textContent = st.shift === 0 ? 'Pulsating' : st.shift === 90 ? 'Rotating' : 'Elliptical';
+        }
+    }
+    q('run').addEventListener('click', function () {
+        st.running = !st.running;
+        this.textContent = st.running ? 'Pause' : 'Run';
+    });
+    if (q('halves')) q('halves').addEventListener('change', function () { svg.classList.toggle('show-halves', this.checked); });
+    if (q('shift')) root.querySelectorAll('[data-role="shift"] .seg-btn').forEach(function (b) {
+        b.addEventListener('click', function () {
+            st.shift = +b.dataset.val;
+            root.querySelectorAll('[data-role="shift"] .seg-btn').forEach(function (o) { o.setAttribute('aria-pressed', o === b); });
+            m.clearTrail();
+            render();
+        });
+    });
+    render();
+    SIMS.push({ root: root, tick: function (dt) { if (!st.running) return; st.wt += FIELD_W * dt; render(); } });
+}
+
+// ─── Motor Starting Lab ──────────────────────────────────────
+// Illustrative torque model, in % of rated torque against speed s (fraction
+// of the 1,800 RPM synchronous speed). A curve [T0, Tbd] rises from T0 at
+// standstill to Tbd at s = 0.9, then falls linearly to 0 at s = 1. Designs
+// with a centrifugal switch use their start curve until s = 0.75 and the
+// MAIN-only run curve after. The rotor accelerates at (Tm - Tl) / (100 J)
+// per second. Start windings overheat if left on longer than their limit.
+var DESIGNS = {
+    main:     { name: 'Main only',       start: [0, 220],   run: [0, 220],  sw: false, field: [0, 0],    eff: null, noise: 'hums',     cost: null,    parts: 1 },
+    shaded:   { name: 'Shaded pole',     start: [30, 130],  run: [30, 130], sw: false, field: [0.35, 50], eff: 25, noise: 'quiet',    cost: '$',     parts: 2, shaded: true },
+    split:    { name: 'Split phase',     start: [150, 220], run: [0, 220],  sw: true, limit: 3, field: [0.8, 30], runField: [0, 0], eff: 60, noise: 'moderate', cost: '$$', parts: 4 },
+    capstart: { name: 'Capacitor start', start: [300, 280], run: [0, 220],  sw: true, limit: 5, field: [1, 85], runField: [0, 0], eff: 62, noise: 'moderate', cost: '$$$', parts: 5, cap: true },
+    psc:      { name: 'PSC',             start: [60, 180],  run: [60, 180], sw: false, field: [0.8, 70], eff: 72, noise: 'quiet',    cost: '$$',    parts: 3, cap: true },
+    cscr:     { name: 'CSCR',            start: [300, 280], run: [60, 240], sw: true, limit: 5, field: [1, 85], runField: [0.8, 70], eff: 78, noise: 'quiet', cost: '$$$$', parts: 6, cap: true },
+};
+var LOADS = {
+    fan:        { name: 'small fan',    T: function (s) { return 8 + 60 * s * s; },   J: 0.3 },
+    blower:     { name: 'blower',       T: function (s) { return 12 + 85 * s * s; },  J: 0.6 },
+    compressor: { name: 'compressor',   T: function (s) { return 170 - 75 * s; },     J: 0.5 },
+    conveyor:   { name: 'conveyor',     T: function (s) { return 130 - 30 * s; },     J: 2.5 },
+};
+function curveT(c, s) {
+    if (s < 0.9) return c[0] + (c[1] - c[0]) * Math.pow(s / 0.9, 2);
+    return Math.max(0, c[1] * (1 - s) / 0.1);
+}
+
+function buildStartLab(root) {
+    function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
+    var m = buildMotorDrawing(q('motor'));
+    var chart = q('chart'), ladder = q('ladder');
+    var X0 = 110, X1 = 970, Y0 = 266, YH = 236, TMAX = 320;
+    function cx(s) { return X0 + s * (X1 - X0); }
+    function cy(t) { return Y0 - Math.min(t, TMAX) / TMAX * YH; }
+
+    // Chart frame
+    [0, 100, 200, 300].forEach(function (t) {
+        svgEl('path', { d: 'M' + X0 + ' ' + cy(t) + ' H' + X1, class: t ? 'dw-grid' : 'dw-axis' }, chart);
+        svgEl('text', { x: X0 - 10, y: cy(t) + 8, class: 'chart-lbl', 'text-anchor': 'end' }, chart).textContent = t + '%';
+    });
+    [0, 25, 50, 75, 100].forEach(function (p) {
+        svgEl('text', { x: cx(p / 100), y: Y0 + 34, class: 'chart-lbl', 'text-anchor': 'middle' }, chart).textContent = p + '%';
+    });
+    svgEl('text', { x: (X0 + X1) / 2, y: Y0 + 68, class: 'chart-lbl', 'text-anchor': 'middle' }, chart).textContent = 'speed, % of synchronous';
+    var motorPath = svgEl('path', { class: 'curve-motor' }, chart);
+    var jumpPath = svgEl('path', { class: 'curve-motor-jump' }, chart);
+    var loadPath = svgEl('path', { class: 'curve-load' }, chart);
+    var opLine = svgEl('line', { class: 'op-line', y1: cy(TMAX), y2: Y0 }, chart);
+    var opLoad = svgEl('circle', { class: 'op-load', r: 9 }, chart);
+    var opMotor = svgEl('circle', { class: 'op-motor', r: 10 }, chart);
+
+    var st;
+    function reset() {
+        st = { design: st ? st.design : 'main', load: st ? st.load : 'fan', fault: st ? st.fault : false,
+               powered: false, s: 0, wt: 0, rot: 0, swOpen: false, swTime: 0, stallTime: 0, settle: 0,
+               elapsed: 0, state: 'READY', startedIn: null, msg: null };
+    }
+    reset();
+
+    function D() { return DESIGNS[st.design]; }
+    function faulted() { return st.fault && D().cap; }
+    // Curves after applying the open capacitor fault: the AUX current is no
+    // longer shifted (capacitor start, PSC) or only the run capacitor works (CSCR).
+    function curves() {
+        var d = D();
+        if (!faulted()) return { start: d.start, run: d.run };
+        if (st.design === 'cscr') return { start: d.run, run: d.run };
+        return { start: [0, 220], run: [0, 220] };
+    }
+    function motorT(s, swOpen) {
+        var c = curves();
+        return curveT(D().sw && swOpen ? c.run : c.start, s);
+    }
+    function auxField() {
+        var d = D();
+        if (faulted()) return st.design === 'cscr' ? d.runField : [0, 0];
+        if (d.sw && st.swOpen) return d.runField;
+        return d.field;
+    }
+
+    function drawCurves() {
+        var d = D(), L = LOADS[st.load], c = curves();
+        var mp = [], lp = [];
+        for (var i = 0; i <= 100; i++) {
+            var s = i / 100;
+            lp.push(cx(s).toFixed(1) + ' ' + cy(L.T(s)).toFixed(1));
+        }
+        if (d.sw) {
+            for (var a = 0; a <= 75; a++) mp.push((a ? 'L' : 'M') + cx(a / 100).toFixed(1) + ' ' + cy(curveT(c.start, a / 100)).toFixed(1));
+            for (var b = 75; b <= 100; b++) mp.push((b === 75 ? 'M' : 'L') + cx(b / 100).toFixed(1) + ' ' + cy(curveT(c.run, b / 100)).toFixed(1));
+            jumpPath.setAttribute('d', 'M' + cx(0.75) + ' ' + cy(curveT(c.start, 0.75)) + ' V' + cy(curveT(c.run, 0.75)));
+        } else {
+            for (var k = 0; k <= 100; k++) mp.push((k ? 'L' : 'M') + cx(k / 100).toFixed(1) + ' ' + cy(curveT(c.start, k / 100)).toFixed(1));
+            jumpPath.setAttribute('d', '');
+        }
+        motorPath.setAttribute('d', mp.join(' '));
+        loadPath.setAttribute('d', 'M' + lp.join(' L'));
+    }
+
+    function redrawLadder() {
+        drawLadder(ladder, st.design, { switchOpen: st.swOpen, auxDead: faulted() && st.design !== 'cscr' });
+    }
+
+    function setText(sel, txt) { var e = root.querySelector(sel); if (e.textContent !== txt) e.textContent = txt; }
+
+    function render() {
+        var d = D(), L = LOADS[st.load];
+        var f = auxField();
+        var B = st.powered ? fieldAt(st.wt, f[0], f[1]) : [0, 0];
+        m.setShaded(!!d.shaded);
+        m.setMain(st.powered);
+        m.setAux(!!LADDERS[st.design].aux, st.powered && f[0] > 0);
+        m.setField(B[0], B[1], st.powered);
+        m.setRotor(st.rot, st.state === 'STALLED');
+        var tm = motorT(st.s, st.swOpen), tl = L.T(st.s);
+        opLine.setAttribute('x1', cx(st.s)); opLine.setAttribute('x2', cx(st.s));
+        opMotor.setAttribute('cx', cx(st.s)); opMotor.setAttribute('cy', cy(tm));
+        opLoad.setAttribute('cx', cx(st.s)); opLoad.setAttribute('cy', cy(tl));
+        opMotor.style.display = st.powered ? '' : 'none';
+        var rpm = Math.round(st.s * 1800);
+        setText('[data-tile="rpm"]', rpm.toLocaleString() + ' RPM');
+        setText('[data-tile="pct"]', Math.round(st.s * 100) + '% of 1,800');
+        if (d.sw) {
+            setText('[data-tile="sw"]', st.swTime.toFixed(1) + ' / ' + d.limit + ' s');
+            setText('[data-tile="sw-sub"]', st.swOpen ? 'switch open' : 'switch closed');
+        } else {
+            setText('[data-tile="sw"]', LADDERS[st.design].aux ? 'always on' : 'none');
+            setText('[data-tile="sw-sub"]', 'no switch');
+        }
+        setText('[data-tile="eff"]', d.eff ? d.eff + '%' : 'n/a');
+        setText('[data-tile="noise"]', d.noise);
+        setText('[data-tile="cost"]', d.cost || 'n/a');
+        setText('[data-tile="parts"]', d.parts + (d.parts === 1 ? ' part' : ' parts'));
+        var chip = q('status');
+        chip.textContent = st.state;
+        chip.className = 'status-chip ' + ({ RUNNING: 'ok', STARTING: 'busy', OVERLOADED: 'caution', STALLED: 'bad', TRIPPED: 'bad', COASTING: 'busy' }[st.state] || '');
+    }
+
+    function say(msg, cls) {
+        var fb = q('feedback');
+        if (fb.textContent !== msg) fb.textContent = msg;
+        fb.className = 'sim-feedback' + (cls ? ' ' + cls : '');
+    }
+
+    function trip(msg) {
+        st.powered = false;
+        st.state = 'TRIPPED';
+        say(msg, 'bad');
+    }
+
+    function step(dt) {
+        var d = D(), L = LOADS[st.load];
+        st.wt += FIELD_W * dt;
+        st.rot += st.s * 180 * dt;   // 1,800 RPM shown as 0.5 rev/s
+        if (!st.powered) {
+            if (st.s > 0) {
+                st.s = Math.max(0, st.s - (L.T(st.s) + 10) / (100 * L.J) * dt);
+                if (st.s < 0.6) st.swOpen = false;
+                if (st.state !== 'TRIPPED') st.state = st.s > 0 ? 'COASTING' : 'STOPPED';
+            }
+            return;
+        }
+        st.elapsed += dt;
+        var tm = motorT(st.s, st.swOpen), tl = L.T(st.s);
+        if (d.sw && !st.swOpen) {
+            st.swTime += dt;
+            if (st.swTime > d.limit) {
+                trip(st.s < 0.01
+                    ? 'Stalled: ' + Math.round(tm) + '% starting torque, but the ' + L.name + ' needs ' + Math.round(tl) + '%. The start winding overheated after ' + d.limit + ' s and tripped.'
+                    : 'Too slow: it never reached 75% speed, so the switch never opened. The start winding overheated after ' + d.limit + ' s and tripped.');
+                return;
+            }
+        }
+        if (st.s <= 0.001 && tm <= tl) {
+            st.s = 0;
+            st.state = 'STALLED';
+            st.stallTime += dt;
+            var why = (st.design === 'main' || (faulted() && st.design !== 'cscr'))
+                ? 'Humming, not turning: the field only pulsates, so the starting torque is 0%.'
+                : 'Stalled: ' + Math.round(tm) + '% starting torque, but the ' + L.name + ' needs ' + Math.round(tl) + '% to break away.';
+            say(why, 'bad');
+            if (st.stallTime > 4) trip(why + ' The thermal protector tripped after 4 s.');
+            return;
+        }
+        var ds = (tm - tl) / (100 * L.J) * dt;
+        st.s = Math.min(0.999, Math.max(0, st.s + ds));
+        if (d.sw && !st.swOpen && st.s >= 0.75) {
+            st.swOpen = true;
+            redrawLadder();
+            drawCurves();
+        }
+        if (Math.abs(tm - tl) < 4 && st.s > 0.5) st.settle += dt; else st.settle = 0;
+        if (st.settle > 0.6) {
+            if (st.startedIn === null) st.startedIn = st.elapsed;
+            var rpm = Math.round(st.s * 1800).toLocaleString();
+            if (st.s < 0.94) {
+                st.state = 'OVERLOADED';
+                say('Running, but slowly: ' + rpm + ' RPM. This design is too weak for the ' + L.name + '; high slip means high current and overheating over time.', 'caution');
+            } else {
+                st.state = 'RUNNING';
+                say('Running at ' + rpm + ' RPM. It reached speed in ' + st.startedIn.toFixed(1) + ' s' + (d.sw ? ', and the switch dropped the start winding at 75%.' : '.'));
+            }
+        } else {
+            st.state = 'STARTING';
+            say('Accelerating: motor torque ' + Math.round(tm) + '% against load torque ' + Math.round(tl) + '%.');
+        }
+    }
+
+    function syncButtons() {
+        root.querySelectorAll('[data-role="design"] .seg-btn').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.val === st.design); });
+        root.querySelectorAll('[data-role="load"] .seg-btn').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.val === st.load); });
+        q('fault').checked = st.fault;
+    }
+
+    function fullReset(msg) {
+        reset();
+        m.clearTrail();
+        syncButtons();
+        redrawLadder();
+        drawCurves();
+        render();
+        var d = D();
+        say(msg || (st.fault && !d.cap ? 'The ' + d.name + ' design has no capacitor, so the fault has no effect.' : 'Choose a design and a load, then press Start.'), st.fault && !d.cap ? 'caution' : '');
+    }
+
+    root.querySelectorAll('[data-role="design"] .seg-btn').forEach(function (b) {
+        b.addEventListener('click', function () { st.design = b.dataset.val; fullReset(); });
+    });
+    root.querySelectorAll('[data-role="load"] .seg-btn').forEach(function (b) {
+        b.addEventListener('click', function () { st.load = b.dataset.val; fullReset(); });
+    });
+    q('fault').addEventListener('change', function () { st.fault = this.checked; fullReset(); });
+    q('start').addEventListener('click', function () {
+        if (st.powered) return;
+        if (st.state === 'TRIPPED' || st.s === 0) fullReset();
+        st.powered = true;
+        st.state = 'STARTING';
+        say('Power on.');
+    });
+    q('stop').addEventListener('click', function () {
+        if (!st.powered) return;
+        st.powered = false;
+        st.state = 'COASTING';
+        say('Power off. The rotor coasts to a stop; the switch recloses below 60% speed.');
+    });
+    q('reset').addEventListener('click', function () { fullReset(); });
+    initTaskPager(q('tasks'));
+    fullReset();
+
+    var lastSw = false;
+    SIMS.push({
+        root: root,
+        tick: function (dt) {
+            step(dt);
+            if (st.swOpen !== lastSw) { lastSw = st.swOpen; redrawLadder(); drawCurves(); }
+            render();
+        },
+    });
+}
+
+// Prev / next pager over the hidden <li> tasks inside a .task-pager.
+function initTaskPager(el) {
+    var items = Array.prototype.map.call(el.querySelectorAll('ol > li'), function (li) { return li.innerHTML; });
+    var i = 0;
+    var count = el.querySelector('.tp-count'), text = el.querySelector('.tp-text');
+    var prev = el.querySelector('.tp-prev'), next = el.querySelector('.tp-next');
+    function show() {
+        count.textContent = 'TASK ' + (i + 1) + ' OF ' + items.length;
+        text.innerHTML = items[i];
+        prev.disabled = i === 0;
+        next.disabled = i === items.length - 1;
+    }
+    prev.addEventListener('click', function () { if (i > 0) { i--; show(); } });
+    next.addEventListener('click', function () { if (i < items.length - 1) { i++; show(); } });
+    show();
+}
+
+function startSimLoop(Reveal) {
+    var last = performance.now();
+    function frame(now) {
+        var dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        var cur = Reveal.getCurrentSlide();
+        SIMS.forEach(function (s) { if (cur && cur.contains(s.root)) s.tick(dt); });
+        requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+}
+
+drawWaves();
+drawStaticFigures();
+document.querySelectorAll('svg.ladder[data-ladder]').forEach(function (svg) { drawLadder(svg, svg.dataset.ladder); });
+document.querySelectorAll('.field-viz').forEach(buildFieldViz);
+document.querySelectorAll('.start-lab').forEach(buildStartLab);
+
+initSyncDeckReveal({
+    deckId: 'day2-starting-ac-motors',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        startSimLoop(Reveal);
+    },
+});
+</script>
+</body>
+</html>
