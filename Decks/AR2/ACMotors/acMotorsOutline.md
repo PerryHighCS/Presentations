@@ -115,20 +115,21 @@ contact, OL contact; buttons for Start, Stop, OL trip, and power loss.
 
 1. Title
 2. Essential question and objectives
-3. Hook: fan, 3D printer axis, robot arm joint
-4. Brushed DC review (commutator and brushes)
-5. Brushless construction (PM rotor, stator windings, ESC, Hall sensors)
-6. Electronic commutation: **commutation demo** in BLDC mode
-7. Stepper operation: the same demo in stepper mode (step, half step)
-8. Step angle calculation (1.8°, 200 steps, 50 steps for 90°)
-9. Resonance: step count check
-10. Open loop positioning and lost steps
-11. Servo feedback loop
-12. Resonance: what makes a system a servo
-13. Investigation tasks
-14. **Precision Under Pressure simulator**
-15. Motor selection comparison table
-16. Resonance exit ticket: toy vehicle, drone, robot arm joint, 3D printer axis
+3. Hook: fan, 3D printer axis, robot arm joint (what each needs from its motor)
+4. Resonance: why not the same motor for all three?
+5. Brushed DC review (commutator and brushes)
+6. Brushless construction (PM rotor, stator windings, ESC, Hall sensors)
+7. Electronic commutation: **commutation demo** in BLDC mode with a live Hall code table
+8. Stepper operation: the same demo in stepper mode (step, half step)
+9. Step angle calculation (1.8°, 200 steps, 50 steps for 90°, 3D printer example, microstepping)
+10. Resonance: step count check
+11. Open loop positioning and lost steps
+12. Servo feedback loop
+13. Resonance: what makes a system a servo
+14. Precision Under Pressure: the challenge (three systems, predictions)
+15. **Precision Under Pressure simulator**
+16. Motor selection comparison table
+17. Resonance exit ticket: toy vehicle, drone, robot arm joint, 3D printer axis
 
 **Precision Under Pressure:** systems are an open loop stepper, BLDC speed
 control, and a servo with an encoder. Inputs: target angle, speed, load

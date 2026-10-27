@@ -200,6 +200,18 @@ mechanism.
 - **Mechanism:** one boolean, `coil = power && !stop && !ol && (start || sealed)`, with `sealed` latched to the coil each update; every `[data-w]` wire and `[data-when]` contact toggles `.on` from a small lookup of conditions. Same hold-button pattern as the EX4 relay simulator.
 - **Reuse:** jog vs. run circuits, interlocked forward/reverse starters, or any seal-in rung.
 
+### Commutation demo (brushless six-step with Hall sensors, stepper full and half steps)
+- **Where:** `Decks/AR2/ACMotors/Day4_Stepper_Brushless_Servo.html`, slides 7 and 8 (`.cm-demo`, `buildCommDemo(root)`, `data-mode="bldc"` or `"stepper"`).
+- **Concept:** a stator with phase coils (A, B, C for BLDC; A, B for the stepper) around a two pole magnet rotor, a green stator-field arrow, and +/− marks on the energized coils. BLDC: Run turns the rotor while three Hall sensors (lit when the N pole is within 90°) pick the step whose field leads the rotor by 60° to 120°; a six-row commutation table (Hall code, current in, current out) highlights the live row; Next step advances by hand and the rotor turns to line up. Stepper: Step +/− moves the field 90° (or 45° with half steps) and the rotor snaps to it, with steps-sent and angle tiles.
+- **Mechanism:** the field vector is the sum of each phase's current times its axis. The Hall sensors sit at 0°, 120°, and 240°, which makes each sensor change state exactly at a commutation point, so the six codes are unique; the table's codes are computed from that geometry rather than typed in, so drawing and table always agree.
+- **Reuse:** any "switch the coils in sequence" demo: unipolar vs. bipolar steppers, microstepping (add intermediate currents), or a reversed sequence for direction.
+
+### Precision Under Pressure (open loop stepper vs. speed control vs. servo)
+- **Where:** same file, slide 15 (`.pp`, `buildPrecision(root)`), after an intro slide on the three systems.
+- **Concept:** an arm joint dial (cyan actual arm, dashed commanded line, amber target) and a position-vs-time graph. Choose a system, a load (light, medium, heavy, overloaded), a target, and a speed, then Move; Bump! applies a short disturbance stronger than the motor. Tiles show commanded, actual, error, and the feedback signal each system really has (none, speed, or encoder angle); a controller panel shows what the controller believes plus a drive output bar that turns red at its torque limit. Each run ends with an evidence-based report.
+- **Mechanism:** torque in units of motor rating; the arm obeys `a'' = (motor − friction − bump) / J × 1200` with stiction, integrated in 10 substeps per frame; the command is a trapezoidal profile at 600°/s². Stepper: follows the command in 1.8° steps unless friction plus acceleration torque exceeds a pull-out torque that falls with speed; it then slips, the loss rounds to whole rotor teeth (4 steps) and is capped at steps sent, and the controller still reports the commanded angle; a bump costs 4 steps. Brushless: a PI speed loop runs for the computed time, then brakes, with no position loop. Servo: a torque-limited PID on the encoder angle; it overshoots and settles under heavy load, recovers from bumps over about 2 s, and raises a following-error fault after 1.5 s saturated more than 20° off. Friction only stops a moving arm (zeroing velocity on a sign flip from rest blocked breakaway; check for that bug in any reuse).
+- **Reuse:** any open-loop vs. closed-loop comparison (heater with timer vs. thermostat, cruise control, line following).
+
 ## Topic-coupled but reusable *mechanism*
 
 ### Drag-to-correct-target credential/tool matching
