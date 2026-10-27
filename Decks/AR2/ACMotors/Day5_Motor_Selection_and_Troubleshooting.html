@@ -879,13 +879,15 @@ function buildWorkOrders(root) {
         function names(ids, join) { return ids.map(function (k) { return test(k).name; }).join(join); }
         var nRel = s.run.filter(function (id) { return relevant(test(id)); }).length;
         var d = w.diagnoses[s.diag], r = w.repairs[s.repair];
-        var dOK = d.cause === s.cause, rOK = r.fixes === s.cause, safe = !s.unsafe.length;
+        var dOK = d.cause === s.cause, rOK = r.fixes === s.cause, safe = !s.unsafe.length && !r.unsafe;
         var score = (keyRan ? 1 : 0) + (safe ? 1 : 0) + (dOK ? 1 : 0) + (rOK ? 1 : 0);
         function mark(ok) { return ok ? '<span class="ok">✓</span> ' : '<span class="no">✗</span> '; }
         var rows = [
             ['Key evidence', mark(keyRan) + (keyRan ? 'You checked the ' + names(ranKeys, ' and ') + ' reading' + (ranKeys.length > 1 ? 's.' : '.') : 'Not checked: the ' + names(c.key, ' or ') + ' reading.')],
             ['Tests run', s.run.length + ' (' + nRel + ' could tell the causes apart)'],
-            ['Safety', mark(safe) + (safe ? 'No unsafe procedures chosen.' : s.unsafe.length + ' unsafe procedure' + (s.unsafe.length > 1 ? 's' : '') + ' chosen.')],
+            ['Safety', mark(safe) + (safe ? 'No unsafe procedures chosen.' : [
+                s.unsafe.length ? s.unsafe.length + ' unsafe test' + (s.unsafe.length > 1 ? 's' : '') + ' chosen.' : '',
+                r.unsafe ? 'The repair you chose is unsafe.' : ''].join(' ').trim())],
             ['Diagnosis', mark(dOK) + (dOK ? c.name + '.' : 'You chose “' + d.text + '.” Actual: ' + c.name + '.')],
             ['Repair', mark(rOK) + (rOK ? r.text + '.' : 'You chose “' + r.text + '.” ' + (r.unsafe ? 'Unsafe: ' : '') + (r.note || 'It does not fix the actual cause.'))],
         ];
