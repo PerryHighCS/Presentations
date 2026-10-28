@@ -1,9 +1,8 @@
 # AR2 Unit Plan: AC Motors, Generators, and Industrial Motor Control
 
-Honors Automation and Robotics 2 · 5 class periods · 45 minutes per class
+**Honors Automation and Robotics 2 · 5 class periods · 45 minutes per class**
 
-The central question for the week will be:
-
+**The central question for the week will be:**
 How do engineers generate electrical power, turn that power into controlled motion, and select the right motor for an industrial application?
 
 This unit will build on students' prior experience with DC circuits, electromagnetism, capacitors, programmable controllers, and motors in their AR1 equipment. Rather than having students memorize a catalog of motor types, they'll investigate the engineering problems that led to different motor designs.
