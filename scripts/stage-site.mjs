@@ -32,6 +32,11 @@ async function main() {
   // Documents are rendered after the copy so a Markdown page can never
   // silently replace a presentation that has the same name.
   for (const file of documents) {
+    // index.html is each folder's generated listing, which would replace
+    // the rendered document later in the build.
+    if (path.posix.basename(file.publicRelativePath).toLowerCase() === 'index.md') {
+      throw new Error(`${file.sourceRepoRelative}: index.md is reserved for the folder's index page. Rename the document.`);
+    }
     const publicPath = markdownToHtmlPath(file.publicRelativePath);
     const destPath = path.join(siteDir, publicPath);
     try {

@@ -161,7 +161,8 @@ Because of that:
   heading. Start the document with one `#` title. The contents list shows the next two heading
   levels below it (for example each `##` section with its `###` parts listed underneath).
 - A document cannot share a name with a deck in the same folder; staging fails if `plan.md` would
-  overwrite `plan.html`.
+  overwrite `plan.html`. `index.md` is reserved too, because `index.html` is each folder's
+  generated listing.
 - The dev server loads the renderer when it starts, so restart it after changing
   `scripts/markdown-pages.mjs`.
 

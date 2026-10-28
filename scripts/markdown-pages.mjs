@@ -75,7 +75,7 @@ function slugify(text) {
 // Renders a Markdown document to its HTML body plus every heading after the
 // title, for the contents list.
 function renderBody(source, Marked) {
-  const usedIds = new Map();
+  const usedIds = new Set();
   const headings = [];
   let titleSeen = false;
   const marked = new Marked({ gfm: true });
@@ -89,9 +89,13 @@ function renderBody(source, Marked) {
     renderer: {
       heading({ tokens, depth, text }) {
         const base = slugify(text);
-        const count = usedIds.get(base) || 0;
-        usedIds.set(base, count + 1);
-        const id = count ? `${base}-${count + 1}` : base;
+        // Check every candidate against all ids handed out so far, so
+        // "Task", "Task", "Task 2" become task, task-2, task-2-2.
+        let id = base;
+        for (let n = 2; usedIds.has(id); n++) {
+          id = `${base}-${n}`;
+        }
+        usedIds.add(id);
         const html = this.parser.parseInline(tokens);
         if (depth === 1 && !titleSeen) {
           titleSeen = true;

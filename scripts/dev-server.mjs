@@ -125,6 +125,18 @@ async function sourceForPublicPath(publicPath, mounts) {
   return (await exists(markdownPath)) ? markdownPath : sourcePath;
 }
 
+// Manifest rules apply to a document's Markdown source: a request for a
+// `plan.html` generated from `plan.md` is checked as `plan.md`, so an
+// `include plan.md` rule allows it and an `exclude plan.md` rule hides it.
+async function exclusionPathFor(repoRelative, absolutePath) {
+  if (repoRelative.toLowerCase().endsWith('.html') && !(await exists(absolutePath))) {
+    if (await exists(absolutePath.replace(/\.html$/i, '.md'))) {
+      return repoRelative.replace(/\.html$/i, '.md');
+    }
+  }
+  return repoRelative;
+}
+
 async function exists(filePath) {
   try {
     await fsPromises.access(filePath);
@@ -344,14 +356,14 @@ async function main() {
     const sourceRepoRelative = relativePath
       ? path.posix.join(mount.sourcePath, relativePath)
       : mount.sourcePath;
-    if (isExcluded(sourceRepoRelative, pathname.endsWith('/'))) {
+    const sourcePath = relativePath
+      ? path.join(rootDir, mount.sourcePath, relativePath)
+      : path.join(rootDir, mount.sourcePath);
+    if (isExcluded(await exclusionPathFor(sourceRepoRelative, sourcePath), pathname.endsWith('/'))) {
       res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
       res.end(`Not found: ${pathname}`);
       return;
     }
-    const sourcePath = relativePath
-      ? path.join(rootDir, mount.sourcePath, relativePath)
-      : path.join(rootDir, mount.sourcePath);
 
     let stat = null;
     try {
@@ -384,12 +396,12 @@ async function main() {
     const finalRepoRelative = finalRelativePath
       ? path.posix.join(mount.sourcePath, finalRelativePath)
       : mount.sourcePath;
-    if (isExcluded(finalRepoRelative, false)) {
+    const finalSourcePath = path.join(rootDir, mount.sourcePath, finalRelativePath);
+    if (isExcluded(await exclusionPathFor(finalRepoRelative, finalSourcePath), false)) {
       res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
       res.end(`Not found: ${pathname}`);
       return;
     }
-    const finalSourcePath = path.join(rootDir, mount.sourcePath, finalRelativePath);
     const finalExt = path.extname(finalSourcePath).toLowerCase();
 
     // Documents: raw Markdown is not published, and `plan.html` is rendered
