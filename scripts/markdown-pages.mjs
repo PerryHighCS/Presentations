@@ -94,7 +94,9 @@ function slugify(text) {
 // Renders a Markdown document to its HTML body plus every heading after the
 // title, for the contents list.
 function renderBody(source, Marked) {
-  const usedIds = new Set();
+  // Ids the page itself uses are reserved, so a heading such as
+  // "## Markdown source" can never collide with them.
+  const usedIds = new Set(['markdown-source', 'copy-menu']);
   const headings = [];
   let titleSeen = false;
   const marked = new Marked({ gfm: true });
@@ -197,6 +199,39 @@ export const DOCUMENT_STYLE = `
   }
   .bar a { color: var(--accent); text-decoration: none; font-weight: 600; }
   .bar a:hover, .bar a:focus-visible { text-decoration: underline; }
+  /* Copy page, with Copy Markdown behind a chevron menu. */
+  .copy-split { position: relative; display: inline-flex; }
+  .copy-split > button:first-child { border-radius: 6px 0 0 6px; }
+  .copy-split .split-toggle { border-left: 0; border-radius: 0 6px 6px 0; padding: 4px 8px; line-height: 0; }
+  .copy-split .split-toggle svg { width: 14px; height: 14px; transition: transform 120ms ease; }
+  .copy-split .split-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .copy-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 10;
+    min-width: 100%;
+    padding: 4px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(27, 35, 48, 0.12);
+  }
+  .bar .copy-menu button { display: block; width: 100%; text-align: left; white-space: nowrap; border: 0; }
+  .bar .copy-menu button:hover, .bar .copy-menu button:focus-visible { background: var(--soft); }
+  .bar button {
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .bar button:hover { border-color: var(--accent); }
+  .bar button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   main { max-width: 52rem; margin: 0 auto; padding: 24px clamp(16px, 4vw, 40px) 64px; }
   h1, h2, h3, h4 { line-height: 1.25; margin: 1.6em 0 0.5em; scroll-margin-top: 64px; }
   h1 { font-size: 2em; margin-top: 0.4em; }
@@ -238,6 +273,169 @@ export const DOCUMENT_STYLE = `
   }
 `;
 
+// Browsers copy a selection with every element's computed styles inlined,
+// so pasted text arrives with fonts, colors, and margins baked in. This puts
+// clean HTML (tags only, no style, class, or id attributes) on the clipboard
+// for an ordinary copy, and powers the bar's Copy button (the selection, or
+// the whole page) and its menu (Copy page, Copy Markdown). Plain-text pastes
+// of the whole page get the Markdown source.
+const COPY_SCRIPT = `
+(() => {
+  const main = document.querySelector('main');
+  const markdown = JSON.parse(document.getElementById('markdown-source').textContent);
+
+  // The contents list is left out of whole-page copies only; a selection
+  // that includes contents links keeps them.
+  // Link and image addresses become absolute, so a pasted copy still points
+  // back at this document (a copied "#section" link opens that section here,
+  // since the copy drops the heading ids).
+  function cleanHtml(node, { wholePage = false } = {}) {
+    if (wholePage) node.querySelectorAll('nav.contents').forEach((nav) => nav.remove());
+    node.querySelectorAll('a[href], img[src]').forEach((el) => {
+      const attr = el.hasAttribute('href') ? 'href' : 'src';
+      try {
+        el.setAttribute(attr, new URL(el.getAttribute(attr), document.baseURI).href);
+      } catch {
+        // Leave an address the URL parser rejects as it is.
+      }
+    });
+    node.querySelectorAll('*').forEach((el) => {
+      el.removeAttribute('style');
+      el.removeAttribute('class');
+      el.removeAttribute('id');
+    });
+    return node.innerHTML;
+  }
+
+  // A range's cloned contents leave out the elements around it, so a
+  // selection inside a link or a code block would lose them. Rebuild those
+  // enclosing elements (link, code, paragraph, list item, table cell, ...)
+  // up to the document's <main>.
+  function cloneWithAncestors(range) {
+    let content = range.cloneContents();
+    let node = range.commonAncestorContainer;
+    if (node.nodeType !== Node.ELEMENT_NODE) node = node.parentNode;
+    while (node && node !== main && main.contains(node)) {
+      const shell = node.cloneNode(false);
+      shell.appendChild(content);
+      content = shell;
+      node = node.parentNode;
+    }
+    return content;
+  }
+
+  document.addEventListener('copy', (event) => {
+    const selection = document.getSelection();
+    if (!selection || selection.isCollapsed || !event.clipboardData) return;
+    const holder = document.createElement('div');
+    for (let i = 0; i < selection.rangeCount; i++) {
+      holder.appendChild(cloneWithAncestors(selection.getRangeAt(i)));
+    }
+    event.clipboardData.setData('text/html', cleanHtml(holder));
+    event.clipboardData.setData('text/plain', selection.toString());
+    event.preventDefault();
+  });
+
+  async function write(html, text) {
+    if (html && window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([text], { type: 'text/plain' }),
+      })]);
+    } else {
+      await navigator.clipboard.writeText(text);
+    }
+  }
+
+  // Copy takes the selection on the page, or the whole page when nothing is
+  // selected. The selection is captured on pointerdown, before a click on
+  // the button could change it. The menu's choices report back on the main
+  // button, since the menu closes as soon as one is picked.
+  const mainButton = document.querySelector('[data-copy="auto"]');
+  const mainLabel = mainButton.textContent;
+  const toggle = document.querySelector('.split-toggle');
+  const menu = document.getElementById('copy-menu');
+  const items = [...menu.querySelectorAll('[role="menuitem"]')];
+  let pressedSelection = null;
+  let resetTimer = null;
+
+  // The selection on the page, if any: its range plus the browser's plain
+  // text for it, which keeps line breaks and table-cell separators that
+  // Range.toString() drops, matching an ordinary copy.
+  // Every range is kept: Firefox allows a selection of several separate
+  // pieces, and the HTML should hold all of them, as the plain text does.
+  function pageSelection() {
+    const selection = document.getSelection();
+    if (!selection || selection.isCollapsed || !selection.rangeCount) return null;
+    const ranges = [];
+    for (let i = 0; i < selection.rangeCount; i++) ranges.push(selection.getRangeAt(i).cloneRange());
+    return ranges.some((range) => range.intersectsNode(main)) ? { ranges, text: selection.toString() } : null;
+  }
+
+  function setMenu(open, focusItem) {
+    menu.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+    if (open && focusItem) items[0].focus();
+  }
+
+  async function copy(kind) {
+    if (kind === 'markdown') {
+      await write(null, markdown);
+      return;
+    }
+    const selected = kind === 'auto' ? pressedSelection || pageSelection() : null;
+    if (selected) {
+      const holder = document.createElement('div');
+      selected.ranges.forEach((range) => holder.appendChild(cloneWithAncestors(range)));
+      await write(cleanHtml(holder), selected.text);
+    } else {
+      await write(cleanHtml(main.cloneNode(true), { wholePage: true }), markdown);
+    }
+  }
+
+  mainButton.addEventListener('pointerdown', () => { pressedSelection = pageSelection(); });
+
+  document.querySelectorAll('[data-copy]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const fromMenu = button.getAttribute('role') === 'menuitem';
+      setMenu(false);
+      // Keep the button's width while its label reads Copied.
+      mainButton.style.minWidth = mainButton.offsetWidth + 'px';
+      try {
+        await copy(button.dataset.copy);
+        mainButton.textContent = 'Copied';
+      } catch {
+        mainButton.textContent = 'Copy failed';
+      }
+      pressedSelection = null;
+      if (fromMenu) toggle.focus();
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => { mainButton.textContent = mainLabel; }, 1500);
+    });
+  });
+
+  menu.addEventListener('keydown', (event) => {
+    const i = items.indexOf(document.activeElement);
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      items[(i + step + items.length) % items.length].focus();
+    }
+  });
+
+  toggle.addEventListener('click', (event) => setMenu(menu.hidden, event.detail === 0));
+  document.addEventListener('click', (event) => {
+    if (!menu.hidden && !event.target.closest('.copy-split')) setMenu(false);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !menu.hidden) {
+      setMenu(false);
+      toggle.focus();
+    }
+  });
+})();
+`;
+
 // Renders a complete document page. `backHref` points at the folder's index
 // page, relative to the page itself.
 export async function renderDocumentPage(source, { filePath, backHref = 'index.html', backLabel = 'Back to folder' } = {}) {
@@ -260,10 +458,20 @@ export async function renderDocumentPage(source, { filePath, backHref = 'index.h
 <body>
   <header class="bar">
     <a href="${escapeHtml(backHref)}">&larr; ${escapeHtml(backLabel)}</a>
+    <span class="copy-split">
+      <button type="button" data-copy="auto" title="Copy the selected text, or the whole page if nothing is selected">Copy</button>
+      <button type="button" class="split-toggle" aria-haspopup="menu" aria-expanded="false" aria-controls="copy-menu" aria-label="More copy options" title="More copy options"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="copy-menu" id="copy-menu" role="menu" hidden>
+        <button type="button" role="menuitem" data-copy="page" title="Copy the whole document as clean formatted text">Copy page</button>
+        <button type="button" role="menuitem" data-copy="markdown" title="Copy the document's Markdown source">Copy Markdown</button>
+      </div>
+    </span>
   </header>
   <main>
 ${withContents}
   </main>
+  <script type="application/json" id="markdown-source">${JSON.stringify(source).replace(/</g, '\\u003c')}</script>
+  <script>${COPY_SCRIPT}</script>
 </body>
 </html>
 `;
