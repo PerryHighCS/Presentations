@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import { repoUrl, syncDeckHosting } from '../config/site-map.mjs';
+import { isDocumentHtml, isMarkdownPath, titleForMarkdownFile } from './markdown-pages.mjs';
 import { extractPermalinkHash } from './permalink-utils.mjs';
 import { projectAppliesTo } from './project-utils.mjs';
 
@@ -141,6 +142,18 @@ export const PAGE_STYLE = `
   .file-actions a { color: inherit; }
   .file-actions a:hover { color: var(--accent); text-decoration: underline; }
   .file-actions .sep { color: #3d537e; }
+  .tree li.group { margin: 6px 0 2px; }
+  .tree li.group + li.group { margin-top: 14px; }
+  .group-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .tree li.group > ul { list-style: none; padding-left: 0; margin: 0; }
   .tree button.copy-url {
     display: inline-flex;
     align-items: center;
@@ -372,6 +385,11 @@ export const PAGE_SCRIPT = `
           li.hidden = !applies || isDone !== (status === 'done');
         });
 
+        // A Documents or Slide Decks group hides when none of its items show.
+        document.querySelectorAll('.tree li.group').forEach((group) => {
+          group.hidden = !!project && !group.querySelector('li.file:not([hidden])');
+        });
+
         folders.forEach((folder) => {
           const details = folder.querySelector(':scope > details');
           const count = folder.querySelector(':scope > details > summary .folder-count');
@@ -443,6 +461,9 @@ export const PAGE_SCRIPT = `
 `;
 
 export async function defaultTitleForFile(filePath) {
+  if (isMarkdownPath(filePath)) {
+    return titleForMarkdownFile(filePath);
+  }
   try {
     const text = await fs.readFile(filePath, 'utf8');
     const match = text.match(/<title>(.*?)<\/title>/is);
@@ -456,6 +477,19 @@ export async function defaultTitleForFile(filePath) {
     // Ignore and fall back to filename.
   }
   return path.basename(filePath, path.extname(filePath)).replace(/[-_]/g, ' ').trim();
+}
+
+// A document is a Markdown source (dev server) or a page generated from one
+// (deployed site).
+export async function isDocumentFile(filePath) {
+  if (isMarkdownPath(filePath)) {
+    return true;
+  }
+  try {
+    return isDocumentHtml(await fs.readFile(filePath, 'utf8'));
+  } catch {
+    return false;
+  }
 }
 
 export async function permalinkHashForFile(filePath) {
@@ -556,7 +590,39 @@ function renderTree(node, indent = '      ', pathPrefix = '', pageDepth = 0, pro
   // has nested within that single page's listing — those are different axes.
   const rootPrefix = '../'.repeat(pageDepth);
 
-  for (const file of [...node.files].sort((a, b) => NATURAL_COLLATOR.compare(a.title, b.title))) {
+  // A folder with documents lists them in their own group above its slide
+  // decks; a folder of slide decks alone stays a plain list.
+  const byTitle = (a, b) => NATURAL_COLLATOR.compare(a.title, b.title);
+  const documents = node.files.filter((file) => file.document).sort(byTitle);
+  const decks = node.files.filter((file) => !file.document).sort(byTitle);
+  let fileIndent = indent;
+  const openGroup = (label) => {
+    lines.push(`${indent}<li class="group"><span class="group-label">${label}</span>`);
+    lines.push(`${indent}  <ul>`);
+    fileIndent = indent + '    ';
+  };
+  const closeGroup = () => {
+    lines.push(`${indent}  </ul>`);
+    lines.push(`${indent}</li>`);
+    fileIndent = indent;
+  };
+
+  if (documents.length) {
+    openGroup('Documents');
+    for (const file of documents) {
+      const relativeHref = `${pathPrefix}${file.name}`;
+      lines.push(
+        `${fileIndent}<li class="file document"><a href="${escapeHtml(relativeHref)}">${escapeHtml(file.title)}</a>` +
+          `<button type="button" class="copy-url" data-copy-path="${escapeHtml(relativeHref)}" aria-label="Copy document URL" title="Copy URL">${ICON_COPY}</button></li>`
+      );
+    }
+    closeGroup();
+    if (decks.length) {
+      openGroup('Slide Decks');
+    }
+  }
+
+  for (const file of decks) {
     const relativeHref = `${pathPrefix}${file.name}`;
     const permalinkHref = file.permalinkHash ? `${rootPrefix}p/${file.permalinkHash}.html` : null;
     // The syncdeck link is fed to ActiveBits as presentationUrl, so route it
@@ -569,7 +635,7 @@ function renderTree(node, indent = '      ', pathPrefix = '', pageDepth = 0, pro
       ? ` data-applies="${escapeHtml(applies.join(' '))}" data-done="${escapeHtml(done.join(' '))}"`
       : '';
     lines.push(
-      `${indent}<li class="file"${projectAttrs}><a href="${escapeHtml(relativeHref)}">${escapeHtml(file.title)}</a>` +
+      `${fileIndent}<li class="file"${projectAttrs}><a href="${escapeHtml(relativeHref)}">${escapeHtml(file.title)}</a>` +
         `<button type="button" class="copy-url" data-copy-path="${escapeHtml(relativeHref)}" aria-label="Copy presentation URL" title="Copy URL">${ICON_COPY}</button>` +
         renderProjectChips(file, projects) +
         `<span class="file-actions">` +
@@ -585,8 +651,12 @@ function renderTree(node, indent = '      ', pathPrefix = '', pageDepth = 0, pro
     );
   }
 
+  if (documents.length && decks.length) {
+    closeGroup();
+  }
+
   for (const [dirname, child] of [...node.dirs.entries()].sort((a, b) => NATURAL_COLLATOR.compare(a[0], b[0]))) {
-    const count = presentationCount(child);
+    const count = itemCount(child);
     lines.push(`${indent}<li class="folder">`);
     lines.push(`${indent}  <details>`);
     lines.push(
@@ -605,18 +675,40 @@ function renderTree(node, indent = '      ', pathPrefix = '', pageDepth = 0, pro
   return lines;
 }
 
-function presentationCount(node) {
-  let count = node.files.length;
+function countFiles(node, keep) {
+  let count = node.files.filter(keep).length;
   for (const child of node.dirs.values()) {
-    count += presentationCount(child);
+    count += countFiles(child, keep);
   }
   return count;
 }
 
+function itemCount(node) {
+  return countFiles(node, () => true);
+}
+
+// "5 slide decks and 2 documents"
+function describeContents(node) {
+  const decks = countFiles(node, (file) => !file.document);
+  const documents = countFiles(node, (file) => file.document);
+  const parts = [`${decks} slide deck${decks === 1 ? '' : 's'}`];
+  if (documents) {
+    parts.push(`${documents} document${documents === 1 ? '' : 's'}`);
+  }
+  return parts.join(' and ');
+}
+
 // `projectInfo` is optional: { projects, getCompletedProjectsForPublicPath },
 // where `projects` is the registry from loadProjects(). Completed projects are
-// left off the pages entirely.
-export async function buildIndexPages(htmlFiles, getTitleForPublicPath, getPermalinkForPublicPath, projectInfo = null) {
+// left off the pages entirely. `isDocumentForPublicPath` (optional) marks
+// document pages (rendered Markdown), which are listed under Documents.
+export async function buildIndexPages(
+  htmlFiles,
+  getTitleForPublicPath,
+  getPermalinkForPublicPath,
+  projectInfo = null,
+  isDocumentForPublicPath = null
+) {
   const projects = (projectInfo?.projects || []).filter((project) => !project.complete);
   const generatedAtDt = new Date();
   const generatedAt = generatedAtDt.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, ' UTC');
@@ -629,11 +721,13 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath, getPerma
 
   const titledEntries = [];
   for (const rel of normalized) {
+    const document = isDocumentForPublicPath ? await isDocumentForPublicPath(rel) : false;
     titledEntries.push({
       rel,
       title: await getTitleForPublicPath(rel),
-      permalinkHash: getPermalinkForPublicPath ? await getPermalinkForPublicPath(rel) : null,
-      completedProjects: projects.length ? await projectInfo.getCompletedProjectsForPublicPath(rel) : [],
+      document,
+      permalinkHash: !document && getPermalinkForPublicPath ? await getPermalinkForPublicPath(rel) : null,
+      completedProjects: !document && projects.length ? await projectInfo.getCompletedProjectsForPublicPath(rel) : [],
     });
   }
 
@@ -654,6 +748,7 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath, getPerma
       name: parsed.base,
       rel: relPath,
       title: entry.title,
+      document: entry.document,
       permalinkHash: entry.permalinkHash,
       completedProjects: entry.completedProjects,
     });
@@ -684,7 +779,6 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath, getPerma
     for (const [dirname, child] of [...node.dirs.entries()].sort((a, b) => NATURAL_COLLATOR.compare(a[0], b[0]))) {
       const childFolder = folder === '.' ? dirname : `${folder}/${dirname}`;
       const pageDepth = childFolder.split('/').filter(Boolean).length;
-      const count = presentationCount(child);
       const listingLines = renderTree(child, '      ', '', pageDepth, projects);
       const listing = listingLines.length
         ? listingLines.join('\n')
@@ -695,7 +789,7 @@ export async function buildIndexPages(htmlFiles, getTitleForPublicPath, getPerma
         makePage(
           `${childFolder} — Presentations`,
           childFolder,
-          `${count} HTML presentation${count === 1 ? '' : 's'} in ${childFolder}/`,
+          `${describeContents(child)} in ${childFolder}/`,
           listing,
           generatedAt,
           generatedAtIso,

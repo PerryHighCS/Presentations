@@ -4,7 +4,8 @@ import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 
-import { buildIndexPages, defaultTitleForFile, permalinkHashForFile } from './site-indexes.mjs';
+import { buildIndexPages, defaultTitleForFile, isDocumentFile, permalinkHashForFile } from './site-indexes.mjs';
+import { markdownToHtmlPath, renderDocumentFile } from './markdown-pages.mjs';
 import { loadManifest, redirectHtml, toRedirectTarget } from './permalink-utils.mjs';
 import { completedProjectsForFile, loadProjects } from './project-utils.mjs';
 import {
@@ -111,6 +112,17 @@ function resolvePublicPathToSource(publicPath, mounts) {
   }
   const relativePath = stripMountPrefix(pathname, mount);
   return path.join(rootDir, mount.sourcePath, relativePath);
+}
+
+// The source behind a public .html path: the file itself, or the Markdown
+// document it is generated from.
+async function sourceForPublicPath(publicPath, mounts) {
+  const sourcePath = resolvePublicPathToSource(publicPath, mounts);
+  if (!sourcePath || !sourcePath.toLowerCase().endsWith('.html') || (await exists(sourcePath))) {
+    return sourcePath;
+  }
+  const markdownPath = sourcePath.replace(/\.html$/i, '.md');
+  return (await exists(markdownPath)) ? markdownPath : sourcePath;
 }
 
 async function exists(filePath) {
@@ -279,14 +291,14 @@ async function main() {
     const indexPages = await buildIndexPages(
       htmlFiles,
       async (publicPath) => {
-        const sourcePath = resolvePublicPathToSource(publicPath, mounts);
+        const sourcePath = await sourceForPublicPath(publicPath, mounts);
         if (!sourcePath) {
           return publicPath;
         }
         return defaultTitleForFile(sourcePath);
       },
       async (publicPath) => {
-        const sourcePath = resolvePublicPathToSource(publicPath, mounts);
+        const sourcePath = await sourceForPublicPath(publicPath, mounts);
         if (!sourcePath) {
           return null;
         }
@@ -295,9 +307,13 @@ async function main() {
       {
         projects: await loadProjects(rootDir),
         getCompletedProjectsForPublicPath: async (publicPath) => {
-          const sourcePath = resolvePublicPathToSource(publicPath, mounts);
+          const sourcePath = await sourceForPublicPath(publicPath, mounts);
           return sourcePath ? completedProjectsForFile(sourcePath) : [];
         },
+      },
+      async (publicPath) => {
+        const sourcePath = await sourceForPublicPath(publicPath, mounts);
+        return sourcePath ? isDocumentFile(sourcePath) : false;
       }
     );
 
@@ -374,9 +390,37 @@ async function main() {
       return;
     }
     const finalSourcePath = path.join(rootDir, mount.sourcePath, finalRelativePath);
+    const finalExt = path.extname(finalSourcePath).toLowerCase();
+
+    // Documents: raw Markdown is not published, and `plan.html` is rendered
+    // from `plan.md` when no real page has that name.
+    if (finalExt === '.md') {
+      res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+      res.end(`Not found: ${pathname}`);
+      return;
+    }
+    if (finalExt === '.html' && !(await exists(finalSourcePath))) {
+      const markdownRepoRelative = finalRepoRelative.replace(/\.html$/i, '.md');
+      const markdownPath = finalSourcePath.replace(/\.html$/i, '.md');
+      if (markdownToHtmlPath(markdownRepoRelative) === finalRepoRelative &&
+          !isExcluded(markdownRepoRelative, false) && (await exists(markdownPath))) {
+        try {
+          const page = await renderDocumentFile(markdownPath);
+          res.writeHead(200, {
+            'cache-control': 'no-store',
+            'content-type': 'text/html; charset=utf-8',
+          });
+          res.end(injectLiveReload(page));
+        } catch (error) {
+          res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' });
+          res.end(`Could not render ${markdownRepoRelative}: ${error.message}`);
+        }
+        return;
+      }
+    }
 
     try {
-      const ext = path.extname(finalSourcePath).toLowerCase();
+      const ext = finalExt;
 
       if (ext === '.html') {
         const content = await fsPromises.readFile(finalSourcePath, 'utf8');
