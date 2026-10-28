@@ -197,7 +197,26 @@ export const DOCUMENT_STYLE = `
   }
   .bar a { color: var(--accent); text-decoration: none; font-weight: 600; }
   .bar a:hover, .bar a:focus-visible { text-decoration: underline; }
-  .bar .copy-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+  /* Copy page, with Copy Markdown behind a chevron menu. */
+  .copy-split { position: relative; display: inline-flex; }
+  .copy-split > button:first-child { border-radius: 6px 0 0 6px; }
+  .copy-split .split-toggle { border-left: 0; border-radius: 0 6px 6px 0; padding: 4px 8px; line-height: 0; }
+  .copy-split .split-toggle svg { width: 14px; height: 14px; transition: transform 120ms ease; }
+  .copy-split .split-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .copy-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 10;
+    min-width: 100%;
+    padding: 4px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(27, 35, 48, 0.12);
+  }
+  .bar .copy-menu button { display: block; width: 100%; text-align: left; white-space: nowrap; border: 0; }
+  .bar .copy-menu button:hover, .bar .copy-menu button:focus-visible { background: var(--soft); }
   .bar button {
     font: inherit;
     font-size: 14px;
@@ -295,23 +314,50 @@ const COPY_SCRIPT = `
     }
   }
 
+  // The menu's choices report back on the main button, since the menu
+  // closes as soon as one is picked.
+  const mainButton = document.querySelector('[data-copy="page"]');
+  const mainLabel = mainButton.textContent;
+  const toggle = document.querySelector('.split-toggle');
+  const menu = document.getElementById('copy-menu');
+  let resetTimer = null;
+
+  function setMenu(open, focusItem) {
+    menu.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+    if (open && focusItem) menu.querySelector('[role="menuitem"]').focus();
+  }
+
   document.querySelectorAll('[data-copy]').forEach((button) => {
-    const label = button.textContent;
     button.addEventListener('click', async () => {
+      setMenu(false);
       // Keep the button's width while its label reads Copied.
-      button.style.minWidth = button.offsetWidth + 'px';
+      mainButton.style.minWidth = mainButton.offsetWidth + 'px';
       try {
         if (button.dataset.copy === 'page') {
           await write(cleanHtml(main.cloneNode(true)), markdown);
         } else {
           await write(null, markdown);
+          toggle.focus();
         }
-        button.textContent = 'Copied';
+        mainButton.textContent = 'Copied';
       } catch {
-        button.textContent = 'Copy failed';
+        mainButton.textContent = 'Copy failed';
       }
-      setTimeout(() => { button.textContent = label; }, 1500);
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => { mainButton.textContent = mainLabel; }, 1500);
     });
+  });
+
+  toggle.addEventListener('click', (event) => setMenu(menu.hidden, event.detail === 0));
+  document.addEventListener('click', (event) => {
+    if (!menu.hidden && !event.target.closest('.copy-split')) setMenu(false);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !menu.hidden) {
+      setMenu(false);
+      toggle.focus();
+    }
   });
 })();
 `;
@@ -338,9 +384,12 @@ export async function renderDocumentPage(source, { filePath, backHref = 'index.h
 <body>
   <header class="bar">
     <a href="${escapeHtml(backHref)}">&larr; ${escapeHtml(backLabel)}</a>
-    <span class="copy-buttons">
+    <span class="copy-split">
       <button type="button" data-copy="page" title="Copy the document as clean formatted text">Copy page</button>
-      <button type="button" data-copy="markdown" title="Copy the document's Markdown source">Copy Markdown</button>
+      <button type="button" class="split-toggle" aria-haspopup="menu" aria-expanded="false" aria-controls="copy-menu" aria-label="More copy options" title="More copy options"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="copy-menu" id="copy-menu" role="menu" hidden>
+        <button type="button" role="menuitem" data-copy="markdown" title="Copy the document's Markdown source">Copy Markdown</button>
+      </div>
     </span>
   </header>
   <main>
