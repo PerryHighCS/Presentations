@@ -1,6 +1,6 @@
-# **AR2 Unit Plan: AC Motors, Generators, and Industrial Motor Control**
+# AR2 Unit Plan: AC Motors, Generators, and Industrial Motor Control
 
-Honors Automation and Robotics 2 \| 5 class periods \| 45 minutes per class
+Honors Automation and Robotics 2 · 5 class periods · 45 minutes per class
 
 The central question for the week will be:
 
@@ -10,46 +10,21 @@ This unit will build on students' prior experience with DC circuits, electromagn
 
 The emphasis will be on predicting behavior, experimenting with virtual systems, interpreting results, and making engineering decisions.
 
-Unit at a glance
+**Unit at a glance**
 
-Mon
-
-## **1**
-
-Generators & phases
-
-Tue
-
-## **2**
-
-Starting AC motors
-
-Wed
-
-## **3**
-
-Three phase & VFDs
-
-Thu
-
-## **4**
-
-Robotics motors
-
-Fri
-
-## **5**
-
-Diagnostics
+| Day | Focus |
+| ----- | ----- |
+| Monday (1) | Generators and phases |
+| Tuesday (2) | Starting AC motors |
+| Wednesday (3) | Three phase motors and VFDs |
+| Thursday (4) | Robotics motors |
+| Friday (5) | Diagnostics |
 
 All investigations can run in a browser. No student purchases, physical builds, or energized AC equipment are required.
 
-## **Standards alignment**
+## Standards alignment
 
-The primary reference is the [Arizona Department of Education Automation and Robotics Technical Standards, revised 2025](https://www.azed.gov/sites/default/files/2025/07/AutomationandRoboticsTS.pdf?utm_source=chatgpt.com). This unit addresses all eight competencies in Standard 9.0, with the deepest treatment of 9.2, 9.5, and 9.8.
-
-![]()  
-azed.gov+1
+The primary reference is the [Arizona Department of Education Automation and Robotics Technical Standards, revised 2025](https://www.azed.gov/sites/default/files/2025/07/AutomationandRoboticsTS.pdf). This unit addresses all eight competencies in Standard 9.0, with the deepest treatment of 9.2, 9.5, and 9.8.
 
 | Standard | Focus | Primary day |
 | ----- | ----- | ----- |
@@ -68,11 +43,7 @@ Expected outcomes: By the end of the week, students should be able to explain th
 
 The instructional design below describes the five presentations and virtual investigations as built in `Decks/AR2/ACMotors/` (Day 1 to Day 5), and is the reference for revising them.
 
-## **Detailed instructional plan**
-
-# **AR2: AC Motors, Generators, and Industrial Motor Control**
-
-## **Comprehensive Five Day Instructional Plan**
+## Five Day Instructional Plan
 
 **Course:** Honors Automation and Robotics 2  
 **Duration:** Five 45 minute class periods  
@@ -81,13 +52,13 @@ The instructional design below describes the five presentations and virtual inve
 
 ---
 
-# **Day 1: Generators, Alternating Current, and Electrical Phases**
+## Day 1: Generators, Alternating Current, and Electrical Phases
 
 **Essential question:** Why does industry use three phase electrical power instead of just one phase?
 
 **Standards:** 9.8, 9.3, 4.7, 6.6
 
-### **Learning objectives**
+### Learning objectives
 
 Students will be able to:
 
@@ -97,7 +68,7 @@ Students will be able to:
 4. Interpret single phase and three phase AC waveforms.  
 5. Identify advantages of three phase power for industrial motors and power distribution.
 
-### **Lesson sequence**
+### Lesson sequence
 
 **0 to 5 minutes: Hook, Where does three phase electricity come from?**
 
@@ -197,7 +168,7 @@ Connect to tomorrow's motor lesson: what happens when we apply these different e
 
 **Success criteria:** Students explain the difference between phase angle and frequency, correctly interpret three phase waveforms, and connect multiple phases to industrial power applications.
 
-### **Presentation**
+### Presentation
 
 `Decks/AR2/ACMotors/Day1_Generators_and_Phases.html`, 17 slides:
 
@@ -219,7 +190,7 @@ Connect to tomorrow's motor lesson: what happens when we apply these different e
 16. Single phase versus three phase review  
 17. Resonance exit ticket
 
-### **Virtual activity specification: Generator Lab**
+### Virtual activity specification: Generator Lab
 
 **Interaction:** discover. Students change how the generator is built and run, then find the relationships themselves.
 
@@ -256,13 +227,13 @@ With 4 poles, each phase has two coils, and the same speed gives twice the frequ
 
 ---
 
-# **Day 2: Single Phase AC Motors and the Starting Problem**
+## Day 2: Single Phase AC Motors and the Starting Problem
 
 **Essential question:** If alternating current creates magnetic fields, why can't every AC motor start spinning by itself?
 
 **Standards:** 9.2, 9.5, 9.1
 
-### **Learning objectives**
+### Learning objectives
 
 Students will be able to:
 
@@ -272,7 +243,7 @@ Students will be able to:
 4. Compare shaded pole, resistance start split phase, capacitor start, permanent split capacitor, and capacitor start capacitor run designs.  
 5. Select a single phase motor based on load, cost, efficiency, and starting torque.
 
-### **Lesson sequence**
+### Lesson sequence
 
 **0 to 5 minutes: Warm up**
 
@@ -402,7 +373,7 @@ Students record their designs on paper.
 3. Why might a shaded pole motor be selected even though it is inefficient?  
 4. Which starting design is appropriate for a load that needs high starting torque, such as an air compressor?
 
-### **Presentation**
+### Presentation
 
 `Decks/AR2/ACMotors/Day2_Starting_AC_Motors.html`, 18 slides:
 
@@ -425,7 +396,7 @@ Students record their designs on paper.
 17. Motor Design Workshop simulator  
 18. Resonance exit ticket
 
-### **Virtual activity specification: Motor Design Workshop**
+### Virtual activity specification: Motor Design Workshop
 
 **Interaction:** design. Students build a motor from parts to meet a customer brief within a budget, test it, and improve it.
 
@@ -476,13 +447,13 @@ An illustrative torque-speed model. A design starts only if its starting torque 
 
 ---
 
-# **Day 3: Three Phase Induction Motors and Industrial Speed Control**
+## Day 3: Three Phase Induction Motors and Industrial Speed Control
 
 **Essential question:** How can we control the speed of an industrial AC motor without changing its mechanical gearing?
 
 **Standards:** 9.2, 9.5, 9.1, 3.5
 
-### **Learning objectives**
+### Learning objectives
 
 Students will be able to:
 
@@ -493,7 +464,7 @@ Students will be able to:
 5. Explain the purpose and basic operation of a variable frequency drive.  
 6. Identify the functions of start and stop controls, overload protection, and emergency stopping arrangements.
 
-### **Lesson sequence**
+### Lesson sequence
 
 **0 to 5 minutes: Review challenge**
 
@@ -523,7 +494,7 @@ Introduce slip:
 
 Introduce:
 
-Synchronous RPM \= 120 × frequency / pole count
+Synchronous RPM = 120 × frequency / pole count
 
 Work examples:
 
@@ -537,7 +508,7 @@ Example:
 
 If a four pole motor has a synchronous speed of 1,800 RPM and an actual speed of 1,750 RPM, its slip is:
 
-(1,800 − 1,750) / 1,800 × 100 \= 2.78%
+(1,800 − 1,750) / 1,800 × 100 = 2.78%
 
 Students should interpret this as a relationship between field speed and shaft speed.
 
@@ -593,7 +564,7 @@ Clarify that emergency stop functions require specifically designed safety syste
 3. What electrical property does a VFD change to control motor speed?  
 4. Explain one safety or operational advantage of a three wire start/stop control with a holding contact.
 
-### **Presentation**
+### Presentation
 
 `Decks/AR2/ACMotors/Day3_Three_Phase_Motors_and_VFDs.html`, 17 slides:
 
@@ -615,7 +586,7 @@ Clarify that emergency stop functions require specifically designed safety syste
 16. Overload protection, and stop versus trip versus emergency stop  
 17. Resonance exit ticket
 
-### **Virtual activity specification: VFD Control Room**
+### Virtual activity specification: VFD Control Room
 
 **Interaction:** operate. Students run a drive until a measurable production spec holds.
 
@@ -682,13 +653,13 @@ Do not imply that reducing frequency alone automatically maintains motor torque 
 
 ---
 
-# **Day 4: Stepper, Brushless, and Servo Motors**
+## Day 4: Stepper, Brushless, and Servo Motors
 
 **Essential question:** Why aren't all robotic systems powered by ordinary induction motors?
 
 **Standards:** 9.3, 9.4, 9.6, 9.7
 
-### **Learning objectives**
+### Learning objectives
 
 Students will be able to:
 
@@ -699,7 +670,7 @@ Students will be able to:
 5. Recognize that servo systems use feedback to regulate motion.  
 6. Select an appropriate motor system for a specified automation application.
 
-### **Lesson sequence**
+### Lesson sequence
 
 **0 to 5 minutes: Hook**
 
@@ -792,7 +763,7 @@ For each application, select an appropriate motor or motor system and justify th
 
 Explain that multiple solutions may be valid if students justify design tradeoffs.
 
-### **Presentation**
+### Presentation
 
 `Decks/AR2/ACMotors/Day4_Stepper_Brushless_Servo.html`, 18 slides:
 
@@ -815,7 +786,7 @@ Explain that multiple solutions may be valid if students justify design tradeoff
 17. Motor selection comparison  
 18. Resonance exit ticket: motor selection
 
-### **Virtual activity specification: Head to Head**
+### Virtual activity specification: Head to Head
 
 **Interaction:** compare. Students predict, then race three systems on one command.
 
@@ -873,13 +844,13 @@ With the bump off, the brushless arm misses under a light load but makes it unde
 
 ---
 
-# **Day 5: Industrial Motor Selection and Troubleshooting**
+## Day 5: Industrial Motor Selection and Troubleshooting
 
 **Essential question:** How does an automation technician determine which motor to use and why a motor system isn't operating correctly?
 
 **Standards:** 9.1 through 9.8, with emphasis on 9.2 and 9.5
 
-### **Learning objectives**
+### Learning objectives
 
 Students will be able to:
 
@@ -890,7 +861,7 @@ Students will be able to:
 5. Recommend solutions that respect industrial safety practices.  
 6. Communicate engineering reasoning using technical evidence.
 
-### **Lesson sequence**
+### Lesson sequence
 
 **0 to 5 minutes: Opening question**
 
@@ -974,7 +945,7 @@ Students respond to:
 
 A successful explanation connects at least two motor systems and discusses an engineering tradeoff.
 
-### **Presentation**
+### Presentation
 
 `Decks/AR2/ACMotors/Day5_Motor_Selection_and_Troubleshooting.html`, 14 slides:
 
@@ -993,7 +964,7 @@ A successful explanation connects at least two motor systems and discusses an en
 13. Unit concept summary  
 14. Resonance: final reflection
 
-### **Virtual activity specification: Motor Maintenance Work Orders**
+### Virtual activity specification: Motor Maintenance Work Orders
 
 **Interaction:** diagnose. Students find a hidden fault from evidence on a limited budget, then defend the diagnosis.
 
@@ -1035,11 +1006,11 @@ The record also shows the downtime used against the budget and how many tests co
 
 ---
 
-# **Unit Assessment Framework**
+## Unit Assessment Framework
 
 The unit should use frequent formative checks followed by a short applied assessment, without requiring a separate traditional examination.
 
-## **Recommended assessment weights**
+### Recommended assessment weights
 
 | Component | Weight |
 | ----- | ----- |
@@ -1050,7 +1021,7 @@ The unit should use frequent formative checks followed by a short applied assess
 
 These weights apply only to this unit's assessment, not to the course grading categories.
 
-## **Four level analytic rubric**
+### Four level analytic rubric
 
 **4: Advanced**
 
@@ -1070,7 +1041,7 @@ Student demonstrates significant misconceptions or selects solutions without suf
 
 Evaluate conceptual understanding, technical application, diagnostic reasoning, and safety awareness.
 
-# **Virtual Activity Design Principles**
+## Virtual Activity Design Principles
 
 These principles apply across all five investigations.
 
@@ -1096,7 +1067,7 @@ These principles apply across all five investigations.
 
 Find-the-fault activities like Day 5 transfer well to other units and courses; the repository's `.agent/knowledge/troubleshooting-activities.md` describes how to build them.
 
-# **Scope Boundaries**
+## Scope Boundaries
 
 To preserve the one week duration, the following should not become major instructional topics:
 
@@ -1113,11 +1084,11 @@ These can be introduced visually or revisited in other units when relevant.
 
 **The intended achievement is not mastery of industrial motor engineering. It is the ability to recognize how motor designs work, understand their control requirements, and make informed decisions about their use in automation.**
 
-# **Core Unit Vocabulary**
+## Core Unit Vocabulary
 
 Electromagnetic induction, alternator, AC, DC, frequency, hertz, phase, phase angle, single phase, three phase, stator, rotor, squirrel cage, induction motor, starting torque, shaded pole, auxiliary winding, capacitor start, permanent split capacitor, synchronous speed, slip, variable frequency drive, rectifier, inverter, commutation, stepper motor, brushless motor, servo, encoder, feedback, following error, contactor, holding contact, overload protection, lockout/tagout, and motor nameplate.
 
-# **Materials and Preparation**
+## Materials and Preparation
 
 **Required**
 
@@ -1137,7 +1108,7 @@ Electromagnetic induction, alternator, AC, DC, frequency, hertz, phase, phase an
 
 No purchase is required to complete the planned unit.
 
-# **End of Week Evidence of Learning**
+## End of Week Evidence of Learning
 
 By the end of Friday, each student should have produced:
 
@@ -1149,7 +1120,7 @@ By the end of Friday, each student should have produced:
 
 These artifacts provide evidence of technical understanding and applied decision making across Standard 9.0.
 
-## **How the presentations were built**
+## How the presentations were built
 
 All five decks follow the same arc:
 
