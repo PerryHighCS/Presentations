@@ -177,7 +177,7 @@ Race results at 90°, 90°/s (within 1° of the target):
 7. Lockout/tagout: the six steps, a locked and tagged disconnect, a lock and unique key for every worker
 8. Mechanical vs electrical vs control faults
 9. Resonance: fault type and safety check (3 MCQ)
-10. How the work orders work
+10. How the work orders work (investigate on a downtime budget, diagnose, defend)
 11. **Motor Maintenance Work Orders simulator**
 12. Engineering selection challenge (choose one of four applications)
 13. Unit concept summary
@@ -188,10 +188,16 @@ their selection justification on paper.
 
 **Work Orders:** four work orders (ventilation fan, industrial pump, overheating
 conveyor motor, positioning error), each with a hidden cause drawn from 3 or 4
-possibilities. A New Fault button draws another. Students run tests, safe and
-unsafe. Useful tests reveal readings rather than answers, irrelevant tests return
-valid but unhelpful data, and unsafe choices raise a warning. At least one test is
-required before the Diagnose stage unlocks. The diagnosis and repair choices then
-produce a scored record (out of 4): key evidence checked, unsafe attempts,
-diagnosis, and repair, plus how many tests could tell the causes apart and an
-explanation of the actual cause.
+possibilities. A New Fault button deals the next cause from a shuffled deck, so
+every cause comes up once before any repeats. The info panel has Ticket,
+History (a machine log with a lead for each cause and one irrelevant entry), and
+Causes (strike out the causes the evidence rules out) tabs. Each test costs
+downtime (2 min to read or observe, 5 to measure live, 15 to lock out) against a
+budget per ticket (fan 45, pump 25, conveyor 30, indexer 40 min). Unsafe choices
+show a time like any other test and are charged when picked, but are never
+performed and raise a warning. Tests that no longer fit are disabled.
+Useful tests reveal readings rather than answers, and irrelevant tests return
+valid but unhelpful data. At least one test unlocks Diagnose (cause and repair),
+then Defend (tag the supporting readings). The record scores 6: key evidence,
+safety, ruling out, diagnosis, repair, and defended evidence, with downtime used
+and an explanation of the actual cause.

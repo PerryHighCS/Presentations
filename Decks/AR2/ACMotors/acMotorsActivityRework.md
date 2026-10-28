@@ -236,8 +236,9 @@ The Work Orders already differ the most. Lean further into deliberate diagnosis.
 - **Downtime budget:** each ticket has a downtime budget (for example 45
   minutes). Each test costs minutes: reading a display or observing about 2,
   an energized measurement by a qualified technician about 5, and a test that
-  needs lockout about 15 (lockout takes time). Unsafe choices cost nothing but
-  are still flagged. Running out of time ends the investigation.
+  needs lockout about 15 (lockout takes time). Unsafe choices show a time on
+  the same scale (so a blank cost never gives them away) and are charged when
+  picked, as well as flagged. Running out of time ends the investigation.
 - **Machine history:** a log for each ticket (recent work, changes upstream,
   past failures), including some entries that do not matter.
 - **Eliminate (scored):** the possible causes are listed during the
@@ -258,17 +259,40 @@ The info panel is already full. Likely layout: tabs inside the info panel
 (Ticket, History, Causes), with the downtime meter in the top bar next to the
 status chip.
 
+### Build notes
+
+- Costs: reading a display, records, or observing 2 min; an energized
+  measurement or a test cycle (the indexer's slow rerun, the conveyor's IR
+  reading after 5 min of running) 5 min; lockout 15 min. Budgets and the
+  careful vs. every-safe-test totals: fan 37 / 57 of 45, pump 17 / 28 of 25,
+  conveyor 12 / 34 of 30, indexer 37 / 54 of 40.
+- Unsafe tests carry a time too (2 min for hands-on ones, 5 min for the
+  rest) and are charged when picked, decided after review: a blank cost
+  gave them away before students read the procedure.
+- Out of time means no untried test fits in what is left; the status chip
+  turns OUT OF TIME and Diagnose stays available.
+- Each history log gives one lead per possible cause plus one irrelevant
+  entry, so history points to tests rather than answers (for example, the
+  pump's motor was replaced last month for every cause; only the nameplate
+  test shows whether the replacement was wrong).
+- Defend is its own step after Diagnose; at least one tagged reading is
+  needed to submit. The defended point checks for a key reading of the
+  actual cause.
+- Record rows were shortened (no quoting the wrong choice back) so the worst
+  case fits; downtime and useful-test count moved into the record header.
+
 ### Checklist
 
-- [ ] Test costs and a budget for each ticket, tuned so a careful student
+- [x] Test costs and a budget for each ticket, tuned so a careful student
   finishes with time to spare and a scattershot one runs out.
-- [ ] History logs for all four tickets.
-- [ ] Drop "· Simplified educational model" from the slide 11 tag and the
+- [x] History logs for all four tickets.
+- [x] Drop "· Simplified educational model" from the slide 11 tag and the
   "Simplified model. Readings are illustrative." note in the info panel.
-- [ ] Causes tab with strike-out toggles.
-- [ ] Defend step and updated record.
-- [ ] Update slide 10 (how it works), the outline, and the index; checks
-  (every reading × cause, longest record); teacher review.
+- [x] Causes tab with strike-out toggles.
+- [x] Defend step and updated record.
+- [x] Update slide 10 (how it works), the outline, and the index; checks
+  (every stage of every ticket, longest record, scattershot runs out).
+- [x] Teacher review, then commit.
 
 ---
 
@@ -282,5 +306,5 @@ None right now. Add new ones here as they come up during the build.
 - [x] Day 2: Motor Design Workshop
 - [x] Day 3: Control Room missions
 - [x] Day 4: Head to Head
-- [ ] Day 5: Diagnostic Mystery
+- [x] Day 5: Diagnostic Mystery
 - [ ] Day 1: optional task polish
