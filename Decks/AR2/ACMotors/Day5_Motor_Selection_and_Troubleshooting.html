@@ -576,7 +576,7 @@ var WORK_ORDERS = [
           r: { def: 'Main winding <span class="rd">8.4 &Omega;</span>. Auxiliary winding <span class="rd">13.1 &Omega;</span>.', aux: 'Main winding <span class="rd">8.4 &Omega;</span>. Auxiliary winding <span class="rd">OL</span> (open circuit).' } },
     ],
     diagnoses: [
-        { text: 'Failed centrifugal starting switch', note: 'A PSC motor has no centrifugal switch.' },
+        { text: 'Failed centrifugal starting switch', ruledBy: [], note: 'A PSC motor has no centrifugal switch.' },
         { text: 'Seized bearing or blocked blade', cause: 'seized' },
         { text: 'Failed run capacitor', cause: 'cap' },
         { text: 'Open auxiliary winding', cause: 'aux' },
@@ -645,7 +645,7 @@ var WORK_ORDERS = [
     diagnoses: [
         { text: 'Wrong motor installed', cause: 'mismatch' },
         { text: 'Speed reference set too low', cause: 'setpoint' },
-        { text: 'Phase sequence reversed', note: 'Swapping two phases reverses the motor; it does not slow it down.' },
+        { text: 'Phase sequence reversed', ruledBy: [], note: 'Swapping two phases reverses the motor; it does not slow it down.' },
         { text: 'Pump binding overloads the motor', cause: 'load' },
         { text: 'Max frequency parameter limits the output', cause: 'maxfreq' },
     ],
@@ -713,7 +713,7 @@ var WORK_ORDERS = [
         { text: 'Failing bearing', cause: 'bearing' },
         { text: 'Conveyor overloaded', cause: 'load' },
         { text: 'Overload set too low', cause: 'olset' },
-        { text: 'Lost phase (single phasing)', note: 'Balanced currents on all three lines rule out a lost phase.' },
+        { text: 'Lost phase (single phasing)', ruledBy: ['amps'], note: 'Balanced currents on all three lines rule out a lost phase.' },
         { text: 'Blocked cooling', cause: 'cooling' },
     ],
     repairs: [
@@ -779,7 +779,7 @@ var WORK_ORDERS = [
     ],
     diagnoses: [
         { text: 'Faulty position sensor', cause: 'sensor' },
-        { text: 'Drive current set too low', note: 'The drive is set to the motor’s 2.8 A rating.' },
+        { text: 'Drive current set too low', ruledBy: ['drive'], note: 'The drive is set to the motor’s 2.8 A rating.' },
         { text: 'Mechanical binding at one spot', cause: 'binding' },
         { text: 'Lost steps from too much acceleration', cause: 'accel' },
         { text: 'Loose pulley set screw', cause: 'coupling' },
@@ -894,7 +894,7 @@ function buildWorkOrders(root) {
                 }).join('') + '</div>';
         } else {
             html += '<div class="wo-title">Possible causes</div>' +
-                '<p class="cause-note">Strike out each cause your evidence rules out. Your record checks what you struck.</p>' +
+                '<p class="cause-note">Strike out a cause only when a reading rules it out. Your record checks each strike against your readings.</p>' +
                 '<div class="cause-list">' + w.diagnoses.map(function (d, i) {
                     var out = s.struck.indexOf(i) >= 0;
                     return '<button class="cause-btn" type="button" data-cause="' + i + '" aria-pressed="' + out + '"' + (s.stage === 'record' ? ' disabled' : '') + '>' +
@@ -1074,12 +1074,23 @@ function buildWorkOrders(root) {
         var nRel = s.run.filter(function (id) { return relevant(test(id)); }).length;
         var d = w.diagnoses[s.diag], r = w.repairs[s.repair];
         var dOK = d.cause === s.cause, rOK = r.fixes === s.cause, safe = !s.unsafe.length && !r.unsafe;
-        // Elimination: at least one wrong cause struck, and the actual one never.
+        // Ruling out: the actual cause is never struck, and every struck cause
+        // is ruled out by a reading the student took. A real cause is ruled
+        // out when some test run reads differently for it than for the actual
+        // cause; a distractor lists the tests that rule it out (none when the
+        // ticket itself does, such as a PSC nameplate with no switch).
         var trueIdx = w.diagnoses.map(function (o) { return o.cause; }).indexOf(s.cause);
-        var struckTrue = s.struck.indexOf(trueIdx) >= 0, wrongStruck = s.struck.length - (struckTrue ? 1 : 0);
-        var elimOK = wrongStruck > 0 && !struckTrue;
+        var struckTrue = s.struck.indexOf(trueIdx) >= 0;
+        function justified(i) {
+            var o = w.diagnoses[i];
+            if (!o.cause) return o.ruledBy.every(function (id) { return s.run.indexOf(id) >= 0; });
+            return s.run.some(function (id) { var t = test(id); return reading(t, o.cause) !== reading(t, s.cause); });
+        }
+        var unjust = s.struck.filter(function (i) { return i !== trueIdx && !justified(i); });
+        var elimOK = s.struck.length > 0 && !struckTrue && !unjust.length;
+        // Defended: a key reading for the actual cause, behind the right diagnosis.
         var tagKeys = c.key.filter(function (k) { return s.tags.indexOf(k) >= 0; });
-        var defOK = tagKeys.length > 0;
+        var defOK = dOK && tagKeys.length > 0;
         var score = [keyRan, safe, elimOK, dOK, rOK, defOK].filter(Boolean).length;
         function mark(ok) { return ok ? '<span class="ok">✓</span> ' : '<span class="no">✗</span> '; }
         var rows = [
@@ -1088,10 +1099,13 @@ function buildWorkOrders(root) {
                 s.unsafe.length ? s.unsafe.length + ' unsafe test' + (s.unsafe.length > 1 ? 's' : '') + ' chosen.' : '',
                 r.unsafe ? 'The repair you chose is unsafe.' : ''].join(' ').trim())],
             ['Ruled out', mark(elimOK) + (struckTrue ? 'You struck out the actual cause (see the ' + names(c.key, ' or ') + ' reading).'
-                : wrongStruck ? wrongStruck + ' wrong cause' + (wrongStruck > 1 ? 's' : '') + ' struck out.' : 'You did not strike out any causes.')],
+                : unjust.length ? 'No reading you took rules out “' + w.diagnoses[unjust[0]].text + '” yet.'
+                : s.struck.length ? (s.struck.length > 1 ? s.struck.length + ' causes struck out, each ruled out by your evidence.' : '1 cause struck out, ruled out by your evidence.') : 'You did not strike out any causes.')],
             ['Diagnosis', mark(dOK) + (dOK ? c.name + '.' : 'Actual cause: ' + c.name + '.')],
             ['Repair', mark(rOK) + (rOK ? r.text + '.' : (r.unsafe ? 'Unsafe: ' : '') + (r.note || 'It does not fix the actual cause.'))],
-            ['Defended', mark(defOK) + (defOK ? 'You backed it with the ' + names(tagKeys, ' and ') + ' reading' + (tagKeys.length > 1 ? 's.' : '.') : 'No key reading tagged (the ' + names(c.key, ' or ') + ' reading).')],
+            ['Defended', mark(defOK) + (defOK ? 'You backed it with the ' + names(tagKeys, ' and ') + ' reading' + (tagKeys.length > 1 ? 's.' : '.')
+                : tagKeys.length ? 'The ' + names(tagKeys, ' and ') + ' reading you tagged points to the actual cause, not your diagnosis.'
+                : 'No key reading tagged (the ' + names(c.key, ' or ') + ' reading).')],
         ];
         var stats = s.used + ' of ' + w.budget + ' min · ' + s.run.length + ' test' + (s.run.length === 1 ? '' : 's') + ', ' + nRel + ' useful';
         el.innerHTML = '<div class="sim-head"><span>Record <span class="sim-note">' + stats + '</span></span><span class="rec-score">Score ' + score + ' / 6</span></div>' +

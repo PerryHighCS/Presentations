@@ -924,7 +924,7 @@ function buildVfdLab(root) {
 
     var st = { set: 60, P: 4, load: 50, ramp: 5, f: 0, n: 0, running: false, stopping: false,
                fault: null, estop: false, heat: 0, ocTime: 0, wt: 0, fieldDeg: 0, rotorDeg: 0, T: 0,
-               mission: 'free', holdT: 0, runT: 0, reachT: null, tripRun: false, peakT: 0, done: {} };
+               mission: 'free', holdT: 0, runT: 0, reachT: null, tripRun: false, peakT: 0, done: {}, recorded: false };
 
     function M() { return MISSIONS[st.mission]; }
     function motor() { return MOTORS[st.P]; }
@@ -1045,13 +1045,18 @@ function buildVfdLab(root) {
     }
 
     // Hold missions complete after every spec passes at steady speed for
-    // m.hold seconds; the conveyor completes as soon as its specs pass.
+    // m.hold seconds; the conveyor completes as soon as its specs pass. Each
+    // new completion (a fresh hold, or a fresh timed start) replaces the
+    // record, so a better setting found later is the one recorded.
     function missionTick(dt) {
         var m = M();
         if (!m.specs) return;
         var c = missionCtx(), ok = m.specs(c).every(function (s) { return s[0]; });
-        if (m.hold) st.holdT = ok && c.powered && stateName() === 'RUN' ? st.holdT + dt : 0;
-        if (!st.done[st.mission] && (m.hold ? st.holdT >= m.hold : ok)) st.done[st.mission] = m.record(c);
+        if (m.hold) {
+            st.holdT = ok && c.powered && stateName() === 'RUN' ? st.holdT + dt : 0;
+            if (!st.holdT) st.recorded = false;
+        }
+        if (!st.recorded && (m.hold ? st.holdT >= m.hold : ok)) { st.done[st.mission] = m.record(c); st.recorded = true; }
     }
 
     function renderMission() {
@@ -1129,6 +1134,9 @@ function buildVfdLab(root) {
             b.setAttribute('aria-pressed', +b.dataset.val === st.P);
             b.disabled = st.running || st.n > 1 || !!M().P;
         });
+        // The ramp is locked during a timed attempt, so the recorded ramp is
+        // the one that actually ran.
+        q('ramp').disabled = !!M().limit && (st.running || st.n > 1);
         renderMission();
     }
 
@@ -1142,7 +1150,7 @@ function buildVfdLab(root) {
         if (m.P) st.P = m.P;
         if (m.load !== undefined) st.load = m.load;
         st.set = 60; st.ramp = 5; st.fault = null; st.estopWas = false; st.heat = 0; st.ocTime = 0;
-        st.holdT = 0; st.runT = 0; st.reachT = null; st.tripRun = false; st.peakT = 0;
+        st.holdT = 0; st.runT = 0; st.reachT = null; st.tripRun = false; st.peakT = 0; st.recorded = false;
         q('freq').value = st.set; q('freq-val').textContent = st.set + ' Hz';
         q('ramp').value = st.ramp; q('ramp-val').textContent = st.ramp + ' s';
         q('load').value = st.load; q('load-val').textContent = m.fan ? 'fan' : st.load + '%';
@@ -1152,7 +1160,8 @@ function buildVfdLab(root) {
     }
 
     q('freq').addEventListener('input', function () { st.set = +this.value; q('freq-val').textContent = st.set + ' Hz'; });
-    q('load').addEventListener('input', function () { st.load = +this.value; q('load-val').textContent = st.load + '%'; });
+    // A new load is a new setting: it has to be held again to be recorded.
+    q('load').addEventListener('input', function () { st.load = +this.value; q('load-val').textContent = st.load + '%'; st.holdT = 0; st.recorded = false; });
     q('ramp').addEventListener('input', function () { st.ramp = +this.value; q('ramp-val').textContent = st.ramp + ' s'; });
     root.querySelectorAll('[data-role="poles"] .seg-btn').forEach(function (b) {
         b.addEventListener('click', function () {
@@ -1166,8 +1175,11 @@ function buildVfdLab(root) {
         if (st.estop) { say('The E-stop is latched. Release it, then press Reset fault before starting.', 'bad'); return; }
         if (st.fault) { say('The drive is faulted. Fix the cause, then press Reset fault.', 'bad'); return; }
         if (st.running && !st.stopping) return;
+        // The timed conveyor clock starts from rest, so a restart while the
+        // belt is still moving cannot count as a fast start.
+        if (M().limit && st.n > 1) { say('Let the belt stop first. The 10 s clock starts from rest.', 'caution'); return; }
         st.running = true; st.stopping = false; st.ocTime = 0;
-        st.holdT = 0; st.runT = 0; st.reachT = null; st.tripRun = false; st.peakT = 0;
+        st.holdT = 0; st.runT = 0; st.reachT = null; st.tripRun = false; st.peakT = 0; st.recorded = false;
         say('Accelerating: the drive raises the frequency at ' + (60 / st.ramp).toFixed(1) + ' Hz per second.');
     });
     q('stop').addEventListener('click', function () {

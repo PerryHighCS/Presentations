@@ -109,6 +109,9 @@
 .start-lab .res-row .ok { color: var(--accent); font-weight: 700; }
 .start-lab .res-row .no { color: var(--fault); font-weight: 700; }
 .start-lab .res-note { margin-top: 6px; color: var(--text); border-left: 4px solid var(--warn); padding-left: 10px; }
+/* The result box redraws its test timer ten times a second, so only this
+   hidden region is live: it announces the test starting and the result. */
+.start-lab .sr-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* Labeled photo (slide 6): leaders get a dark halo so they read on the
    white photo and on the dark slide alike */
@@ -167,7 +170,7 @@
           <a class="agenda-item" href="#/5"><span class="agenda-num">01</span><span class="agenda-text">Inside an <strong>induction motor</strong></span></a>
           <a class="agenda-item" href="#/8"><span class="agenda-num">02</span><span class="agenda-text">The <strong>starting problem</strong></span></a>
           <a class="agenda-item" href="#/11"><span class="agenda-num">03</span><span class="agenda-text">Five <strong>starting designs</strong></span></a>
-          <a class="agenda-item" href="#/17"><span class="agenda-num">04</span><span class="agenda-text">Design: the <strong>Motor Design Workshop</strong></span></a>
+          <a class="agenda-item" href="#/16"><span class="agenda-num">04</span><span class="agenda-text">Design: the <strong>Motor Design Workshop</strong></span></a>
         </div>
       </div>
     </div>
@@ -579,7 +582,8 @@
             <div class="sim-head"><span>Torque vs speed (% of rated)</span><span class="sim-note"><span class="lg-motor"></span>motor<span class="lg-load"></span>load</span></div>
             <svg data-role="chart" viewBox="0 0 1000 220" role="img" aria-label="Chart of motor torque and load torque against speed, with the current operating point"></svg>
           </div>
-          <div class="sim-panel result-box" data-role="result" aria-live="polite"></div>
+          <div class="sim-panel result-box" data-role="result"></div>
+          <div class="sr-live" data-role="result-sr" aria-live="polite"></div>
         </div>
       </div>
     </div>
@@ -1052,6 +1056,10 @@ function buildStartLab(root) {
             html = '<div class="res-head live">YOUR BUILD · ' + d.name + '</div><div class="res-row">' + (st.live || 'Choose parts for the brief, then press Test design. The test runs for ' + TEST_S + ' seconds.') + '</div>';
         }
         if (box.innerHTML !== html) box.innerHTML = html;
+        var sr = q('result-sr'), say = '';
+        if (st.result) say = Array.prototype.map.call(box.children, function (e) { return e.textContent.trim(); }).join('. ').replace(/\.\./g, '.');
+        else if (st.testing) say = 'Testing ' + d.name + ' for ' + TEST_S + ' seconds.';
+        if (sr.textContent !== say) sr.textContent = say;
     }
 
     function finish() {
@@ -1061,7 +1069,7 @@ function buildStartLab(root) {
         else rows.push([false, 'Runs too slowly: ' + rpm + ' RPM. High slip means high current and heat; the design is too weak for this load.']);
         rows.push([d.cost <= b.budget, 'Cost: $' + d.cost + ' of the $' + b.budget + ' budget.']);
         if (b.eff) rows.push([d.eff !== null && d.eff >= b.eff, 'Efficiency: ' + (d.eff === null ? 'none (it never runs)' : d.eff + ' %') + ', needs ' + b.eff + ' % or better.']);
-        if (b.quiet) rows.push([d.noise === 'quiet', 'Noise: ' + (d.noise === 'quiet' ? 'quiet.' : d.noise === 'hums' ? 'it hums.' : 'moderate (the switch clicks at every start). This brief needs quiet.')]);
+        if (b.quiet) rows.push([d.noise === 'quiet', 'Noise: ' + (d.noise === 'quiet' ? 'quiet.' : d.noise === 'hums' ? 'it hums.' : 'moderate (' + (d.sw ? 'the switch clicks at every start' : 'the unbalanced field makes it buzz') + '). This brief needs quiet.')]);
         if (d.switchNote && st.switchedOut) notes.push(d.switchNote);
         st.result = { pass: rows.every(function (r) { return r[0]; }), rows: rows, notes: notes.concat(d.notes) };
         st.testing = false;
