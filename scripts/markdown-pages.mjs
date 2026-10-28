@@ -284,8 +284,10 @@ const COPY_SCRIPT = `
   const main = document.querySelector('main');
   const markdown = JSON.parse(document.getElementById('markdown-source').textContent);
 
-  function cleanHtml(node) {
-    node.querySelectorAll('nav.contents').forEach((nav) => nav.remove());
+  // The contents list is left out of whole-page copies only; a selection
+  // that includes contents links keeps them.
+  function cleanHtml(node, { wholePage = false } = {}) {
+    if (wholePage) node.querySelectorAll('nav.contents').forEach((nav) => nav.remove());
     node.querySelectorAll('*').forEach((el) => {
       el.removeAttribute('style');
       el.removeAttribute('class');
@@ -343,14 +345,17 @@ const COPY_SCRIPT = `
   const toggle = document.querySelector('.split-toggle');
   const menu = document.getElementById('copy-menu');
   const items = [...menu.querySelectorAll('[role="menuitem"]')];
-  let pressedRange = null;
+  let pressedSelection = null;
   let resetTimer = null;
 
-  function selectedRange() {
+  // The selection on the page, if any: its range plus the browser's plain
+  // text for it, which keeps line breaks and table-cell separators that
+  // Range.toString() drops, matching an ordinary copy.
+  function pageSelection() {
     const selection = document.getSelection();
     if (!selection || selection.isCollapsed || !selection.rangeCount) return null;
     const range = selection.getRangeAt(0);
-    return range.intersectsNode(main) ? range.cloneRange() : null;
+    return range.intersectsNode(main) ? { range: range.cloneRange(), text: selection.toString() } : null;
   }
 
   function setMenu(open, focusItem) {
@@ -364,17 +369,17 @@ const COPY_SCRIPT = `
       await write(null, markdown);
       return;
     }
-    const range = kind === 'auto' ? pressedRange || selectedRange() : null;
-    if (range) {
+    const selected = kind === 'auto' ? pressedSelection || pageSelection() : null;
+    if (selected) {
       const holder = document.createElement('div');
-      holder.appendChild(cloneWithAncestors(range));
-      await write(cleanHtml(holder), range.toString());
+      holder.appendChild(cloneWithAncestors(selected.range));
+      await write(cleanHtml(holder), selected.text);
     } else {
-      await write(cleanHtml(main.cloneNode(true)), markdown);
+      await write(cleanHtml(main.cloneNode(true), { wholePage: true }), markdown);
     }
   }
 
-  mainButton.addEventListener('pointerdown', () => { pressedRange = selectedRange(); });
+  mainButton.addEventListener('pointerdown', () => { pressedSelection = pageSelection(); });
 
   document.querySelectorAll('[data-copy]').forEach((button) => {
     button.addEventListener('click', async () => {
@@ -388,7 +393,7 @@ const COPY_SCRIPT = `
       } catch {
         mainButton.textContent = 'Copy failed';
       }
-      pressedRange = null;
+      pressedSelection = null;
       if (fromMenu) toggle.focus();
       clearTimeout(resetTimer);
       resetTimer = setTimeout(() => { mainButton.textContent = mainLabel; }, 1500);
