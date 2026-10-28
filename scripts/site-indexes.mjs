@@ -143,6 +143,7 @@ export const PAGE_STYLE = `
   .file-actions a:hover { color: var(--accent); text-decoration: underline; }
   .file-actions .sep { color: #3d537e; }
   .file-actions button.copy-url { align-self: center; margin-left: -2px; }
+  .permalink-spacer { display: inline-flex; gap: 6px; visibility: hidden; }
   .tree li.group { margin: 6px 0 2px; }
   .tree li.group + li.group { margin-top: 14px; }
   .group-label {
@@ -191,7 +192,17 @@ export const PAGE_STYLE = `
   .tree a.open-new svg { width: 14px; height: 14px; display: block; }
   .tree a.open-new:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
   .tree li[hidden] { display: none; }
-  .project-chips { display: inline-flex; gap: 4px; }
+  /* Project chips sit in a fixed-width slot just before the row's actions,
+     which are the same width on every deck row, so the chips form a column.
+     --chip-slots (set on .tree) is the number of active projects. */
+  .project-chips {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: auto;
+    width: calc(var(--chip-slots, 1) * 2rem + (var(--chip-slots, 1) - 1) * 4px);
+  }
+  .project-chips + .file-actions { margin-left: 0; }
+  .tree .project-chip { width: 2rem; min-width: 0; padding: 0; text-align: center; }
   .project-chip {
     display: inline-block;
     min-width: 2.4em;
@@ -251,6 +262,8 @@ export const PAGE_STYLE = `
       align-items: flex-start;
     }
     .file-actions { margin-left: 0; }
+    .project-chips { margin-left: 0; width: auto; }
+    .project-chips:empty { display: none; }
   }
 `;
 
@@ -561,7 +574,7 @@ function makePage(titleText, heading, description, listing, generatedAt, generat
     <h1>${escapeHtml(heading)}</h1>
     <p>${escapeHtml(description)}</p>
     ${backHtml}
-    <ul class="tree">
+    <ul class="tree" style="--chip-slots: ${Math.max(projects.length, 1)}">
 ${listing}
     </ul>
     <p id="projects-empty" hidden>No presentations here match this filter.</p>
@@ -575,10 +588,12 @@ ${listing}
 }
 
 function renderProjectChips(file, projects) {
-  const applicable = projects.filter((project) => projectAppliesTo(project, file.rel));
-  if (!applicable.length) {
+  if (!projects.length) {
     return '';
   }
+  // With projects on the page, every deck row gets the chip slot, empty when
+  // no project applies, so the chips line up down the page.
+  const applicable = projects.filter((project) => projectAppliesTo(project, file.rel));
   const chips = applicable.map((project) => {
     const done = file.completedProjects.includes(project.id);
     const label = `${projectLabel(project)}: ${done ? 'done' : 'not done'}`;
@@ -661,7 +676,9 @@ function renderTree(node, indent = '      ', pathPrefix = '', pageDepth = 0, pro
         (permalinkHref
           ? `<span class="sep">&middot;</span>` +
             `<button type="button" class="copy-url copy-url-labeled" data-copy-path="${escapeHtml(permalinkHref)}" aria-label="Copy permalink URL" title="Copy permalink URL">Permalink ${ICON_COPY}</button>`
-          : '') +
+          : // Same width as the permalink, so the chip column stays aligned.
+            `<span class="permalink-spacer" aria-hidden="true"><span class="sep">&middot;</span>` +
+            `<button type="button" class="copy-url copy-url-labeled" tabindex="-1" disabled>Permalink ${ICON_COPY}</button></span>`) +
         `</span></li>`
     );
   }
