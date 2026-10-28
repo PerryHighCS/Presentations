@@ -286,8 +286,19 @@ const COPY_SCRIPT = `
 
   // The contents list is left out of whole-page copies only; a selection
   // that includes contents links keeps them.
+  // Link and image addresses become absolute, so a pasted copy still points
+  // back at this document (a copied "#section" link opens that section here,
+  // since the copy drops the heading ids).
   function cleanHtml(node, { wholePage = false } = {}) {
     if (wholePage) node.querySelectorAll('nav.contents').forEach((nav) => nav.remove());
+    node.querySelectorAll('a[href], img[src]').forEach((el) => {
+      const attr = el.hasAttribute('href') ? 'href' : 'src';
+      try {
+        el.setAttribute(attr, new URL(el.getAttribute(attr), document.baseURI).href);
+      } catch {
+        // Leave an address the URL parser rejects as it is.
+      }
+    });
     node.querySelectorAll('*').forEach((el) => {
       el.removeAttribute('style');
       el.removeAttribute('class');
@@ -351,11 +362,14 @@ const COPY_SCRIPT = `
   // The selection on the page, if any: its range plus the browser's plain
   // text for it, which keeps line breaks and table-cell separators that
   // Range.toString() drops, matching an ordinary copy.
+  // Every range is kept: Firefox allows a selection of several separate
+  // pieces, and the HTML should hold all of them, as the plain text does.
   function pageSelection() {
     const selection = document.getSelection();
     if (!selection || selection.isCollapsed || !selection.rangeCount) return null;
-    const range = selection.getRangeAt(0);
-    return range.intersectsNode(main) ? { range: range.cloneRange(), text: selection.toString() } : null;
+    const ranges = [];
+    for (let i = 0; i < selection.rangeCount; i++) ranges.push(selection.getRangeAt(i).cloneRange());
+    return ranges.some((range) => range.intersectsNode(main)) ? { ranges, text: selection.toString() } : null;
   }
 
   function setMenu(open, focusItem) {
@@ -372,7 +386,7 @@ const COPY_SCRIPT = `
     const selected = kind === 'auto' ? pressedSelection || pageSelection() : null;
     if (selected) {
       const holder = document.createElement('div');
-      holder.appendChild(cloneWithAncestors(selected.range));
+      selected.ranges.forEach((range) => holder.appendChild(cloneWithAncestors(range)));
       await write(cleanHtml(holder), selected.text);
     } else {
       await write(cleanHtml(main.cloneNode(true), { wholePage: true }), markdown);
