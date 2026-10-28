@@ -201,14 +201,29 @@ command, under one shared load, with one shared Bump.
   position), per the rule that activities get their own slides.
 - Slide 15 becomes the head to head simulator.
 
+### Build notes
+
+- Slides: 14 challenge, 15 Resonance prediction (heavy load plus a bump:
+  only the servo), 16 the simulator. The old task pager is gone; the four
+  races are listed on slide 14.
+- One Run is the race: the move, then, with Bump on, the same 0.3 s knock on
+  all three arms 1 s after arrival. Changing the command clears the locked
+  prediction.
+- Servo tuning change: anti-windup (the integral only builds below the torque
+  limit). Without it, a bump under medium load left the servo parked 1.3°
+  past the target for about 8 s while heavy load recovered, which read as
+  "the servo fails at medium."
+- A run ends only when a servo is within 1° of the command (or faulted), so
+  a servo held by friction while its integral builds is never scored early.
+
 ### Checklist
 
-- [ ] Refactor `buildPrecision` so one engine steps three arm states in lockstep.
-- [ ] Three-dial layout, shared graph, scoreboard, prediction lock.
-- [ ] Prediction Resonance slide; renumber; update the outline and the index.
-- [ ] Drop "· Simplified educational model" from the simulator slide tag.
-- [ ] Drive light, heavy, and overloaded runs with bumps; stability checks;
-  teacher review.
+- [x] Refactor `buildPrecision` so one engine steps three arm states in lockstep.
+- [x] Three-dial layout, shared graph, scoreboard, prediction lock.
+- [x] Prediction Resonance slide; renumber; update the outline and the index.
+- [x] Drop "· Simplified educational model" from the simulator slide tag.
+- [x] Drive light, heavy, and overloaded runs with bumps; stability checks.
+- [x] Teacher review, then commit.
 
 ---
 
@@ -266,6 +281,6 @@ None right now. Add new ones here as they come up during the build.
 - [x] Plan written
 - [x] Day 2: Motor Design Workshop
 - [x] Day 3: Control Room missions
-- [ ] Day 4: Head to Head
+- [x] Day 4: Head to Head
 - [ ] Day 5: Diagnostic Mystery
 - [ ] Day 1: optional task polish

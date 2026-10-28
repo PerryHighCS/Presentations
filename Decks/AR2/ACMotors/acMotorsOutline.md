@@ -138,20 +138,33 @@ contact, OL contact; buttons for Start, Stop, OL trip, and power loss.
 11. Open loop positioning and lost steps
 12. Servo feedback loop
 13. Resonance: what makes a system a servo
-14. Precision Under Pressure: the challenge (three systems, predictions)
-15. **Precision Under Pressure simulator**
-16. Motor selection comparison table
-17. Resonance exit ticket: toy vehicle, drone, robot arm joint, 3D printer axis
+14. Head to Head: the challenge (three systems, one command, four races)
+15. Resonance prediction: heavy load plus a bump, which arms end within 1°?
+16. **Head to Head simulator**
+17. Motor selection comparison table
+18. Resonance exit ticket: toy vehicle, drone, robot arm joint, 3D printer axis
 
-**Precision Under Pressure:** systems are an open loop stepper, BLDC speed
-control, and a servo with an encoder. Inputs: target angle, speed, load
-(light/medium/heavy), bump disturbance, run/pause/reset. Model: the stepper loses
-steps in groups of 4 when demanded torque exceeds the torque available at that
-step rate, and never knows it. BLDC regulates speed and runs for the computed
-time, so it drifts and coasts. The servo uses a torque-limited PD loop with
-response time, and raises a following-error fault when saturated too long.
-Displays: dial with commanded and actual pointers, error, encoder signal (servo
-only), position-vs-time graph, controller indicators, cost and complexity.
+**Head to Head:** an open loop stepper, BLDC speed control, and a servo with an
+encoder race side by side on one command (target, speed), one load
+(light/medium/heavy/overloaded), and an optional shared bump 1 s after arrival.
+Students lock a prediction (which arms end within 1° of the target) before Run
+unlocks. Model: the stepper loses steps in groups of 4 when demanded torque
+exceeds the torque available at that step rate, and never knows it. BLDC
+regulates speed and runs for the computed time, so it drifts and coasts. The
+servo uses a torque-limited PID loop with anti-windup, and raises a
+following-error fault when saturated too long. Displays: three dials with
+commanded and actual pointers, per-arm error, feedback, lost steps or drive,
+settle time, and prediction result; one position-vs-time graph with three
+labeled traces; cost per system.
+
+Race results at 90°, 90°/s (within 1° of the target):
+
+| Load | Bump off | Bump on |
+|---|---|---|
+| Light | stepper, servo (brushless 1.2° off) | servo only |
+| Medium | all three | servo only |
+| Heavy | all three | servo only |
+| Overloaded | none (stepper stalls, servo faults) | none |
 
 ## Day 5: Selection and Troubleshooting (`Day5_Motor_Selection_and_Troubleshooting.html`)
 
