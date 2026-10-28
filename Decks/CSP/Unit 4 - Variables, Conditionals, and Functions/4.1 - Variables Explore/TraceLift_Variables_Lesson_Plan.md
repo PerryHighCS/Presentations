@@ -1,20 +1,32 @@
 # Variables Explore with TraceLift
+
 ## Detailed Lesson Plan and Presentation Outline
+
 **Course:** AP Computer Science Principles  
 **Topic:** Parameters, Variables, Expressions, Assignment, and Tracing  
 **Suggested Length:** 50–60 minutes  
 **Grouping:** Pairs at stand-up whiteboards  
 **Core Tool:** TraceLift printable tracing sheets  
 **TraceLift:** https://print.mycode.run/tracelift
+
 ---
+
 # Lesson Purpose
+
 Students have already used functions with parameters without spending much time on what parameters actually are. This lesson uses that existing experience as the entry point into variables more generally.
+
 The conceptual progression is:
+
 > **Parameters already give names to values. Variables extend that idea beyond function calls.**
+
 Students first trace familiar function calls and see how argument values become parameter values. They then generalize the same mental model to variables created with `var`, assignment, reassignment, and expressions involving variables. The lesson spirals back to parameters at the end to show that passing a variable as an argument copies its current value into a separate parameter.
+
 ---
+
 # Lesson Goals
+
 By the end of the lesson, students should be able to:
+
 - Explain that a **value** is one piece of information.
 - Explain that a parameter gives a name to a value supplied by a function call.
 - Use a memory trace to show parameter values during a function call.
@@ -28,9 +40,13 @@ By the end of the lesson, students should be able to:
 - Explain that assigning or passing a value does not permanently connect two variables.
 - Explain that a parameter and a variable in the calling code are separate named storage locations, even if they have the same name.
 - Recognize that changing a parameter inside a function does not change the caller's variable.
+
 ---
+
 # Big Ideas to Reinforce Throughout
+
 Use these phrases consistently:
+
 - **A name can represent a value.**
 - **Arguments provide values to parameters.**
 - **An expression evaluates to one value.**
@@ -41,37 +57,58 @@ Use these phrases consistently:
 - **Using a value does not remove or change the original value.**
 - **Copying a value does not create a permanent connection.**
 - **A parameter is a separate named value inside the called function.**
+
 For assignment, consistently read:
+
 ```javascript
 score = 3;
 ```
+
 as:
+
 > score gets 3
+
 And:
+
 ```javascript
 score = score + 10;
 ```
+
 as:
+
 > score gets the value in score plus 10
+
 For a function call such as:
+
 ```javascript
 cheer("Pumas");
 ```
+
 use language like:
+
 > The argument `"Pumas"` becomes the value of the parameter `name` for this function call.
+
 ---
+
 # Materials
+
 Each pair needs:
+
 - One stand-up whiteboard.
 - One dry erase marker.
 - One eraser.
 - One magnetic line-tracing pointer or small magnet.
 - One TraceLift program sheet for each tracing round.
 - Optional scissors or pre-cut TraceLift sheets.
+
 The whiteboard should have space beside the TraceLift sheet for a **Memory Trace** and **console**.
+
 ---
+
 # Whiteboard Setup (Slide 2: Your Whiteboard Workspace)
+
 The workspace has three parts.
+
 ```
 ┌───────────────────────────────┬───────────────────────┐
 │ PROGRAM                       │ MEMORY TRACE          │
@@ -89,36 +126,55 @@ The workspace has three parts.
 │                                                       │
 └───────────────────────────────────────────────────────┘
 ```
+
 ## Program
+
 The TraceLift sheet contains the numbered program.
+
 Students move a pointer beside the line that is currently executing.
+
 ## Memory Trace
+
 Students create columns for names that currently represent values.
+
 A parameter may begin with a value immediately:
+
 ```text
 name
 --------
 "Pumas"
 ```
+
 A variable created with `var` begins without a value:
+
 ```text
 score
 -----
 ```
+
 As values change, students keep the history visible:
+
 ```text
 score
 -----
 ~~3~~
 5
 ```
+
 Only the newest uncrossed value is the current value.
+
 Explain:
+
 > A real program only has the current value. We leave old values visible because we are tracing what happened.
+
 ## Console
+
 This area shows output from the programs' console.log() statements.
+
 ---
+
 # Lesson Sequence Overview
+
 | Round | New Idea | Student Action |
 | --- | --- | --- |
 | 1 | Parameters name values | Trace argument values into parameters |
@@ -133,75 +189,123 @@ This area shows output from the programs' console.log() statements.
 | 10 | Spiral back to parameters | Pass variable values into parameters |
 | 11 | Same name, separate storage | Distinguish caller variable and parameter |
 | 12 | Parameter modification | Show caller value remains unchanged |
+
 ---
+
 # Presentation and Teaching Plan
+
 ## Slide 1: Variables Explore
+
 ### Display
+
 **Variables Explore**
+
 We've used **parameters** to give names to values passed into functions. That makes our functions more useful because they can behave differently depending on the values they receive.
+
 Today we are going to **become the computer** to see how giving names to values actually works.
+
 ### Teacher Notes
+
 Do not begin with a formal definition of variable.
+
 Start from something students already know operationally: functions with parameters.
+
 Explain the physical model:
+
 - The printed program is the code.
 - The pointer shows the current line.
 - The Memory Trace shows the values represented by names.
 - TraceLift flaps let students temporarily replace a name with its current value.
+
 ---
+
 # Round 1: Parameters Already Name Values
+
 ## Slide 3: Where a Parameter Gets Its Value
+
 ### Display
+
 ```javascript
 function cheer(name) {
   console.log("Go " + name + "!");
 }
 cheer("Pumas");
 ```
+
 Ask:
+
 > When this function runs, what does `name` mean?
+
 ### Expected Idea
+
 ```text
 name ← "Pumas"
 ```
+
 **AP connection:** the AP CSP exam reference sheet writes assignment with this same arrow. Read `name ← "Pumas"` as "name gets "Pumas"." Introduce the arrow here and reuse it when assignment appears in Round 5 (`score ← 3`).
+
 ### Memory Trace
+
 ```text
 name
 --------
 "Pumas"
 ```
+
 ### Teacher Notes
+
 Students have used parameters before. Use this to uncover the idea rather than introduce it as new vocabulary.
+
 Suggested language:
+
 > `name` is not the value `"Pumas"`. It is a name that represents that value while this function is running.
+
 Then ask:
+
 > Where did the value come from?
+
 Answer:
+
 > From the argument in the function call.
+
 ---
+
 ## Slide 4: Parameter and Argument
+
 ### Display
+
 ```javascript
 function cheer(name) {
 ```
+
 `name` is the **parameter**.
+
 ```javascript
 cheer("Pumas");
 ```
+
 `"Pumas"` is the **argument**.
+
 For this call:
+
 ```text
 name
 --------
 "Pumas"
 ```
+
 ### Teacher Notes
+
 Keep this practical. The goal is not a vocabulary lecture.
+
 Emphasize:
+
 > The function call supplies the starting value for the parameter. Read this as: "name gets the value 'Pumas' when the function is called."
+
 ---
+
 ## Slide 5: TraceLift Exercise 1A — One Parameter
+
 ```text
 Title: Round 1A - A Named Value
 function showScore(score) {
@@ -209,52 +313,80 @@ function showScore(score) {
 }
 showScore(10);
 ```
+
 score gets the value 10 when showScore is called
+
 ### Parameter Setup
+
 When the function call begins:
+
 ```text
 score
 -----
 10
 ```
+
 ### Teacher Notes
+
 Have students move the pointer into the function after reaching the function call.
+
 The `score` flap exposes the whiteboard, where students write `10`.
+
 No assignment yet. This round only establishes lookup and substitution.
+
 ---
+
 # Round 2: Parameters in Expressions
+
 ## Slide 6: Look Up and Substitute
+
 ### Display
+
 ```javascript
 function doubleScore(score) {
   console.log(score * 2);
 }
 doubleScore(5);
 ```
+
 Memory:
+
 ```text
 score
 -----
 5
 ```
+
 Lift the `score` flap and write:
+
 ```text
 5
 ```
+
 Now evaluate:
+
 ```text
 5 * 2
 ```
+
 Result:
+
 ```text
 10
 ```
+
 ### Key Routine
+
 **Look up → Substitute → Evaluate**
+
 ### Teacher Notes
+
 This routine will return later when variables appear in expressions.
+
 ---
+
 ## Slide 7: TraceLift Exercise 2A — Parameter in an Expression
+
 ```text
 Title: Round 2A - Parameter Expression
 function doubleScore(score) {
@@ -262,38 +394,56 @@ function doubleScore(score) {
 }
 doubleScore(6);
 ```
+
 ### Expected Result
+
 ```text
 12
 ```
+
 ---
+
 # Round 3: Multiple Parameters
+
 ## Slide 8: More Than One Named Value
+
 ### Display
+
 ```javascript
 function area(width, height) {
   console.log(width * height);
 }
 area(5, 2);
 ```
+
 Memory:
+
 ```text
 width     height
 -----     ------
 5         2
 ```
+
 The expression becomes:
+
 ```text
 5 * 2
 ```
+
 Result:
+
 ```text
 10
 ```
+
 ### Teacher Notes
+
 This introduces a memory table with multiple names before students encounter multiple `var` declarations.
+
 ---
+
 ## Slide 9: TraceLift Exercise 3A — Two Parameters
+
 ```text
 Title: Round 3A - Two Parameters
 function area(width, height) {
@@ -301,89 +451,144 @@ function area(width, height) {
 }
 area(4, 3);
 ```
+
 ### Expected Memory
+
 ```text
 width = 4
 height = 3
 ```
+
 ### Expected Result
+
 ```text
 12
 ```
+
 ---
+
 # Transition: Beyond Parameters
+
 ## Slide 10: What If the Value Does Not Come From a Function Call?
+
 ### Display
+
 What if we want to give a value a name ourselves?
+
 Parameters are useful because a function can receive a value and give it a name. But what if we want to keep track of a value while our program is running?
+
 Imagine the computer had a piece of scratch paper where it could write `score: 10` and then use the name score later.
+
 JavaScript gives us a way to create those named places:
+
 ```
 var score;
 ```
+
 ### Teacher Notes
+
 Ask:
+
 If parameters are names for values passed into a function, how could we use that same idea when we want the program itself to keep track of something?
+
 Let students suggest examples like score, lives, clicks, temperature, name, or level.
+
 Then:
+
 We can think of a variable as a named spot on the computer’s scratch paper.
+
 ---
+
 # Round 4: `var` Creates Memory
+
 ## Slide 11: `var`
+
 ### Display
+
 ```javascript
 var score;
 ```
+
 Read:
+
 > Create a variable named score.
+
 #### Physical Action
+
 Create a new column in memory:
+
 ```text
 score
 -----
 ```
+
 A variable is a named place the program can use to represent a value.
+
 ### Teacher Notes
+
 Now give the formal variable idea:
+
 > A variable is a named place the program can use to represent a value.
+
 Contrast gently with parameters:
+
 - Parameter: the function definition creates the named value and the function call supplies its starting value.
 - `var`: creates the named place, but it still needs a value assigned.
+
 ---
+
 # Round 5: Assignment and Reassignment
+
 ## Slide 12: Assignment
+
 ### Display
+
 ```javascript
 var score;
 score = 3;
 ```
+
 Read this as:
+
 > score gets 3
+
 Memory:
+
 ```text
 score
 -----
 3
 ```
+
 When making an assignment, evaluate the right side and store the value in the variable on the left.
+
 ---
+
 ## Slide 13: Reassignment
+
 ### Display
+
 ```javascript
 var score;
 score = 3;
 score = 5;
 ```
+
 Memory becomes:
+
 ```text
 score
 -----
 ~~3~~
 5
 ```
+
 When the variable is reassigned, the program no longer uses 3 as the current value of `score`. We leave it crossed out on the whiteboard so we can review what has happened in the past. In reality, only the newest uncrossed value counts.
+
 ---
+
 ## Slide 14: TraceLift Exercise 5A — First Variable
+
 ```text
 Title: Round 5A - First Variable
 var score;
@@ -391,12 +596,17 @@ score = 3;
 score = 5;
 score = 8;
 ```
+
 ### Expected Final State
+
 ```text
 score = 8
 ```
+
 ---
+
 ## Slide 15: TraceLift Exercise 5B — Two Variables
+
 ```text
 Title: Round 5B - Two Variables
 var pizza;
@@ -405,14 +615,20 @@ var tacos;
 pizza = "yum";
 tacos = "the best";
 ```
+
 ### Expected Final State
+
 ```text
 pizza = "yum"
 tacos = "the best"
 ```
+
 ---
+
 ## Slide 16: You Do It — Write and Trace (Partners)
+
 ### Display
+
 **Partner A, the programmer:** write a short program on the whiteboard using variables. Before your partner starts, secretly write down the final memory and console output you expect.
 
 **Partner B, the computer:** trace the program one line at a time with the pointer, a Memory Trace, and a console.
@@ -422,6 +638,7 @@ When the trace is done, compare it with Partner A's prediction. If they disagree
 Requirements: at least two variables, at least one reassignment, and at least one `console.log`. Use only `var`, assignment, numbers, strings, and `console.log` (no expressions yet).
 
 Example:
+
 ```javascript
 var pet;
 var age;
@@ -431,32 +648,49 @@ console.log(pet);
 age = 4;
 console.log(age);
 ```
+
 ### Teacher Notes
+
 About 6 minutes total, roughly 3 per round. Watch for columns created only when their `var` runs, old values crossed out rather than erased, and console output written only when the pointer moves past the `console.log` line. Expressions are off-limits here because "evaluate first, then assign" comes next. Extension for fast pairs: use a variable before assigning it (previews `undefined`).
 
 ---
+
 # Round 6: Expressions During Assignment
+
 ## Slide 17: Evaluate First, Then Assign
+
 ### Display
+
 ```javascript
 score = 3 + 4;
 ```
+
 Step 1:
+
 ```text
 3 + 4
 ```
+
 evaluates to:
+
 ```text
 7
 ```
+
 Step 2:
+
 ```text
 score gets 7
 ```
+
 #### Key Phrase
+
 **Evaluate first, then assign.**
+
 ---
+
 ## Slide 18: TraceLift Exercise 6A — Evaluate Then Assign
+
 ```text
 Title: Round 6A - Evaluate Then Assign
 var score;
@@ -464,25 +698,35 @@ score = 3 + 4;
 score = 10 - 2;
 score = 5 * 3;
 ```
+
 ### Expected Final State
+
 ```text
 score = 15
 ```
+
 ---
+
 ## Slide 19: Values Have Types
+
 ### Display
+
 So far, most of our values have been numbers:
+
 ```
 3
 10
 42
 ```
+
 Programs also need to work with text. A piece of text is called a **string**.
+
 ```
 "Pumas"
 "hello"
 "407"
 ```
+
 The kind of value is called its data type. Numbers and strings are two data types we will use in JavaScript.
 
  A string is a sequence of characters such as letters, numbers, and symbols, inside of quotation marks. In JavaScript, quotation marks tell the computer that those characters should be treated as text. 
@@ -490,8 +734,11 @@ The kind of value is called its data type. Numbers and strings are two data type
  `score` is the name of a variable; `"score"` is the word score in a string.
  
  `123` is a number; `"123"` is a string. 
+
 ---
+
 ## Slide 20: TraceLift Exercise 6B — Numbers and Strings
+
 ```text
 Title: Round 6B - Numbers and Strings
 var first;
@@ -501,40 +748,57 @@ second = 4 - 1;
 first = 3 * 3;
 second = 4 + "now";
 ```
+
 ### Expected Final State
+
 ```text
 first = 9
 second = "4now"
 ```
+
 ---
+
 # Round 7: Variables Inside Expressions
+
 ## Slide 21: Using the Values we Store
+
 ### Display
+
 Program:
+
 ```javascript
 var score;
 score = 3;
 score = score + 10;
 ```
+
 Memory:
+
 ```text
 score
 -----
 3
 ```
+
 The right-side `score` behaves just like the parameter names from earlier.
+
 1. Look up `score`.
 2. Substitute `3`.
 3. Evaluate `3 + 10`.
 4. Assign `13` back to `score`.
+
 ### New Complete Routine
+
 **Look up → Substitute → Evaluate → Assign**
 
 ### Teacher Notes
+
 Explicitly connect this back to Round 2.
 
 ---
+
 ## Slide 22: TraceLift Exercise 7A — Using the Current Value
+
 ```text
 Title: Round 7A - Using the Current Value
 var score;
@@ -544,12 +808,17 @@ score = [[score]] * 2;
 score = [[score]] - 4;
 console.log("Final score: " + [[score]]);
 ```
+
 ### Expected Final State
+
 ```text
 score = 22
 ```
+
 ---
+
 ## Slide 23: TraceLift Exercise 7B — Count Up
+
 ```text
 Title: Round 7B - Count Up
 var count;
@@ -559,27 +828,39 @@ count = [[count]] + 1;
 count = [[count]] + 1;
 console.log("Final count: " + [[count]]);
 ```
+
 ### Expected Final State
+
 ```text
 count = 3
 ```
+
 ---
+
 # Round 8: Multiple Variables and Copy, Not Connect
+
 ## Slide 24: Keeping Track of Multiple Values
+
 ### Display
+
 ```javascript
 var score;
 var bonus;
 ```
+
 Memory:
+
 ```text
 score     bonus
 -----     -----
 ```
+
 Each declaration creates another column.
 
 ---
+
 ## Slide 25: TraceLift Exercise 8A — Score and Bonus
+
 ```text
 Title: Round 8A - Multiple Variables
 var score;
@@ -592,22 +873,31 @@ score = [[score]] - 1;
 console.log("Score: " + [[score]]);
 console.log("Bonus: " + [[bonus]]);
 ```
+
 ### Expected Final State
+
 ```text
 score = 14
 bonus = 6
 ```
+
 ### Expected Console
+
 ```text
 Score: 14
 Bonus: 6
 ```
+
 ### Teacher Notes
+
 `score` and `bonus` never appear in the same expression on purpose. The point of this round is keeping two independent columns straight: each assignment changes only the variable on its left. Copy, not connect comes next in 8B.
 
 ---
+
 ## Slide 26: Assignment Copies the Current Value
+
 ### Display
+
 ```javascript
 var a;
 var b;
@@ -615,12 +905,17 @@ a = 5;
 b = a;
 a = 8;
 ```
+
 Ask before tracing (pairs write a prediction in the corner of the whiteboard):
+
 > What is `b` at the end?
+
 ### Key Idea
+
 > `b = a` uses the current value of `a` at that moment. It does not permanently connect the two names.
 
 ## Slide 27: TraceLift Exercise 8B — Copy, Not Connect
+
 ```text
 Title: Round 8B - Copy, Not Connect
 var a;
@@ -629,13 +924,18 @@ a = 5;
 b = [[a]];
 a = 8;
 ```
+
 ### Expected Final State
+
 ```text
 a = 8
 b = 5
 ```
+
 ---
+
 ## Slide 28: TraceLift Exercise 8C — Moving Information
+
 ```text
 Title: Round 8C - Moving Information
 var width;
@@ -650,26 +950,37 @@ console.log("Area: " + [[area]]);
 area = [[width]] * [[height]];
 console.log("Area: " + [[area]]);
 ```
+
 ### Expected Final State
+
 ```text
 width = 10
 height = 3
 area = 30
 ```
+
 ### Expected Console
+
 ```text
 Area: 12
 Area: 12
 Area: 30
 ```
+
 ### Discussion Prompt
+
 > When `width` changed, did `area` automatically change?
+
 No. `area` changed only when another assignment statement executed. This applies copy, not connect from 8B to an expression.
 
 ---
+
 # Round 9: Swapping Values
+
 ## Slide 29: Swapping Two Values
+
 ### Display
+
 ```javascript
 var a;
 var b;
@@ -680,12 +991,17 @@ b = a;
 console.log("a is " + a);
 console.log("b is " + b);
 ```
+
 Ask before tracing:
+
 > This program is supposed to make `a` and `b` trade values. Does it work?
+
 ### Teacher Notes
+
 Most students predict the swap works. Collect predictions on whiteboards before tracing. Swapping two values is a classic AP CSP exam question.
 
 ## Slide 30: TraceLift Exercise 9A — Does the Swap Work?
+
 ```text
 Title: Round 9A - Does the Swap Work?
 var a;
@@ -697,30 +1013,41 @@ b = [[a]];
 console.log("a is " + [[a]]);
 console.log("b is " + [[b]]);
 ```
+
 ### Expected Final State
+
 ```text
 a = 8
 b = 8
 ```
+
 ### Expected Console
+
 ```text
 a is 8
 b is 8
 ```
+
 ### Key Idea
+
 > When `a` got 8, its 5 was lost. Line 6 copies the current value of `a`, which is now 8. Copy, not connect, again.
 
 ## Slide 31: Fix the Swap (Partners)
+
 ### Display
+
 The swap failed because the 5 was overwritten before anyone saved it. Rewrite the program so that `a` ends as 8 and `b` ends as 5, then trace your fix to prove it works.
 
 Question (revealed after a minute or two): before `a` gets overwritten, where could we keep its value until we need it?
 
 Let pairs discover the extra variable themselves; if a pair is stuck, ask what we have used all lesson to remember a value.
+
 ### Teacher Notes
+
 Some pairs may write `a = 8; b = 5;` with literal values. Acknowledge that it works for these numbers, then ask whether it would still work if the program did not know the starting values ahead of time.
 
 ## Slide 32: TraceLift Exercise 9B — One Way to Fix the Swap
+
 ```text
 Title: Round 9B - One Way to Fix the Swap
 var a;
@@ -734,24 +1061,34 @@ b = [[temp]];
 console.log("a is " + [[a]]);
 console.log("b is " + [[b]]);
 ```
+
 ### Expected Final State
+
 ```text
 a = 8
 b = 5
 temp = 5
 ```
+
 ### Expected Console
+
 ```text
 a is 8
 b is 5
 ```
+
 ### Teacher Notes
+
 The order of the three assignments matters. `temp = b; b = a; a = temp;` also works; trace student variations too.
 
 ---
+
 # Round 10: Spiral Back to Parameters
+
 ## Slide 33: Pass a Variable's Value Into a Function
+
 ### Display
+
 ```javascript
 function showScore(score) {
   console.log(score);
@@ -761,29 +1098,41 @@ var playerScore;
 playerScore = 10;
 showScore(playerScore);
 ```
+
 Caller memory:
+
 ```text
 playerScore
 -----------
 10
 ```
+
 At the function call, look up `playerScore`:
+
 ```text
 10
 ```
+
 The called function receives:
+
 ```text
 score
 -----
 10
 ```
+
 ### Key Idea
+
 > `playerScore` and `score` are different names. The value `10` is copied from the caller into the parameter.
+
 ### Teacher Notes
+
 Use different names deliberately so students can clearly see that a value moves from one named place to another.
 
 ---
+
 ## TraceLift Exercise 10A: Different Names, Same Value
+
 ```text
 Title: Round 10A - Pass a Variable
 function showScore(score) {
@@ -793,18 +1142,27 @@ var playerScore;
 playerScore = 10;
 showScore([[playerScore]]);
 ```
+
 ### Expected Caller State
+
 ```text
 playerScore = 10
 ```
+
 ### Expected Called Function State
+
 ```text
 score = 10
 ```
+
 ---
+
 # Round 11: Same Name, Separate Storage
+
 ## Slide 34: Same Name Does Not Mean Same Variable
+
 ### Display
+
 ```javascript
 function showScore(score) {
   console.log(score);
@@ -813,20 +1171,28 @@ var score;
 score = 10;
 showScore(score);
 ```
+
 There are two different `score` names:
+
 ```text
 Calling code       showScore
 score              score
 -----              -----
 10                 10
 ```
+
 ### Teacher Notes
+
 Suggested wording:
+
 > The names look the same, but they belong to different parts of the program. The function parameter gets its own value for this function call.
+
 Avoid turning this into a full scope lecture unless useful.
 
 ---
+
 ## TraceLift Exercise 11A: Same Name, Separate Storage
+
 ```text
 Title: Round 11A - Same Name, Separate Storage
 function showScore(score) {
@@ -838,6 +1204,7 @@ showScore([[score]]);
 ```
 
 ## Slide 35: Each Function Call Gets Its Own Memory
+
 ```
 function showScore(score) {
   var bonus;
@@ -850,6 +1217,7 @@ showScore(20);
 ```
 
 For the first call:
+
 ```
 showScore
 score    bonus
@@ -858,6 +1226,7 @@ score    bonus
 ```
 
 When the function finishes, that function call is done.
+
 For the second call, we start with new parameter and variable storage:
 
 ```
@@ -868,10 +1237,15 @@ score    bonus
 ```
 
 > Each function call gets new parameter and local variable storage. When that call finishes, its temporary memory is done.
+
 ---
+
 # Round 12: Changing the Parameter Does Not Change the Caller
+
 ## Slide 36: Predict — Does the Caller Change?
+
 ### Display
+
 ```javascript
 function addBonus(score) {
   score = score + 5;
@@ -884,29 +1258,42 @@ console.log("Final score: " + score);
 ```
 
 Ask:
+
 > What is `score` in the calling code after the function finishes?
+
 ### Called Function Trace
+
 ```text
 score
 -----
 ~~10~~
 15
 ```
+
 ### Caller After Return
+
 ```text
 score
 -----
 10
 ```
+
 ### Key Idea
+
 > The function received the value `10`. Changing the value in its parameter does not change the variable in the calling code.
+
 ### Teacher Notes
+
 Connect directly to Round 8B:
+
 > Copying a value does not create a permanent connection.
+
 If students are overloaded or time is short, treat this as an extension or the opening of the next lesson.
 
 ---
+
 ## Slide 37: TraceLift Exercise 12A — Modify the Parameter
+
 ```text
 Title: Round 12A - Does the Caller Change?
 function addBonus(score) {
@@ -918,19 +1305,26 @@ score = 10;
 addBonus([[score]]);
 console.log("Final score: " + [[score]]);
 ```
+
 ### Expected Called Function Trace
+
 ```text
 score
 -----
 ~~10~~
 15
 ```
+
 ### Expected Caller State After Return
+
 ```text
 score = 10
 ```
+
 ---
+
 # Slide 38: Optional Full Challenge
+
 ```text
 Title: Challenge - Parameters and Variables
 function addBonus(score, bonus) {
@@ -946,29 +1340,39 @@ bonus = 5;
 addBonus([[playerScore]], [[bonus]]);
 console.log("Player score: " + [[playerScore]]);
 ```
+
 ### Expected Console
+
 ```text
 Total: 15
 Player score: 10
 ```
+
 ### Expected Caller State After Return
+
 ```text
 playerScore = 10
 bonus = 5
 ```
+
 ### Expected Function State Before Return
+
 ```text
 score = 15
 bonus = 5
 total = 15
 ```
+
 ---
 
 # Variables without values
+
 ## Slide 39: A Variable without a Value
+
 When we wrote `var bonus;` before, we left its Memory Trace column blank. 
 
 What do you think happens if JavaScript tries to use it at this point:
+
 ```
 var bonus;
 console.log(bonus);
@@ -981,69 +1385,108 @@ If you try to call a function that takes a parameter and don't pass in a value, 
 ## Slide 40: Initialization
 
 If we have the code
+
 ```
 var score;
 score = 0;
 ```
+
 Between these two statements, score has the value undefined.
 
 If we already know the value we want the variable to start with, we can write:
+
 ```
 var score = 0;
 ```
+
 This declares the variable and initializes it at the same time.
+
 > **Initialization** is the first assignment of a value to a variable.
 
 ---
 
 # Wrap Up
+
 ## Slide 41: One Big Idea
+
 ### Display
+
 **Programs use names to represent values.**
+
 We have now seen two ways those names are created.
+
 ### Parameters
+
 ```javascript
 function cheer(name)
 ```
+
 The function call supplies the starting value:
+
 ```javascript
 cheer("Pumas");
 ```
+
 ### Variables
+
 ```javascript
 var score;
 score = 10;
 ```
+
 `var` creates the name.
+
 Assignment supplies or changes the value.
+
 ---
+
 ## Slide 42: Tracing Rules
+
 ### Display
+
 **When you see `var`:**
+
 > Create a memory column.
+
 **When you see assignment:**
+
 > Evaluate the right side, then store the result on the left.
+
 **When you see a name inside an expression:**
+
 > Look up → Substitute → Evaluate
+
 **When you call a function:**
+
 > Evaluate the arguments and use those values to initialize the parameters.
+
 **Remember:**
+
 > Copying a value does not create a permanent connection.
+
 ---
+
 # Slide 43: Exit Ticket Options
+
 ## Option 1: Basic Variable Trace
+
 ```javascript
 var score;
 score = 3;
 score = score + 1;
 score = "Pumas: " + score;
 ```
+
 Expected final value:
+
 ```text
 "Pumas: 4"
 ```
+
 ---
+
 ## Option 2: Copy, Not Connect
+
 ```javascript
 var a;
 var b;
@@ -1051,12 +1494,19 @@ a = 5;
 b = a;
 a = 8;
 ```
+
 Ask:
+
 > Why is `b` still 5?
+
 Expected idea:
+
 > `b` received the value of `a` when the assignment happened. Changing `a` later did not automatically change `b`.
+
 ---
+
 ## Option 3: Parameter Transfer
+
 ```javascript
 function show(points) {
   console.log(points);
@@ -1065,18 +1515,25 @@ var playerScore;
 playerScore = 7;
 show(playerScore);
 ```
+
 Questions:
+
 1. What value does `playerScore` have before the call?
 2. What value does `points` receive?
 3. Are `playerScore` and `points` the same variable?
+
 Expected:
+
 ```text
 playerScore = 7
 points = 7
 No
 ```
+
 ---
+
 ## Option 4: Parameter Modification
+
 ```javascript
 function change(points) {
   points = points + 3;
@@ -1085,20 +1542,31 @@ var playerScore;
 playerScore = 7;
 change(playerScore);
 ```
+
 Ask:
+
 > What is `playerScore` after the function call?
+
 Expected:
+
 ```text
 7
 ```
+
 Extension:
+
 > What value did `points` reach inside the function?
+
 Expected:
+
 ```text
 10
 ```
+
 ---
+
 # Suggested Timing
+
 | Time | Activity |
 | --- | --- |
 | 0–7 min | Parameters as familiar named values |
@@ -1112,14 +1580,21 @@ Expected:
 | 46–52 min | Variable value passed to parameter |
 | 52–56 min | Same name, separate storage |
 | 56–60 min | Parameter modification, wrap up, or exit ticket |
+
 For a shorter class, stop after the first parameter spiral:
+
 ```javascript
 showScore(playerScore);
 ```
+
 Then use same-name parameters and parameter modification as the opening of the next lesson.
+
 ---
+
 # Teacher Circulation Checklist
+
 Watch for these behaviors:
+
 - Students create parameter columns when a function call begins.
 - Students correctly match argument values to parameters by position.
 - Students move the line pointer one statement at a time.
@@ -1132,29 +1607,53 @@ Watch for these behaviors:
 - Students understand that copied values do not create permanent links.
 - Students distinguish a caller variable from a called function parameter.
 - Students understand that modifying a parameter does not modify the caller's variable.
+
 ---
+
 # Common Misconceptions and Responses
+
 ## "The parameter is the argument."
+
 > The argument supplies the value. The parameter is the name used inside the function.
+
 ## "The name `score` always means the same storage location."
+
 > Look at where each `score` was created. A parameter named `score` inside a function is separate from a variable named `score` in the calling code.
+
 ## "`=` means both sides are equal."
+
 > Read `=` as "gets." Evaluate the right side first, then store that result in the variable on the left.
+
 ## "`score = score + 1` is impossible."
+
 > Look up the current value of the `score` on the right first. Substitute it. Then evaluate and assign the new value to the `score` on the left.
+
 ## "Using a variable removes its value."
+
 > Looking up a value makes a temporary copy for the expression. The variable keeps its current value until assignment changes it.
+
 ## "If `b = a`, changing `a` later changes `b`."
+
 > What value did `a` have when that assignment happened? That value was copied into `b`.
+
 ## "If I pass `playerScore` into `score`, they become connected."
+
 > The current value is copied into the parameter. The two names remain separate.
+
 ## "Changing the parameter should change the original variable."
+
 > Trace both memory locations separately. The called function changes its parameter. The caller's variable still has its own value.
+
 ## "The crossed-out values are still stored."
+
 > The crossed-out values are our human trace history. Only the newest uncrossed value represents the program's current state.
+
 ---
+
 # Complete TraceLift Exercise Set
+
 ## Round 1A
+
 ```text
 Title: Round 1A - A Named Value
 function showScore(score) {
@@ -1162,7 +1661,9 @@ function showScore(score) {
 }
 showScore(10);
 ```
+
 ## Round 2A
+
 ```text
 Title: Round 2A - Parameter Expression
 function doubleScore(score) {
@@ -1170,7 +1671,9 @@ function doubleScore(score) {
 }
 doubleScore(6);
 ```
+
 ## Round 3A
+
 ```text
 Title: Round 3A - Two Parameters
 function area(width, height) {
@@ -1178,7 +1681,9 @@ function area(width, height) {
 }
 area(4, 3);
 ```
+
 ## Round 5A
+
 ```text
 Title: Round 5A - First Variable
 var score;
@@ -1186,7 +1691,9 @@ score = 3;
 score = 5;
 score = 8;
 ```
+
 ## Round 5B
+
 ```text
 Title: Round 5B - Two Variables
 var pizza;
@@ -1195,7 +1702,9 @@ var tacos;
 pizza = "yum";
 tacos = "the best";
 ```
+
 ## Round 6A
+
 ```text
 Title: Round 6A - Evaluate Then Assign
 var score;
@@ -1203,7 +1712,9 @@ score = 3 + 4;
 score = 10 - 2;
 score = 5 * 3;
 ```
+
 ## Round 6B
+
 ```text
 Title: Round 6B - Numbers and Strings
 var first;
@@ -1213,7 +1724,9 @@ second = 4 - 1;
 first = 3 * 3;
 second = 4 + "now";
 ```
+
 ## Round 7A
+
 ```text
 Title: Round 7A - Using the Current Value
 var score;
@@ -1223,7 +1736,9 @@ score = [[score]] * 2;
 score = [[score]] - 4;
 console.log("Final score: " + [[score]]);
 ```
+
 ## Round 7B
+
 ```text
 Title: Round 7B - Count Up
 var count;
@@ -1233,7 +1748,9 @@ count = [[count]] + 1;
 count = [[count]] + 1;
 console.log("Final count: " + [[count]]);
 ```
+
 ## Round 8A
+
 ```text
 Title: Round 8A - Multiple Variables
 var score;
@@ -1246,7 +1763,9 @@ score = [[score]] - 1;
 console.log("Score: " + [[score]]);
 console.log("Bonus: " + [[bonus]]);
 ```
+
 ## Round 8B
+
 ```text
 Title: Round 8B - Copy, Not Connect
 var a;
@@ -1255,7 +1774,9 @@ a = 5;
 b = [[a]];
 a = 8;
 ```
+
 ## Round 8C
+
 ```text
 Title: Round 8C - Moving Information
 var width;
@@ -1270,7 +1791,9 @@ console.log("Area: " + [[area]]);
 area = [[width]] * [[height]];
 console.log("Area: " + [[area]]);
 ```
+
 ## Round 9A
+
 ```text
 Title: Round 9A - Does the Swap Work?
 var a;
@@ -1282,7 +1805,9 @@ b = [[a]];
 console.log("a is " + [[a]]);
 console.log("b is " + [[b]]);
 ```
+
 ## Round 9B
+
 ```text
 Title: Round 9B - One Way to Fix the Swap
 var a;
@@ -1296,7 +1821,9 @@ b = [[temp]];
 console.log("a is " + [[a]]);
 console.log("b is " + [[b]]);
 ```
+
 ## Round 10A
+
 ```text
 Title: Round 10A - Pass a Variable
 function showScore(score) {
@@ -1306,7 +1833,9 @@ var playerScore;
 playerScore = 10;
 showScore([[playerScore]]);
 ```
+
 ## Round 11A
+
 ```text
 Title: Round 11A - Same Name, Separate Storage
 function showScore(score) {
@@ -1316,7 +1845,9 @@ var score;
 score = 10;
 showScore([[score]]);
 ```
+
 ## Round 12A
+
 ```text
 Title: Round 12A - Does the Caller Change?
 function addBonus(score) {
@@ -1328,7 +1859,9 @@ score = 10;
 addBonus([[score]]);
 console.log("Final score: " + [[score]]);
 ```
+
 ## Optional Challenge
+
 ```text
 Title: Challenge - Parameters and Variables
 function addBonus(score, bonus) {
@@ -1344,9 +1877,13 @@ bonus = 5;
 addBonus([[playerScore]], [[bonus]]);
 console.log("Player score: " + [[playerScore]]);
 ```
+
 ---
+
 # Presentation Generation Notes
+
 When turning this plan into slides:
+
 - Keep each slide visually sparse.
 - Begin from familiar functions rather than beginning with `var`.
 - Show one new mental action at a time.
