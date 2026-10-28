@@ -274,8 +274,9 @@ export const DOCUMENT_STYLE = `
 // Browsers copy a selection with every element's computed styles inlined,
 // so pasted text arrives with fonts, colors, and margins baked in. This puts
 // clean HTML (tags only, no style, class, or id attributes) on the clipboard
-// for an ordinary copy, and powers the bar's Copy page and Copy Markdown
-// buttons. Plain-text pastes of the whole page get the Markdown source.
+// for an ordinary copy, and powers the bar's Copy button (the selection, or
+// the whole page) and its menu (Copy page, Copy Markdown). Plain-text pastes
+// of the whole page get the Markdown source.
 const COPY_SCRIPT = `
 (() => {
   const main = document.querySelector('main');
@@ -314,39 +315,74 @@ const COPY_SCRIPT = `
     }
   }
 
-  // The menu's choices report back on the main button, since the menu
-  // closes as soon as one is picked.
-  const mainButton = document.querySelector('[data-copy="page"]');
+  // Copy takes the selection on the page, or the whole page when nothing is
+  // selected. The selection is captured on pointerdown, before a click on
+  // the button could change it. The menu's choices report back on the main
+  // button, since the menu closes as soon as one is picked.
+  const mainButton = document.querySelector('[data-copy="auto"]');
   const mainLabel = mainButton.textContent;
   const toggle = document.querySelector('.split-toggle');
   const menu = document.getElementById('copy-menu');
+  const items = [...menu.querySelectorAll('[role="menuitem"]')];
+  let pressedRange = null;
   let resetTimer = null;
+
+  function selectedRange() {
+    const selection = document.getSelection();
+    if (!selection || selection.isCollapsed || !selection.rangeCount) return null;
+    const range = selection.getRangeAt(0);
+    return range.intersectsNode(main) ? range.cloneRange() : null;
+  }
 
   function setMenu(open, focusItem) {
     menu.hidden = !open;
     toggle.setAttribute('aria-expanded', String(open));
-    if (open && focusItem) menu.querySelector('[role="menuitem"]').focus();
+    if (open && focusItem) items[0].focus();
   }
+
+  async function copy(kind) {
+    if (kind === 'markdown') {
+      await write(null, markdown);
+      return;
+    }
+    const range = kind === 'auto' ? pressedRange || selectedRange() : null;
+    if (range) {
+      const holder = document.createElement('div');
+      holder.appendChild(range.cloneContents());
+      await write(cleanHtml(holder), range.toString());
+    } else {
+      await write(cleanHtml(main.cloneNode(true)), markdown);
+    }
+  }
+
+  mainButton.addEventListener('pointerdown', () => { pressedRange = selectedRange(); });
 
   document.querySelectorAll('[data-copy]').forEach((button) => {
     button.addEventListener('click', async () => {
+      const fromMenu = button.getAttribute('role') === 'menuitem';
       setMenu(false);
       // Keep the button's width while its label reads Copied.
       mainButton.style.minWidth = mainButton.offsetWidth + 'px';
       try {
-        if (button.dataset.copy === 'page') {
-          await write(cleanHtml(main.cloneNode(true)), markdown);
-        } else {
-          await write(null, markdown);
-          toggle.focus();
-        }
+        await copy(button.dataset.copy);
         mainButton.textContent = 'Copied';
       } catch {
         mainButton.textContent = 'Copy failed';
       }
+      pressedRange = null;
+      if (fromMenu) toggle.focus();
       clearTimeout(resetTimer);
       resetTimer = setTimeout(() => { mainButton.textContent = mainLabel; }, 1500);
     });
+  });
+
+  menu.addEventListener('keydown', (event) => {
+    const i = items.indexOf(document.activeElement);
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      items[(i + step + items.length) % items.length].focus();
+    }
   });
 
   toggle.addEventListener('click', (event) => setMenu(menu.hidden, event.detail === 0));
@@ -385,9 +421,10 @@ export async function renderDocumentPage(source, { filePath, backHref = 'index.h
   <header class="bar">
     <a href="${escapeHtml(backHref)}">&larr; ${escapeHtml(backLabel)}</a>
     <span class="copy-split">
-      <button type="button" data-copy="page" title="Copy the document as clean formatted text">Copy page</button>
+      <button type="button" data-copy="auto" title="Copy the selected text, or the whole page if nothing is selected">Copy</button>
       <button type="button" class="split-toggle" aria-haspopup="menu" aria-expanded="false" aria-controls="copy-menu" aria-label="More copy options" title="More copy options"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="copy-menu" id="copy-menu" role="menu" hidden>
+        <button type="button" role="menuitem" data-copy="page" title="Copy the whole document as clean formatted text">Copy page</button>
         <button type="button" role="menuitem" data-copy="markdown" title="Copy the document's Markdown source">Copy Markdown</button>
       </div>
     </span>
