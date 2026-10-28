@@ -25,8 +25,8 @@ without turning every activity into a game.
 
 - Reuse each day's existing model where it already works; change the
   interaction, not the physics.
-- Every simulator still labels itself as a simplified educational model. Costs
-  and pass rules are illustrative, not real prices or a build guide.
+- Remove the "educational model" disclaimer from each simulator as its deck is
+  reworked (done for Day 2).
 - Fixed-height panels and feedback boxes, sized from the data, checked by
   driving every state (no jumps between stages).
 - Text floors from `CLAUDE.md` (30 px prose, 22 px labels), 7:1 contrast, no em
@@ -45,6 +45,7 @@ poles, field, speed) and find the relationships themselves.
 
 - [ ] Reread the task pager so every task asks students to find a relationship,
   not just to observe one (optional polish only).
+- [ ] Drop "· Simplified educational model" from the slide 12 tag.
 
 ---
 
@@ -109,21 +110,21 @@ start winding overheats).
 
 - Slide 16 (tasks) becomes the design briefs and the build-test-improve loop.
 - Slide 17 becomes the Design Workshop.
-- Slide 18 Resonance asks students to justify their design for each brief and
-  name the near miss they rejected.
+- The old slide 18 debrief Resonance is removed; students record their best
+  design and one near miss on paper (task F on slide 16).
 
 ### Checklist
 
-- [ ] Tune the brief numbers against the model (the auxiliary + switch + run
+- [x] Tune the brief numbers against the model (the auxiliary + switch + run
   capacitor rule is settled above).
-- [ ] Build the workshop UI on slide 17 (reuse `buildMotorDrawing`, `drawLadder`,
+- [x] Build the workshop UI on slide 17 (reuse `buildMotorDrawing`, `drawLadder`,
   the torque-speed chart).
-- [ ] Combination rules, including the fault and no-effect cases.
-- [ ] Result card and per-requirement feedback.
-- [ ] Update slides 16 and 18, the outline, and the activities index.
-- [ ] Drive every brief with its intended pass and its near misses; stability
+- [x] Combination rules, including the fault and no-effect cases.
+- [x] Result card and per-requirement feedback.
+- [x] Update slides 16 and 18, the outline, and the activities index.
+- [x] Drive every brief with its intended pass and its near misses; stability
   and overflow checks.
-- [ ] Review with the teacher, then commit.
+- [x] Review with the teacher, then commit.
 
 ---
 
@@ -157,6 +158,7 @@ holds.
 - [ ] Replace the task pager on slide 13 and the tasks on slide 12 with the
   missions; update slide 17's Resonance to ask for the settings that met each
   spec and why.
+- [ ] Drop "· Educational model, not a commissioning tool" from the slide 13 tag.
 - [ ] Update the outline and the activities index; checks; teacher review.
 
 ---
@@ -192,6 +194,7 @@ command, under one shared load, with one shared Bump.
 - [ ] Refactor `buildPrecision` so one engine steps three arm states in lockstep.
 - [ ] Three-dial layout, shared graph, scoreboard, prediction lock.
 - [ ] Prediction Resonance slide; renumber; update the outline and the index.
+- [ ] Drop "· Simplified educational model" from the simulator slide tag.
 - [ ] Drive light, heavy, and overloaded runs with bumps; stability checks;
   teacher review.
 
@@ -233,6 +236,8 @@ status chip.
 - [ ] Test costs and a budget for each ticket, tuned so a careful student
   finishes with time to spare and a scattershot one runs out.
 - [ ] History logs for all four tickets.
+- [ ] Drop "· Simplified educational model" from the slide 11 tag and the
+  "Simplified model. Readings are illustrative." note in the info panel.
 - [ ] Causes tab with strike-out toggles.
 - [ ] Defend step and updated record.
 - [ ] Update slide 10 (how it works), the outline, and the index; checks
@@ -247,7 +252,7 @@ None right now. Add new ones here as they come up during the build.
 ## Progress
 
 - [x] Plan written
-- [ ] Day 2: Motor Design Workshop
+- [x] Day 2: Motor Design Workshop
 - [ ] Day 3: Control Room missions
 - [ ] Day 4: Head to Head
 - [ ] Day 5: Diagnostic Mystery

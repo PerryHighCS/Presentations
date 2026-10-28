@@ -14,7 +14,6 @@ Shared pieces:
   A = amber, B = cyan, C = violet. Faults and trips are red.
 - Simulator text (controls, readouts, logs) uses the 22 to 24 px label sizes, as
   the AC Circuits simulators do. Prose and questions stay at 30 px.
-- Every simulator labels itself as a simplified educational model.
 
 ---
 
@@ -63,20 +62,19 @@ factor shown.
 13. Capacitor start (the capacitor shifts phase; it is not a burst of energy)
 14. PSC and capacitor start capacitor run
 15. Comparison table
-16. Investigation tasks
-17. **Motor Starting Lab simulator**
-18. Resonance: justify a design for the fan, compressor, and blower
-19. Resonance exit ticket (4 questions)
+16. The Design Workshop challenge: build, test, improve, and tasks A to F
+17. **Motor Design Workshop simulator**
+18. Resonance exit ticket (4 questions)
 
-**Motor Starting Lab:** six designs (main winding only, shaded pole, split phase,
-capacitor start, PSC, CSCR) × four loads (small fan, ventilation blower, air
-compressor, loaded conveyor). It uses an illustrative torque-speed model, and
-switched designs drop the start winding at 75 % speed. The rotor accelerates by
-(motor torque − load torque) / inertia. Outcomes: stalled (hum), start winding
-overheated (slow start), running overloaded (high slip), or running. Displays:
-cross section with active windings, capacitor, and switch; rotor; field arrow;
-torque-speed chart with an operating point; status; and the cost, efficiency, and
-noise of each design. One fault switch (open capacitor) previews Day 5.
+Students record their best design and one near miss for each brief on paper.
+
+**Motor Design Workshop:** students build a motor from the base motor ($30) plus
+shading rings, an auxiliary winding, a centrifugal switch, a start capacitor, and a
+run capacitor, to meet one of four customer briefs (fan, blower, compressor,
+conveyor), each with a budget and requirements. A 6 s test runs the illustrative
+torque-speed model (switched designs drop their start circuit at 75 % speed). The
+result card scores starting, cost, and efficiency or noise, and explains wasted or
+misused parts. Details are in `acMotorsActivityRework.md`.
 
 ## Day 3: Three Phase Motors and VFDs (`Day3_Three_Phase_Motors_and_VFDs.html`)
 
