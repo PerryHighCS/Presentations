@@ -21,7 +21,9 @@
    stator phases A / B / C    -> --ph-a / --ph-b / --ph-c with letters
    stator magnetic field      -> --accent (green)
    commanded position         -> --text (white, dashed)
-   actual position            -> --result (cyan)
+   actual position            -> --result (cyan); in the Head to
+                                 Head race each arm has its own color
+                                 (sky blue A, pink B, cyan C)
    target                     -> --warn (amber)
    faults, lost steps, error  -> --fault (red)
    ============================================================ */
@@ -61,36 +63,49 @@
 .flow-fb-head { fill: var(--result); }
 .missing { fill: none; stroke: var(--fault); stroke-width: 3; stroke-dasharray: 10 8; }
 
-/* ─── Precision Under Pressure ─── */
-.pp .pp-grid { display: grid; grid-template-columns: 430px 1fr; gap: 18px; align-items: start; }
-.pp .pp-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.pp .pp-tiles { grid-template-columns: 1fr 1fr; }
-.pp .t-sub { display: block; font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted); white-space: nowrap; }
-.pp .arm-disc { fill: #16202a; stroke: rgba(230,247,234,0.4); stroke-width: 2; }
-.pp .arm-ticks { stroke: rgba(230,247,234,0.3); stroke-width: 2; }
-.pp .arm-actual { stroke: var(--result); stroke-width: 16; stroke-linecap: round; }
-.pp .arm-cmd { stroke: var(--text); stroke-width: 4; stroke-dasharray: 10 8; stroke-linecap: round; }
-.pp .arm-target { stroke: var(--warn); stroke-width: 6; stroke-linecap: round; }
-.pp .arm-hub { fill: var(--bg); stroke: rgba(230,247,234,0.6); stroke-width: 3; }
-.pp .arm-lbl { font-family: var(--font-mono); font-size: 24px; fill: var(--text-muted); text-anchor: middle; dominant-baseline: central; }
-.pp .g-lbl { font-family: var(--font-mono); font-size: 26px; fill: var(--text-muted); }
-.pp .g-cmd { fill: none; stroke: var(--text); stroke-width: 3; stroke-dasharray: 10 7; }
-.pp .g-act { fill: none; stroke: var(--result); stroke-width: 4.5; stroke-linejoin: round; }
-.pp .g-tgt { stroke: var(--warn); stroke-width: 3; }
-.pp .lg-cmd, .pp .lg-act, .pp .lg-tgt { display: inline-block; width: 34px; height: 0; vertical-align: middle; margin: 0 6px 0 12px; }
-.pp .lg-cmd { border-top: 3px dashed var(--text); }
-.pp .lg-act { border-top: 5px solid var(--result); }
-.pp .lg-tgt { border-top: 3px solid var(--warn); }
-.pp .ctrl-line { font-family: var(--font-mono); font-size: var(--small); color: var(--text); min-height: 64px; line-height: 1.45; }
-.pp .ctrl-line b { color: var(--accent); }
-.pp .drive-bar { height: 14px; background: rgba(230,247,234,0.08); border: 1px solid var(--accent-border); border-radius: 4px; overflow: hidden; margin-top: 4px; }
-.pp .drive-fill { height: 100%; width: 0; background: var(--accent); }
-.pp .drive-fill.sat { background: var(--fault); }
-.pp [data-role="feedback"] { height: 112px; }
-.pp .status-row { display: flex; align-items: center; gap: 12px; }
-.pp .status-row .sim-feedback { flex: 1; }
-.pp .cost-chip { font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted); }
-.pp .cost-chip b { color: var(--warn); }
+/* ─── Head to Head ───
+   Each arm has its own color AND line thickness (drawn thickest first),
+   so overlapping traces still show as stripes, plus a letter label. */
+.hh { --arm-stepper: #7cc4ff; --arm-bldc: #f9a8d4; --arm-servo: #5eead4; }
+.hh [data-arm="stepper"] { --arm: var(--arm-stepper); --arm-w: 12px; }
+.hh [data-arm="bldc"]    { --arm: var(--arm-bldc);    --arm-w: 7px; }
+.hh [data-arm="servo"]   { --arm: var(--arm-servo);   --arm-w: 3px; }
+.hh .hh-arms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 12px; }
+.hh .hh-arm { padding: 10px 14px; }
+.hh .hh-arm .sim-head span:first-child { color: var(--arm); }
+.hh .hh-swatch { display: inline-block; width: 30px; height: 0; border-top: var(--arm-w) solid var(--arm); vertical-align: middle; margin-right: 10px; }
+.hh .hh-cost { color: var(--warn); font-weight: 700; }
+.hh .hh-arm-body { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: start; }
+.hh .hh-lines { font-size: var(--small); line-height: 1.4; color: var(--text); }
+.hh .hh-line { display: flex; justify-content: space-between; gap: 8px; white-space: nowrap; }
+.hh .hh-line b { font-family: var(--font-mono); }
+.hh .hh-line .ok { color: var(--accent); }
+.hh .hh-line .no { color: var(--fault); }
+.hh .arm-disc { fill: #16202a; stroke: rgba(230,247,234,0.4); stroke-width: 2; }
+.hh .arm-ticks { stroke: rgba(230,247,234,0.45); stroke-width: 3; }
+.hh .arm-actual { stroke: var(--arm); stroke-width: 9; stroke-linecap: round; }
+.hh .arm-cmd { stroke: var(--text); stroke-width: 2.5; stroke-dasharray: 6 5; stroke-linecap: round; }
+.hh .arm-target { stroke: var(--warn); stroke-width: 5; stroke-linecap: round; }
+.hh .arm-hub { fill: var(--bg); stroke: rgba(230,247,234,0.6); stroke-width: 2; }
+.hh .hh-grid { display: grid; grid-template-columns: 1fr 490px; gap: 14px; align-items: start; }
+.hh .hh-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.hh .g-lbl { font-family: var(--font-mono); font-size: 30px; fill: var(--text-muted); }
+.hh .g-cmd { fill: none; stroke: var(--text); stroke-width: 3; stroke-dasharray: 10 7; }
+.hh .g-act { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.hh .g-tgt { stroke: var(--warn); stroke-width: 3; }
+.hh .g-end { font-family: var(--font-mono); font-size: 32px; font-weight: 700; dominant-baseline: central; }
+.hh .lg-cmd, .hh .lg-tgt { display: inline-block; width: 34px; height: 0; vertical-align: middle; margin: 0 6px 0 12px; }
+.hh .lg-cmd { border-top: 3px dashed var(--text); }
+.hh .lg-tgt { border-top: 3px solid var(--warn); }
+.hh [data-role="feedback"] { height: 114px; }
+.hh .status-row { display: flex; align-items: center; gap: 12px; }
+.hh .status-row .status-chip { box-sizing: border-box; min-width: 0; width: 180px; flex: 0 0 auto; }
+.hh .status-row .sim-feedback { flex: 1; }
+.hh .ctl-row .seg-btn { padding: 8px 9px; }
+.hh .sim-btn:disabled { opacity: 1; background: transparent; color: var(--text-muted); box-shadow: inset 0 0 0 1px var(--accent-border); }
+.hh .hh-q { margin: 0 0 8px; font-size: var(--small); line-height: 1.4; color: var(--text); }
+.hh .hh-q b { color: var(--warn); }
+.hh .chk:has(input:disabled) { opacity: 0.7; cursor: default; }
 </style>
 </head>
 <body>
@@ -139,7 +154,7 @@
           <a class="agenda-item" href="#/5"><span class="agenda-num">01</span><span class="agenda-text"><strong>Brushed</strong> and <strong>brushless</strong> motors</span></a>
           <a class="agenda-item" href="#/8"><span class="agenda-num">02</span><span class="agenda-text"><strong>Stepper</strong> motors</span></a>
           <a class="agenda-item" href="#/12"><span class="agenda-num">03</span><span class="agenda-text"><strong>Servo</strong> systems</span></a>
-          <a class="agenda-item" href="#/14"><span class="agenda-num">04</span><span class="agenda-text">Investigate: <strong>Precision Under Pressure</strong></span></a>
+          <a class="agenda-item" href="#/14"><span class="agenda-num">04</span><span class="agenda-text">Compare: <strong>Head to Head</strong></span></a>
         </div>
       </div>
     </div>
@@ -405,107 +420,123 @@
 </section>
 
 
-<!-- SLIDE 14 · PRECISION UNDER PRESSURE: THE CHALLENGE -->
+<!-- SLIDE 14 · HEAD TO HEAD: THE CHALLENGE -->
 <section>
   <div class="slide-inner">
-    <span class="slide-tag">Virtual Activity 4 · Precision Under Pressure · The Challenge</span>
-    <h2>Precision Under <span class="accent">Pressure</span></h2>
-    <p class="slide-intro">A robot arm joint must swing to a <span class="warn">target angle</span>. You will give the same command to three systems, then add load and <strong>bump</strong> the arm to see which one still ends up on target.</p>
+    <span class="slide-tag">Virtual Activity 4 · Head to Head · The Challenge</span>
+    <h2>Head to <span class="accent">Head</span></h2>
+    <p class="slide-intro">A robot arm joint must swing to a <span class="warn">target angle</span>. All three systems get the <strong>same command</strong> at the same time, carry the same load, and take the same <strong>bump</strong>. Before each race, lock in a prediction: which arms will end within 1&deg; of the target?</p>
     <div class="row-3" style="margin-bottom:var(--gap);">
       <div class="card"><span class="card-name">A · Open loop stepper</span><p class="card-body">Counts steps. <strong>No sensor</strong>. Cheapest and simplest.</p></div>
       <div class="card"><span class="card-name">B · Brushless, speed control</span><p class="card-body">Holds a <strong>speed</strong> for a set time. Measures speed, not position.</p></div>
       <div class="card"><span class="card-name">C · Servo with encoder</span><p class="card-body">Measures <strong>position</strong> and corrects error. Most complex.</p></div>
     </div>
     <div class="task-grid">
-      <div class="task-item"><span class="t-key">1</span><span>Predict which systems reach the target under a heavy load.</span></div>
-      <div class="task-item"><span class="t-key">2</span><span>Record commanded, actual, and error for each run.</span></div>
-      <div class="task-item" style="grid-column:span 2;"><span class="t-key">3</span><span>Recommend a system for a precise arm joint. Are extra sensors or controls worth the cost?</span></div>
+      <div class="task-item"><span class="t-key">1</span><span>Light load, Bump off. Predict, then race.</span></div>
+      <div class="task-item"><span class="t-key">2</span><span>Light load, Bump on. Which arms recover?</span></div>
+      <div class="task-item"><span class="t-key">3</span><span>Heavy load, Bump on. Compare settle times.</span></div>
+      <div class="task-item"><span class="t-key">4</span><span>Overload. How does each system fail?</span></div>
     </div>
   </div>
 </section>
 
 
-<!-- SLIDE 15 · PRECISION UNDER PRESSURE (SIMULATOR) -->
+<!-- SLIDE 15 · HEAD TO HEAD PREDICTION (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:14:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"All three arms carry a heavy load to 90°, then take the same bump. Predict: which arms will end within 1° of the target?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"All three, because they all get the same command","isCorrect":false},{"id":"q1b","text":"The stepper and the servo","isCorrect":false},{"id":"q1c","text":"None of them, because the bump is too strong","isCorrect":false},{"id":"q1d","text":"Only the servo","isCorrect":true}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Virtual Activity 4 · Predict Before You Race</span>
+    <h2>Make Your <span class="accent">Prediction</span></h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>All three arms carry a heavy load to 90&deg;, then take the same bump. Predict: which arms will end within 1&deg; of the target?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 16 · HEAD TO HEAD (SIMULATOR) -->
 <section>
   <div class="slide-inner" style="padding-top:44px;padding-bottom:40px;">
-    <span class="slide-tag" style="margin-bottom:10px;">Virtual Activity 4 · Precision Under Pressure · Simplified educational model</span>
-    <div class="pp">
-      <div class="pp-grid">
-        <div class="pp-col">
-          <div class="sim-panel">
-            <div class="sim-head"><span>Arm joint</span></div>
-            <svg data-role="arm" viewBox="0 0 400 330" role="img" aria-label="The arm joint: a cyan arm shows the actual angle, a dashed white line the commanded angle, and an amber mark the target"></svg>
-          </div>
-          <div class="tiles pp-tiles">
-            <div class="tile"><span class="t-name">Commanded</span><span class="t-val" data-tile="cmd">0.0&deg;</span></div>
-            <div class="tile is-result"><span class="t-name">Actual</span><span class="t-val" data-tile="act">0.0&deg;</span></div>
-            <div class="tile"><span class="t-name">Error</span><span class="t-val" data-tile="err">0.0&deg;</span></div>
-            <div class="tile"><span class="t-name">Feedback signal</span><span class="t-val" data-tile="fb">none</span></div>
-          </div>
-          <div class="sim-panel">
-            <div class="sim-head"><span>Controller</span></div>
-            <div class="ctrl-line" data-role="ctrl"></div>
-            <div class="drive-bar"><div class="drive-fill" data-role="drive"></div></div>
+    <span class="slide-tag" style="margin-bottom:10px;">Virtual Activity 4 · Head to Head</span>
+    <div class="hh">
+      <div class="hh-arms">
+        <div class="sim-panel hh-arm" data-arm="stepper">
+          <div class="sim-head"><span><span class="hh-swatch"></span>A · Stepper</span><span class="sim-note hh-cost">$</span></div>
+          <div class="hh-arm-body">
+            <svg data-role="dial" viewBox="0 0 200 200" role="img" aria-label="Stepper arm: the solid arm is the actual angle, the dashed line the commanded angle, and the amber mark the target"></svg>
+            <div class="hh-lines" data-role="lines"></div>
           </div>
         </div>
-        <div class="pp-col">
-          <div class="sim-panel">
-            <div class="sim-head"><span>Position vs time</span><span class="sim-note"><span class="lg-cmd"></span>commanded<span class="lg-act"></span>actual<span class="lg-tgt"></span>target</span></div>
-            <svg data-role="graph" viewBox="0 0 1000 200" role="img" aria-label="Graph of commanded and actual angle over the last 8 seconds"></svg>
+        <div class="sim-panel hh-arm" data-arm="bldc">
+          <div class="sim-head"><span><span class="hh-swatch"></span>B · Brushless</span><span class="sim-note hh-cost">$$</span></div>
+          <div class="hh-arm-body">
+            <svg data-role="dial" viewBox="0 0 200 200" role="img" aria-label="Brushless arm: the solid arm is the actual angle, the dashed line the commanded angle, and the amber mark the target"></svg>
+            <div class="hh-lines" data-role="lines"></div>
           </div>
+        </div>
+        <div class="sim-panel hh-arm" data-arm="servo">
+          <div class="sim-head"><span><span class="hh-swatch"></span>C · Servo</span><span class="sim-note hh-cost">$$$</span></div>
+          <div class="hh-arm-body">
+            <svg data-role="dial" viewBox="0 0 200 200" role="img" aria-label="Servo arm: the solid arm is the actual angle, the dashed line the commanded angle, and the amber mark the target"></svg>
+            <div class="hh-lines" data-role="lines"></div>
+          </div>
+        </div>
+      </div>
+      <div class="hh-grid">
+        <div class="hh-col">
           <div class="sim-panel">
-            <div class="ctl-row">
-              <span class="ctl-label">System</span>
-              <span class="seg" data-role="system">
-                <button class="seg-btn" type="button" data-val="stepper" aria-pressed="true">A Stepper</button>
-                <button class="seg-btn" type="button" data-val="bldc" aria-pressed="false">B Brushless</button>
-                <button class="seg-btn" type="button" data-val="servo" aria-pressed="false">C Servo</button>
-              </span>
-              <span class="cost-chip" data-role="cost"></span>
-            </div>
+            <div class="sim-head"><span>Position vs time</span><span class="sim-note"><span class="lg-cmd"></span>commanded<span class="lg-tgt"></span>target</span></div>
+            <svg data-role="graph" viewBox="0 0 1000 250" role="img" aria-label="Graph of the commanded angle and the three arms&#39; actual angles during the run; each arm&#39;s line has its own thickness and a letter label at its right end"></svg>
+          </div>
+          <div class="status-row">
+            <span class="status-chip" data-role="status">PREDICT</span>
+            <div class="sim-feedback" data-role="feedback" aria-live="polite"></div>
+          </div>
+        </div>
+        <div class="hh-col">
+          <div class="sim-panel">
+            <div class="sim-head"><span>One command for all three</span></div>
             <div class="ctl-row">
               <span class="ctl-label">Load</span>
               <span class="seg" data-role="load">
                 <button class="seg-btn" type="button" data-val="light" aria-pressed="true">Light</button>
                 <button class="seg-btn" type="button" data-val="medium" aria-pressed="false">Medium</button>
                 <button class="seg-btn" type="button" data-val="heavy" aria-pressed="false">Heavy</button>
-                <button class="seg-btn" type="button" data-val="over" aria-pressed="false">Overloaded</button>
+                <button class="seg-btn" type="button" data-val="over" aria-pressed="false">Overload</button>
               </span>
             </div>
             <div class="ctl-row">
               <span class="ctl-label">Target</span>
-              <input class="sim-range" data-role="target" type="range" min="15" max="270" step="15" value="90" aria-label="Target angle in degrees" style="width:170px;">
+              <input class="sim-range" data-role="target" type="range" min="15" max="270" step="15" value="90" aria-label="Target angle in degrees" style="width:190px;">
               <span class="range-val" data-role="target-val">90&deg;</span>
+            </div>
+            <div class="ctl-row">
               <span class="ctl-label">Speed</span>
-              <input class="sim-range" data-role="speed" type="range" min="30" max="360" step="30" value="90" aria-label="Commanded speed in degrees per second" style="width:170px;">
+              <input class="sim-range" data-role="speed" type="range" min="30" max="360" step="30" value="90" aria-label="Commanded speed in degrees per second" style="width:190px;">
               <span class="range-val" data-role="speed-val">90&deg;/s</span>
             </div>
             <div class="ctl-row">
-              <button class="sim-btn" data-role="move" type="button">Move</button>
-              <button class="sim-btn warn-btn" data-role="bump" type="button">Bump!</button>
-              <button class="sim-btn alt" data-role="pause" type="button">Pause</button>
+              <span class="ctl-label">Bump</span>
+              <span class="seg" data-role="bump">
+                <button class="seg-btn" type="button" data-val="on" aria-pressed="false">On</button>
+                <button class="seg-btn" type="button" data-val="off" aria-pressed="true">Off</button>
+              </span>
+              <button class="sim-btn" data-role="run" type="button">Run</button>
               <button class="sim-btn alt" data-role="reset" type="button">Reset</button>
             </div>
           </div>
-          <div class="status-row">
-            <span class="status-chip" data-role="status">IDLE</span>
-            <div class="sim-feedback" data-role="feedback" aria-live="polite">Pick a system and a load, set a target, then press Move.</div>
-          </div>
-          <div class="task-pager" data-role="tasks">
-            <div class="tp-head">
-              <span class="tp-count"></span>
-              <button class="tp-nav tp-prev" type="button" aria-label="Previous task">&#9664;</button>
-              <button class="tp-nav tp-next" type="button" aria-label="Next task">&#9654;</button>
+          <div class="sim-panel">
+            <div class="sim-head"><span>Predict</span></div>
+            <p class="hh-q">Which arms will end within <b>1&deg;</b> of the target? Check each one you expect to make it.</p>
+            <div class="ctl-row">
+              <label class="chk"><input type="checkbox" data-pred="stepper"> A</label>
+              <label class="chk"><input type="checkbox" data-pred="bldc"> B</label>
+              <label class="chk"><input type="checkbox" data-pred="servo"> C</label>
+              <button class="sim-btn warn-btn" data-role="lock" type="button">Lock prediction</button>
             </div>
-            <div class="tp-text" aria-live="polite"></div>
-            <ol hidden>
-              <li><b>A.</b> Stepper, light load, 90&deg;/s: Move to 90&deg; and record the error.</li>
-              <li><b>B.</b> Stepper, heavy load: Move at 90&deg;/s, then Reset and try 180&deg;/s.</li>
-              <li><b>C.</b> Brushless, medium load: Move, then Bump! Does it get back?</li>
-              <li><b>D.</b> Servo, medium load: Move, then Bump! What does it do?</li>
-              <li><b>E.</b> Servo, heavy load: how long does it take to recover from a bump?</li>
-              <li><b>F.</b> Overloaded: try all three systems. How does each one fail?</li>
-            </ol>
           </div>
         </div>
       </div>
@@ -514,7 +545,7 @@
 </section>
 
 
-<!-- SLIDE 16 · MOTOR SELECTION COMPARISON -->
+<!-- SLIDE 17 · MOTOR SELECTION COMPARISON -->
 <section>
   <div class="slide-inner">
     <span class="slide-tag">Motor Selection · Comparison</span>
@@ -534,7 +565,7 @@
 </section>
 
 
-<!-- SLIDE 17 · EXIT TICKET: MOTOR SELECTION (RESONANCE) -->
+<!-- SLIDE 18 · EXIT TICKET: MOTOR SELECTION (RESONANCE) -->
 <section
   data-activity-id="resonance"
   data-activity-trigger="slide-enter"
@@ -750,10 +781,11 @@ function buildCommDemo(root) {
     } });
 }
 
-// ─── Precision Under Pressure ────────────────────────────────
-// Torque is in units of the motor's rating. The arm angle a (degrees) obeys
-// a'' = (motor torque - friction - bump) / J × 1200. The command profile moves
-// from the old target to the new one at the chosen speed with a 600°/s²
+// ─── Head to Head ────────────────────────────────────────────
+// One command profile drives three arm joints in lockstep, under one load and
+// one shared bump. Torque is in units of each motor's rating. An arm angle a
+// (degrees) obeys a'' = (motor torque - friction - bump) / J × 1200. The
+// command moves from 0° to the target at the chosen speed with a 600°/s²
 // ramp.
 // Stepper: follows the command exactly in 1.8° steps unless demanded torque
 //   (friction + acceleration) exceeds the pull-out torque, which falls with
@@ -765,70 +797,86 @@ function buildCommDemo(root) {
 // Servo: a torque-limited PID position loop on the encoder reading. It
 //   recovers from bumps over time and faults if the error stays over 20°
 //   for 1.5 s.
+// A run: the move, then (with Bump on) a 0.3 s knock on all three arms 1 s
+// after the command arrives. It ends once every arm has been still for 0.6 s
+// after the last event, or 5 s after it.
 var LOADS4 = {
     light:  { name: 'light',      fr: 0.15, J: 1.0 },
     medium: { name: 'medium',     fr: 0.35, J: 1.6 },
     heavy:  { name: 'heavy',      fr: 0.6,  J: 2.4 },
     over:   { name: 'overloaded', fr: 1.65, J: 2.4 },
 };
-var SYSTEMS = {
-    stepper: { name: 'open loop stepper', cost: '<b>$</b> · driver only · no sensor' },
-    bldc:    { name: 'brushless speed control', cost: '<b>$$</b> · ESC · speed sensing' },
-    servo:   { name: 'servo', cost: '<b>$$$</b> · drive · encoder · tuning' },
-};
-function buildPrecision(root) {
+var ARMS = [
+    { key: 'stepper', letter: 'A', width: 12 },
+    { key: 'bldc',    letter: 'B', width: 7 },
+    { key: 'servo',   letter: 'C', width: 3 },
+];
+function buildHeadToHead(root) {
     function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
-    function setText(sel, t) { var e = root.querySelector(sel); if (e.textContent !== t) e.textContent = t; }
-    var STEP = 1.8, ACC = 600, TMAX = 1.5, HOLD = 1.0, WIN = 8;
+    var STEP = 1.8, ACC = 600, TMAX = 1.5, HOLD = 1.0, BUMP_AT = 1.0, BUMP_LEN = 0.3;
+    var DX = 100, DY = 100, DR = 92;
 
-    // Arm drawing
-    var arm = q('arm'), AX = 200, AY = 165, AR = 140;
-    svgEl('circle', { cx: AX, cy: AY, r: AR, class: 'arm-disc' }, arm);
-    for (var t = 0; t < 360; t += 15) {
-        var a = t * Math.PI / 180, r0 = t % 90 ? AR - 10 : AR - 22;
-        svgEl('line', { x1: AX + r0 * Math.sin(a), y1: AY - r0 * Math.cos(a), x2: AX + AR * Math.sin(a), y2: AY - AR * Math.cos(a), class: 'arm-ticks' }, arm);
-    }
-    [[0, '0°'], [90, '90°'], [180, '180°'], [270, '270°']].forEach(function (p) {
-        var a = p[0] * Math.PI / 180;
-        svgEl('text', { x: AX + (AR - 46) * Math.sin(a), y: AY - (AR - 46) * Math.cos(a), class: 'arm-lbl' }, arm).textContent = p[1];
-    });
-    var tgtLine = svgEl('line', { class: 'arm-target', x1: AX, y1: AY, x2: AX, y2: AY }, arm);
-    var actLine = svgEl('line', { class: 'arm-actual', x1: AX, y1: AY, x2: AX, y2: AY - 120 }, arm);
-    var cmdLine = svgEl('line', { class: 'arm-cmd', x1: AX, y1: AY, x2: AX, y2: AY - 130 }, arm);
-    svgEl('circle', { cx: AX, cy: AY, r: 16, class: 'arm-hub' }, arm);
     function aim(line, deg, r0, r1) {
         var a = deg * Math.PI / 180;
-        line.setAttribute('x1', (AX + r0 * Math.sin(a)).toFixed(1)); line.setAttribute('y1', (AY - r0 * Math.cos(a)).toFixed(1));
-        line.setAttribute('x2', (AX + r1 * Math.sin(a)).toFixed(1)); line.setAttribute('y2', (AY - r1 * Math.cos(a)).toFixed(1));
+        line.setAttribute('x1', (DX + r0 * Math.sin(a)).toFixed(1)); line.setAttribute('y1', (DY - r0 * Math.cos(a)).toFixed(1));
+        line.setAttribute('x2', (DX + r1 * Math.sin(a)).toFixed(1)); line.setAttribute('y2', (DY - r1 * Math.cos(a)).toFixed(1));
     }
 
-    // Graph
-    var graph = q('graph'), GX0 = 90, GX1 = 990, GY0 = 186, GH = 172, GMAX = 300;
-    function gy(v) { return GY0 - Math.max(-20, Math.min(GMAX, v)) / GMAX * GH; }
-    [0, 90, 180, 270].forEach(function (v) {
-        svgEl('path', { d: 'M' + GX0 + ' ' + gy(v) + ' H' + GX1, class: v ? 'dw-grid' : 'dw-axis' }, graph);
-        svgEl('text', { x: GX0 - 10, y: gy(v) + 9, class: 'g-lbl', 'text-anchor': 'end' }, graph).textContent = v + '°';
+    // One dial per arm
+    ARMS.forEach(function (d) {
+        var panel = root.querySelector('[data-arm="' + d.key + '"]'), svg = panel.querySelector('[data-role="dial"]');
+        svgEl('circle', { cx: DX, cy: DY, r: DR, class: 'arm-disc' }, svg);
+        for (var t = 0; t < 360; t += 15) {
+            var a = t * Math.PI / 180, r0 = t % 90 ? DR - 8 : DR - 24;
+            svgEl('line', { x1: DX + r0 * Math.sin(a), y1: DY - r0 * Math.cos(a), x2: DX + DR * Math.sin(a), y2: DY - DR * Math.cos(a), class: 'arm-ticks' }, svg);
+        }
+        d.tgt = svgEl('line', { class: 'arm-target' }, svg);
+        d.act = svgEl('line', { class: 'arm-actual' }, svg);
+        d.cmd = svgEl('line', { class: 'arm-cmd' }, svg);
+        svgEl('circle', { cx: DX, cy: DY, r: 10, class: 'arm-hub' }, svg);
+        d.lines = panel.querySelector('[data-role="lines"]');
     });
+
+    // Shared graph: three traces, thickest first, each labeled at its end.
+    // The angle axis runs from a little below 0° to 20% past the target, so
+    // a miss of a few degrees is still visible on a small move.
+    var graph = q('graph'), GX0 = 100, GX1 = 930, GY0 = 236, GH = 220, gMin = -9, gMax = 108;
+    function gy(v) { return GY0 - (Math.max(gMin, Math.min(gMax, v)) - gMin) / (gMax - gMin) * GH; }
+    var gAxis = svgEl('g', {}, graph);
+    function drawAxis() {
+        gAxis.innerHTML = '';
+        gMin = -0.1 * S.target; gMax = 1.2 * S.target;
+        [0, S.target / 2, S.target].forEach(function (v) {
+            svgEl('path', { d: 'M' + GX0 + ' ' + gy(v) + ' H' + GX1, class: v ? 'dw-grid' : 'dw-axis' }, gAxis);
+            svgEl('text', { x: GX0 - 10, y: gy(v) + 10, class: 'g-lbl', 'text-anchor': 'end' }, gAxis).textContent = (Math.round(v * 10) / 10) + '°';
+        });
+    }
     var gTgt = svgEl('line', { class: 'g-tgt', x1: GX0, x2: GX1 }, graph);
     var gCmd = svgEl('polyline', { class: 'g-cmd', points: '' }, graph);
-    var gAct = svgEl('polyline', { class: 'g-act', points: '' }, graph);
+    ARMS.forEach(function (d) {
+        d.trace = svgEl('polyline', { class: 'g-act', points: '', style: 'stroke: var(--arm-' + d.key + '); stroke-width: ' + d.width }, graph);
+    });
+    ARMS.forEach(function (d) {
+        d.end = svgEl('text', { class: 'g-end', style: 'fill: var(--arm-' + d.key + ')' }, graph);
+        d.end.textContent = d.letter;
+    });
 
-    var st;
-    function reset() {
-        st = { sys: st ? st.sys : 'stepper', load: st ? st.load : 'light',
-               target: st ? st.target : 90, speed: st ? st.speed : 90,
-               paused: false, t: 0, hist: [],
-               cmd: 0, cmdV: 0, from: 0, moving: false, moveT: 0,
-               a: 0, w: 0, bump: 0, drive: 0,
-               lost: 0, slipLost: 0, sent: 0, slipping: false, settleT: 0, moveClock: 0,
-               bTimer: 0, vSet: 0, integ: 0,
-               errTime: 0, fault: false, settled: true, report: null };
+    var S = { load: 'light', target: 90, speed: 90, bumpOn: false, locked: false, phase: 'predict', pred: {}, result: null }, arms = {};
+    function newArm(key) {
+        return { key: key, a: 0, w: 0, drive: 0, lost: 0, slipLost: 0, sent: 0, slipping: false, bumpHandled: false,
+                 vSet: 0, integ: 0, errTime: 0, fault: false, lastMove: 0 };
     }
-    reset();
+    function resetRun() {
+        S.t = 0; S.moveT = 0; S.cmd = 0; S.cmdV = 0; S.cmdDone = false; S.bump = 0; S.bumped = false; S.eventT = 0;
+        S.hist = []; S.result = null; S.T = profile(0).T;
+        S.span = Math.ceil(S.T + (S.bumpOn ? BUMP_AT + BUMP_LEN : 0) + 3);
+        ARMS.forEach(function (d) { arms[d.key] = newArm(d.key); });
+        drawAxis();
+    }
 
-    // Trapezoidal command profile from st.from to st.target.
+    // Trapezoidal command profile from 0° to the target.
     function profile(t) {
-        var D = st.target - st.from, dir = D >= 0 ? 1 : -1, d = Math.abs(D), v = st.speed;
+        var D = S.target, dir = D >= 0 ? 1 : -1, d = Math.abs(D), v = S.speed;
         var ta = v / ACC, da = 0.5 * ACC * ta * ta;
         if (2 * da > d) { ta = Math.sqrt(d / ACC); v = ACC * ta; da = d / 2; }
         var tc = (d - 2 * da) / v, T = 2 * ta + tc, p, vel, acc;
@@ -837,22 +885,124 @@ function buildPrecision(root) {
         else if (t < ta + tc) { p = da + v * (t - ta); vel = v; acc = 0; }
         else if (t < T) { var r = T - t; p = d - 0.5 * ACC * r * r; vel = ACC * r; acc = -ACC; }
         else { p = d; vel = 0; acc = 0; }
-        return { p: st.from + dir * p, v: dir * vel, acc: dir * acc, T: T, done: t >= T };
+        return { p: dir * p, v: dir * vel, acc: dir * acc, T: T, done: t >= T };
     }
 
     // Arm dynamics under a motor torque with Coulomb friction (and stiction).
-    function physics(tau, dt) {
-        var L = LOADS4[st.load];
-        var ext = st.bump > 0 ? -1.6 : 0;
-        var net = tau + ext;
-        if (Math.abs(st.w) < 0.5 && Math.abs(net) <= L.fr) { st.w = 0; return; }
-        var dirW = Math.abs(st.w) >= 0.5 ? Math.sign(st.w) : Math.sign(net);
+    function physics(A, tau, dt) {
+        var L = LOADS4[S.load];
+        var net = tau + (S.bump > 0 ? -1.6 : 0);
+        if (Math.abs(A.w) < 0.5 && Math.abs(net) <= L.fr) { A.w = 0; return; }
+        var dirW = Math.abs(A.w) >= 0.5 ? Math.sign(A.w) : Math.sign(net);
         var accel = (net - L.fr * dirW) / L.J * 1200;
-        var w0 = st.w;
-        st.w += accel * dt;
+        var w0 = A.w;
+        A.w += accel * dt;
         // Friction stops a moving arm; it cannot push it backward.
-        if (w0 !== 0 && Math.sign(w0) !== Math.sign(st.w)) st.w = 0;
-        st.a += st.w * dt;
+        if (w0 !== 0 && Math.sign(w0) !== Math.sign(A.w)) A.w = 0;
+        A.a += A.w * dt;
+    }
+
+    function stepArm(A, pr, moving, dt) {
+        var L = LOADS4[S.load];
+        if (A.fault) { A.drive = 0; physics(A, 0, dt); return; }
+
+        if (A.key === 'stepper') {
+            // Pull-out torque falls with step rate; demand = friction + accel torque.
+            var pull = HOLD * (1 - 0.6 * Math.abs(pr.v) / 360);
+            var demand = L.fr + L.J * 0.1 * Math.abs(pr.acc) / ACC;
+            var cmdSteps = Math.round(S.cmd / STEP);
+            var newSent = cmdSteps - A.sent;
+            A.sent = cmdSteps;
+            var overloaded = (moving && demand > pull) || L.fr > HOLD;
+            if (overloaded && newSent !== 0) { A.slipLost += newSent; A.slipping = true; }
+            else if (A.slipping) {
+                // The rotor catches a stable position a whole number of rotor
+                // teeth (4 full steps) behind, never more than it was sent.
+                var ep = Math.round(A.slipLost / 4) * 4;
+                if (Math.abs(ep) > Math.abs(A.slipLost)) ep -= 4 * Math.sign(ep);
+                A.lost += ep === 0 ? A.slipLost : ep;
+                A.slipLost = 0;
+                A.slipping = false;
+            }
+            if (S.bump > 0 && !A.bumpHandled) {
+                if (1.6 + L.fr > HOLD) { A.lost += 4; A.lastMove = S.t; }   // knocked back one rotor tooth
+                A.bumpHandled = true;
+            }
+            var lag = moving && !A.slipping ? Math.min(0.9, demand / pull * 0.9) * Math.sign(pr.v || 1) : 0;
+            A.a = (A.sent - A.lost - A.slipLost) * STEP - lag;
+            A.w = A.slipping ? 0 : pr.v;
+            A.drive = Math.min(1, demand / Math.max(pull, 0.01));
+            if (moving && pr.done && A.slipping) { A.lost += A.slipLost; A.slipLost = 0; A.slipping = false; }
+            return;
+        }
+
+        if (A.key === 'bldc') {
+            // Run at the commanded speed for the computed time; no position loop.
+            A.vSet = moving && !pr.done ? pr.v : 0;
+            var e = A.vSet - A.w;
+            if (moving) A.integ = Math.max(-1, Math.min(1, A.integ + e * 0.002 * dt * 60)); else A.integ = 0;
+            var tau = Math.max(-TMAX, Math.min(TMAX, 0.02 * e + A.integ));
+            A.drive = Math.abs(tau) / TMAX;
+            physics(A, tau, dt);
+            return;
+        }
+
+        // Servo: PID on encoder position, torque limited. Anti-windup: the
+        // integral only builds while the drive is below its torque limit.
+        var err = S.cmd - A.a;
+        var tauS = 0.08 * err + 0.016 * (S.cmdV - A.w) + A.integ;
+        var sat = Math.abs(tauS) >= TMAX;
+        if (!sat) A.integ = Math.max(-0.8, Math.min(0.8, A.integ + err * 0.12 * dt));
+        tauS = Math.max(-TMAX, Math.min(TMAX, tauS));
+        A.drive = Math.abs(tauS) / TMAX;
+        physics(A, tauS, dt);
+        if (Math.abs(err) > 20 && sat) {
+            A.errTime += dt;
+            if (A.errTime > 1.5) A.fault = true;
+        } else A.errTime = 0;
+    }
+
+    function step(dt) {
+        S.t += dt;
+        S.moveT += dt;
+        var pr = profile(S.moveT), moving = !S.cmdDone;
+        S.cmd = pr.p; S.cmdV = pr.v;
+        if (S.bumpOn && !S.bumped && S.cmdDone && S.t >= S.eventT + BUMP_AT) {
+            S.bump = BUMP_LEN; S.bumped = true; S.eventT = S.t;
+            say('Bump! The same knock hits all three arms at once.', 'caution');
+        }
+        ARMS.forEach(function (d) {
+            var A = arms[d.key], wasFault = A.fault;
+            stepArm(A, pr, moving, dt);
+            // A servo still correcting (stuck on friction while its integral
+            // builds) has not settled, even when it is not moving yet.
+            if (Math.abs(A.w) > 2 || (d.key === 'servo' && !A.fault && Math.abs(S.cmd - A.a) > 1)) A.lastMove = S.t;
+            if (A.fault && !wasFault) say('The servo faulted: it pushed at its torque limit with the arm more than 20° off for 1.5 s, so the drive shut off.', 'bad');
+        });
+        if (S.bump > 0) S.bump -= dt;
+        if (pr.done && !S.cmdDone) { S.cmdDone = true; S.eventT = S.t; }
+        var lastEventDone = S.cmdDone && (!S.bumpOn || (S.bumped && S.bump <= 0));
+        if (lastEventDone) {
+            var still = ARMS.every(function (d) { return S.t - arms[d.key].lastMove >= 0.6; });
+            if ((still && S.t - S.eventT >= 0.6) || S.t - S.eventT > 5) finish();
+        }
+    }
+
+    function finish() {
+        S.phase = 'done'; S.locked = false;
+        var right = 0;
+        S.result = {};
+        ARMS.forEach(function (d) {
+            var A = arms[d.key], off = S.target - A.a, ok = Math.abs(off) <= 1 && !A.fault;
+            var settle = Math.max(0, A.lastMove - S.eventT);
+            S.result[d.key] = { off: off, ok: ok, settle: S.t - A.lastMove < 0.6 ? null : settle, right: !!S.pred[d.key] === ok };
+            if (S.result[d.key].right) right++;
+        });
+        var st = arms.stepper, b = S.result.bldc, msg = 'Run complete: ' + right + ' of 3 predictions right.';
+        if (st.lost) msg += ' The stepper’s controller still believes the arm is at ' + (st.sent * STEP).toFixed(1) + '°, but it is at ' + st.a.toFixed(1) + '°.';
+        else if (arms.servo.fault) msg += ' The servo faulted, so it stopped trying to correct.';
+        else if (!b.ok) msg += ' Brushless ended ' + Math.abs(b.off).toFixed(1) + '° off: it measures speed, not position.';
+        say(msg, right === 3 ? '' : 'caution');
     }
 
     function say(msg, cls) {
@@ -860,196 +1010,120 @@ function buildPrecision(root) {
         if (fb.textContent !== msg) fb.textContent = msg;
         fb.className = 'sim-feedback' + (cls ? ' ' + cls : '');
     }
-
-    function finishReport() {
-        var err = st.target - st.a, sys = SYSTEMS[st.sys].name;
-        if (st.sys === 'stepper') {
-            if (st.lost) say('Done. The controller sent every step and believes the arm is at ' + st.cmd.toFixed(1) + '°, but it is at ' + st.a.toFixed(1) + '°: ' + Math.abs(st.lost) + ' steps lost (' + Math.abs(st.lost * STEP).toFixed(1) + '°), and it has no way to know.', 'bad');
-            else say('Done. Every step landed: the arm is at ' + st.a.toFixed(1) + '°, right on target. The stepper had enough torque at this speed and load.');
-        } else if (st.sys === 'bldc') {
-            say('Done. The motor ran at speed for the computed time, then braked. It ended at ' + st.a.toFixed(1) + '°, off by ' + Math.abs(err).toFixed(1) + '°: it measures speed, not position, so it cannot fix that.', Math.abs(err) > 3 ? 'caution' : '');
-        } else {
-            say('Settled at ' + st.a.toFixed(1) + '°, error ' + Math.abs(err).toFixed(1) + '°. The encoder measured the error and the drive kept pushing until it shrank. A heavier load takes longer.');
-        }
-    }
-
-    function step(dt) {
-        st.t += dt;
-        var L = LOADS4[st.load];
-        if (st.bump > 0) st.bump -= dt;
-        var pr = profile(st.moveT);
-        if (st.moving) {
-            st.moveT += dt;
-            pr = profile(st.moveT);
-            st.cmd = pr.p; st.cmdV = pr.v;
-        } else { st.cmdV = 0; }
-
-        if (st.fault) { st.drive = 0; physics(0, dt); return; }
-
-        if (st.sys === 'stepper') {
-            // Pull-out torque falls with step rate; demand = friction + accel torque.
-            var pull = HOLD * (1 - 0.6 * Math.abs(pr.v) / 360);
-            var demand = L.fr + L.J * 0.1 * Math.abs(pr.acc) / ACC;
-            var cmdSteps = Math.round(st.cmd / STEP);
-            var newSent = cmdSteps - st.sent;
-            st.sent = cmdSteps;
-            var overloaded = (st.moving && demand > pull) || L.fr > HOLD;
-            if (overloaded && newSent !== 0) { st.slipLost += newSent; st.slipping = true; }
-            else if (st.slipping) {
-                // The rotor catches a stable position a whole number of rotor
-                // teeth (4 full steps) behind, never more than it was sent.
-                var ep = Math.round(st.slipLost / 4) * 4;
-                if (Math.abs(ep) > Math.abs(st.slipLost)) ep -= 4 * Math.sign(ep);
-                st.lost += ep === 0 ? st.slipLost : ep;
-                st.slipLost = 0;
-                st.slipping = false;
-            }
-            if (st.bump > 0 && !st.bumpHandled) {
-                if (1.6 + L.fr > HOLD) st.lost += 4;   // knocked back one rotor tooth
-                st.bumpHandled = true;
-            }
-            var lag = st.moving && !st.slipping ? Math.min(0.9, demand / pull * 0.9) * Math.sign(pr.v || 1) : 0;
-            st.a = (st.sent - st.lost - st.slipLost) * STEP - lag;
-            st.w = st.slipping ? 0 : pr.v;
-            st.drive = Math.min(1, demand / Math.max(pull, 0.01));
-            if (st.moving && pr.done) {
-                if (st.slipping) { st.lost += st.slipLost; st.slipLost = 0; st.slipping = false; }
-                st.moving = false; finishReport();
-            }
-            return;
-        }
-
-        if (st.sys === 'bldc') {
-            // Run at the commanded speed for the computed time; no position loop.
-            if (st.moving) {
-                st.vSet = pr.done ? 0 : pr.v;
-                if (pr.done) { st.moving = false; st.bTimer = 0.6; }
-            } else st.vSet = 0;
-            var e = st.vSet - st.w;
-            if (st.moving) st.integ = Math.max(-1, Math.min(1, st.integ + e * 0.002 * dt * 60)); else st.integ = 0;
-            var tau = Math.max(-TMAX, Math.min(TMAX, 0.02 * e + st.integ));
-            st.drive = Math.abs(tau) / TMAX;
-            physics(tau, dt);
-            if (!st.moving && st.bTimer > 0) { st.bTimer -= dt; if (st.bTimer <= 0 && st.reportPending) { st.reportPending = false; finishReport(); } }
-            return;
-        }
-
-        // Servo: PID on encoder position, torque limited.
-        var err = st.cmd - st.a;
-        st.integ = Math.max(-0.8, Math.min(0.8, st.integ + err * 0.12 * dt));
-        var tauS = 0.08 * err + 0.016 * (st.cmdV - st.w) + st.integ;
-        var sat = Math.abs(tauS) >= TMAX;
-        tauS = Math.max(-TMAX, Math.min(TMAX, tauS));
-        st.drive = Math.abs(tauS) / TMAX;
-        physics(tauS, dt);
-        if (Math.abs(err) > 20 && sat) {
-            st.errTime += dt;
-            if (st.errTime > 1.5) {
-                st.fault = true; st.moving = false;
-                say('FOLLOWING ERROR FAULT. The drive was at its torque limit with the arm more than 20° from the command for 1.5 s, so it shut off to protect the motor and the machine.', 'bad');
-            }
-        } else st.errTime = 0;
-        if (st.moving && pr.done) st.moving = false;
-        if (!st.moving && st.reportPending) {
-            st.moveClock += dt;
-            st.settleT = Math.abs(err) < 1 && Math.abs(st.w) < 2 ? st.settleT + dt : 0;
-            if (st.settleT > 0.4 || st.moveClock > 4) { st.reportPending = false; st.moveClock = 0; finishReport(); }
-        }
+    function setHTML(el, html) { if (el._html !== html) { el._html = html; el.innerHTML = html; } }
+    function line(label, value, cls, mono) {
+        return '<div class="hh-line"><span>' + label + '</span><span class="' + (cls || '') + '">' + (mono === false ? value : '<b>' + value + '</b>') + '</span></div>';
     }
 
     function render() {
-        aim(tgtLine, st.target, AR - 30, AR + 4);
-        aim(actLine, st.a, 0, 118);
-        aim(cmdLine, st.cmd, 0, 132);
+        var running = S.phase === 'run';
+        ARMS.forEach(function (d) {
+            var A = arms[d.key], res = S.result && S.result[d.key], off = S.target - A.a;
+            aim(d.tgt, S.target, DR - 22, DR + 2);
+            aim(d.act, A.a, 0, 76);
+            aim(d.cmd, S.cmd, 0, 84);
+            var h = line('Off target', (res ? (res.ok ? '✓ ' : '✗ ') : '') + (Math.abs(off) < 0.05 ? 0 : off).toFixed(1) + '°', res ? (res.ok ? 'ok' : 'no') : '');
+            if (d.key === 'stepper') h += line('Sensor', 'none') + line('Lost steps', Math.abs(A.lost + A.slipLost), A.lost + A.slipLost ? 'no' : '');
+            else if (d.key === 'bldc') h += line('Speed sensor', Math.round(A.w) + '°/s') + line('Position', 'unknown');
+            else h += line('Encoder', A.a.toFixed(1) + '°') + line('Drive', A.fault ? 'FAULT' : A.drive > 0.98 ? 'LIMIT' : Math.round(A.drive * 100) + '%', A.fault || A.drive > 0.98 ? 'no' : '');
+            h += line('Settle', res ? (res.settle === null ? 'over 5 s' : res.settle.toFixed(1) + ' s') : running ? '…' : '–');
+            if (res) h += line('Prediction', res.right ? '✓ right' : '✗ wrong', res.right ? 'ok' : 'no', false);
+            else h += line('Prediction', S.locked ? (S.pred[d.key] ? 'on target' : 'off target') : 'not locked', '', false);
+            setHTML(d.lines, h);
+        });
+
         // Graph
-        var t1 = st.t, t0 = t1 - WIN;
-        function gx(t) { return GX0 + (t - t0) / WIN * (GX1 - GX0); }
-        gTgt.setAttribute('y1', gy(st.target)); gTgt.setAttribute('y2', gy(st.target));
-        gCmd.setAttribute('points', st.hist.map(function (h) { return gx(h.t).toFixed(1) + ',' + gy(h.c).toFixed(1); }).join(' '));
-        gAct.setAttribute('points', st.hist.map(function (h) { return gx(h.t).toFixed(1) + ',' + gy(h.a).toFixed(1); }).join(' '));
-        var err = st.cmd - st.a;
-        setText('[data-tile="cmd"]', st.cmd.toFixed(1) + '°');
-        setText('[data-tile="act"]', st.a.toFixed(1) + '°');
-        setText('[data-tile="err"]', (Math.abs(err) < 0.05 ? 0 : err).toFixed(1) + '°');
-        setText('[data-tile="fb"]', st.sys === 'servo' ? st.a.toFixed(1) + '°' : st.sys === 'bldc' ? Math.round(st.w) + '°/s' : 'none');
-        var ctrl = q('ctrl'), html;
-        if (st.sys === 'stepper') html = '<b>Steps sent:</b> ' + st.sent + ' (' + (st.sent * STEP).toFixed(1) + '°)<br><b>Controller believes:</b> ' + (st.sent * STEP).toFixed(1) + '°';
-        else if (st.sys === 'bldc') html = '<b>Speed set:</b> ' + Math.round(st.vSet) + '°/s &nbsp; <b>measured:</b> ' + Math.round(st.w) + '°/s<br><b>Position:</b> not measured';
-        else html = '<b>Encoder:</b> ' + st.a.toFixed(1) + '° &nbsp; <b>error:</b> ' + err.toFixed(1) + '°<br><b>Drive output</b> (bar below)';
-        if (ctrl.innerHTML !== html) ctrl.innerHTML = html;
-        var fill = q('drive');
-        fill.style.width = Math.round(st.drive * 100) + '%';
-        fill.classList.toggle('sat', st.drive > 0.98);
-        var correcting = st.sys === 'servo' && (Math.abs(err) > 1 || Math.abs(st.w) > 2);
-        var status = st.fault ? 'FAULT' : st.paused ? 'PAUSED' : st.moving ? 'MOVING' : st.bump > 0 ? 'BUMPED' : correcting ? 'CORRECTING' : 'IDLE';
+        var span = Math.max(S.span || 8, S.t || 0);
+        function gx(t) { return GX0 + t / span * (GX1 - GX0); }
+        gTgt.setAttribute('y1', gy(S.target)); gTgt.setAttribute('y2', gy(S.target));
+        var hist = S.hist || [];
+        gCmd.setAttribute('points', hist.map(function (h) { return gx(h.t).toFixed(1) + ',' + gy(h.c).toFixed(1); }).join(' '));
+        var ends = [];
+        ARMS.forEach(function (d, i) {
+            d.trace.setAttribute('points', hist.map(function (h) { return gx(h.t).toFixed(1) + ',' + gy(h.a[i]).toFixed(1); }).join(' '));
+            var last = hist[hist.length - 1];
+            d.end.style.visibility = last ? 'visible' : 'hidden';
+            if (last) ends.push({ d: d, x: gx(last.t) + 14, y: gy(last.a[i]) });
+        });
+        // Keep the end labels at least 30 units apart, with the stack
+        // centered on where the lines end.
+        ends.sort(function (p, r) { return p.y - r.y; });
+        var mean0 = ends.reduce(function (m, e) { return m + e.y; }, 0) / (ends.length || 1);
+        for (var k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 30) ends[k].y = ends[k - 1].y + 30;
+        var shift = mean0 - ends.reduce(function (m, e) { return m + e.y; }, 0) / (ends.length || 1);
+        ends.forEach(function (e) { e.y = Math.max(16, Math.min(240, e.y + shift)); });
+        ends.forEach(function (e) { e.d.end.setAttribute('x', e.x.toFixed(1)); e.d.end.setAttribute('y', e.y.toFixed(1)); });
+
+        var status = { predict: 'PREDICT', ready: 'READY', done: 'DONE' }[S.phase] ||
+                     (!S.cmdDone ? 'MOVING' : S.bump > 0 ? 'BUMP!' : 'SETTLING');
         var chip = q('status');
         if (chip.textContent !== status) chip.textContent = status;
-        chip.className = 'status-chip ' + ({ MOVING: 'busy', CORRECTING: 'busy', BUMPED: 'caution', FAULT: 'bad' }[status] || '');
+        chip.className = 'status-chip ' + ({ MOVING: 'busy', SETTLING: 'busy', 'BUMP!': 'caution', READY: 'ok', DONE: 'ok' }[status] || '');
+
+        q('run').disabled = !S.locked || running;
+        q('lock').disabled = S.locked || running;
+        root.querySelectorAll('[data-pred]').forEach(function (c) { c.disabled = S.locked || running; });
+        root.querySelectorAll('[data-role="load"] .seg-btn, [data-role="bump"] .seg-btn').forEach(function (b) { b.disabled = running; });
+        q('target').disabled = q('speed').disabled = running;
     }
 
     function syncButtons() {
-        root.querySelectorAll('[data-role="system"] .seg-btn').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.val === st.sys); });
-        root.querySelectorAll('[data-role="load"] .seg-btn').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.val === st.load); });
-        q('cost').innerHTML = SYSTEMS[st.sys].cost;
-        q('pause').textContent = st.paused ? 'Resume' : 'Pause';
+        root.querySelectorAll('[data-role="load"] .seg-btn').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.val === S.load); });
+        root.querySelectorAll('[data-role="bump"] .seg-btn').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.val === (S.bumpOn ? 'on' : 'off')); });
     }
-    function fullReset() { reset(); syncButtons(); render(); say('Pick a system and a load, set a target, then press Move.'); }
+    // A changed command needs a fresh prediction.
+    function changed() {
+        syncButtons();
+        if (S.phase === 'run') return;
+        S.phase = 'predict'; S.locked = false; S.result = null;
+        resetRun();
+        say('Command changed. Check the arms you expect to end within 1° of the target, then lock your prediction.');
+        render();
+    }
 
-    root.querySelectorAll('[data-role="system"] .seg-btn').forEach(function (b) {
-        b.addEventListener('click', function () { st.sys = b.dataset.val; fullReset(); });
-    });
     root.querySelectorAll('[data-role="load"] .seg-btn').forEach(function (b) {
-        b.addEventListener('click', function () { st.load = b.dataset.val; fullReset(); });
+        b.addEventListener('click', function () { S.load = b.dataset.val; changed(); });
     });
-    q('target').addEventListener('input', function () { st.target = +this.value; q('target-val').textContent = st.target + '°'; render(); });
-    q('speed').addEventListener('input', function () { st.speed = +this.value; q('speed-val').textContent = st.speed + '°/s'; });
-    q('move').addEventListener('click', function () {
-        if (st.fault) { say('The servo drive is faulted. Press Reset.', 'bad'); return; }
-        if (st.moving) return;
-        st.from = st.cmd; st.moveT = 0; st.moving = true; st.integ = 0; st.reportPending = true;
-        if (Math.abs(st.target - st.from) < 0.01) { st.moving = false; say('Already commanded to ' + st.target + '°. Pick a new target.'); return; }
-        say('Moving the ' + SYSTEMS[st.sys].name + ' to ' + st.target + '° at ' + st.speed + '°/s with a ' + LOADS4[st.load].name + ' load.');
+    root.querySelectorAll('[data-role="bump"] .seg-btn').forEach(function (b) {
+        b.addEventListener('click', function () { S.bumpOn = b.dataset.val === 'on'; changed(); });
     });
-    q('bump').addEventListener('click', function () {
-        if (st.fault) return;
-        st.bump = 0.3; st.bumpHandled = false;
-        if (!st.moving) st.reportPending = true;
-        if (st.sys === 'stepper') say('Bump! The hit was stronger than the holding torque, so the rotor jumped back 4 steps. The controller did not notice.', 'caution');
-        else if (st.sys === 'bldc') say('Bump! The speed loop only fights motion while it lasts. Once the arm stops, nothing pulls it back to the angle.', 'caution');
-        else say('Bump! The encoder sees the error and the drive pushes back, within its torque limit.', 'caution');
-        if (st.sys === 'bldc') st.bTimer = 0.9;
+    q('target').addEventListener('input', function () { S.target = +this.value; q('target-val').textContent = S.target + '°'; changed(); });
+    q('speed').addEventListener('input', function () { S.speed = +this.value; q('speed-val').textContent = S.speed + '°/s'; changed(); });
+    q('lock').addEventListener('click', function () {
+        S.pred = {};
+        root.querySelectorAll('[data-pred]').forEach(function (c) { S.pred[c.dataset.pred] = c.checked; });
+        var picks = ARMS.filter(function (d) { return S.pred[d.key]; }).map(function (d) { return d.letter; });
+        S.locked = true; S.phase = 'ready'; S.result = null;
+        resetRun();
+        say('Locked: you expect ' + (picks.length ? picks.join(' and ') : 'none of them') + ' to end within 1° of the target. Press Run.');
+        render();
     });
-    q('pause').addEventListener('click', function () { st.paused = !st.paused; syncButtons(); });
-    q('reset').addEventListener('click', fullReset);
-    initTaskPager(q('tasks'));
+    q('run').addEventListener('click', function () {
+        if (!S.locked || S.phase === 'run') return;
+        resetRun();
+        S.phase = 'run';
+        say('Racing: all three arms get the same command to ' + S.target + '° at ' + S.speed + '°/s with a ' + LOADS4[S.load].name + ' load.');
+    });
+    q('reset').addEventListener('click', function () {
+        S.phase = 'predict'; S.locked = false;
+        resetRun();
+        say('Set one command, check the arms you expect to end within 1° of the target, then lock your prediction.');
+        render();
+    });
+
+    resetRun();
     syncButtons();
+    say('Set one command, check the arms you expect to end within 1° of the target, then lock your prediction.');
     render();
 
     SIMS.push({ root: root, tick: function (dt) {
-        if (st.paused) { render(); return; }
-        var n = 10;
-        for (var i = 0; i < n; i++) step(dt / n);
-        st.hist.push({ t: st.t, c: st.cmd, a: st.a });
-        while (st.hist.length && st.hist[0].t < st.t - WIN) st.hist.shift();
+        if (S.phase === 'run') {
+            var n = 10;
+            for (var i = 0; i < n && S.phase === 'run'; i++) step(dt / n);
+            S.hist.push({ t: S.t, c: S.cmd, a: ARMS.map(function (d) { return arms[d.key].a; }) });
+        }
         render();
     } });
-}
-
-// Prev / next pager over the hidden <li> tasks inside a .task-pager.
-function initTaskPager(el) {
-    var items = Array.prototype.map.call(el.querySelectorAll('ol > li'), function (li) { return li.innerHTML; });
-    var i = 0;
-    var count = el.querySelector('.tp-count'), text = el.querySelector('.tp-text');
-    var prev = el.querySelector('.tp-prev'), next = el.querySelector('.tp-next');
-    function show() {
-        count.textContent = 'TASK ' + (i + 1) + ' OF ' + items.length;
-        text.innerHTML = items[i];
-        prev.disabled = i === 0;
-        next.disabled = i === items.length - 1;
-    }
-    prev.addEventListener('click', function () { if (i > 0) { i--; show(); } });
-    next.addEventListener('click', function () { if (i < items.length - 1) { i++; show(); } });
-    show();
 }
 
 function startSimLoop(Reveal) {
@@ -1065,7 +1139,7 @@ function startSimLoop(Reveal) {
 }
 
 document.querySelectorAll('.cm-demo').forEach(buildCommDemo);
-document.querySelectorAll('.pp').forEach(buildPrecision);
+document.querySelectorAll('.hh').forEach(buildHeadToHead);
 
 initSyncDeckReveal({
     deckId: 'day4-stepper-brushless-servo',

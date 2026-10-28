@@ -7,18 +7,27 @@ mid-frame.
 
 ## Setup
 
-Install Playwright into a throwaway virtualenv outside the repo (for example
-in your scratch or temp directory), not in the repo itself:
+In the devcontainer there is nothing to set up. The image is Microsoft's
+Playwright image, which ships the browsers in `/ms-playwright`, and
+`onCreateCommand` installs the Python packages in
+`.devcontainer/requirements.txt` (Playwright pinned to the image's version, plus
+Pillow and NumPy). Run the scripts from the repo root:
+
+```bash
+python3 .agent/tools/shots.py Decks/AR1/DCCircuits/EX7_Parallel_and_Mixed_Circuits.html 25
+```
+
+If `import playwright` fails, the container was created before that file
+existed: rebuild it, or run the `onCreateCommand` from
+`.devcontainer/devcontainer.json` by hand.
+
+Outside the devcontainer, install Playwright into a throwaway virtualenv outside
+the repo and let it download its own browser:
 
 ```bash
 python3 -m venv /tmp/deck-venv
-/tmp/deck-venv/bin/pip install playwright
+/tmp/deck-venv/bin/pip install playwright pillow numpy
 /tmp/deck-venv/bin/python -m playwright install --with-deps chromium
-```
-
-Then run the scripts with that interpreter, from the repo root:
-
-```bash
 /tmp/deck-venv/bin/python .agent/tools/shots.py Decks/AR1/DCCircuits/EX7_Parallel_and_Mixed_Circuits.html 25
 ```
 

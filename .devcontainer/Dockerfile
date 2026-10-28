@@ -1,17 +1,9 @@
+# Keep this tag in sync with playwright== in requirements.txt. The image ships
+# the matching browsers in /ms-playwright (PLAYWRIGHT_BROWSERS_PATH).
 FROM mcr.microsoft.com/playwright:v1.64.1-noble
 
-# Layer 1: Python runtime/tooling and pdfimage dependencies.
+# pdfimages for scripts/extract-pdf-images.sh. Python, gh, and the vscode user
+# come from features in devcontainer.json.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3 python3-pip python3-venv python3-dev poppler-utils \
-    && rm -rf /var/lib/apt/lists/* 
-
-# Layer 2: Other devcontainer setup.
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends sudo gh \
-    && (id -u vscode >/dev/null 2>&1 || useradd -m -s /bin/bash vscode) \
-    && usermod -aG sudo vscode \
-    && echo "vscode ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/vscode \
-    && chmod 0440 /etc/sudoers.d/vscode \
-    && ln -sf /usr/bin/python3 /usr/local/bin/python \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip3 install --break-system-packages python-pptx
+    && apt-get install -y --no-install-recommends poppler-utils python-is-python3 \
+    && rm -rf /var/lib/apt/lists/*

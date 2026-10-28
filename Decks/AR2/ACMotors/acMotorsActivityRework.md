@@ -25,8 +25,8 @@ without turning every activity into a game.
 
 - Reuse each day's existing model where it already works; change the
   interaction, not the physics.
-- Every simulator still labels itself as a simplified educational model. Costs
-  and pass rules are illustrative, not real prices or a build guide.
+- Remove the "educational model" disclaimer from each simulator as its deck is
+  reworked (done for Day 2).
 - Fixed-height panels and feedback boxes, sized from the data, checked by
   driving every state (no jumps between stages).
 - Text floors from `CLAUDE.md` (30 px prose, 22 px labels), 7:1 contrast, no em
@@ -43,8 +43,14 @@ without turning every activity into a game.
 The Generator Lab already fits discovery: students change construction (windings,
 poles, field, speed) and find the relationships themselves.
 
-- [ ] Reread the task pager so every task asks students to find a relationship,
-  not just to observe one (optional polish only).
+- [x] Reread the task pager so every task asks students to find a relationship,
+  not just to observe one (optional polish only). Tasks A to G (slide 11 and
+  the slide 12 pager) now ask how speed sets frequency, how speed sets peak
+  voltage, what the field changes (voltage, not frequency), what 4 poles change
+  at one speed, how far apart the three peaks arrive (back at 2 poles, so the
+  answer is 120°), how direction sets the peak order, and how adding phases
+  steadies total power. Field and Poles had no task before.
+- [x] Drop "· Simplified educational model" from the slide 12 tag.
 
 ---
 
@@ -109,21 +115,21 @@ start winding overheats).
 
 - Slide 16 (tasks) becomes the design briefs and the build-test-improve loop.
 - Slide 17 becomes the Design Workshop.
-- Slide 18 Resonance asks students to justify their design for each brief and
-  name the near miss they rejected.
+- The old slide 18 debrief Resonance is removed; students record their best
+  design and one near miss on paper (task F on slide 16).
 
 ### Checklist
 
-- [ ] Tune the brief numbers against the model (the auxiliary + switch + run
+- [x] Tune the brief numbers against the model (the auxiliary + switch + run
   capacitor rule is settled above).
-- [ ] Build the workshop UI on slide 17 (reuse `buildMotorDrawing`, `drawLadder`,
+- [x] Build the workshop UI on slide 17 (reuse `buildMotorDrawing`, `drawLadder`,
   the torque-speed chart).
-- [ ] Combination rules, including the fault and no-effect cases.
-- [ ] Result card and per-requirement feedback.
-- [ ] Update slides 16 and 18, the outline, and the activities index.
-- [ ] Drive every brief with its intended pass and its near misses; stability
+- [x] Combination rules, including the fault and no-effect cases.
+- [x] Result card and per-requirement feedback.
+- [x] Update slides 16 and 18, the outline, and the activities index.
+- [x] Drive every brief with its intended pass and its near misses; stability
   and overflow checks.
-- [ ] Review with the teacher, then commit.
+- [x] Review with the teacher, then commit.
 
 ---
 
@@ -137,10 +143,21 @@ holds.
 
 | Mission | Spec | What it teaches |
 |---|---|---|
-| Mixer | Hold 1,140 ± 15 RPM at 90 % load for 10 s, no trips | Frequency sets speed, and slip pushes the shaft below sync |
-| Conveyor soft start | Reach full speed at 100 % load in under 12 s with no overcurrent trip | The ramp time trade-off |
-| Fan energy saver | Run the fan at 70 % speed, current under a limit | Lower frequency, less power |
-| Overspeed | Reach 2,400 RPM with a 4 pole motor | Torque falls above 60 Hz; it works at light load only |
+| Mixer | Hold 1,140 ± 15 RPM at 90 % load for 10 s | Frequency sets speed, and slip pushes the shaft below sync |
+| Conveyor soft start | Reach 1,700 RPM at 100 % load, 3× inertia, within 10 s of Start with no overcurrent trip | The ramp time trade-off |
+| Fan energy saver | Run the fan (torque ∝ speed²) at 70 % speed under 1.5 kW for 10 s | Lower frequency, much less power |
+| Overspeed | Hold 2,400 RPM with a 4 pole motor within FLA and at least 60 % load | Torque per amp falls above 60 Hz; it works at light load only |
+
+Tuned results (all 4 pole): the mixer passes at 40 Hz only (38 Hz from 120f/P
+gives 1,093 RPM); conveyor ramps of 1 to 6 s trip OC (5 s is the default), 7 to
+10 s pass, and 11 s takes 10.8 s; the fan passes at 41 to 42 Hz (1.37 kW at
+42 Hz, 37 % of full speed power); overspeed passes from 82 Hz at 60 or 65 % load
+(80 and 81 Hz fall short by the slip, and 70 % load draws 6.9 A). Two model
+changes made this honest: a speed-squared fan load, and current = torque × f/60
+above 60 Hz (field weakening), consistent with the existing 150 × 60/f torque
+limit. Missions fix the motor and load (overspeed leaves the load free, starting
+at 100 %); the operator sets frequency and ramp. Free run keeps every control
+open.
 
 ### Interface
 
@@ -151,13 +168,15 @@ holds.
 
 ### Checklist
 
-- [ ] Tune mission numbers against the existing model so each is achievable and
+- [x] Tune mission numbers against the existing model so each is achievable and
   has a tempting wrong setting.
-- [ ] Mission selector, spec checklist, hold timer, complete record.
-- [ ] Replace the task pager on slide 13 and the tasks on slide 12 with the
-  missions; update slide 17's Resonance to ask for the settings that met each
-  spec and why.
-- [ ] Update the outline and the activities index; checks; teacher review.
+- [x] Mission selector, spec checklist, hold timer, complete record.
+- [x] Replace the task pager on slide 13 and the tasks on slide 12 with the
+  missions. The old slide 17 results Resonance is removed; students record each
+  completed mission's settings, and why they worked, on paper (slide 12).
+- [x] Drop "· Educational model, not a commissioning tool" from the slide 13 tag.
+- [x] Update the outline and the activities index; checks.
+- [x] Teacher review, then commit.
 
 ---
 
@@ -187,13 +206,29 @@ command, under one shared load, with one shared Bump.
   position), per the rule that activities get their own slides.
 - Slide 15 becomes the head to head simulator.
 
+### Build notes
+
+- Slides: 14 challenge, 15 Resonance prediction (heavy load plus a bump:
+  only the servo), 16 the simulator. The old task pager is gone; the four
+  races are listed on slide 14.
+- One Run is the race: the move, then, with Bump on, the same 0.3 s knock on
+  all three arms 1 s after arrival. Changing the command clears the locked
+  prediction.
+- Servo tuning change: anti-windup (the integral only builds below the torque
+  limit). Without it, a bump under medium load left the servo parked 1.3°
+  past the target for about 8 s while heavy load recovered, which read as
+  "the servo fails at medium."
+- A run ends only when a servo is within 1° of the command (or faulted), so
+  a servo held by friction while its integral builds is never scored early.
+
 ### Checklist
 
-- [ ] Refactor `buildPrecision` so one engine steps three arm states in lockstep.
-- [ ] Three-dial layout, shared graph, scoreboard, prediction lock.
-- [ ] Prediction Resonance slide; renumber; update the outline and the index.
-- [ ] Drive light, heavy, and overloaded runs with bumps; stability checks;
-  teacher review.
+- [x] Refactor `buildPrecision` so one engine steps three arm states in lockstep.
+- [x] Three-dial layout, shared graph, scoreboard, prediction lock.
+- [x] Prediction Resonance slide; renumber; update the outline and the index.
+- [x] Drop "· Simplified educational model" from the simulator slide tag.
+- [x] Drive light, heavy, and overloaded runs with bumps; stability checks.
+- [x] Teacher review, then commit.
 
 ---
 
@@ -206,8 +241,9 @@ The Work Orders already differ the most. Lean further into deliberate diagnosis.
 - **Downtime budget:** each ticket has a downtime budget (for example 45
   minutes). Each test costs minutes: reading a display or observing about 2,
   an energized measurement by a qualified technician about 5, and a test that
-  needs lockout about 15 (lockout takes time). Unsafe choices cost nothing but
-  are still flagged. Running out of time ends the investigation.
+  needs lockout about 15 (lockout takes time). Unsafe choices show a time on
+  the same scale (so a blank cost never gives them away) and are charged when
+  picked, as well as flagged. Running out of time ends the investigation.
 - **Machine history:** a log for each ticket (recent work, changes upstream,
   past failures), including some entries that do not matter.
 - **Eliminate (scored):** the possible causes are listed during the
@@ -228,15 +264,40 @@ The info panel is already full. Likely layout: tabs inside the info panel
 (Ticket, History, Causes), with the downtime meter in the top bar next to the
 status chip.
 
+### Build notes
+
+- Costs: reading a display, records, or observing 2 min; an energized
+  measurement or a test cycle (the indexer's slow rerun, the conveyor's IR
+  reading after 5 min of running) 5 min; lockout 15 min. Budgets and the
+  careful vs. every-safe-test totals: fan 37 / 57 of 45, pump 17 / 28 of 25,
+  conveyor 12 / 34 of 30, indexer 37 / 54 of 40.
+- Unsafe tests carry a time too (2 min for hands-on ones, 5 min for the
+  rest) and are charged when picked, decided after review: a blank cost
+  gave them away before students read the procedure.
+- Out of time means no untried test fits in what is left; the status chip
+  turns OUT OF TIME and Diagnose stays available.
+- Each history log gives one lead per possible cause plus one irrelevant
+  entry, so history points to tests rather than answers (for example, the
+  pump's motor was replaced last month for every cause; only the nameplate
+  test shows whether the replacement was wrong).
+- Defend is its own step after Diagnose; at least one tagged reading is
+  needed to submit. The defended point checks for a key reading of the
+  actual cause.
+- Record rows were shortened (no quoting the wrong choice back) so the worst
+  case fits; downtime and useful-test count moved into the record header.
+
 ### Checklist
 
-- [ ] Test costs and a budget for each ticket, tuned so a careful student
+- [x] Test costs and a budget for each ticket, tuned so a careful student
   finishes with time to spare and a scattershot one runs out.
-- [ ] History logs for all four tickets.
-- [ ] Causes tab with strike-out toggles.
-- [ ] Defend step and updated record.
-- [ ] Update slide 10 (how it works), the outline, and the index; checks
-  (every reading × cause, longest record); teacher review.
+- [x] History logs for all four tickets.
+- [x] Drop "· Simplified educational model" from the slide 11 tag and the
+  "Simplified model. Readings are illustrative." note in the info panel.
+- [x] Causes tab with strike-out toggles.
+- [x] Defend step and updated record.
+- [x] Update slide 10 (how it works), the outline, and the index; checks
+  (every stage of every ticket, longest record, scattershot runs out).
+- [x] Teacher review, then commit.
 
 ---
 
@@ -247,8 +308,8 @@ None right now. Add new ones here as they come up during the build.
 ## Progress
 
 - [x] Plan written
-- [ ] Day 2: Motor Design Workshop
-- [ ] Day 3: Control Room missions
-- [ ] Day 4: Head to Head
-- [ ] Day 5: Diagnostic Mystery
-- [ ] Day 1: optional task polish
+- [x] Day 2: Motor Design Workshop
+- [x] Day 3: Control Room missions
+- [x] Day 4: Head to Head
+- [x] Day 5: Diagnostic Mystery
+- [x] Day 1: optional task polish

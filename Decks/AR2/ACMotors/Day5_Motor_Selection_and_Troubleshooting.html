@@ -68,7 +68,8 @@
 .wo .wo-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
 .wo .wo-top .status-chip { margin-left: auto; }
 .wo .wo-grid { display: grid; grid-template-columns: 470px 1fr; gap: 18px; align-items: start; }
-.wo .wo-info { height: 720px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+.wo .wo-info { height: 720px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.wo .wo-info > * { flex-shrink: 0; }
 .wo .wo-title { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1.2; }
 .wo .wo-over { font-size: 24px; line-height: 1.4; color: var(--text-muted); margin: 0; }
 .wo .np { border: 1px solid var(--accent-border); border-radius: 6px; padding: 8px 12px; background: rgba(57,211,83,0.05); }
@@ -85,12 +86,24 @@
 .wo .np-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
 .wo .np-k { display: block; font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted); }
 .wo .np-v { display: block; font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--text); }
+/* Nameplate abbreviations: full term on hover or keyboard focus. The info
+   panel lets the popup overflow it so long terms are never clipped. */
+.wo .wo-info { overflow: visible; }
+.wo .np-abbr { position: relative; cursor: help; text-decoration: underline dotted; text-underline-offset: 4px; }
+.wo .np-abbr::after {
+  content: attr(data-tip);
+  position: absolute; left: -8px; bottom: calc(100% + 8px); z-index: 5;
+  font-family: var(--font-ui); font-size: var(--small); font-weight: 400; white-space: nowrap;
+  color: var(--text); background: var(--bg); border: 1px solid var(--accent); border-radius: 6px; padding: 6px 12px;
+  visibility: hidden; pointer-events: none;
+}
+.wo .np-abbr:hover::after, .wo .np-abbr:focus::after { visibility: visible; }
+.wo .np-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .wo .sym { border-left: 4px solid var(--warn); background: rgba(255,209,102,0.07); padding: 8px 14px; border-radius: 0 6px 6px 0; }
 .wo .sym-head { color: var(--warn); }
 .wo .sym-text { font-size: 24px; line-height: 1.4; color: var(--text); margin: 0; }
-.wo .wo-info .sim-model-note { margin-top: auto; }
 .wo .wo-right { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.wo .wo-work { height: 420px; box-sizing: border-box; overflow: hidden; }
+.wo .wo-work { height: 452px; box-sizing: border-box; overflow: hidden; }
 .wo .test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .wo .wo-test, .wo .wo-opt {
   font-family: 'IBM Plex Sans', sans-serif;
@@ -117,7 +130,7 @@
 .wo .wo-opt[aria-pressed="true"] .wt-mark { color: var(--result); }
 .wo .diag-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 14px; }
 .wo .opt-list { display: flex; flex-direction: column; gap: 6px; }
-.wo .ev { height: 234px; box-sizing: border-box; overflow: hidden; }
+.wo .ev { height: 196px; box-sizing: border-box; overflow: hidden; }
 .wo .ev.bad { border-color: rgba(255,138,128,0.7); background: rgba(255,138,128,0.07); }
 .wo .ev-top { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow: hidden; }
 .wo .ev-label { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; letter-spacing: 0.08em; color: var(--accent); margin-right: 4px; }
@@ -139,7 +152,7 @@
 .wo .ev-proc { display: block; color: var(--text-muted); }
 .wo .ev-warn { display: block; font-family: var(--font-mono); font-weight: 700; color: var(--fault); }
 .wo .ev-body .rd { color: var(--result); font-weight: 700; }
-.wo .wo-bar { display: flex; align-items: center; gap: 12px; height: 42px; }
+.wo .wo-bar { display: flex; align-items: center; gap: 12px; height: 48px; }
 .wo .sim-btn:disabled { opacity: 1; background: transparent; color: var(--text-muted); border: 1px dashed var(--accent-border); }
 .wo .wo-count { font-family: var(--font-mono); font-size: var(--small); color: var(--text); margin-left: auto; text-align: right; }
 .wo .rec-table { width: 100%; border-collapse: collapse; font-size: var(--small); line-height: 1.35; }
@@ -150,6 +163,38 @@
 .wo .rec-score { color: var(--warn); }
 .wo .rec-why { font-size: var(--small); line-height: 1.4; color: var(--text); margin-top: 10px; padding: 8px 12px; border-left: 4px solid var(--result); background: rgba(94,234,212,0.07); border-radius: 0 6px 6px 0; }
 .wo .rec-why b { color: var(--result); }
+/* Downtime meter (top bar) */
+.wo .dt { display: flex; align-items: center; gap: 10px; margin-left: auto; flex: 0 0 auto; }
+.wo .dt-label { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+.wo .dt-bar { width: 130px; height: 16px; background: rgba(230,247,234,0.08); border: 1px solid var(--accent-border); border-radius: 4px; overflow: hidden; }
+.wo .dt-fill { display: block; height: 100%; width: 0; background: var(--result); }
+.wo .dt-fill.low { background: var(--warn); }
+.wo .dt-fill.out { background: var(--fault); }
+.wo .dt-val { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--text); min-width: 11ch; }
+.wo .wo-top .status-chip { margin-left: 0; box-sizing: border-box; min-width: 0; width: 200px; flex: 0 0 auto; }
+/* Test cost, and tests the remaining downtime cannot cover */
+.wo .wt-text { flex: 1; }
+.wo .wt-cost { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--text); white-space: nowrap; }
+.wo .wo-test.is-unsafe .wt-cost { color: var(--fault); }
+.wo .wo-test:disabled { cursor: default; border-style: dashed; color: var(--text-muted); background: transparent; }
+/* Info panel tabs: ticket, history, causes */
+.wo .info-tabs { align-self: flex-start; }
+.wo .hist { display: flex; flex-direction: column; gap: 10px; }
+.wo .hist-row { border-left: 4px solid var(--accent-border); padding: 2px 0 2px 12px; }
+.wo .hist-when { display: block; font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--warn); }
+.wo .hist-text { font-size: 24px; line-height: 1.35; color: var(--text); }
+.wo .cause-note { font-size: 24px; line-height: 1.4; color: var(--text); margin: 0; }
+.wo .cause-list { display: flex; flex-direction: column; gap: 8px; }
+.wo .cause-btn { font-family: var(--font-ui); font-size: 24px; line-height: 1.3; text-align: left; color: var(--text); background: rgba(57,211,83,0.05); border: 1px solid var(--accent-border); border-radius: 6px; padding: 8px 12px; cursor: pointer; display: flex; gap: 10px; align-items: center; }
+.wo .cause-btn .wt-mark { color: var(--text); }
+.wo .cause-btn[aria-pressed="true"] { border-style: dashed; background: transparent; }
+.wo .cause-btn[aria-pressed="true"] .cb-text { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--text-muted); }
+.wo .cause-btn[aria-pressed="true"] .wt-mark { color: var(--fault); }
+/* Defend: tag the readings that support the diagnosis */
+.wo .defend-q { font-size: var(--small); line-height: 1.4; color: var(--text); margin: 0 0 10px; }
+.wo .defend-q b { color: var(--result); }
+.wo .wo-test.is-tag { border-color: var(--result); background: rgba(94,234,212,0.14); }
+.wo .wo-test.is-tag .wt-mark { color: var(--result); }
 </style>
 </head>
 <body>
@@ -380,9 +425,9 @@
     <h2>Motor Maintenance <span class="accent">Work Orders</span></h2>
     <p class="slide-intro">Four machines are down: a <strong>ventilation fan</strong>, an <strong>industrial pump</strong>, a <strong>conveyor</strong> that keeps tripping, and an <strong>indexing slide</strong> that misses its target. Each one has a hidden cause.</p>
     <div class="row-3" style="margin-bottom:var(--gap);">
-      <div class="step-card"><span class="sc-num">1</span><span class="sc-title">Investigate</span><p class="sc-body">Read the nameplate and the symptom, then choose tests. Each test names its procedure, so decide whether it is <span class="warn">safe</span> before you run it.</p></div>
-      <div class="step-card"><span class="sc-num">2</span><span class="sc-title">Diagnose</span><p class="sc-body">After at least one test, pick the most likely cause and a repair. Readings are <span class="res">evidence</span>, not answers.</p></div>
-      <div class="step-card"><span class="sc-num">3</span><span class="sc-title">Record</span><p class="sc-body">Your record scores evidence, safety, diagnosis, and repair. <strong>New fault</strong> hides a different cause to solve.</p></div>
+      <div class="step-card"><span class="sc-num">1</span><span class="sc-title">Investigate</span><p class="sc-body">Read the ticket and the machine history, then choose tests. Each test costs <span class="warn">downtime</span>: 2 min to read or observe, 5 to measure live, 15 to lock out.</p></div>
+      <div class="step-card"><span class="sc-num">2</span><span class="sc-title">Diagnose</span><p class="sc-body">Strike out the causes your evidence rules out, then pick the most likely cause and a repair. Readings are <span class="res">evidence</span>, not answers.</p></div>
+      <div class="step-card"><span class="sc-num">3</span><span class="sc-title">Defend</span><p class="sc-body">Tag the readings that back your diagnosis. Your record scores six things, including safety. <strong>New fault</strong> hides a different cause.</p></div>
     </div>
     <div class="callout">Complete <strong>all four</strong> work orders. For each one, record on paper the tests you ran, the readings that mattered, your diagnosis and repair, and the safety step it required.</div>
   </div>
@@ -392,11 +437,12 @@
 <!-- SLIDE 11 · MOTOR MAINTENANCE WORK ORDERS (SIMULATOR) -->
 <section>
   <div class="slide-inner" style="max-width:1600px;padding:40px 36px 36px;justify-content:flex-start;">
-    <span class="slide-tag" style="margin-bottom:10px;">Virtual Activity 5 · Motor Maintenance Work Orders · Simplified educational model</span>
+    <span class="slide-tag" style="margin-bottom:10px;">Virtual Activity 5 · Motor Maintenance Work Orders</span>
     <div class="wo">
       <div class="wo-top">
         <span class="seg" data-role="tabs" aria-label="Work orders"></span>
         <button class="sim-btn alt" data-role="new" type="button">New fault</button>
+        <span class="dt" aria-live="polite"><span class="dt-label">Downtime</span><span class="dt-bar"><span class="dt-fill" data-role="dt-fill"></span></span><span class="dt-val" data-role="dt-val"></span></span>
         <span class="status-chip" data-role="status">INVESTIGATE</span>
       </div>
       <div class="wo-grid">
@@ -408,8 +454,9 @@
             <div class="ev-body" data-role="ev-body"></div>
           </div>
           <div class="wo-bar">
+            <button class="sim-btn alt" data-role="back" type="button">&#9664; Back</button>
             <button class="sim-btn" data-role="to-diag" type="button">Diagnose &#9654;</button>
-            <button class="sim-btn alt" data-role="back" type="button">&#9664; Back to tests</button>
+            <button class="sim-btn" data-role="to-defend" type="button">Defend &#9654;</button>
             <button class="sim-btn" data-role="submit" type="button">Submit record</button>
             <span class="wo-count" data-role="count"></span>
           </div>
@@ -488,6 +535,13 @@
 var WORK_ORDERS = [
 {
     tab: 'Fan',
+    budget: 45,
+    history: [
+        ['6 years ago', 'This motor was installed. It runs 24 hours a day.'],
+        ['2 months ago', 'The run capacitor was replaced on the booth&#39;s second fan, not this one.'],
+        ['Last week', 'The booth was repainted. The fan ran the whole time to clear the fumes.'],
+        ['Yesterday', 'Electricians relabeled the breaker panel.'],
+    ],
     title: 'Ventilation fan',
     overview: 'An exhaust fan in the paint booth. The motor drives the blade directly.',
     nameplate: [['Type', 'PSC induction'], ['Power', '1/3 HP'], ['Supply', '115 V, 1 phase'], ['Speed', '1,075 RPM'], ['FLA', '3.2 A'], ['Run capacitor', '5 µF, 370 V']],
@@ -498,31 +552,31 @@ var WORK_ORDERS = [
         seized: { name: 'Seized bearing or blocked blade', key: ['spin'], why: 'Both windings work, so the field rotates, but the torque cannot overcome the binding. A stalled rotor draws high current and heats up, so it must not be left humming.' },
     },
     tests: [
-        { id: 'look', name: 'Observe', label: 'Watch and listen from a safe distance',
+        { id: 'look', min: 2, name: 'Observe', label: 'Watch and listen from a safe distance',
           proc: 'Observed from outside the guard, switched on for 5 s:',
           r: { def: 'A steady hum. The blade does not move at all. No smoke and no burning smell.' } },
-        { id: 'push', unsafe: true, label: 'Push the blade by hand to help it start',
+        { id: 'push', min: 2, unsafe: true, label: 'Push the blade by hand to help it start',
           warn: 'The motor is energized. If it starts, the blade can catch your hand. Hand checks happen only after lockout, with zero energy verified.' },
-        { id: 'volts', name: 'Voltage', label: 'Measure the supply voltage at the terminals',
+        { id: 'volts', min: 5, name: 'Voltage', label: 'Measure the supply voltage at the terminals',
           proc: 'Qualified technician, rated meter and gloves, terminal box:',
           r: { def: '<span class="rd">117 V</span> between line and neutral.' } },
-        { id: 'amps', name: 'Current', label: 'Measure the motor current while it hums',
+        { id: 'amps', min: 5, name: 'Current', label: 'Measure the motor current while it hums',
           proc: 'Clamp meter (its jaws close around a wire and read the current without touching metal), switched on for 3 s:',
           r: { def: '<span class="rd">5.6 A</span>, steady. Nameplate FLA is 3.2 A.', seized: '<span class="rd">6.9 A</span>, steady. Nameplate FLA is 3.2 A.' } },
-        { id: 'spin', name: 'Shaft', label: 'Lock out, then turn the shaft by hand',
+        { id: 'spin', min: 15, name: 'Shaft', label: 'Lock out, then turn the shaft by hand',
           proc: 'Locked out and tagged, zero energy verified:',
           r: { def: 'The blade turns <span class="rd">freely</span> and coasts about half a turn. No rubbing or grinding.', seized: 'The shaft <span class="rd">will not turn</span> by hand, even with firm effort.' } },
-        { id: 'short', unsafe: true, label: 'Short the capacitor leads to see if it sparks',
+        { id: 'short', min: 5, unsafe: true, label: 'Short the capacitor leads to see if it sparks',
           warn: 'A spark test can burn you and weld the tool, and it still does not measure capacitance. After lockout, discharge it through a resistor tool and test it with a meter.' },
-        { id: 'cap', name: 'Capacitor', label: 'Lock out, discharge, and test the capacitor',
+        { id: 'cap', min: 15, name: 'Capacitor', label: 'Lock out, discharge, and test the capacitor',
           proc: 'Locked out, discharged through a resistor tool, capacitance meter:',
           r: { def: '<span class="rd">4.9 µF</span>. Rated 5 µF &plusmn; 6 %. The case looks normal.', cap: '<span class="rd">0.3 µF</span>. Rated 5 µF &plusmn; 6 %. The top of the case is bulged.' } },
-        { id: 'wind', name: 'Windings', label: 'Lock out, then measure winding resistance',
+        { id: 'wind', min: 15, name: 'Windings', label: 'Lock out, then measure winding resistance',
           proc: 'Locked out, leads disconnected, ohmmeter:',
           r: { def: 'Main winding <span class="rd">8.4 &Omega;</span>. Auxiliary winding <span class="rd">13.1 &Omega;</span>.', aux: 'Main winding <span class="rd">8.4 &Omega;</span>. Auxiliary winding <span class="rd">OL</span> (open circuit).' } },
     ],
     diagnoses: [
-        { text: 'Failed centrifugal starting switch', note: 'A PSC motor has no centrifugal switch.' },
+        { text: 'Failed centrifugal starting switch', ruledBy: [], note: 'A PSC motor has no centrifugal switch.' },
         { text: 'Seized bearing or blocked blade', cause: 'seized' },
         { text: 'Failed run capacitor', cause: 'cap' },
         { text: 'Open auxiliary winding', cause: 'aux' },
@@ -537,6 +591,14 @@ var WORK_ORDERS = [
 },
 {
     tab: 'Pump',
+    budget: 25,
+    history: [
+        ['5 years ago', 'The pump was last rebuilt.'],
+        ['Last quarter', 'The cooling tower fill was cleaned.'],
+        ['6 weeks ago', 'The vendor updated the drive firmware and restored the parameters from a backup.'],
+        ['Last month', 'The motor was replaced from stores after a bearing failure.'],
+        ['2 weeks ago', 'A night operator turned the pump down during a storm to cut the spray.'],
+    ],
     title: 'Industrial pump',
     overview: 'A VFD runs this cooling tower pump. The pump needs about 1,750 RPM for its design flow.',
     npHead: 'Motor nameplate (records)',
@@ -549,41 +611,41 @@ var WORK_ORDERS = [
         mismatch: { name: 'Wrong motor installed', key: ['plate'], why: 'A 6 pole motor at 60 Hz has a synchronous speed of 1,200 RPM, so it can never reach the 1,750 RPM the pump needs. The drive is fine; the replacement motor is wrong.' },
     },
     tests: [
-        { id: 'keypad', name: 'Keypad', label: 'Read the drive keypad display',
+        { id: 'keypad', min: 2, name: 'Keypad', label: 'Read the drive keypad display',
           proc: 'Drive keypad, cabinet door closed:',
           r: { setpoint: 'Reference <span class="rd">40.0 Hz</span>. Output <span class="rd">40.0 Hz</span>. Current <span class="rd">7.4 A</span>. Status: RUN.',
                maxfreq: 'Reference <span class="rd">60.0 Hz</span>. Output <span class="rd">45.0 Hz</span>. Current <span class="rd">8.6 A</span>. Status: RUN.',
                load: 'Reference <span class="rd">60.0 Hz</span>. Output <span class="rd">60.0 Hz</span>. Current <span class="rd">16.3 A</span>. Status: RUN.',
                mismatch: 'Reference <span class="rd">60.0 Hz</span>. Output <span class="rd">60.0 Hz</span>. Current <span class="rd">11.9 A</span>. Status: RUN.' } },
-        { id: 'tach', name: 'Tachometer', label: 'Measure shaft speed with a tachometer',
+        { id: 'tach', min: 2, name: 'Tachometer', label: 'Measure shaft speed with a tachometer',
           proc: 'Optical tachometer on reflective tape, guards in place:',
           r: { setpoint: '<span class="rd">1,172 RPM</span>.', maxfreq: '<span class="rd">1,318 RPM</span>.', load: '<span class="rd">1,712 RPM</span>.', mismatch: '<span class="rd">1,181 RPM</span>.' } },
-        { id: 'guard', unsafe: true, label: 'Remove the coupling guard to watch the shaft run',
+        { id: 'guard', min: 5, unsafe: true, label: 'Remove the coupling guard to watch the shaft run',
           warn: 'A spinning coupling can catch a sleeve or hair in an instant. Measure speed through the guard with a tachometer, or lock out before a guard comes off.' },
-        { id: 'params', name: 'Parameters', label: 'Review the drive parameters (read only)',
+        { id: 'params', min: 2, name: 'Parameters', label: 'Review the drive parameters (read only)',
           proc: 'Parameter list, viewed only, nothing changed:',
           r: { def: 'Speed reference: keypad, <span class="rd">60.0 Hz</span>. Max frequency <span class="rd">60 Hz</span>. Accel 10 s. Motor data: 12.6 A, 1,765 RPM.',
                setpoint: 'Speed reference: keypad, <span class="rd">40.0 Hz</span>. Max frequency <span class="rd">60 Hz</span>. Accel 10 s. Motor data: 12.6 A, 1,765 RPM.',
                maxfreq: 'Speed reference: keypad, <span class="rd">60.0 Hz</span>. Max frequency <span class="rd">45 Hz</span>. Accel 10 s. Motor data: 12.6 A, 1,765 RPM.' } },
-        { id: 'amps', name: 'Current', label: 'Measure the current in all three phases',
+        { id: 'amps', min: 5, name: 'Current', label: 'Measure the current in all three phases',
           proc: 'Qualified technician with gloves, clamp meter (its jaws close around each motor wire and read the current without touching metal):',
           r: { setpoint: 'L1 <span class="rd">7.3 A</span>, L2 <span class="rd">7.4 A</span>, L3 <span class="rd">7.3 A</span>.',
                maxfreq: 'L1 <span class="rd">8.5 A</span>, L2 <span class="rd">8.6 A</span>, L3 <span class="rd">8.6 A</span>.',
                load: 'L1 <span class="rd">16.1 A</span>, L2 <span class="rd">16.4 A</span>, L3 <span class="rd">16.2 A</span>.',
                mismatch: 'L1 <span class="rd">11.8 A</span>, L2 <span class="rd">11.9 A</span>, L3 <span class="rd">11.8 A</span>.' } },
-        { id: 'cabinet', unsafe: true, label: 'Open the drive right after stopping to check its wiring',
+        { id: 'cabinet', min: 5, unsafe: true, label: 'Open the drive right after stopping to check its wiring',
           warn: 'The DC bus capacitors stay charged for minutes after the power is off. Lock out, wait the time on the drive’s label, and verify zero voltage first.' },
-        { id: 'plate', name: 'Nameplate', label: 'Compare the installed motor’s nameplate with the records',
+        { id: 'plate', min: 2, name: 'Nameplate', label: 'Compare the installed motor’s nameplate with the records',
           proc: 'Read from the installed motor:',
           r: { def: '10 HP, 460 V, 12.6 A, <span class="rd">1,765 RPM</span>. It matches the records.', mismatch: '10 HP, 460 V, 13.8 A, <span class="rd">1,175 RPM</span>. The work log shows the motor was replaced last month.' } },
-        { id: 'shaft', name: 'Shaft', label: 'Lock out, then turn the pump shaft by hand',
+        { id: 'shaft', min: 15, name: 'Shaft', label: 'Lock out, then turn the pump shaft by hand',
           proc: 'Drive locked out, bus discharge time waited, zero voltage verified:',
           r: { def: 'The shaft turns <span class="rd">smoothly</span> with normal pump drag.', load: 'The shaft is <span class="rd">stiff</span> and grinds at one spot each turn.' } },
     ],
     diagnoses: [
         { text: 'Wrong motor installed', cause: 'mismatch' },
         { text: 'Speed reference set too low', cause: 'setpoint' },
-        { text: 'Phase sequence reversed', note: 'Swapping two phases reverses the motor; it does not slow it down.' },
+        { text: 'Phase sequence reversed', ruledBy: [], note: 'Swapping two phases reverses the motor; it does not slow it down.' },
         { text: 'Pump binding overloads the motor', cause: 'load' },
         { text: 'Max frequency parameter limits the output', cause: 'maxfreq' },
     ],
@@ -597,6 +659,14 @@ var WORK_ORDERS = [
 },
 {
     tab: 'Conveyor',
+    budget: 30,
+    history: [
+        ['18 months ago', 'The bearings were last greased. The schedule says every 6 months.'],
+        ['3 weeks ago', 'A contractor rewired the starter panel.'],
+        ['2 weeks ago', 'The cardboard baler was moved next to the conveyor motor.'],
+        ['Last week', 'The guard rails were repainted.'],
+        ['This month', 'A speed increase for the upstream line was planned. Its start date is not confirmed.'],
+    ],
     title: 'Overheating conveyor',
     overview: 'A belt conveyor carries boxes to shipping. An overload relay watches the current, and thermostats in the windings watch the heat.',
     nameplate: [['Type', 'TEFC induction'], ['Power', '7.5 HP'], ['Supply', '460 V, 3 phase'], ['Speed', '1,760 RPM'], ['FLA', '9.6 A'], ['Service factor', '1.15']],
@@ -608,34 +678,34 @@ var WORK_ORDERS = [
         bearing: { name: 'Failing bearing', key: ['vib', 'ir'], why: 'A failing drive end bearing adds friction, so the current rises and that bearing runs much hotter than the other. The bearing will soon seize if it is not replaced.' },
     },
     tests: [
-        { id: 'amps', name: 'Current', label: 'Measure the current in all three phases while running',
+        { id: 'amps', min: 5, name: 'Current', label: 'Measure the current in all three phases while running',
           proc: 'Qualified technician with gloves, clamp meter (its jaws close around each motor wire and read the current without touching metal):',
           r: { load: 'L1 <span class="rd">12.0 A</span>, L2 <span class="rd">12.2 A</span>, L3 <span class="rd">11.9 A</span>.',
                cooling: 'L1 <span class="rd">9.2 A</span>, L2 <span class="rd">9.3 A</span>, L3 <span class="rd">9.2 A</span>.',
                olset: 'L1 <span class="rd">9.0 A</span>, L2 <span class="rd">9.1 A</span>, L3 <span class="rd">9.0 A</span>.',
                bearing: 'L1 <span class="rd">10.4 A</span>, L2 <span class="rd">10.6 A</span>, L3 <span class="rd">10.4 A</span>.' } },
-        { id: 'touch', unsafe: true, label: 'Feel the motor frame by hand to judge its heat',
+        { id: 'touch', min: 2, unsafe: true, label: 'Feel the motor frame by hand to judge its heat',
           warn: 'A motor frame can be hot enough to burn skin, and this one sits beside a moving belt. Use an infrared thermometer from outside the guard.' },
-        { id: 'olcheck', name: 'Trip check', label: 'Read the overload setting and trip indicators',
+        { id: 'olcheck', min: 2, name: 'Trip check', label: 'Read the overload setting and trip indicators',
           proc: 'Starter panel, door closed:',
           r: { def: 'Overload dial <span class="rd">9.6 A</span>. The <span class="rd">overload relay</span> tripped.',
                olset: 'Overload dial <span class="rd">7.0 A</span>. The <span class="rd">overload relay</span> tripped.',
                cooling: 'Overload dial <span class="rd">9.6 A</span>, not tripped. The <span class="rd">winding thermostat</span> tripped.' } },
-        { id: 'ir', name: 'Temperature', label: 'Infrared thermometer after 5 minutes of running',
+        { id: 'ir', min: 5, name: 'Temperature', label: 'Infrared thermometer after 5 minutes of running',
           proc: 'IR thermometer from outside the guard:',
           r: { load: 'Frame <span class="rd">94 °C</span>. Drive end bearing <span class="rd">61 °C</span>. Far end bearing <span class="rd">58 °C</span>.',
                cooling: 'Frame <span class="rd">104 °C</span>. Drive end bearing <span class="rd">63 °C</span>. Far end bearing <span class="rd">60 °C</span>.',
                olset: 'Frame <span class="rd">57 °C</span>. Drive end bearing <span class="rd">44 °C</span>. Far end bearing <span class="rd">43 °C</span>.',
                bearing: 'Frame <span class="rd">71 °C</span>. Drive end bearing <span class="rd">97 °C</span>. Far end bearing <span class="rd">52 °C</span>.' } },
-        { id: 'fan', name: 'Fan cover', label: 'Lock out, then inspect the cooling fan and cover',
+        { id: 'fan', min: 15, name: 'Fan cover', label: 'Lock out, then inspect the cooling fan and cover',
           proc: 'Locked out and tagged, fan cover removed:',
           r: { def: 'The fan is intact. The cover intake and the cooling fins are <span class="rd">clean</span>.', cooling: 'Cardboard and lint are <span class="rd">packed against the intake</span>. The fins are caked with dust.' } },
-        { id: 'reset', unsafe: true, label: 'Keep resetting the overload to see how long it runs',
+        { id: 'reset', min: 5, unsafe: true, label: 'Keep resetting the overload to see how long it runs',
           warn: 'Each restart sends hot windings straight back to full current, which damages the insulation. The overload is protecting the motor; find the cause first.' },
-        { id: 'vib', name: 'Vibration', label: 'Measure vibration at each bearing',
+        { id: 'vib', min: 5, name: 'Vibration', label: 'Measure vibration at each bearing',
           proc: 'Vibration pen on the bearing housings, guards in place:',
           r: { def: 'Drive end <span class="rd">1.4 mm/s</span>. Far end <span class="rd">1.3 mm/s</span>. Smooth and quiet.', bearing: 'Drive end <span class="rd">9.6 mm/s</span> with a growling sound. Far end <span class="rd">1.5 mm/s</span>.' } },
-        { id: 'loadchk', name: 'Load', label: 'Check the conveyor load against its rating',
+        { id: 'loadchk', min: 2, name: 'Load', label: 'Check the conveyor load against its rating',
           proc: 'Production records and the belt scale:',
           r: { def: 'About <span class="rd">85 %</span> of the design load.', load: 'About <span class="rd">140 %</span> of the design load since the upstream line was sped up.' } },
     ],
@@ -643,7 +713,7 @@ var WORK_ORDERS = [
         { text: 'Failing bearing', cause: 'bearing' },
         { text: 'Conveyor overloaded', cause: 'load' },
         { text: 'Overload set too low', cause: 'olset' },
-        { text: 'Lost phase (single phasing)', note: 'Balanced currents on all three lines rule out a lost phase.' },
+        { text: 'Lost phase (single phasing)', ruledBy: ['amps'], note: 'Balanced currents on all three lines rule out a lost phase.' },
         { text: 'Blocked cooling', cause: 'cooling' },
     ],
     repairs: [
@@ -656,6 +726,14 @@ var WORK_ORDERS = [
 },
 {
     tab: 'Indexer',
+    budget: 40,
+    history: [
+        ['Last month', 'A forklift bumped the rail. No damage was found.'],
+        ['3 weeks ago', 'The sensor cable was rerouted beside the press motor leads.'],
+        ['2 weeks ago', 'The belt was replaced and tensioned.'],
+        ['Last week', 'The move profile was sped up to raise parts per hour.'],
+        ['Yesterday', 'The HMI screen brightness was adjusted.'],
+    ],
     title: 'Indexing slide',
     overview: 'An open loop stepper drives a belt that carries each part to the press. A sensor checks each stop.',
     nameplate: [['Motor', 'NEMA 23 stepper'], ['Step angle', '1.8°'], ['Current', '2.8 A/phase'], ['Holding torque', '1.9 N·m'], ['Drive', 'Open loop'], ['Travel', '0.2 mm per step']],
@@ -667,41 +745,41 @@ var WORK_ORDERS = [
         sensor: { name: 'Faulty position sensor', key: ['rule'], why: 'The steel rule shows the slide is on target; only the sensor reading is wrong, and its errors jump randomly. A new motor would not help.' },
     },
     tests: [
-        { id: 'log', name: 'Move log', label: 'Review the position errors for recent parts',
+        { id: 'log', min: 2, name: 'Move log', label: 'Review the position errors for recent parts',
           proc: 'HMI log, sensor error at each stop:',
           r: { accel: '150 mm slow <span class="rd">0.0</span> · 250 mm fast <span class="rd">−0.8</span> · 380 mm slow <span class="rd">0.0</span> · 380 mm fast <span class="rd">−1.6</span> (mm)',
                binding: '150 mm slow <span class="rd">0.0</span> · 250 mm fast <span class="rd">0.0</span> · 380 mm slow <span class="rd">−2.4</span> · 380 mm fast <span class="rd">−2.4</span> (mm)',
                coupling: '150 mm slow <span class="rd">−0.3</span> · 250 mm fast <span class="rd">−0.5</span> · 380 mm slow <span class="rd">−0.1</span> · 380 mm fast <span class="rd">−0.7</span> (mm)',
                sensor: '150 mm slow <span class="rd">+1.9</span> · 250 mm fast <span class="rd">−2.3</span> · 380 mm slow <span class="rd">+0.6</span> · 380 mm fast <span class="rd">+2.8</span> (mm)' } },
-        { id: 'reach', unsafe: true, label: 'Reach in and guide the slide during a cycle',
+        { id: 'reach', min: 2, unsafe: true, label: 'Reach in and guide the slide during a cycle',
           warn: 'The slide can move without warning and crush a hand at the press. Keep hands out of the machine’s motion; watch through the guard or lock out.' },
-        { id: 'slow', name: 'Slow test', label: 'Rerun the same parts at half acceleration',
+        { id: 'slow', min: 5, name: 'Slow test', label: 'Rerun the same parts at half acceleration',
           proc: 'From the HMI, guard closed, same four targets:',
           r: { accel: 'Errors <span class="rd">0.0, 0.0, 0.0, 0.0</span> mm.',
                binding: 'Errors <span class="rd">0.0, 0.0, −2.4, −2.4</span> mm.',
                coupling: 'Errors <span class="rd">−0.2, −0.4, −0.3, −0.5</span> mm.',
                sensor: 'Errors <span class="rd">−1.4, +2.6, +0.3, −2.0</span> mm.' } },
-        { id: 'drive', name: 'Drive', label: 'Check the drive’s current setting and alarms',
+        { id: 'drive', min: 2, name: 'Drive', label: 'Check the drive’s current setting and alarms',
           proc: 'Drive front panel:',
           r: { def: 'Current set to <span class="rd">2.8 A</span> per phase. <span class="rd">No alarms</span>. The drive has no encoder input.' } },
-        { id: 'rule', name: 'Rule check', label: 'Lock out after a move, then measure with a steel rule',
+        { id: 'rule', min: 15, name: 'Rule check', label: 'Lock out after a move, then measure with a steel rule',
           proc: 'After a fast move to 380 mm, locked out, steel rule from home:',
           r: { accel: 'Rule <span class="rd">378.4 mm</span>. Sensor <span class="rd">378.4 mm</span>.',
                binding: 'Rule <span class="rd">377.6 mm</span>. Sensor <span class="rd">377.6 mm</span>.',
                coupling: 'Rule <span class="rd">379.3 mm</span>. Sensor <span class="rd">379.3 mm</span>.',
                sensor: 'Rule <span class="rd">380.0 mm</span>. Sensor <span class="rd">382.8 mm</span>.' } },
-        { id: 'rail', name: 'Rail', label: 'Lock out, then push the slide along the rail',
+        { id: 'rail', min: 15, name: 'Rail', label: 'Lock out, then push the slide along the rail',
           proc: 'Locked out, belt released from the motor pulley:',
           r: { def: 'The slide moves <span class="rd">smoothly</span> along the whole rail.', binding: 'Smooth until about <span class="rd">300 mm</span>, then it <span class="rd">drags hard</span> for about 40 mm. The rail is scratched there.' } },
-        { id: 'bypass', unsafe: true, label: 'Bypass the guard interlock to watch up close',
+        { id: 'bypass', min: 5, unsafe: true, label: 'Bypass the guard interlock to watch up close',
           warn: 'The interlock stops the machine when the guard opens. Bypassing it removes that protection for everyone. Watch through the guard window instead.' },
-        { id: 'pulley', name: 'Pulley', label: 'Lock out, then inspect the motor pulley',
+        { id: 'pulley', min: 15, name: 'Pulley', label: 'Lock out, then inspect the motor pulley',
           proc: 'Locked out, pulley guard removed:',
           r: { def: 'The witness mark <span class="rd">lines up</span>. Both set screws are tight.', coupling: 'The witness mark is <span class="rd">out of line by about 10°</span>. One set screw is loose.' } },
     ],
     diagnoses: [
         { text: 'Faulty position sensor', cause: 'sensor' },
-        { text: 'Drive current set too low', note: 'The drive is set to the motor’s 2.8 A rating.' },
+        { text: 'Drive current set too low', ruledBy: ['drive'], note: 'The drive is set to the motor’s 2.8 A rating.' },
         { text: 'Mechanical binding at one spot', cause: 'binding' },
         { text: 'Lost steps from too much acceleration', cause: 'accel' },
         { text: 'Loose pulley set screw', cause: 'coupling' },
@@ -716,14 +794,50 @@ var WORK_ORDERS = [
 },
 ];
 
+// Each test costs downtime: reading a display, records, or observing 2 min;
+// an energized measurement or a test cycle 5 min; anything needing lockout
+// 15 min. Unsafe choices show a time on the same scale, so the cost never
+// gives them away, and they are charged when picked (the attempt is stopped,
+// but the time is gone) as well as flagged. Budgets are tuned so a
+// careful path to the key evidence leaves time to spare and running every
+// safe test does not fit (fan 37 / 57 of 45, pump 17 / 28 of 25, conveyor
+// 12 / 34 of 30, indexer 37 / 54 of 40).
+// Nameplate abbreviations show their full term on hover or keyboard focus.
+var NP_TERMS = {
+    'NEMA 23': 'NEMA frame size 23: a 2.3 inch square mounting face',
+    'TEFC': 'Totally enclosed, fan cooled', 'PSC': 'Permanent split capacitor',
+    'VFD': 'Variable frequency drive', 'FLA': 'Full load amps', 'RPM': 'Revolutions per minute',
+    'HP': 'Horsepower', 'µF': 'Microfarads', 'Hz': 'Hertz', 'N·m': 'Newton meters',
+};
+var NP_RE = new RegExp('(^|[^\\w·])(' + Object.keys(NP_TERMS).join('|') + ')(?![\\w·])', 'g');
+function abbr(text) {
+    return text.replace(NP_RE, function (m, pre, t) {
+        return pre + '<span class="np-abbr" tabindex="0" data-tip="' + NP_TERMS[t] + '">' + t + '<span class="np-sr"> (' + NP_TERMS[t] + ')</span></span>';
+    });
+}
+
 function buildWorkOrders(root) {
     function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
+    // Each work order deals its causes from a shuffled deck, so New fault
+    // shows every cause once before any repeats. A reshuffled deck never
+    // starts with the cause just solved.
+    var decks = WORK_ORDERS.map(function () { return []; });
     function pickCause(w, avoid) {
-        var ids = Object.keys(w.causes).filter(function (id) { return id !== avoid; });
-        return ids[Math.floor(Math.random() * ids.length)];
+        var deck = decks[WORK_ORDERS.indexOf(w)];
+        if (!deck.length) {
+            var ids = Object.keys(w.causes);
+            for (var i = ids.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1)), t = ids[i];
+                ids[i] = ids[j]; ids[j] = t;
+            }
+            if (ids[0] === avoid) ids.push(ids.shift());
+            Array.prototype.push.apply(deck, ids);
+        }
+        return deck.shift();
     }
     function fresh(w, avoid) {
-        return { cause: pickCause(w, avoid), run: [], unsafe: [], stage: 'investigate', view: null, diag: -1, repair: -1, done: false };
+        return { cause: pickCause(w, avoid), run: [], unsafe: [], stage: 'investigate', view: null, diag: -1, repair: -1,
+                 done: false, used: 0, struck: [], tags: [], tab: 'ticket' };
     }
     var S = WORK_ORDERS.map(function (w) { return fresh(w); });
     var cur = 0;
@@ -735,6 +849,12 @@ function buildWorkOrders(root) {
         var seen = {};
         Object.keys(wo().causes).forEach(function (c) { seen[reading(t, c)] = 1; });
         return Object.keys(seen).length > 1;
+    }
+    function left() { return wo().budget - st().used; }
+    function tried(id) { var s = st(); return s.run.indexOf(id) >= 0 || s.unsafe.indexOf(id) >= 0; }
+    // Out of time once no test that has not been tried fits in what is left.
+    function outOfTime() {
+        return !wo().tests.some(function (t) { return !tried(t.id) && t.min <= left(); });
     }
 
     var tabs = q('tabs');
@@ -754,15 +874,55 @@ function buildWorkOrders(root) {
     }
 
     function renderInfo() {
-        var w = wo();
-        q('info').innerHTML =
-            '<div class="wo-title">WO' + (cur + 1) + ' · ' + w.title + '</div>' +
-            '<p class="wo-over">' + w.overview + '</p>' +
-            '<div class="np"><span class="np-head">' + (w.npHead || 'Motor nameplate') + '</span><div class="np-grid">' +
-            w.nameplate.map(function (p) { return '<div><span class="np-k">' + p[0] + '</span><span class="np-v">' + p[1] + '</span></div>'; }).join('') +
-            '</div></div>' +
-            '<div class="sym"><span class="sym-head">Reported symptom</span><p class="sym-text">' + w.symptom + '</p></div>' +
-            '<p class="sim-model-note">Simplified model. Readings are illustrative.</p>';
+        var w = wo(), s = st(), el = q('info'), html;
+        html = '<span class="seg info-tabs" aria-label="Work order information">' +
+            [['ticket', 'Ticket'], ['history', 'History'], ['causes', 'Causes']].map(function (p) {
+                return '<button class="seg-btn" type="button" data-tab="' + p[0] + '" aria-pressed="' + (s.tab === p[0]) + '">' + p[1] + '</button>';
+            }).join('') + '</span>';
+        if (s.tab === 'ticket') {
+            html += '<div class="wo-title">WO' + (cur + 1) + ' · ' + w.title + '</div>' +
+                '<p class="wo-over">' + w.overview + '</p>' +
+                '<div class="np"><span class="np-head">' + (w.npHead || 'Motor nameplate') + '</span><div class="np-grid">' +
+                w.nameplate.map(function (p) { return '<div><span class="np-k">' + abbr(p[0]) + '</span><span class="np-v">' + abbr(p[1]) + '</span></div>'; }).join('') +
+                '</div></div>' +
+                '<div class="sym"><span class="sym-head">Reported symptom</span><p class="sym-text">' + w.symptom + '</p></div>';
+        } else if (s.tab === 'history') {
+            html += '<div class="wo-title">Machine history</div>' +
+                '<p class="wo-over">Entries may or may not be relevant to the current problem.</p>' +
+                '<div class="hist">' + w.history.map(function (h) {
+                    return '<div class="hist-row"><span class="hist-when">' + h[0] + '</span><span class="hist-text">' + h[1] + '</span></div>';
+                }).join('') + '</div>';
+        } else {
+            html += '<div class="wo-title">Possible causes</div>' +
+                '<p class="cause-note">Strike out a cause only when a reading rules it out. Your record checks each strike against your readings.</p>' +
+                '<div class="cause-list">' + w.diagnoses.map(function (d, i) {
+                    var out = s.struck.indexOf(i) >= 0;
+                    return '<button class="cause-btn" type="button" data-cause="' + i + '" aria-pressed="' + out + '"' + (s.stage === 'record' ? ' disabled' : '') + '>' +
+                        '<span class="wt-mark">' + (out ? '✗' : '○') + '</span><span class="cb-text">' + d.text + '</span></button>';
+                }).join('') + '</div>';
+        }
+        el.innerHTML = html;
+        el.querySelectorAll('[data-tab]').forEach(function (b) {
+            b.addEventListener('click', function () { s.tab = b.dataset.tab; renderInfo(); el.querySelector('[data-tab="' + s.tab + '"]').focus(); });
+        });
+        el.querySelectorAll('[data-cause]').forEach(function (b) {
+            b.addEventListener('click', function () {
+                var i = +b.dataset.cause, k = s.struck.indexOf(i);
+                if (k >= 0) s.struck.splice(k, 1); else s.struck.push(i);
+                renderInfo();
+                el.querySelector('[data-cause="' + i + '"]').focus();
+            });
+        });
+    }
+
+    function testButton(t, onClick) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'wo-test';
+        b.dataset.id = t.id;
+        b.innerHTML = '<span class="wt-mark"></span><span class="wt-text">' + t.label + '</span><span class="wt-cost"></span>';
+        b.addEventListener('click', onClick);
+        return b;
     }
 
     function renderWork() {
@@ -770,15 +930,7 @@ function buildWorkOrders(root) {
         if (s.stage === 'investigate') {
             el.innerHTML = '<div class="sim-head"><span>Choose a test</span><span class="sim-note">Read each procedure before you run it.</span></div><div class="test-grid"></div>';
             var g = el.querySelector('.test-grid');
-            w.tests.forEach(function (t) {
-                var b = document.createElement('button');
-                b.type = 'button';
-                b.className = 'wo-test';
-                b.dataset.id = t.id;
-                b.innerHTML = '<span class="wt-mark"></span><span>' + t.label + '</span>';
-                b.addEventListener('click', function () { runTest(t); });
-                g.appendChild(b);
-            });
+            w.tests.forEach(function (t) { g.appendChild(testButton(t, function () { runTest(t); })); });
             syncTests();
         } else if (s.stage === 'diagnose') {
             el.innerHTML = '<div class="diag-grid">' +
@@ -796,19 +948,45 @@ function buildWorkOrders(root) {
                 });
             });
             syncOpts();
+        } else if (s.stage === 'defend') {
+            el.innerHTML = '<div class="sim-head"><span>Defend your diagnosis</span></div>' +
+                '<p class="defend-q">You chose <b>' + w.diagnoses[s.diag].text + '</b>. Tag every reading that supports it.</p><div class="test-grid"></div>';
+            var g2 = el.querySelector('.test-grid');
+            s.run.forEach(function (id) {
+                g2.appendChild(testButton(test(id), function () {
+                    var k = s.tags.indexOf(id);
+                    if (k >= 0) s.tags.splice(k, 1); else s.tags.push(id);
+                    s.view = { id: id };
+                    syncTags(); renderEvidence(); renderBar();
+                }));
+            });
+            syncTags();
         } else {
             renderRecord(el);
         }
     }
 
     function syncTests() {
-        var s = st();
+        var s = st(), rem = left();
         q('work').querySelectorAll('.wo-test').forEach(function (b) {
-            var id = b.dataset.id, run = s.run.indexOf(id) >= 0, bad = s.unsafe.indexOf(id) >= 0;
+            var t = test(b.dataset.id), run = s.run.indexOf(t.id) >= 0, bad = s.unsafe.indexOf(t.id) >= 0;
             b.classList.toggle('is-run', run);
             b.classList.toggle('is-unsafe', bad);
-            b.classList.toggle('is-view', !!s.view && s.view.id === id);
+            b.classList.toggle('is-view', !!s.view && s.view.id === t.id);
+            b.disabled = !run && !bad && t.min > rem;
             b.querySelector('.wt-mark').textContent = run ? '✓' : bad ? '⚠' : '';
+            b.querySelector('.wt-cost').textContent = run ? 'done' : bad ? 'stopped' : t.min + ' min';
+        });
+    }
+
+    function syncTags() {
+        var s = st();
+        q('work').querySelectorAll('.wo-test').forEach(function (b) {
+            var tagged = s.tags.indexOf(b.dataset.id) >= 0;
+            b.classList.toggle('is-tag', tagged);
+            b.setAttribute('aria-pressed', tagged);
+            b.querySelector('.wt-mark').textContent = tagged ? '☑' : '☐';
+            b.querySelector('.wt-cost').textContent = '';
         });
     }
 
@@ -824,8 +1002,11 @@ function buildWorkOrders(root) {
 
     function runTest(t) {
         var s = st();
-        var list = t.unsafe ? s.unsafe : s.run;
-        if (list.indexOf(t.id) < 0) list.push(t.id);
+        if (!tried(t.id)) {
+            if (t.min > left()) return;
+            (t.unsafe ? s.unsafe : s.run).push(t.id);
+            s.used += t.min;
+        }
         s.view = { id: t.id, unsafe: !!t.unsafe };
         syncTests();
         renderEvidence();
@@ -860,18 +1041,29 @@ function buildWorkOrders(root) {
     }
 
     function renderBar() {
-        var s = st();
-        var show = { 'to-diag': s.stage === 'investigate', back: s.stage === 'diagnose', submit: s.stage === 'diagnose' };
+        var s = st(), w = wo();
+        var show = { back: s.stage === 'diagnose' || s.stage === 'defend', 'to-diag': s.stage === 'investigate',
+                     'to-defend': s.stage === 'diagnose', submit: s.stage === 'defend' };
         Object.keys(show).forEach(function (k) { q(k).style.display = show[k] ? '' : 'none'; });
         q('to-diag').disabled = !s.run.length;
-        q('submit').disabled = s.diag < 0 || s.repair < 0;
+        q('to-defend').disabled = s.diag < 0 || s.repair < 0;
+        q('submit').disabled = !s.tags.length;
         var count = 'Tests run: ' + s.run.length + ' · Unsafe attempts: ' + s.unsafe.length;
         if (s.stage === 'investigate' && !s.run.length) count = 'Run at least one test to unlock Diagnose.';
+        else if (s.stage === 'investigate' && outOfTime()) count = 'Out of downtime: diagnose with what you have.';
+        if (s.stage === 'defend') count = s.tags.length ? s.tags.length + ' reading' + (s.tags.length > 1 ? 's' : '') + ' tagged' : 'Tag at least one reading to submit.';
         if (s.stage === 'record') count = 'Press New fault to solve a different cause.';
         q('count').textContent = count;
+        var rem = left(), pct = Math.min(100, s.used / w.budget * 100);
+        q('dt-val').textContent = s.used + ' / ' + w.budget + ' min';
+        var fill = q('dt-fill');
+        fill.style.width = pct + '%';
+        fill.className = 'dt-fill' + (outOfTime() ? ' out' : rem <= w.budget / 4 ? ' low' : '');
         var chip = q('status');
-        chip.className = 'status-chip ' + (s.stage === 'investigate' ? 'busy' : s.stage === 'diagnose' ? 'caution' : 'ok');
-        chip.textContent = s.stage === 'investigate' ? 'INVESTIGATE' : s.stage === 'diagnose' ? 'DIAGNOSE' : 'RECORDED';
+        var name = { investigate: 'INVESTIGATE', diagnose: 'DIAGNOSE', defend: 'DEFEND', record: 'RECORDED' }[s.stage];
+        if (s.stage === 'investigate' && s.run.length && outOfTime()) name = 'OUT OF TIME';
+        chip.className = 'status-chip ' + (name === 'OUT OF TIME' ? 'bad' : { investigate: 'busy', diagnose: 'caution', defend: 'caution', record: 'ok' }[s.stage]);
+        chip.textContent = name;
     }
 
     function renderRecord(el) {
@@ -882,18 +1074,41 @@ function buildWorkOrders(root) {
         var nRel = s.run.filter(function (id) { return relevant(test(id)); }).length;
         var d = w.diagnoses[s.diag], r = w.repairs[s.repair];
         var dOK = d.cause === s.cause, rOK = r.fixes === s.cause, safe = !s.unsafe.length && !r.unsafe;
-        var score = (keyRan ? 1 : 0) + (safe ? 1 : 0) + (dOK ? 1 : 0) + (rOK ? 1 : 0);
+        // Ruling out: the actual cause is never struck, and every struck cause
+        // is ruled out by a reading the student took. A real cause is ruled
+        // out when some test run reads differently for it than for the actual
+        // cause; a distractor lists the tests that rule it out (none when the
+        // ticket itself does, such as a PSC nameplate with no switch).
+        var trueIdx = w.diagnoses.map(function (o) { return o.cause; }).indexOf(s.cause);
+        var struckTrue = s.struck.indexOf(trueIdx) >= 0;
+        function justified(i) {
+            var o = w.diagnoses[i];
+            if (!o.cause) return o.ruledBy.every(function (id) { return s.run.indexOf(id) >= 0; });
+            return s.run.some(function (id) { var t = test(id); return reading(t, o.cause) !== reading(t, s.cause); });
+        }
+        var unjust = s.struck.filter(function (i) { return i !== trueIdx && !justified(i); });
+        var elimOK = s.struck.length > 0 && !struckTrue && !unjust.length;
+        // Defended: a key reading for the actual cause, behind the right diagnosis.
+        var tagKeys = c.key.filter(function (k) { return s.tags.indexOf(k) >= 0; });
+        var defOK = dOK && tagKeys.length > 0;
+        var score = [keyRan, safe, elimOK, dOK, rOK, defOK].filter(Boolean).length;
         function mark(ok) { return ok ? '<span class="ok">✓</span> ' : '<span class="no">✗</span> '; }
         var rows = [
             ['Key evidence', mark(keyRan) + (keyRan ? 'You checked the ' + names(ranKeys, ' and ') + ' reading' + (ranKeys.length > 1 ? 's.' : '.') : 'Not checked: the ' + names(c.key, ' or ') + ' reading.')],
-            ['Tests run', s.run.length + ' (' + nRel + ' could tell the causes apart)'],
             ['Safety', mark(safe) + (safe ? 'No unsafe procedures chosen.' : [
                 s.unsafe.length ? s.unsafe.length + ' unsafe test' + (s.unsafe.length > 1 ? 's' : '') + ' chosen.' : '',
                 r.unsafe ? 'The repair you chose is unsafe.' : ''].join(' ').trim())],
-            ['Diagnosis', mark(dOK) + (dOK ? c.name + '.' : 'You chose “' + d.text + '.” Actual: ' + c.name + '.')],
-            ['Repair', mark(rOK) + (rOK ? r.text + '.' : 'You chose “' + r.text + '.” ' + (r.unsafe ? 'Unsafe: ' : '') + (r.note || 'It does not fix the actual cause.'))],
+            ['Ruled out', mark(elimOK) + (struckTrue ? 'You struck out the actual cause (see the ' + names(c.key, ' or ') + ' reading).'
+                : unjust.length ? 'No reading you took rules out “' + w.diagnoses[unjust[0]].text + '” yet.'
+                : s.struck.length ? (s.struck.length > 1 ? s.struck.length + ' causes struck out, each ruled out by your evidence.' : '1 cause struck out, ruled out by your evidence.') : 'You did not strike out any causes.')],
+            ['Diagnosis', mark(dOK) + (dOK ? c.name + '.' : 'Actual cause: ' + c.name + '.')],
+            ['Repair', mark(rOK) + (rOK ? r.text + '.' : (r.unsafe ? 'Unsafe: ' : '') + (r.note || 'It does not fix the actual cause.'))],
+            ['Defended', mark(defOK) + (defOK ? 'You backed it with the ' + names(tagKeys, ' and ') + ' reading' + (tagKeys.length > 1 ? 's.' : '.')
+                : tagKeys.length ? 'The ' + names(tagKeys, ' and ') + ' reading you tagged points to the actual cause, not your diagnosis.'
+                : 'No key reading tagged (the ' + names(c.key, ' or ') + ' reading).')],
         ];
-        el.innerHTML = '<div class="sim-head"><span>Work order record</span><span class="rec-score">Score ' + score + ' / 4</span></div>' +
+        var stats = s.used + ' of ' + w.budget + ' min · ' + s.run.length + ' test' + (s.run.length === 1 ? '' : 's') + ', ' + nRel + ' useful';
+        el.innerHTML = '<div class="sim-head"><span>Record <span class="sim-note">' + stats + '</span></span><span class="rec-score">Score ' + score + ' / 6</span></div>' +
             '<table class="rec-table">' + rows.map(function (row) { return '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td></tr>'; }).join('') + '</table>' +
             '<div class="rec-why"><b>Why:</b> ' + c.why + '</div>';
     }
@@ -906,11 +1121,13 @@ function buildWorkOrders(root) {
         renderBar();
     }
 
-    q('to-diag').addEventListener('click', function () { st().stage = 'diagnose'; renderWork(); renderBar(); });
-    q('back').addEventListener('click', function () { st().stage = 'investigate'; renderWork(); renderBar(); });
+    function go(stage) { st().stage = stage; renderAll(); }
+    q('to-diag').addEventListener('click', function () { go('diagnose'); });
+    q('to-defend').addEventListener('click', function () { var s = st(); if (s.diag >= 0 && s.repair >= 0) go('defend'); });
+    q('back').addEventListener('click', function () { go(st().stage === 'defend' ? 'diagnose' : 'investigate'); });
     q('submit').addEventListener('click', function () {
         var s = st();
-        if (s.diag < 0 || s.repair < 0) return;
+        if (!s.tags.length) return;
         s.stage = 'record';
         s.done = true;
         renderAll();

@@ -379,8 +379,8 @@ This applies uniformly to console output, variable assignment, and function-retu
 `.agent/tools/` holds Playwright scripts for checking decks against the dev
 server. `scripts/` is for the site's build and dev scripts; put reusable agent
 tooling in `.agent/tools/` instead of a temp folder, so it survives between
-sessions. See `.agent/tools/README.md` for setup (Playwright in a throwaway
-virtualenv outside the repo) and usage.
+sessions. See `.agent/tools/README.md` for setup (preinstalled in the
+devcontainer; a throwaway virtualenv elsewhere) and usage.
 
 - `shots.py <deck> <slide>...` screenshots slides at the 1600×900 canvas with
   fragments revealed. Look at the screenshot of every slide you change.
