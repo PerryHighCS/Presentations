@@ -866,9 +866,9 @@ var MISSIONS = {
         specs: function (c) {
             var reached = c.reachT !== null;
             return [[reached && c.reachT <= 10, 'Reach 1,700 RPM within 10 s of Start', reached ? 'in ' + c.reachT.toFixed(1) + ' s' : c.runT > 10 ? 'too slow' : c.rpm],
-                    [!c.tripRun, 'No overcurrent trip', c.tripRun ? 'tripped' : 'none']];
+                    [!c.tripRun && c.steady, 'Running at its setpoint, no trip', c.tripRun ? 'tripped' : c.steady ? 'running' : c.powered ? 'ramping' : 'stopped']];
         },
-        record: function (c) { return c.ramp + ' s ramp: 1,700 RPM in ' + c.reachT.toFixed(1) + ' s, peak torque ' + c.peakT + '%.'; },
+        record: function (c) { return c.set + ' Hz, ' + c.ramp + ' s ramp: 1,700 RPM in ' + c.reachT.toFixed(1) + ' s, peak torque ' + c.peakT + '%.'; },
     },
     fan: {
         P: 4, fan: true, lockLoad: true, inertia: 1, hold: 10,
@@ -1039,13 +1039,14 @@ function buildVfdLab(root) {
             n: st.n, rpm: Math.round(st.n).toLocaleString() + ' RPM', f: Math.round(st.f), powered: powered,
             amps: powered ? perUnitAmps() * motor().fla : 0,
             kw: powered ? 3.73 * st.T / 100 * st.n / motor().rpm : 0,
-            load: st.load, ramp: st.ramp, slip: (sync > 1 ? (sync - st.n) / sync * 100 : 0).toFixed(1) + '%',
+            load: st.load, ramp: st.ramp, set: st.set, steady: powered && stateName() === 'RUN', slip: (sync > 1 ? (sync - st.n) / sync * 100 : 0).toFixed(1) + '%',
             runT: st.runT, reachT: st.reachT, tripRun: st.tripRun, peakT: Math.round(st.peakT),
         };
     }
 
     // Hold missions complete after every spec passes at steady speed for
-    // m.hold seconds; the conveyor completes as soon as its specs pass. Each
+    // m.hold seconds; the conveyor completes once it reached 1,700 RPM in
+    // time and the drive has finished accelerating without a trip. Each
     // new completion (a fresh hold, or a fresh timed start) replaces the
     // record, so a better setting found later is the one recorded.
     function missionTick(dt) {
@@ -1134,9 +1135,9 @@ function buildVfdLab(root) {
             b.setAttribute('aria-pressed', +b.dataset.val === st.P);
             b.disabled = st.running || st.n > 1 || !!M().P;
         });
-        // The ramp is locked during a timed attempt, so the recorded ramp is
-        // the one that actually ran.
-        q('ramp').disabled = !!M().limit && (st.running || st.n > 1);
+        // The ramp and frequency are locked during a timed attempt, so the
+        // recorded settings are the ones that actually ran.
+        q('ramp').disabled = q('freq').disabled = !!M().limit && (st.running || st.n > 1);
         renderMission();
     }
 
