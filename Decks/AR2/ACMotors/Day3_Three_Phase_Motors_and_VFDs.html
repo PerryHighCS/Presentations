@@ -70,11 +70,26 @@
 .vfd-lab .bar-lbl { font-family: var(--font-mono); font-size: 30px; fill: var(--text-muted); }
 .vfd-lab .bar-val { font-family: var(--font-mono); font-size: 30px; font-weight: 700; fill: var(--text); text-anchor: end; }
 .vfd-lab .wave-lbl { font-family: var(--font-mono); font-size: 24px; fill: var(--text-muted); }
-.vfd-lab [data-role="feedback"] { height: 112px; }
+.vfd-lab [data-role="feedback"] { height: 114px; }
 .vfd-lab .status-row { display: flex; align-items: center; gap: 12px; }
 .vfd-lab .status-row .sim-feedback { flex: 1; }
 .vfd-lab .estop-btn { background: var(--fault); border-radius: 999px; padding: 8px 16px; }
 .vfd-lab .estop-btn[aria-pressed="true"] { background: #b3261e; color: var(--text); box-shadow: inset 0 0 0 3px var(--warn); }
+.vfd-lab .mission { padding: 10px 14px; }
+.vfd-lab .chip-col { display: flex; flex-direction: column; gap: 8px; flex: 0 0 196px; }
+.vfd-lab .chip-col .status-chip { box-sizing: border-box; min-width: 0; width: 100%; }
+.vfd-lab .ms-head .seg-btn { padding: 8px 10px; }
+.vfd-lab .ms-timer.off { visibility: hidden; }
+.vfd-lab .ms-brief { margin: 8px 0 4px; height: 62px; font-size: var(--small); line-height: 1.4; color: var(--text); }
+.vfd-lab .ms-brief b { color: var(--warn); }
+.vfd-lab .ms-brief .ms-done { font-family: var(--font-mono); color: var(--accent); }
+.vfd-lab .ms-specs { height: 93px; font-size: var(--small); line-height: 1.4; color: var(--text); }
+.vfd-lab .ms-line { display: flex; gap: 10px; }
+.vfd-lab .ms-mark { flex: 0 0 1.2em; font-weight: 700; }
+.vfd-lab .ms-mark.ok { color: var(--accent); }
+.vfd-lab .ms-mark.no { color: var(--fault); }
+.vfd-lab .ms-lbl { flex: 1; }
+.vfd-lab .ms-val { font-family: var(--font-mono); font-weight: 700; white-space: nowrap; }
 .nameplate {
   background: #c9ced2;
   border-radius: 6px;
@@ -87,6 +102,18 @@
 .nameplate .np-grid { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 2px 10px; font-size: var(--small); }
 .nameplate .np-k { color: #2f3a42; }
 .nameplate .np-v { font-weight: 700; color: #0d1117; }
+/* Abbreviations show their full term on hover or keyboard focus */
+.nameplate .np-abbr { position: relative; cursor: help; text-decoration: underline dotted; text-underline-offset: 4px; }
+.nameplate .np-abbr:focus-visible { outline: 3px solid #8a5a00; outline-offset: 1px; }
+.nameplate .np-abbr::after {
+  content: attr(data-tip);
+  position: absolute; left: -8px; bottom: calc(100% + 8px); z-index: 5;
+  font-family: var(--font-ui); font-size: var(--small); font-weight: 400; white-space: nowrap;
+  color: var(--text); background: var(--bg); border: 1px solid var(--accent); border-radius: 6px; padding: 6px 12px;
+  visibility: hidden; pointer-events: none;
+}
+.nameplate .np-abbr:hover::after, .nameplate .np-abbr:focus::after { visibility: visible; }
+.nameplate .np-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ─── Three wire control ─── */
 .tw-sim { display: grid; grid-template-columns: 880px 1fr; gap: 28px; align-items: start; }
@@ -107,6 +134,11 @@
 .tw-sim .tw-sub { font-family: var(--font-mono); font-size: 24px; fill: var(--text-muted); text-anchor: middle; }
 .tw-sim .motor-ring { fill: #16202a; stroke: rgba(230,247,234,0.5); stroke-width: 3; }
 .tw-sim .motor-mark { stroke: var(--result); stroke-width: 6; stroke-linecap: round; }
+/* Toggles stack full width so their changing labels never resize or reflow them */
+.tw-sim .tw-toggles { display: grid; gap: 10px; margin-top: 14px; }
+.tw-sim .tw-toggles .ctl-label { margin-bottom: -4px; }
+/* While a problem is active the button looks pressed in and offers the fix */
+.tw-sim .tw-toggles .sim-btn[aria-pressed="true"] { background: #e0a400; box-shadow: inset 0 3px 0 rgba(0,0,0,0.35), inset 0 0 0 3px #7a5200; }
 .tw-sim .tw-chips { display: grid; grid-template-columns: 1fr; gap: 8px; margin: var(--gap-sm) 0; }
 .tw-sim [data-role="feedback"] { height: 144px; }
 .tw-sim .hold-btn { user-select: none; touch-action: none; }
@@ -401,22 +433,17 @@
 <!-- SLIDE 12 · INVESTIGATION TASKS -->
 <section>
   <div class="slide-inner">
-    <span class="slide-tag">Virtual Activity 3 · VFD Control Room · Tasks</span>
+    <span class="slide-tag">Virtual Activity 3 · VFD Control Room · Missions</span>
     <h2>The VFD <span class="accent">Control Room</span></h2>
-    <div class="poe-row">
-      <span class="poe-chip"><b>P</b>redict the speed before you change it</span>
-      <span class="poe-chip"><b>O</b>bserve sync speed, shaft speed, and slip</span>
-      <span class="poe-chip"><b>E</b>xplain with 120f/P and torque</span>
-    </div>
+    <p class="slide-intro">You are the drive operator. Each mission puts a machine on the drive with its motor and load already set, and gives you a <span class="key">production spec</span>. A live checklist shows which specs pass right now, and the mission completes when they all hold.</p>
     <div class="task-grid">
-      <div class="task-item"><span class="t-key">A</span><span>Run at 60 Hz. Predict, then check sync speed.</span></div>
-      <div class="task-item"><span class="t-key">B</span><span>Drop to 30 Hz. Predict the new sync speed.</span></div>
-      <div class="task-item"><span class="t-key">C</span><span>Compare the 2, 4, and 6 pole motors.</span></div>
-      <div class="task-item"><span class="t-key">D</span><span>Raise the load. What happens to slip?</span></div>
-      <div class="task-item"><span class="t-key">E</span><span>Full load, 1 s ramp: why does it trip?</span></div>
-      <div class="task-item"><span class="t-key">F</span><span>Run at 130% load. Watch the overload.</span></div>
-      <div class="task-item" style="grid-column:span 2;"><span class="t-key">G</span><span>Compare Stop, a protective trip, and the E-stop. How does each one stop the motor, and how do you restart?</span></div>
+      <div class="task-item"><span class="t-key">A</span><span><strong>Mixer:</strong> hold 1,140 RPM at 90% load. Predict the frequency first.</span></div>
+      <div class="task-item"><span class="t-key">B</span><span><strong>Conveyor:</strong> reach full speed within 10 s, with no trip. Choose the ramp.</span></div>
+      <div class="task-item"><span class="t-key">C</span><span><strong>Fan:</strong> run at 70% speed under 1.5 kW. How much power did you save?</span></div>
+      <div class="task-item"><span class="t-key">D</span><span><strong>Overspeed:</strong> hold 2,400 RPM within FLA. Find the heaviest load that works.</span></div>
+      <div class="task-item" style="grid-column:span 2;"><span class="t-key">E</span><span><strong>Free run:</strong> compare Stop, a protective trip, and the E-stop. How does each one stop the motor, and how do you restart?</span></div>
     </div>
+    <p class="slide-intro" style="margin-top:var(--gap);">When a mission completes, <span class="key">record the settings</span> it shows on paper, with one sentence on why those settings worked.</p>
   </div>
 </section>
 
@@ -424,7 +451,7 @@
 <!-- SLIDE 13 · VFD CONTROL ROOM (SIMULATOR) -->
 <section>
   <div class="slide-inner" style="padding-top:44px;padding-bottom:40px;">
-    <span class="slide-tag" style="margin-bottom:10px;">Virtual Activity 3 · VFD Control Room · Educational model, not a commissioning tool</span>
+    <span class="slide-tag" style="margin-bottom:10px;">Virtual Activity 3 · VFD Control Room</span>
     <div class="vfd-lab">
       <div class="vl-grid">
         <div class="vl-col">
@@ -443,7 +470,7 @@
         <div class="vl-col">
           <div class="sim-panel">
             <div class="sim-head"><span>Drive output</span><span class="sim-note" data-role="out-note">0.0 Hz &middot; 0 V</span></div>
-            <svg data-role="waves" viewBox="0 0 1000 170" role="img" aria-label="The three phase voltage waveforms coming out of the drive"></svg>
+            <svg data-role="waves" viewBox="0 0 1000 100" role="img" aria-label="The three phase voltage waveforms coming out of the drive"></svg>
             <svg data-role="bars" viewBox="0 0 1000 110" role="img" aria-label="Bars comparing synchronous speed and shaft speed" style="margin-top:6px;"></svg>
           </div>
           <div class="sim-panel">
@@ -474,25 +501,24 @@
             </div>
           </div>
           <div class="status-row">
-            <span class="status-chip" data-role="status">READY</span>
+            <div class="chip-col">
+              <span class="status-chip" data-role="status">READY</span>
+              <span class="status-chip ms-timer off" data-role="ms-timer">HOLD 0.0 s</span>
+            </div>
             <div class="sim-feedback" data-role="feedback" aria-live="polite">Set the frequency and load, then press Start.</div>
           </div>
-          <div class="task-pager" data-role="tasks">
-            <div class="tp-head">
-              <span class="tp-count"></span>
-              <button class="tp-nav tp-prev" type="button" aria-label="Previous task">&#9664;</button>
-              <button class="tp-nav tp-next" type="button" aria-label="Next task">&#9654;</button>
+          <div class="sim-panel mission">
+            <div class="ms-head">
+              <span class="seg" data-role="missions" aria-label="Mission">
+                <button class="seg-btn" type="button" data-val="free" aria-pressed="true">Free run</button>
+                <button class="seg-btn" type="button" data-val="mixer" aria-pressed="false">Mixer</button>
+                <button class="seg-btn" type="button" data-val="conveyor" aria-pressed="false">Conveyor</button>
+                <button class="seg-btn" type="button" data-val="fan" aria-pressed="false">Fan</button>
+                <button class="seg-btn" type="button" data-val="overspeed" aria-pressed="false">Overspeed</button>
+              </span>
             </div>
-            <div class="tp-text" aria-live="polite"></div>
-            <ol hidden>
-              <li><b>A.</b> 4 poles, 60 Hz: predict sync speed, then Start and check.</li>
-              <li><b>B.</b> Predict the sync speed at 30 Hz, then slide down to 30 Hz.</li>
-              <li><b>C.</b> Stop, then compare the 2, 4, and 6 pole motors at 60 Hz.</li>
-              <li><b>D.</b> At 60 Hz, raise the load from 0% to 120%. Record the slip.</li>
-              <li><b>E.</b> 100% load, 1 s ramp: Start. Then try a 10 s ramp.</li>
-              <li><b>F.</b> Run at 130% load and watch the motor heat tile.</li>
-              <li><b>G.</b> Compare Stop, a trip, and E-STOP. How does each restart?</li>
-            </ol>
+            <p class="ms-brief" data-role="ms-brief" aria-live="polite"></p>
+            <div class="ms-specs" data-role="ms-specs"></div>
           </div>
         </div>
       </div>
@@ -582,9 +608,10 @@
           <button class="sim-btn hold-btn" data-hold="start" type="button">Start</button>
           <button class="sim-btn stop-btn hold-btn" data-hold="stop" type="button">Stop</button>
         </div>
-        <div class="ctl-row">
-          <button class="sim-btn alt" data-role="ol" type="button" aria-pressed="false">Overload trips</button>
-          <button class="sim-btn alt" data-role="power" type="button" aria-pressed="false">Power fails</button>
+        <div class="tw-toggles">
+          <span class="ctl-label">Simulate a problem</span>
+          <button class="sim-btn warn-btn" data-role="ol" type="button" aria-pressed="false">Overload trips</button>
+          <button class="sim-btn warn-btn" data-role="power" type="button" aria-pressed="false">Power fails</button>
         </div>
         <div class="tw-chips">
           <span class="status-chip" data-chip="coil">COIL M: OFF</span>
@@ -617,25 +644,7 @@
 </section>
 
 
-<!-- SLIDE 17 · INVESTIGATION RESULTS (RESONANCE) -->
-<section
-  data-activity-id="resonance"
-  data-activity-trigger="slide-enter"
-  data-activity-instance-key="resonance:16:0"
-  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"From the VFD Control Room: what were the synchronous speeds of the 4 pole motor at 60 Hz and at 30 Hz? What changed when you lowered the frequency, and what did not change?","order":0,"responseTimeLimitMs":180000},{"id":"q2","type":"free-response","text":"What happened to slip when you increased the load? Explain why an induction motor must slip to make torque.","order":1,"responseTimeLimitMs":180000},{"id":"q3","type":"free-response","text":"Why did the fully loaded motor trip the drive with a 1 s ramp but not with a 10 s ramp?","order":2,"responseTimeLimitMs":180000}]}'>
-  <div class="slide-inner">
-    <span class="slide-tag">Virtual Activity 3 · Investigation Results</span>
-    <h2>Record Your <span class="accent">Results</span></h2>
-    <div class="frq-list">
-      <div class="frq-box"><span class="q-num">1</span>What were the synchronous speeds of the 4 pole motor at 60 Hz and at 30 Hz? What changed when you lowered the frequency, and what did not?</div>
-      <div class="frq-box"><span class="q-num">2</span>What happened to slip when you increased the load? Explain why an induction motor must slip to make torque.</div>
-      <div class="frq-box"><span class="q-num">3</span>Why did the fully loaded motor trip the drive with a 1 s ramp but not with a 10 s ramp?</div>
-    </div>
-  </div>
-</section>
-
-
-<!-- SLIDE 18 · EXIT TICKET (RESONANCE) -->
+<!-- SLIDE 17 · EXIT TICKET (RESONANCE) -->
 <section
   data-activity-id="resonance"
   data-activity-trigger="slide-enter"
@@ -819,18 +828,67 @@ function buildFieldViz3(root) {
 }
 
 // ─── VFD Control Room ────────────────────────────────────────
-// Educational model. Output frequency ramps toward the setpoint at 60 Hz per
-// ramp time. sync = 120 f / P. Torque demand = load + 5% friction +
-// acceleration torque (inertia grows with load). Slip RPM is proportional to
-// torque (rated slip at 100%), the same at any frequency, so slip % rises at
-// low frequency. Above 60 Hz the voltage is capped at 460 V, so available
-// torque falls as 60 / f. Demand above the 150% current limit for 0.5 s trips
-// an overcurrent fault; current above 115% heats the motor (I squared t) and
+// Output frequency ramps toward the setpoint at 60 Hz per ramp time.
+// sync = 120 f / P. Torque demand = load + 5% friction + acceleration torque
+// (inertia grows with load). Slip RPM is proportional to torque (rated slip at
+// 100%), the same at any frequency, so slip % rises at low frequency. Above
+// 60 Hz the voltage is capped at 460 V, so the field weakens and each amp
+// makes less torque: current = torque × f / 60, and the 150% current limit
+// allows only 150 × 60 / f torque. Demand above the limit for 0.5 s trips an
+// overcurrent fault; current above 115% heats the motor (I squared t) and
 // trips the overload at 100% heat.
 var MOTORS = {
     2: { rpm: 3500, fla: 6.2 },
     4: { rpm: 1750, fla: 6.7 },
     6: { rpm: 1160, fla: 7.2 },
+};
+
+// Missions fix the machine (poles, load, inertia) and set a spec. Tuned so
+// each has one narrow passing window and a tempting wrong setting:
+// mixer 40 Hz only (38 Hz from 120f/P ignores slip); conveyor ramp 7 to 10 s
+// (1 to 6 s trips, 11 s is too slow); fan 41 to 42 Hz; overspeed 82 Hz and up,
+// heaviest load 65% (80 Hz falls short by the slip).
+var MISSIONS = {
+    free: {
+        text: '<b>Free run:</b> every control is open. Pick a mission to get a production spec.',
+        tasks: ['Run at 130% load and watch the Motor heat tile.',
+                'Compare Stop, a trip, and E-STOP. How does each one restart?'],
+    },
+    mixer: {
+        P: 4, load: 90, lockLoad: true, hold: 10,
+        text: '<b>Mixer:</b> 4 pole motor, 90% load. The gearbox needs <b>1,140 RPM</b> at the shaft, within 15 RPM, for 10 s. Set the frequency.',
+        specs: function (c) { return [[c.n >= 1125 && c.n <= 1155, 'Shaft speed 1,125 to 1,155 RPM', c.rpm]]; },
+        record: function (c) { return c.f + ' Hz, 90% load: shaft ' + c.rpm + ', slip ' + c.slip + '.'; },
+    },
+    conveyor: {
+        P: 4, load: 100, lockLoad: true, inertia: 3, limit: 10, reach: 1700,
+        text: '<b>Conveyor:</b> 4 pole motor, 100% load, heavy belt. Reach <b>1,700 RPM</b> within <b>10 s</b> of Start without a trip. Set the ramp.',
+        specs: function (c) {
+            var reached = c.reachT !== null;
+            return [[reached && c.reachT <= 10, 'Reach 1,700 RPM within 10 s of Start', reached ? 'in ' + c.reachT.toFixed(1) + ' s' : c.runT > 10 ? 'too slow' : c.rpm],
+                    [!c.tripRun, 'No overcurrent trip', c.tripRun ? 'tripped' : 'none']];
+        },
+        record: function (c) { return c.ramp + ' s ramp: 1,700 RPM in ' + c.reachT.toFixed(1) + ' s, peak torque ' + c.peakT + '%.'; },
+    },
+    fan: {
+        P: 4, fan: true, lockLoad: true, inertia: 1, hold: 10,
+        text: '<b>Fan:</b> at 60 Hz this fan uses 3.7 kW. Run it at <b>70% speed</b> (1,200 to 1,250 RPM) using under <b>1.5 kW</b> for 10 s.',
+        specs: function (c) {
+            return [[c.n >= 1200 && c.n <= 1250, 'Shaft speed 1,200 to 1,250 RPM', c.rpm],
+                    [c.powered && c.kw <= 1.5, 'Power at most 1.5 kW', c.kw.toFixed(2) + ' kW']];
+        },
+        record: function (c) { return c.f + ' Hz: ' + c.rpm + ' using ' + c.kw.toFixed(2) + ' kW, ' + Math.round(c.kw / 3.73 * 100) + '% of full speed power.'; },
+    },
+    overspeed: {
+        P: 4, load: 100, hold: 10,
+        text: '<b>Overspeed:</b> hold <b>2,400 RPM</b> for 10 s without going over the 6.7 A FLA. Find the heaviest load that works; the job needs at least 60%.',
+        specs: function (c) {
+            return [[c.n >= 2400, 'Shaft speed at least 2,400 RPM', c.rpm],
+                    [c.powered && c.amps <= 6.7, 'Current at most 6.7 A (FLA)', c.amps.toFixed(1) + ' A'],
+                    [c.load >= 60, 'Load at least 60%', c.load + '%']];
+        },
+        record: function (c) { return c.f + ' Hz, ' + c.load + '% load: ' + c.rpm + ' at ' + c.amps.toFixed(1) + ' A.'; },
+    },
 };
 function buildVfdLab(root) {
     function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
@@ -850,7 +908,7 @@ function buildVfdLab(root) {
     svgEl('text', { x: 238, y: 270, class: 'dial-lbl' }, dial).textContent = 'rotor';
 
     // Output waveforms: 50 ms window
-    svgEl('path', { d: 'M10 80 H990', class: 'dw-axis' }, waves);
+    svgEl('path', { d: 'M10 50 H990', class: 'dw-axis' }, waves);
     var wTraces = ['a', 'b', 'c'].map(function (c) { return svgEl('polyline', { class: 'tr-' + c, points: '' }, waves); });
 
     // Speed bars
@@ -865,18 +923,34 @@ function buildVfdLab(root) {
     var shaftVal = svgEl('text', { x: 1000, y: 96, class: 'bar-val' }, bars);
 
     var st = { set: 60, P: 4, load: 50, ramp: 5, f: 0, n: 0, running: false, stopping: false,
-               fault: null, estop: false, heat: 0, ocTime: 0, wt: 0, fieldDeg: 0, rotorDeg: 0, T: 0 };
+               fault: null, estop: false, heat: 0, ocTime: 0, wt: 0, fieldDeg: 0, rotorDeg: 0, T: 0,
+               mission: 'free', holdT: 0, runT: 0, reachT: null, tripRun: false, peakT: 0, done: {} };
 
+    function M() { return MISSIONS[st.mission]; }
     function motor() { return MOTORS[st.P]; }
     function slipRated() { return 120 * 60 / st.P - motor().rpm; }
     function volts() { return Math.round(460 * Math.min(st.f, 60) / 60); }
-    function inertia() { return 0.4 + 0.6 * st.load / 100; }
+    function inertia() { return M().inertia || 0.4 + 0.6 * st.load / 100; }
+    // A fan's torque grows with speed squared: 95% at rated speed, plus friction.
+    function loadT() { return M().fan ? 95 * Math.pow(st.n / motor().rpm, 2) : st.load; }
+    // Current in per unit of FLA; above 60 Hz each amp makes less torque.
+    function perUnitAmps() { return Math.max(0.35, st.T / 100 * Math.max(1, st.f / 60)); }
 
     function drawNameplate() {
         var mtr = motor();
         q('nameplate').innerHTML = '<div class="np-title">3 PHASE INDUCTION MOTOR</div><div class="np-grid">' +
             [['HP', '5'], ['VOLTS', '460'], ['RPM', mtr.rpm.toLocaleString()], ['FLA', mtr.fla + ' A'], ['HZ', '60'], ['SF', '1.15'], ['ENCL', 'TEFC'], ['INS', 'CLASS F']]
-            .map(function (kv) { return '<span class="np-k">' + kv[0] + '</span><span class="np-v">' + kv[1] + '</span>'; }).join('') + '</div>';
+            .map(function (kv) { return '<span class="np-k">' + abbr(kv[0]) + '</span><span class="np-v">' + abbr(kv[1]) + '</span>'; }).join('') + '</div>';
+    }
+    var NP_TERMS = {
+        HP: 'Horsepower', RPM: 'Rated speed, revolutions per minute', FLA: 'Full load amps',
+        HZ: 'Hertz: rated frequency', SF: 'Service factor: safe continuous overload',
+        ENCL: 'Enclosure', TEFC: 'Totally enclosed, fan cooled', INS: 'Insulation class',
+        'CLASS F': 'Windings rated for 155 °C',
+    };
+    function abbr(t) {
+        var full = NP_TERMS[t];
+        return full ? '<span class="np-abbr" tabindex="0" data-tip="' + full + '">' + t + '<span class="np-sr"> (' + full + ')</span></span>' : t;
     }
 
     function say(msg, cls) {
@@ -886,7 +960,7 @@ function buildVfdLab(root) {
     }
 
     function trip(code, msg) {
-        st.running = false; st.stopping = false; st.fault = code;
+        st.running = false; st.stopping = false; st.fault = code; st.tripRun = true;
         say(msg, 'bad');
     }
 
@@ -904,7 +978,7 @@ function buildVfdLab(root) {
             var accel = (sync - prevSync) / dt;                       // RPM per second
             var Ta = inertia() * accel / 18;                          // % torque
             var tAvail = 150 * (st.f > 60 ? 60 / st.f : 1);
-            var demand = st.load + 5 + Ta;
+            var demand = loadT() + 5 + Ta;
             if (st.stopping) demand = Math.max(0, demand);
             st.T = Math.max(0, demand);
             if (demand > tAvail) {
@@ -912,6 +986,7 @@ function buildVfdLab(root) {
                 st.T = tAvail;
                 if (st.ocTime > 0.5) {
                     if (st.f > 60 && Ta < 20) trip('OL', 'FAULT: motor stalled. Above 60 Hz the drive is already at 460 V, so available torque falls to ' + Math.round(tAvail) + '%, less than the ' + Math.round(demand) + '% this load needs.');
+                    else if (st.f > 60) trip('OC', 'FAULT OC (overcurrent). Above 60 Hz each amp makes less torque, so the current limit allows only ' + Math.round(tAvail) + '%. Speeding up this load needs ' + Math.round(demand) + '%. Lighten the load.');
                     else trip('OC', 'FAULT OC (overcurrent). Speeding up this load in ' + st.ramp + ' s needs ' + Math.round(demand) + '% torque, above the drive’s 150% current limit. Try a longer ramp.');
                     return;
                 }
@@ -925,14 +1000,23 @@ function buildVfdLab(root) {
         } else {
             st.T = 0;
             // Coasting: the load and friction slow the shaft.
-            if (st.n > 0) st.n = Math.max(0, st.n - (st.load + 10) * 18 / inertia() * dt);
+            if (st.n > 0) st.n = Math.max(0, st.n - (loadT() + 10) * 18 / inertia() * dt);
         }
 
-        // Motor heating (I squared t): current in per unit of FLA.
-        var amps = powered ? Math.max(0.35, st.T / 100) : 0;
+        // Motor heating (I squared t)
+        var amps = powered ? perUnitAmps() : 0;
         var over = amps * amps - 1.15 * 1.15;
         st.heat = Math.max(0, Math.min(1.05, st.heat + (over > 0 ? over / 10 : over / 12) * dt));
         if (st.heat >= 1 && powered) trip('OL', 'FAULT OL (motor overload). Current stayed above 115% of FLA long enough to overheat the windings. Reduce the load, let it cool, then reset.');
+
+        // Mission clocks, counted from Start
+        if (powered) {
+            st.peakT = Math.max(st.peakT, st.T);
+            if (st.reachT === null) {
+                st.runT += dt;
+                if (M().reach && st.n >= M().reach) st.reachT = st.runT;
+            }
+        }
 
         st.wt += 2 * Math.PI * st.f * dt / 120;               // waveform phase, slowed
         st.fieldDeg += sync / 3600 * 360 * dt;                 // 1,800 RPM = 0.5 rev/s
@@ -948,6 +1032,55 @@ function buildVfdLab(root) {
         return 'RUN';
     }
 
+    // Live values the mission specs and records are written against.
+    function missionCtx() {
+        var sync = 120 * st.f / st.P, powered = st.running && !st.fault && !st.estop;
+        return {
+            n: st.n, rpm: Math.round(st.n).toLocaleString() + ' RPM', f: Math.round(st.f), powered: powered,
+            amps: powered ? perUnitAmps() * motor().fla : 0,
+            kw: powered ? 3.73 * st.T / 100 * st.n / motor().rpm : 0,
+            load: st.load, ramp: st.ramp, slip: (sync > 1 ? (sync - st.n) / sync * 100 : 0).toFixed(1) + '%',
+            runT: st.runT, reachT: st.reachT, tripRun: st.tripRun, peakT: Math.round(st.peakT),
+        };
+    }
+
+    // Hold missions complete after every spec passes at steady speed for
+    // m.hold seconds; the conveyor completes as soon as its specs pass.
+    function missionTick(dt) {
+        var m = M();
+        if (!m.specs) return;
+        var c = missionCtx(), ok = m.specs(c).every(function (s) { return s[0]; });
+        if (m.hold) st.holdT = ok && c.powered && stateName() === 'RUN' ? st.holdT + dt : 0;
+        if (!st.done[st.mission] && (m.hold ? st.holdT >= m.hold : ok)) st.done[st.mission] = m.record(c);
+    }
+
+    function renderMission() {
+        // The timer chip keeps placeholder text when hidden so it never collapses.
+        var m = M(), done = st.done[st.mission], timer = q('ms-timer'), t = 'HOLD 0.0 s', cls = 'off';
+        setHTML(q('ms-brief'), done ? '<span class="ms-done">✓ COMPLETE:</span> ' + done + ' Record these settings.' : m.text);
+        var lines = m.specs
+            ? m.specs(missionCtx()).map(function (s) {
+                return '<div class="ms-line"><span class="ms-mark ' + (s[0] ? 'ok">✓' : 'no">✗') + '</span><span class="ms-lbl">' + s[1] + '</span><span class="ms-val">' + s[2] + '</span></div>';
+            })
+            : m.tasks.map(function (tx) { return '<div class="ms-line"><span class="ms-mark">•</span><span class="ms-lbl">' + tx + '</span></div>'; });
+        setHTML(q('ms-specs'), lines.join(''));
+        if (m.hold) {
+            t = 'HOLD ' + Math.min(st.holdT, m.hold).toFixed(1) + ' s';
+            cls = st.holdT >= m.hold ? 'ok' : st.holdT > 0 ? 'busy' : '';
+        } else if (m.limit) {
+            t = 'TIME ' + Math.min(st.reachT !== null ? st.reachT : st.runT, 99.9).toFixed(1) + ' s';
+            cls = st.reachT !== null && st.reachT <= m.limit && !st.tripRun ? 'ok' : st.runT > m.limit || st.tripRun ? 'bad' : st.runT > 0 ? 'busy' : '';
+        }
+        if (timer.textContent !== t) timer.textContent = t;
+        timer.className = 'status-chip ms-timer ' + cls;
+        root.querySelectorAll('[data-role="missions"] .seg-btn').forEach(function (b) {
+            var label = b.dataset.label + (st.done[b.dataset.val] ? ' ✓' : '');
+            if (b.textContent !== label) b.textContent = label;
+            b.setAttribute('aria-pressed', b.dataset.val === st.mission);
+        });
+    }
+    function setHTML(el, html) { if (el._html !== html) { el._html = html; el.innerHTML = html; } }
+
     function render() {
         var sync = 120 * st.f / st.P, mtr = motor(), powered = st.running && !st.fault && !st.estop;
         var maxRpm = 120 * 90 / st.P;
@@ -956,12 +1089,12 @@ function buildVfdLab(root) {
         syncVal.textContent = Math.round(sync).toLocaleString() + ' RPM';
         shaftVal.textContent = Math.round(st.n).toLocaleString() + ' RPM';
         // Waveforms: 50 ms of output at the present frequency and voltage.
-        var amp = 70 * volts() / 460;
+        var amp = 42 * volts() / 460;
         wTraces.forEach(function (tr, k) {
             var pts = [];
             for (var i = 0; i <= 160; i++) {
                 var t = i / 160 * 0.05;
-                pts.push((10 + i / 160 * 980).toFixed(1) + ',' + (80 - amp * Math.sin(2 * Math.PI * st.f * t + st.wt - k * 2 * Math.PI / 3)).toFixed(1));
+                pts.push((10 + i / 160 * 980).toFixed(1) + ',' + (50 - amp * Math.sin(2 * Math.PI * st.f * t + st.wt - k * 2 * Math.PI / 3)).toFixed(1));
             }
             tr.setAttribute('points', pts.join(' '));
         });
@@ -976,7 +1109,7 @@ function buildVfdLab(root) {
         setText('[data-tile="slip"]', (sync > 1 && powered ? slipRpm / sync * 100 : 0).toFixed(1) + '%');
         setText('[data-tile="slip-rpm"]', Math.round(powered ? slipRpm : 0) + ' RPM behind');
         setText('[data-tile="torque"]', Math.round(st.T) + '%');
-        var amps = powered ? Math.max(0.35, st.T / 100) * mtr.fla : 0;
+        var amps = powered ? perUnitAmps() * mtr.fla : 0;
         setText('[data-tile="amps"]', amps.toFixed(1) + ' A');
         setText('[data-tile="amps-sub"]', 'of ' + mtr.fla + ' A FLA');
         setText('[data-tile="heat"]', Math.round(st.heat * 100) + '%');
@@ -986,7 +1119,7 @@ function buildVfdLab(root) {
         // Running commentary (only while no fault or E-stop message is up)
         if (powered && !st.stopping && name === 'RUN') {
             var load = st.T, warn = '';
-            if (st.f > 60) warn = ' Above 60 Hz the voltage is capped at 460 V, so the motor can only make ' + Math.round(150 * 60 / st.f) + '% torque at most.';
+            if (st.f > 60) warn = ' At 460 V above 60 Hz, each amp makes less torque: ' + Math.round(150 * 60 / st.f) + '% at most.';
             else if (amps / mtr.fla > 1.15) warn = ' Current is above 115% of FLA: the motor is heating toward an overload trip.';
             say('Running: ' + st.f.toFixed(0) + ' Hz × 120 / ' + st.P + ' = ' + Math.round(sync).toLocaleString() + ' RPM sync, shaft ' + Math.round(st.n).toLocaleString() + ' RPM, slip ' + (slipRpm / sync * 100).toFixed(1) + '%.' + warn, warn ? 'caution' : '');
         }
@@ -994,8 +1127,28 @@ function buildVfdLab(root) {
         q('estop').textContent = st.estop ? 'RELEASE E-STOP' : 'E-STOP';
         root.querySelectorAll('[data-role="poles"] .seg-btn').forEach(function (b) {
             b.setAttribute('aria-pressed', +b.dataset.val === st.P);
-            b.disabled = st.running || st.n > 1;
+            b.disabled = st.running || st.n > 1 || !!M().P;
         });
+        renderMission();
+    }
+
+    function selectMission(key) {
+        if (st.running || st.n > 1 || st.estop) {
+            say('Stop the motor, and release the E-stop if it is latched, before you switch to another machine.', 'caution');
+            return;
+        }
+        st.mission = key;
+        var m = M();
+        if (m.P) st.P = m.P;
+        if (m.load !== undefined) st.load = m.load;
+        st.set = 60; st.ramp = 5; st.fault = null; st.estopWas = false; st.heat = 0; st.ocTime = 0;
+        st.holdT = 0; st.runT = 0; st.reachT = null; st.tripRun = false; st.peakT = 0;
+        q('freq').value = st.set; q('freq-val').textContent = st.set + ' Hz';
+        q('ramp').value = st.ramp; q('ramp-val').textContent = st.ramp + ' s';
+        q('load').value = st.load; q('load-val').textContent = m.fan ? 'fan' : st.load + '%';
+        q('load').disabled = !!m.lockLoad;
+        drawNameplate();
+        say(key === 'free' ? 'Free run: choose any motor, load, frequency, and ramp.' : 'New machine on the drive. Read the spec, predict the setting you need, then press Start.');
     }
 
     q('freq').addEventListener('input', function () { st.set = +this.value; q('freq-val').textContent = st.set + ' Hz'; });
@@ -1003,7 +1156,7 @@ function buildVfdLab(root) {
     q('ramp').addEventListener('input', function () { st.ramp = +this.value; q('ramp-val').textContent = st.ramp + ' s'; });
     root.querySelectorAll('[data-role="poles"] .seg-btn').forEach(function (b) {
         b.addEventListener('click', function () {
-            if (st.running || st.n > 1) return;
+            if (st.running || st.n > 1 || M().P) return;
             st.P = +b.dataset.val;
             drawNameplate();
             say('Swapped in a ' + st.P + ' pole motor (see the nameplate). A VFD cannot change a motor’s poles; a different pole count means a different motor.');
@@ -1014,6 +1167,7 @@ function buildVfdLab(root) {
         if (st.fault) { say('The drive is faulted. Fix the cause, then press Reset fault.', 'bad'); return; }
         if (st.running && !st.stopping) return;
         st.running = true; st.stopping = false; st.ocTime = 0;
+        st.holdT = 0; st.runT = 0; st.reachT = null; st.tripRun = false; st.peakT = 0;
         say('Accelerating: the drive raises the frequency at ' + (60 / st.ramp).toFixed(1) + ' Hz per second.');
     });
     q('stop').addEventListener('click', function () {
@@ -1036,10 +1190,13 @@ function buildVfdLab(root) {
             say('E-stop released, but the system stays off. Press Reset fault, then Start.', 'caution');
         }
     });
-    initTaskPager(q('tasks'));
+    root.querySelectorAll('[data-role="missions"] .seg-btn').forEach(function (b) {
+        b.dataset.label = b.textContent;
+        b.addEventListener('click', function () { selectMission(b.dataset.val); });
+    });
     drawNameplate();
     render();
-    SIMS.push({ root: root, tick: function (dt) { step(dt); render(); } });
+    SIMS.push({ root: root, tick: function (dt) { step(dt); missionTick(dt); render(); } });
 }
 
 // ─── Three wire start/stop control ───────────────────────────
@@ -1136,23 +1293,6 @@ function buildThreeWire(root) {
             q('motor-rot').setAttribute('transform', 'rotate(' + st.rot.toFixed(1) + ' 580 380)');
         }
     } });
-}
-
-// Prev / next pager over the hidden <li> tasks inside a .task-pager.
-function initTaskPager(el) {
-    var items = Array.prototype.map.call(el.querySelectorAll('ol > li'), function (li) { return li.innerHTML; });
-    var i = 0;
-    var count = el.querySelector('.tp-count'), text = el.querySelector('.tp-text');
-    var prev = el.querySelector('.tp-prev'), next = el.querySelector('.tp-next');
-    function show() {
-        count.textContent = 'TASK ' + (i + 1) + ' OF ' + items.length;
-        text.innerHTML = items[i];
-        prev.disabled = i === 0;
-        next.disabled = i === items.length - 1;
-    }
-    prev.addEventListener('click', function () { if (i > 0) { i--; show(); } });
-    next.addEventListener('click', function () { if (i < items.length - 1) { i++; show(); } });
-    show();
 }
 
 function startSimLoop(Reveal) {

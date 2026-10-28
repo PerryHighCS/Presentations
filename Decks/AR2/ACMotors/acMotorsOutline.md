@@ -89,22 +89,36 @@ misused parts. Details are in `acMotorsActivityRework.md`.
 9. Introducing the VFD: "60 Hz arrives; how do we run slower?"
 10. AC to DC to controlled AC (rectifier, DC link, inverter)
 11. Resonance prediction: synchronous speed at 30 Hz, and what a VFD changes
-12. Investigation tasks A to G
-13. **VFD Control Room simulator**
+12. Control Room missions A to E (mixer, conveyor, fan, overspeed, free run);
+    students record each completed mission's settings on paper
+13. **VFD Control Room simulator** with missions
 14. Starting a motor without a VFD: contactor, overload relay, pushbuttons, and why not an on/off switch
 15. Starting and stopping an industrial motor: **three wire start/stop simulator**
 16. Overload protection, and stop vs trip vs emergency stop
-17. Resonance: investigation results
-18. Resonance exit ticket
+17. Resonance exit ticket
 
 **VFD Control Room:** frequency 10 to 90 Hz, 2/4/6 poles (each swaps in a
 different motor and nameplate), load 0 to 150 %, accel/decel ramp 1 to 20 s,
 Start/Stop/E-stop/Reset. Model: sync = 120f/P; slip rpm ∝ torque (V/Hz region, so
-slip % grows at low frequency); torque available falls above 60 Hz; accel torque
-= inertia × ramp rate; current limit 150 % → overcurrent trip; sustained > 115 %
-→ overload trip. Stop ramps down, a fault coasts, E-stop removes power and needs a
-reset. Displays: output waveforms, field dial, sync vs shaft speed bars, slip %,
-torque %, current, drive state, warnings, nameplate.
+slip % grows at low frequency); above 60 Hz the voltage caps at 460 V, so current
+= torque × f/60 and torque available falls as 60/f; accel torque = inertia × ramp
+rate; current limit 150 % → overcurrent trip; sustained > 115 % → overload trip.
+Stop ramps down, a fault coasts, E-stop removes power and needs a reset. Displays:
+output waveforms, field dial, sync vs shaft speed bars, slip %, torque %, current,
+drive state, warnings, nameplate.
+
+Missions fix the machine (4 pole motor, load, inertia) and show a live spec
+checklist; hold missions complete after every spec passes at steady speed for
+10 s, and record the settings used:
+
+| Mission | Spec | Passes | Tempting wrong setting |
+|---|---|---|---|
+| Mixer, 90 % load | 1,125 to 1,155 RPM, held 10 s | 40 Hz only | 38 Hz (120f/P, ignores slip) |
+| Conveyor, 100 % load, 3× inertia | 1,700 RPM within 10 s of Start, no trip | ramp 7 to 10 s | 5 s default trips OC; 11 s too slow |
+| Fan (torque ∝ speed²) | 1,200 to 1,250 RPM, at most 1.5 kW, held 10 s | 41 to 42 Hz | 44 Hz (1.56 kW) |
+| Overspeed, load starts at 100 % | ≥ 2,400 RPM, ≤ 6.7 A, load ≥ 60 %, held 10 s | 82 Hz and up at 60 to 65 % load | 80 to 81 Hz (slip); 70 % load (over FLA) |
+
+Free run keeps every control open (130 % load overload; Stop vs trip vs E-stop).
 
 **Three wire control:** Stop (NC), Start (NO, momentary), M coil, M holding
 contact, OL contact; buttons for Start, Stop, OL trip, and power loss.

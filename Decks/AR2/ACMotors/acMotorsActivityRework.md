@@ -138,10 +138,21 @@ holds.
 
 | Mission | Spec | What it teaches |
 |---|---|---|
-| Mixer | Hold 1,140 ± 15 RPM at 90 % load for 10 s, no trips | Frequency sets speed, and slip pushes the shaft below sync |
-| Conveyor soft start | Reach full speed at 100 % load in under 12 s with no overcurrent trip | The ramp time trade-off |
-| Fan energy saver | Run the fan at 70 % speed, current under a limit | Lower frequency, less power |
-| Overspeed | Reach 2,400 RPM with a 4 pole motor | Torque falls above 60 Hz; it works at light load only |
+| Mixer | Hold 1,140 ± 15 RPM at 90 % load for 10 s | Frequency sets speed, and slip pushes the shaft below sync |
+| Conveyor soft start | Reach 1,700 RPM at 100 % load, 3× inertia, within 10 s of Start with no overcurrent trip | The ramp time trade-off |
+| Fan energy saver | Run the fan (torque ∝ speed²) at 70 % speed under 1.5 kW for 10 s | Lower frequency, much less power |
+| Overspeed | Hold 2,400 RPM with a 4 pole motor within FLA and at least 60 % load | Torque per amp falls above 60 Hz; it works at light load only |
+
+Tuned results (all 4 pole): the mixer passes at 40 Hz only (38 Hz from 120f/P
+gives 1,093 RPM); conveyor ramps of 1 to 6 s trip OC (5 s is the default), 7 to
+10 s pass, and 11 s takes 10.8 s; the fan passes at 41 to 42 Hz (1.37 kW at
+42 Hz, 37 % of full speed power); overspeed passes from 82 Hz at 60 or 65 % load
+(80 and 81 Hz fall short by the slip, and 70 % load draws 6.9 A). Two model
+changes made this honest: a speed-squared fan load, and current = torque × f/60
+above 60 Hz (field weakening), consistent with the existing 150 × 60/f torque
+limit. Missions fix the motor and load (overspeed leaves the load free, starting
+at 100 %); the operator sets frequency and ramp. Free run keeps every control
+open.
 
 ### Interface
 
@@ -152,14 +163,15 @@ holds.
 
 ### Checklist
 
-- [ ] Tune mission numbers against the existing model so each is achievable and
+- [x] Tune mission numbers against the existing model so each is achievable and
   has a tempting wrong setting.
-- [ ] Mission selector, spec checklist, hold timer, complete record.
-- [ ] Replace the task pager on slide 13 and the tasks on slide 12 with the
-  missions; update slide 17's Resonance to ask for the settings that met each
-  spec and why.
-- [ ] Drop "· Educational model, not a commissioning tool" from the slide 13 tag.
-- [ ] Update the outline and the activities index; checks; teacher review.
+- [x] Mission selector, spec checklist, hold timer, complete record.
+- [x] Replace the task pager on slide 13 and the tasks on slide 12 with the
+  missions. The old slide 17 results Resonance is removed; students record each
+  completed mission's settings, and why they worked, on paper (slide 12).
+- [x] Drop "· Educational model, not a commissioning tool" from the slide 13 tag.
+- [x] Update the outline and the activities index; checks.
+- [x] Teacher review, then commit.
 
 ---
 
@@ -253,7 +265,7 @@ None right now. Add new ones here as they come up during the build.
 
 - [x] Plan written
 - [x] Day 2: Motor Design Workshop
-- [ ] Day 3: Control Room missions
+- [x] Day 3: Control Room missions
 - [ ] Day 4: Head to Head
 - [ ] Day 5: Diagnostic Mystery
 - [ ] Day 1: optional task polish
