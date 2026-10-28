@@ -6,131 +6,19 @@ Presentation source folders live under `Decks/`, while deployment remaps
 their contents to the site root. For example, `Decks/AR1/...` is published as
 `/AR1/...`.
 
-## Agent Skills Subtree
+## Guides for Specific Work
 
-The shared SyncDeck agent skill lives at `.agent/skills/vendor/syncdeck/` and is
-managed as a **git subtree** (not a submodule) backed by the
-`syncdeck-agent-skills` remote.
+Read these when the work calls for them; they are not needed for every deck.
 
-- **Commit model:** edit files inside `.agent/skills/vendor/syncdeck/` normally
-  and commit them to the parent repo as you would any other file. The subtree
-  has no separate working tree — changes land directly in the parent history.
-- **Push upstream after committing:** after committing changes to the parent
-  repo, push them back to the subtree remote:
-  ```
-  git subtree push --prefix=.agent/skills/vendor/syncdeck syncdeck-agent-skills main
-  ```
-- **Pull upstream changes:** to incorporate updates published to the subtree
-  remote:
-  ```
-  git subtree pull --prefix=.agent/skills/vendor/syncdeck syncdeck-agent-skills main --squash
-  ```
-- **Do not** run `git subtree push/pull` until the parent repo commit is in
-  place — the subtree commands rewrite history based on the current index.
-
----
-
-## Runtime Source
-
-- Shared runtime source: `vendor/SyncDeck-Reveal/` git submodule.
-- CI readiness: `.github/workflows/static.yml` is configured with `submodules: recursive` so Pages deployments include submodule contents.
-- Local submodule workflow: for local testing, edit files directly in `vendor/SyncDeck-Reveal/`; the parent repo will use those working-tree changes immediately.
-- Detached HEAD warning: submodules are often checked out at a raw commit hash, which makes local commits easy to lose track of. Before committing inside the submodule, create or switch to a branch, e.g. `git -C vendor/SyncDeck-Reveal switch -c fix/my-bug`.
-- Commit model: commit and push code changes from inside the submodule repo first, then commit the updated submodule pointer in the parent repo with `git add vendor/SyncDeck-Reveal`.
-
-## Shared Runtime
-
-Presentations load the bundled public runtime from
-`runtime/syncdeck-reveal/dist/` in the published site. The bundler, source
-entrypoint, and npm workflow live in `vendor/SyncDeck-Reveal/`; the parent repo
-should only reference the built assets through the public runtime path.
-
-**Required HTML inside the presentation:**
-```html
-<div id="storyboard" class="storyboard" aria-hidden="true">
-    <div id="storyboard-track" class="storyboard-track"></div>
-</div>
-```
-
-**Initialise with the bundled runtime:**
-
-The runtime lives at `/runtime/syncdeck-reveal/` in the published site. Use a
-relative path from the deck's published location (eg. `/Decks/CSA/2DArrays/2d-arrays.html` will publish to `/CSA/2DArrays/2d-arrays.html` and use the following):
-
-```html
-<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
-<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
-<script>
-initSyncDeckReveal({
-    deckId: 'your-deck-name',
-});
-</script>
-```
-
-**DOM events (dispatched on `window`):**
-
-| Event | Detail | Effect |
-|-------|--------|--------|
-| `reveal-storyboard-toggle` | — | Toggle open/closed |
-| `reveal-storyboard-set` | `{ open: true\|false }` | Explicitly show or hide |
-
-These events are the integration point for `reveal-iframe-sync.js` and any container-page UI.
-
----
-
-### Submodule Internal: `vendor/SyncDeck-Reveal/chalkboard/chalkboard.js`
-
-This section is for contributors working inside the `SyncDeck-Reveal` submodule. Presentations in this repo should continue to load only the bundled `dist/` assets described above.
-
-Vendored and extended copy of the [reveal.js-plugins chalkboard](https://github.com/rajgoel/reveal.js-plugins/tree/master/chalkboard). **Do not replace with a CDN link** — the local copy has two additions required for iframe sync:
-
-**Key constraint — do not set `storage`:** the plugin's built-in `sessionStorage` persistence is intentionally disabled. The **host page** is the source of truth for drawing state (snapshot + delta buffer). Do not add `chalkboard: { storage: '...' }` to `Reveal.initialize()` — doing so would cause the local in-memory state and the host's buffer to diverge after a reload.
-
-**Student canvas is read-only:** when the plugin receives `setRole: student` it calls `RevealChalkboard.configure({ readOnly: true })` automatically via `reveal-iframe-sync.js`. No manual config needed.
-
-**Overview / storyboard routing:**
-Reveal.js's built-in grid overview (`O` key) is intentionally **not** propagated to students as a native Reveal overview. Instead, `overview: true/false` in any `setState` command is stripped from the Reveal state and converted to `reveal-storyboard-set` DOM events — so the custom storyboard strip appears on the student side rather than Reveal's grid.
-
-The container site can also trigger the storyboard directly by sending a command:
-```js
-// From the container/host page
-iframe.contentWindow.postMessage({
-    type: 'reveal-sync',
-    action: 'command',
-    payload: { name: 'toggleOverview' }   // or showOverview / hideOverview
-}, '*');
-```
-
----
-
-### Submodule Internal: `vendor/SyncDeck-Reveal/reveal-iframe-sync.js`
-
-This section is for contributors working inside the `SyncDeck-Reveal` submodule. Presentations in this repo should continue to load only the bundled `dist/` assets described above.
-
-Registers a Reveal.js **plugin** (`RevealIframeSync`) that syncs navigation and state between an instructor page and one or more student iframes via `window.postMessage`.
-
-**Register as a Reveal plugin:**
-```js
-Reveal.initialize({
-    plugins: [RevealIframeSync],
-    iframeSync: {
-        deckId: 'my-deck',
-        hostOrigin: '*',
-        allowedOrigins: ['*'],
-    }
-});
-```
-
-> **Role lifecycle:** the plugin always initialises as `'standalone'` regardless of any `role` config field. The host must explicitly promote the iframe via a `setRole` command (`instructor` or `student`). This prevents boundary controls from appearing in direct-browser or VS Code preview contexts.
-
-
-**Supported commands (host → iframe):** `next`, `prev`, `slide`, `setState`, `togglePause`, `pause`, `resume`, `setRole`, `allowStudentForwardTo`, `setStudentBoundary`, `toggleOverview`, `showOverview`, `hideOverview`, `chalkboardCall`, `toggleChalkboard`, `toggleNotesCanvas`, `clearChalkboard`, `resetChalkboard`, `chalkboardStroke`, `chalkboardState`, `requestChalkboardState`, `ping`
-
-Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.md`
-
-**Vertical stack pattern:** a vertical Reveal stack can be used as a student-controlled series once the instructor reaches that horizontal position. Treat vertical stacks as the planned release mechanism, and use storyboard boundary controls as the ad hoc release mechanism. The host/plugin should treat the stack as a bounded local-navigation region rather than unlocking the whole deck. When YouTube slides appear inside such a stack, local student playback control may be enabled if the stack/slide config allows it; student audio mode should still be honored unless the instructor changes it from the host toolbar. The storyboard should highlight the full released region and represent vertical stacks with clear grouping rather than a flat list of indistinguishable thumbnails.
-
----
+| Guide | Read it when |
+|---|---|
+| `.agent/knowledge/html5-activities-index.md` | a deck needs a custom interactive widget (see "Reusable Activity Index" below) |
+| `.agent/knowledge/troubleshooting-activities.md` | planning an activity where students find a hidden fault from evidence |
+| `.agent/knowledge/code-tracing.md` | authoring or editing a `data-fragment-trace` code trace |
+| `.agent/knowledge/readability-fixes.md` | a slide fails `audit.py` or looks wrong in a screenshot |
+| `.agent/knowledge/permalinks-and-projects.md` | adding, moving, or renaming a deck, or working on a repo-wide cleanup project |
+| `.agent/knowledge/syncdeck-runtime.md` | working in the `vendor/SyncDeck-Reveal/` submodule, or on storyboard, chalkboard, or iframe sync behavior |
+| `.agent/knowledge/agent-skills-subtree.md` | editing anything under `.agent/skills/vendor/syncdeck/` (a git subtree with its own push and pull steps) |
 
 ## Adding a New Presentation
 
@@ -146,59 +34,49 @@ Full message schema: `vendor/SyncDeck-Reveal/reveal-iframe-sync-message-schema.m
    URL at the top, so each deck that links it gets the fonts; a font that is named but never loaded
    silently falls back to whatever the viewer has installed. `node scripts/check-fonts.mjs` (run in CI)
    fails on any deck that uses a font it doesn't load.
-3. Load the bundled runtime with a relative path from the deck's published
-   location. For the current `Decks/<course>/<unit>/deck.html` layout, use
+3. Load the bundled runtime with a relative path from the deck's published location (`Decks/` is
+   remapped to the site root). For the current `Decks/<course>/<unit>/deck.html` layout, use
    `../../runtime/`:
    ```html
    <link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
    <script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
    ```
-   Use `initSyncDeckReveal(...)` from the bundled runtime instead of writing `Reveal.initialize(...)` inline. Use a unique `deckId` derived from the presentation filename (kebab-case). The bundle provides `Reveal`, `RevealNotes`, `RevealChalkboard`, `RevealIframeSync`, `initRevealStoryboard`, and `initSyncDeckReveal`. **Do not** add a `chalkboard.storage` value — the host manages drawing state.
-   ```js
-   initSyncDeckReveal({
-       deckId: 'your-deck-name', // kebab-case, unique per deck
-       iframeSyncOverrides: {
-           // Optional per-deck iframeSync overrides
-       },
-       revealOverrides: {
-           // Optional per-deck Reveal overrides
-       },
-       chalkboardOverrides: {
-           // Optional per-deck chalkboard overrides (no storage)
-       },
-       storyboard: {
-           // Optional: storyboardId / trackId / toggleKey
-       },
-       afterInit: function (Reveal) {
-           // Optional deck-specific hooks/listeners
-       },
-   });
+   Every deck also needs the storyboard markup inside `<body>`:
+   ```html
+   <div id="storyboard" class="storyboard" aria-hidden="true">
+       <div id="storyboard-track" class="storyboard-track"></div>
+   </div>
    ```
-4. Follow the architecture in `.agent/skills/vendor/syncdeck/SKILL.md` and the repo-specific overrides in `.agent/skills/syncdeck-local.md` — in particular:
-   - Apply theme colors with explicit CSS rules on `.reveal-viewport`, `.reveal`, `.reveal h1-h6`, etc. — **not** `--r-*` CSS variables (those only work with Reveal's bundled theme files)
-   - Use **`px`** for all font sizes and spacing in CSS custom properties (not `em`/`clamp`/`vw`) — Reveal scales the canvas via CSS transform; `em` values double-scale
-   - Never set `position` on `.reveal .slides > section` — Reveal needs `position: absolute` there for fade transitions; put padding/centering in a `.slide-inner` div inside each section instead
+   Initialize with `initSyncDeckReveal(...)`, never an inline `Reveal.initialize(...)`, using the
+   standard block in `.agent/skills/syncdeck-local.md` (section 5, with `standaloneHosting` and
+   `revealOverrides`). Use a unique `deckId` derived from the presentation filename (kebab-case).
+   Optional keys are `iframeSyncOverrides`, `chalkboardOverrides`, `storyboard` (`storyboardId`,
+   `trackId`, `toggleKey`), and `afterInit: function (Reveal) { ... }` for deck-specific hooks such
+   as starting a simulator loop. The bundle provides `Reveal`, `RevealNotes`, `RevealChalkboard`,
+   `RevealIframeSync`, `initRevealStoryboard`, and `initSyncDeckReveal`.
+   **Do not** add a `chalkboard.storage` value; the host manages drawing state.
+4. Follow the architecture in `.agent/skills/vendor/syncdeck/SKILL.md` and the repo-specific overrides in `.agent/skills/syncdeck-local.md`. In particular:
+   - Apply theme colors with explicit CSS rules on `.reveal-viewport`, `.reveal`, `.reveal h1-h6`, etc., **not** `--r-*` CSS variables (those only work with Reveal's bundled theme files)
+   - Use **`px`** for all font sizes and spacing in CSS custom properties (not `em`/`clamp`/`vw`); Reveal scales the canvas via CSS transform, so `em` values double-scale
+   - Never set `position` on `.reveal .slides > section`; Reveal needs `position: absolute` there for fade transitions, so put padding/centering in a `.slide-inner` div inside each section instead
 5. Check the style tokens for the chosen preset in `.agent/skills/STYLE_PRESETS_EXTENDED.md` (full library) or `.agent/skills/vendor/syncdeck/references/STYLE_PRESETS.md` (short reference).
 6. If the deck needs a custom interactive widget (drag-and-drop, a classification/matching exercise, a code trace, a timed prompt game, a scored scenario, etc.), check `.agent/knowledge/html5-activities-index.md` first for an existing engine to copy and re-skin before building one from scratch.
-7. Run `node scripts/generate-permalink.mjs Decks/<path>/<deck>.html` to give the new deck a stable permalink before committing. See "Presentation Permalinks" below. Then mark it done for the projects in `config/projects.json` it already meets (see "Project Tracking" below).
-8. If the deck has any `data-activity-options` blocks (resonance, mobcode, postboard, etc.), run
-   `python3 .agent/skills/vendor/syncdeck/scripts/validate-deck.py Decks/<path>/<deck>.html`
-   before considering the deck done. It checks that every activity's JSON actually parses,
-   catching the single-quote/apostrophe escaping bug: a raw `'` inside Python source or FRQ/MCQ
-   text will silently break the `data-activity-options='...'` HTML attribute unless it's written as
-   the HTML entity `&#39;` (both mobcode Python source and resonance question/option text must use
-   `&#39;` for any apostrophe or single-quote character; mobcode Python string literals should
-   otherwise prefer double quotes to sidestep the issue entirely). Re-run this validator after any
-   edit that touches activity JSON, not just on first creation.
-
-   If a deck uses `<!-- SLIDE NN · ... -->` comments (this is how you look up a slide by number),
-   the same validator also checks that every comment's number matches the flattened document-order
-   position of the `<section>` it precedes, which is what Reveal's `slideNumber: 'c/t'` actually
-   displays (nested vertical-stack children just count as later slides in that same flattened
-   order, so no separate h/v notation is needed). Inserting or deleting a slide shifts every
-   comment after it; don't renumber those by hand, run
-   `python3 .agent/skills/vendor/syncdeck/scripts/validate-deck.py Decks/<path>/<deck>.html --renumber`
-   instead.
+7. Run `node scripts/generate-permalink.mjs Decks/<path>/<deck>.html` to give the new deck a stable
+   permalink before committing, then mark it done for the projects in `config/projects.json` it
+   already meets with `node scripts/project-status.mjs mark <id> Decks/<path>/<deck>.html`. Never
+   hand-edit the `syncdeck-permalink` or `syncdeck-projects` meta tags or `config/permalinks.json`;
+   CI checks both. Details: `.agent/knowledge/permalinks-and-projects.md`.
+8. Run `python3 .agent/skills/vendor/syncdeck/scripts/validate-deck.py Decks/<path>/<deck>.html`
+   before considering the deck done, and again after any edit that touches activity JSON or slide
+   order. It checks two things:
+   - Every `data-activity-options` block (resonance, mobcode, postboard, etc.) must parse. A raw
+     `'` in Python source or FRQ/MCQ text silently breaks the `data-activity-options='...'`
+     attribute, so write every apostrophe or single quote as `&#39;`; mobcode Python string
+     literals should otherwise prefer double quotes.
+   - Every `<!-- SLIDE NN · ... -->` comment must match the flattened document-order position of
+     the `<section>` it precedes, which is what Reveal's `slideNumber: 'c/t'` displays (vertical
+     stack children count as later slides in that order). After inserting or deleting a slide,
+     run the validator with `--renumber` instead of renumbering by hand.
 9. Give every Resonance question a `responseTimeLimitMs` unless the user explicitly asks for an
    untimed question.
 10. Put embedded activities (`data-activity-id`, e.g. Resonance) only on dedicated question
@@ -223,96 +101,6 @@ redesign an existing one's mechanism, update the index in the same change, wheth
 happens on a brand-new deck or an edit to an existing one. Don't wait to be asked. A one-off
 trivial fragment reveal doesn't need an entry; a distinct, reusable interaction mechanism does.
 
-## Troubleshooting and Diagnosis Activities
-
-Activities where students find a hidden fault from evidence work well in every course, not just
-the hardware ones: a program with a bug, a circuit that misbehaves, a network that drops, a lab
-setup that gives bad data. When a topic has a "something is wrong, find out what" angle, suggest
-one. The AR2 AC Motors Day 5 Work Orders (`buildWorkOrders` in
-`Decks/AR2/ACMotors/Day5_Motor_Selection_and_Troubleshooting.html`, described in the activities
-index) is a worked example, but the engine won't fit every subject. Carry over the design, not
-necessarily the code:
-
-- **A hidden cause among several plausible ones.** Each scenario has three or four causes that all
-  fit the reported symptom. Deal them from a shuffled deck so that "new fault" shows every cause
-  once before any repeats; plain random picks repeat too often.
-- **Tests return evidence, not answers.** A test shows a reading (a meter value, an error message,
-  a log line, a variable's value), and only some tests read differently across the causes.
-  Irrelevant tests return real but unhelpful data, so students learn to choose tests that tell
-  the causes apart.
-- **Each test has a cost** (time, downtime, money) against a budget. Tune it so a careful path
-  finishes with time to spare and running every test does not fit. Give the unsafe or bad-practice
-  choices a cost on the same scale, and charge it, so a missing cost never gives them away.
-- **Unsafe or bad-practice choices sit beside the right ones.** Examples: working on live
-  equipment, editing production code, deleting data to make an error go away. They are never
-  carried out; they show a warning that names the hazard and the correct procedure, and they
-  count against safety in the record.
-- **Context with leads and noise.** A history log (recent changes, past failures) gives one
-  lead for each possible cause plus at least one entry that does not matter, oldest to newest. It
-  should point students to tests, not to answers.
-- **Rule out, diagnose, defend.** Students strike out the causes their evidence rules out, and
-  each strike earns credit only when one of their own readings actually rules that cause out.
-  They then choose a cause and a fix (include a distractor cause and a fix that hides the symptom
-  instead of curing it). Finally they tag the readings that support their diagnosis; that earns
-  credit only when the diagnosis is right.
-- **A record that scores each step and explains the cause:** key evidence, safety, ruling out,
-  diagnosis, fix, and defense, plus the cost used and a short explanation that ties the real
-  cause back to the lesson.
-
-## Presentation Permalinks
-
-Every deck under `Decks/` carries a `<meta name="syncdeck-permalink" content="<hash>">` tag,
-written once by `scripts/generate-permalink.mjs` and never hand-edited. The hash is derived
-from the deck's filename stem when first generated (with automatic collision resolution) and
-never changes afterward, even if the deck is later moved or renamed, so it's safe to share as
-a stable short link.
-
-- `config/permalinks.json` is the committed manifest (`hash -> { path, title }`) and the single
-  source of truth for collision detection.
-- `node scripts/generate-permalink.mjs Decks/<path>/<deck>.html` assigns a permalink to a new
-  deck, or re-syncs the manifest's cached path if an existing deck was moved.
-- `node scripts/generate-permalink.mjs --all` does the same across every deck; safe to re-run.
-- `node scripts/generate-permalink.mjs --check` (run in CI on every PR and before deploy) fails
-  if any deck is missing the tag, two decks share a hash, or the manifest disagrees with the
-  decks themselves.
-- At build time, `scripts/generate-permalink-redirects.mjs` emits a static redirect stub per
-  manifest entry at `/p/<hash>.html` that immediately `location.replace()`s to the deck's real,
-  current URL — this is what makes the permalink stable across reorganization.
-- The index pages (`scripts/site-indexes.mjs`) surface three links per deck: "Start as
-  instructor" and "Syncdeck link" (both ActiveBits-hosted, built from the deck's real current
-  URL) and "Permalink" (the short `/p/<hash>.html` link, safe to share or feed into the
-  ActiveBits launcher directly).
-
-## Project Tracking
-
-Repo-wide cleanup projects (for example #11, readability, and #13, em dashes) are tracked per
-deck with a `<meta name="syncdeck-projects" content="<id> <id>">` tag listing the projects the
-deck is **done** for. A project missing from the list is not done yet. The tag sits right after
-the permalink tag; edit it with the script below rather than by hand.
-
-- `config/projects.json` is the registry: `id -> { title, issue, symbol, scope?, complete? }`. `symbol` is
-  the short badge text shown on the index pages, and the optional `scope` is a list of public
-  path prefixes (`"CSP/"`, `"HPy/Unit 2 - Loops and Strings/"`) the project applies to; omit it
-  for projects that cover every deck. To start a new project, add an entry there.
-- When a project is finished, set `"complete": true` on its entry rather than deleting it. Its id
-  stays valid in deck tags (so `--check` still passes without touching every deck), but the index
-  pages drop its badge and filter, the report skips it unless it's named, and `mark`/`unmark`
-  refuse it. Remove `complete` to reopen the project.
-- `node scripts/project-status.mjs mark <id> Decks/<path>/<deck>.html ...` marks decks done;
-  `unmark` reverses it. Mark a deck in the same commit as the work that finishes it.
-- `node scripts/project-status.mjs [<id>...] [--pending|--done] [--under <path>]` prints
-  done/total per course, and with `--pending` or `--done` lists the matching decks.
-- `node scripts/project-status.mjs --check` (run in CI next to the permalink check) fails on
-  unknown project ids or a deck marked done for a project outside its scope.
-- The index pages show one badge per applicable project on each deck (solid when done, dashed
-  when not) and a filter for project and status on every folder page. The filter is kept in the
-  query string (`?project=<id>&status=pending`), so a filtered view of a subtree can be shared
-  as a link and stays applied when moving between folder pages.
-- A new deck built to the current rules should be marked done for every registered project it
-  already satisfies. Completed projects are the exception: don't add their ids to new decks.
-
----
-
 ## Key Architecture Notes
 
 | Rule | Why |
@@ -330,68 +118,6 @@ the permalink tag; edit it with the script below rather than by hand.
 | Load every font you name | A font that is named in `font-family` but never loaded falls back to the viewer's installed fonts, so text widths, wrapping, and overflow differ from machine to machine, and a slide that fits on one screen spills over on another. `scripts/check-fonts.mjs` (CI) checks the first family of every declaration against Google Fonts links/imports, `@font-face`, and a short list of fonts every OS ships. |
 | Never hand-edit `syncdeck-permalink` meta tag or `config/permalinks.json` | The hash is generated once by `scripts/generate-permalink.mjs` and must stay stable across moves/renames. CI (`--check`) fails if a deck's tag and the manifest disagree. |
 
-## Readability Fixes That Worked
-
-These came out of the size, contrast, and fit work (issue #11). They aren't
-rules, but they fix the problems that come up most often when a slide fails
-`audit.py` or looks wrong in a screenshot.
-
-- **Dimming:** never dim code with `opacity`. It multiplies already-dim
-  tokens (comments, line numbers) below 4.5:1. Give not-yet-run trace lines
-  one uniform `--text-dim` color, and keep completed lines at about 0.8
-  opacity at most. Use `--text-dim` only for intentionally dimmed text, never
-  for labels, captions, console output, or side notes; those need 7:1.
-- **Tinted backgrounds:** check muted text against the darkest tinted callout
-  the theme uses, not just `--bg-card`.
-- **Code cards:** set `flex-shrink: 0` on code cards inside flex columns, or
-  they clip their last line silently. When 24px code runs out of height,
-  prefer K&R braces over Allman, and size console cards to their longest
-  line instead of a fixed width.
-- **Splits:** give the wider column to whatever actually needs width (a
-  schematic or code, rarely calculation steps). With larger text, widen the
-  text side of a `.split-40` (e.g. `1.35fr 1fr`) and cap image heights. On
-  trace slides, putting the code on the right at full height with the console
-  under the explanation usually fits.
-- **Content below a split:** a callout placed after a `.split` can overlap
-  it. Move it into the column with spare room, or set the split to
-  `flex: 0 0 auto` so the new row gets its own space.
-- **Fragment order:** unindexed fragments come after all indexed ones. After
-  moving fragments between columns, check the reveal order, and give every
-  fragment on the slide an explicit `data-fragment-index` if needed (or swap
-  the columns so they read left first).
-- **Splitting and shortening:** split slides that cover two ideas (two `<h2>`s
-  is a strong sign) and run `validate-deck.py --renumber` afterward.
-  Tightening wording is a legitimate fix before any layout change.
-- **Diagrams:** redraw low-resolution raster diagrams with CSS-positioned
-  labels as inline SVG with labels at ≥22px rendered. If labels collide,
-  give the diagram more room; enlarging it alone doesn't help. Crop the
-  blank margins of any raster image you keep so it can render larger.
-- **MCQ options:** flex-layout options split text around inline code into
-  separate columns. Use block layout with a hanging indent instead.
-- **Interactive widgets that jump:** reserve space instead of toggling it
-  (`visibility: hidden`, not `display: none`), give feedback boxes a fixed
-  height sized for the longest message (computed from the data for
-  randomized widgets), give status chips a `min-width` in `ch`, use
-  `table-layout: fixed` for logs whose cells fill in, top-align columns that
-  change height (`align-items: start`), and set `min-height` on
-  variable-length prompts to exactly lines × line-height. Panels with
-  `overflow: auto` hide content on a projector; use an accordion or pager
-  instead (see the "Accordion variant" in the activities index). Put feedback
-  beside its button in a flex row rather than under an absolutely positioned
-  button.
-- **`text-indent` is inherited:** a hanging indent shifts every inline-block
-  inside it. Reset it on children (`.x * { text-indent: 0; }`).
-
-## Code Tracing Convention
-
-Decks that trace code execution line-by-line (`data-fragment-trace` sections driving `.code-line.current`/`.done`/`.pending`/`.active-call` highlighting) must follow this rule:
-
-**The highlighted "current" line always indicates the next line about to execute, not the line that just ran.** A line's effects (a `print()` writing to the console, an assignment populating a var-box, a function call returning to its call site) must not be revealed on the fragment that arrives at that line. They are revealed only on the fragment where the caret moves past it, i.e. one step later, when the following line becomes current.
-
-A line that raises an exception never completes, so the caret never advances past it. Its effect (the traceback) is revealed on a later fragment that keeps `data-trace-current` pointing at that same crashing line rather than a following one, since there is no line the program reached afterward.
-
-This applies uniformly to console output, variable assignment, and function-return-to-call-site reveals. When authoring or editing a `data-fragment-trace` section, structure fragments so that any line producing an observable effect fires a hidden fragment on arrival (`data-trace-current="N"` with no visible content) followed by the visible reveal on the fragment that advances `data-trace-current` to `N+1` (using a virtual line number past the end of the snippet if there is no real next line, or reusing `N` if the line crashes instead of completing).
-
 ## Writing Style
 
 - **No em dashes (—).** Always substitute context-appropriate punctuation: colon for introductory/defining clauses, comma for parenthetical asides or conjunctions, semicolon for contrasting independent clauses, period for abrupt follow-up sentences.
@@ -399,6 +125,16 @@ This applies uniformly to console output, variable assignment, and function-retu
 - **Inline color emphasis over bullets.** Prefer prose sentences with key terms highlighted via a theme color span (e.g. `<span style="color:var(--phosphor);">`) over bullet lists. Check the deck's theme for available color tokens before writing spans. Color-pop the term or phrase that carries the weight of the sentence, not the whole sentence. Use `.bullets` lists only when the items are genuinely enumerable and parallel; otherwise, fold the ideas into sentences and let inline emphasis do the work of drawing the eye. Keep color usage semantically consistent within a deck: if one color is used for a concept (e.g. a keyword, a class name, an action), use that same color for the same concept throughout the presentation.
 - **Interactivity**: use Reveal's built-in interactivity features (fragments, nested sections, etc.) to pace the information flow and keep students engaged. Avoid overwhelming slides with too much information at once. Use syncdeck's embedded activities to encourage active learning and exploration. Embedded activities hide the slide content while they run, so give each one its own question slide (see step 10 above).
 - **No clever paired-phrase slide titles.** Avoid the "X, Y" cutesy-contrast construction (e.g. "Three Stages, One Habit", "One STEP Bus, Not Four NOTs"). Prefer a direct, descriptive title that plainly states what the slide is about (e.g. "The Build Process", "The STEP Bus").
+- **Troubleshooting activities where they fit.** When a topic has a "something is wrong, find out
+  what" angle (a bug, a faulty circuit, a failing setup), prefer an activity where students find
+  a hidden fault from evidence over another observe-and-explain simulator. Build it to the
+  principles in `.agent/knowledge/troubleshooting-activities.md`.
+
+## Code Tracing
+
+On `data-fragment-trace` slides the highlighted "current" line is always the **next line about to
+execute**, not the line that just ran; a line's effects appear one step later. The full convention,
+including crashing lines, is in `.agent/knowledge/code-tracing.md`.
 
 ## Local Preview
 
@@ -427,6 +163,9 @@ devcontainer; a throwaway virtualenv elsewhere) and usage.
 
 The audit measures but does not judge. Pair it with screenshots, and for
 interactive widgets, drive every state (see "Stability checks" in the README).
+
+When a slide fails the audit or looks wrong, `.agent/knowledge/readability-fixes.md` collects the
+fixes that have worked (dimming, splits, code cards, widgets that jump, and more).
 
 ## PDF Image Extraction Helper
 
