@@ -5,7 +5,7 @@ import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 
 import { buildIndexPages, defaultTitleForFile, isDocumentFile, permalinkHashForFile } from './site-indexes.mjs';
-import { markdownToHtmlPath, renderDocumentFile } from './markdown-pages.mjs';
+import { markdownSourceFor, renderDocumentFile } from './markdown-pages.mjs';
 import { loadManifest, redirectHtml, toRedirectTarget } from './permalink-utils.mjs';
 import { completedProjectsForFile, loadProjects } from './project-utils.mjs';
 import {
@@ -121,8 +121,7 @@ async function sourceForPublicPath(publicPath, mounts) {
   if (!sourcePath || !sourcePath.toLowerCase().endsWith('.html') || (await exists(sourcePath))) {
     return sourcePath;
   }
-  const markdownPath = sourcePath.replace(/\.html$/i, '.md');
-  return (await exists(markdownPath)) ? markdownPath : sourcePath;
+  return (await markdownSourceFor(sourcePath)) || sourcePath;
 }
 
 // Manifest rules apply to a document's Markdown source: a request for a
@@ -130,8 +129,9 @@ async function sourceForPublicPath(publicPath, mounts) {
 // `include plan.md` rule allows it and an `exclude plan.md` rule hides it.
 async function exclusionPathFor(repoRelative, absolutePath) {
   if (repoRelative.toLowerCase().endsWith('.html') && !(await exists(absolutePath))) {
-    if (await exists(absolutePath.replace(/\.html$/i, '.md'))) {
-      return repoRelative.replace(/\.html$/i, '.md');
+    const markdownPath = await markdownSourceFor(absolutePath);
+    if (markdownPath) {
+      return path.posix.join(path.posix.dirname(repoRelative), path.basename(markdownPath));
     }
   }
   return repoRelative;
@@ -411,11 +411,12 @@ async function main() {
       res.end(`Not found: ${pathname}`);
       return;
     }
-    if (finalExt === '.html' && !(await exists(finalSourcePath))) {
-      const markdownRepoRelative = finalRepoRelative.replace(/\.html$/i, '.md');
-      const markdownPath = finalSourcePath.replace(/\.html$/i, '.md');
-      if (markdownToHtmlPath(markdownRepoRelative) === finalRepoRelative &&
-          !isExcluded(markdownRepoRelative, false) && (await exists(markdownPath))) {
+    const markdownPath = finalExt === '.html' && !(await exists(finalSourcePath))
+      ? await markdownSourceFor(finalSourcePath)
+      : null;
+    if (markdownPath) {
+      const markdownRepoRelative = path.posix.join(path.posix.dirname(finalRepoRelative), path.basename(markdownPath));
+      if (!isExcluded(markdownRepoRelative, false)) {
         try {
           const page = await renderDocumentFile(markdownPath);
           res.writeHead(200, {

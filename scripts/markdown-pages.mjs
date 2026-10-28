@@ -52,9 +52,28 @@ function plainText(markdown) {
 
 // The first level 1 heading, or the file name.
 export function titleFromMarkdown(source, filePath) {
-  const match = source.match(/^#\s+(.+?)\s*#*\s*$/m);
+  // A closing run of # only counts after whitespace, so `# C#` keeps its #.
+  const match = source.match(/^#\s+(.+?)(?:\s+#+)?\s*$/m);
   const title = match ? plainText(match[1]) : '';
   return title || path.basename(filePath, path.extname(filePath)).replace(/[-_]/g, ' ').trim();
+}
+
+// The Markdown file a generated `plan.html` comes from: `plan.md` with any
+// case of extension (`plan.MD` publishes as `plan.html` too), or null.
+export async function markdownSourceFor(htmlPath) {
+  if (!htmlPath.toLowerCase().endsWith('.html')) {
+    return null;
+  }
+  const dir = path.dirname(htmlPath);
+  const stem = path.basename(htmlPath).slice(0, -'.html'.length);
+  try {
+    const match = (await fs.readdir(dir)).find(
+      (name) => name.length === stem.length + 3 && name.startsWith(stem) && name.slice(stem.length).toLowerCase() === '.md'
+    );
+    return match ? path.join(dir, match) : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function titleForMarkdownFile(filePath) {
@@ -133,7 +152,9 @@ function renderContents(headings) {
   if (sections.length < 2) {
     return '';
   }
-  const link = (item) => `<a href="#${item.id}">${item.html}</a>`;
+  // A heading's own links are dropped from its contents entry, so the entry
+  // is one link to the section instead of a link nested inside a link.
+  const link = (item) => `<a href="#${item.id}">${item.html.replace(/<\/?a\b[^>]*>/gi, '')}</a>`;
   const items = sections.map((section) => {
     const children = section.children.length
       ? `\n<ol class="sub">${section.children.map((child) => `<li>${link(child)}</li>`).join('')}</ol>`
