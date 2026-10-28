@@ -43,9 +43,14 @@ without turning every activity into a game.
 The Generator Lab already fits discovery: students change construction (windings,
 poles, field, speed) and find the relationships themselves.
 
-- [ ] Reread the task pager so every task asks students to find a relationship,
-  not just to observe one (optional polish only).
-- [ ] Drop "· Simplified educational model" from the slide 12 tag.
+- [x] Reread the task pager so every task asks students to find a relationship,
+  not just to observe one (optional polish only). Tasks A to G (slide 11 and
+  the slide 12 pager) now ask how speed sets frequency, how speed sets peak
+  voltage, what the field changes (voltage, not frequency), what 4 poles change
+  at one speed, how far apart the three peaks arrive (back at 2 poles, so the
+  answer is 120°), how direction sets the peak order, and how adding phases
+  steadies total power. Field and Poles had no task before.
+- [x] Drop "· Simplified educational model" from the slide 12 tag.
 
 ---
 
@@ -307,4 +312,4 @@ None right now. Add new ones here as they come up during the build.
 - [x] Day 3: Control Room missions
 - [x] Day 4: Head to Head
 - [x] Day 5: Diagnostic Mystery
-- [ ] Day 1: optional task polish
+- [x] Day 1: optional task polish
