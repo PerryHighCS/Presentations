@@ -142,6 +142,7 @@ export const PAGE_STYLE = `
   .file-actions a { color: inherit; }
   .file-actions a:hover { color: var(--accent); text-decoration: underline; }
   .file-actions .sep { color: #3d537e; }
+  .file-actions button.copy-url { align-self: center; margin-left: -2px; }
   .tree li.group { margin: 6px 0 2px; }
   .tree li.group + li.group { margin-top: 14px; }
   .group-label {
@@ -173,16 +174,22 @@ export const PAGE_STYLE = `
   .tree button.copy-url.failed { color: #ff8a80; }
   .tree button.copy-url:disabled { cursor: default; }
   .tree button.copy-url-labeled { gap: 4px; }
-  .file-actions a.open-new {
+  /* Each row leads with its open-in-a-new-window link, which doubles as the
+     bullet; the wrapper keeps it on the same line as the title. */
+  .file-main { display: inline-flex; align-items: baseline; gap: 8px; }
+  .file-main button.copy-url { align-self: center; }
+  .tree a.open-new {
     display: inline-flex;
     align-items: center;
-    margin-left: -2px;
+    align-self: center;
     padding: 2px;
     line-height: 0;
     border-radius: 4px;
+    color: var(--muted);
   }
-  .file-actions a.open-new svg { width: 14px; height: 14px; display: block; }
-  .file-actions a.open-new:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+  .tree a.open-new:hover { color: var(--accent); }
+  .tree a.open-new svg { width: 14px; height: 14px; display: block; }
+  .tree a.open-new:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
   .tree li[hidden] { display: none; }
   .project-chips { display: inline-flex; gap: 4px; }
   .project-chip {
@@ -612,8 +619,10 @@ function renderTree(node, indent = '      ', pathPrefix = '', pageDepth = 0, pro
     for (const file of documents) {
       const relativeHref = `${pathPrefix}${file.name}`;
       lines.push(
-        `${fileIndent}<li class="file document"><a href="${escapeHtml(relativeHref)}">${escapeHtml(file.title)}</a>` +
-          `<button type="button" class="copy-url" data-copy-path="${escapeHtml(relativeHref)}" aria-label="Copy document URL" title="Copy URL">${ICON_COPY}</button></li>`
+        `${fileIndent}<li class="file document"><span class="file-main">` +
+          `<a href="${escapeHtml(relativeHref)}" class="open-new" target="_blank" rel="noopener" aria-label="Open ${escapeHtml(file.title)} in a new window" title="Open in a new window">${ICON_NEW_WINDOW}</a>` +
+          `<a href="${escapeHtml(relativeHref)}">${escapeHtml(file.title)}</a>` +
+          `<button type="button" class="copy-url" data-copy-path="${escapeHtml(relativeHref)}" aria-label="Copy document URL" title="Copy URL">${ICON_COPY}</button></span></li>`
       );
     }
     closeGroup();
@@ -635,12 +644,18 @@ function renderTree(node, indent = '      ', pathPrefix = '', pageDepth = 0, pro
       ? ` data-applies="${escapeHtml(applies.join(' '))}" data-done="${escapeHtml(done.join(' '))}"`
       : '';
     lines.push(
-      `${fileIndent}<li class="file"${projectAttrs}><a href="${escapeHtml(relativeHref)}">${escapeHtml(file.title)}</a>` +
-        `<button type="button" class="copy-url" data-copy-path="${escapeHtml(relativeHref)}" aria-label="Copy presentation URL" title="Copy URL">${ICON_COPY}</button>` +
+      // The icon and the title both start the deck as instructor in a new
+      // window (the launch script fills in the ActiveBits URL; until then they
+      // open the deck). The icon is hidden from assistive tech and the tab
+      // order so each row announces that link once. "Plain deck" opens the
+      // deck page itself, with the copy button for its URL.
+      `${fileIndent}<li class="file"${projectAttrs}><span class="file-main">` +
+        `<a href="${escapeHtml(relativeHref)}" class="open-new" data-launch="instructor" data-launch-path="${escapeHtml(relativeHref)}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true" title="Start as instructor in a new window">${ICON_NEW_WINDOW}</a>` +
+        `<a href="${escapeHtml(relativeHref)}" data-launch="instructor" data-launch-path="${escapeHtml(relativeHref)}" target="_blank" rel="noopener" title="Start as instructor in a new window">${escapeHtml(file.title)}</a></span>` +
         renderProjectChips(file, projects) +
         `<span class="file-actions">` +
-        `<a href="#" data-launch="instructor" data-launch-path="${escapeHtml(relativeHref)}">Start as instructor</a>` +
-        `<a href="#" class="open-new" data-launch="instructor" data-launch-path="${escapeHtml(relativeHref)}" target="_blank" rel="noopener" aria-label="Start as instructor in a new window" title="Start as instructor in a new window">${ICON_NEW_WINDOW}</a>` +
+        `<a href="${escapeHtml(relativeHref)}">Plain deck</a>` +
+        `<button type="button" class="copy-url" data-copy-path="${escapeHtml(relativeHref)}" aria-label="Copy deck URL" title="Copy deck URL">${ICON_COPY}</button>` +
         `<span class="sep">&middot;</span>` +
         `<a href="#" data-launch="syncdeck" data-launch-path="${escapeHtml(syncdeckLaunchPath)}">Syncdeck link</a>` +
         (permalinkHref
