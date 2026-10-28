@@ -94,7 +94,9 @@ function slugify(text) {
 // Renders a Markdown document to its HTML body plus every heading after the
 // title, for the contents list.
 function renderBody(source, Marked) {
-  const usedIds = new Set();
+  // Ids the page itself uses are reserved, so a heading such as
+  // "## Markdown source" can never collide with them.
+  const usedIds = new Set(['markdown-source', 'copy-menu']);
   const headings = [];
   let titleSeen = false;
   const marked = new Marked({ gfm: true });
@@ -292,12 +294,29 @@ const COPY_SCRIPT = `
     return node.innerHTML;
   }
 
+  // A range's cloned contents leave out the elements around it, so a
+  // selection inside a link or a code block would lose them. Rebuild those
+  // enclosing elements (link, code, paragraph, list item, table cell, ...)
+  // up to the document's <main>.
+  function cloneWithAncestors(range) {
+    let content = range.cloneContents();
+    let node = range.commonAncestorContainer;
+    if (node.nodeType !== Node.ELEMENT_NODE) node = node.parentNode;
+    while (node && node !== main && main.contains(node)) {
+      const shell = node.cloneNode(false);
+      shell.appendChild(content);
+      content = shell;
+      node = node.parentNode;
+    }
+    return content;
+  }
+
   document.addEventListener('copy', (event) => {
     const selection = document.getSelection();
     if (!selection || selection.isCollapsed || !event.clipboardData) return;
     const holder = document.createElement('div');
     for (let i = 0; i < selection.rangeCount; i++) {
-      holder.appendChild(selection.getRangeAt(i).cloneContents());
+      holder.appendChild(cloneWithAncestors(selection.getRangeAt(i)));
     }
     event.clipboardData.setData('text/html', cleanHtml(holder));
     event.clipboardData.setData('text/plain', selection.toString());
@@ -348,7 +367,7 @@ const COPY_SCRIPT = `
     const range = kind === 'auto' ? pressedRange || selectedRange() : null;
     if (range) {
       const holder = document.createElement('div');
-      holder.appendChild(range.cloneContents());
+      holder.appendChild(cloneWithAncestors(range));
       await write(cleanHtml(holder), range.toString());
     } else {
       await write(cleanHtml(main.cloneNode(true)), markdown);
