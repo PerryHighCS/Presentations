@@ -197,6 +197,20 @@ export const DOCUMENT_STYLE = `
   }
   .bar a { color: var(--accent); text-decoration: none; font-weight: 600; }
   .bar a:hover, .bar a:focus-visible { text-decoration: underline; }
+  .bar .copy-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+  .bar button {
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .bar button:hover { border-color: var(--accent); }
+  .bar button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   main { max-width: 52rem; margin: 0 auto; padding: 24px clamp(16px, 4vw, 40px) 64px; }
   h1, h2, h3, h4 { line-height: 1.25; margin: 1.6em 0 0.5em; scroll-margin-top: 64px; }
   h1 { font-size: 2em; margin-top: 0.4em; }
@@ -238,6 +252,70 @@ export const DOCUMENT_STYLE = `
   }
 `;
 
+// Browsers copy a selection with every element's computed styles inlined,
+// so pasted text arrives with fonts, colors, and margins baked in. This puts
+// clean HTML (tags only, no style, class, or id attributes) on the clipboard
+// for an ordinary copy, and powers the bar's Copy page and Copy Markdown
+// buttons. Plain-text pastes of the whole page get the Markdown source.
+const COPY_SCRIPT = `
+(() => {
+  const main = document.querySelector('main');
+  const markdown = JSON.parse(document.getElementById('markdown-source').textContent);
+
+  function cleanHtml(node) {
+    node.querySelectorAll('nav.contents').forEach((nav) => nav.remove());
+    node.querySelectorAll('*').forEach((el) => {
+      el.removeAttribute('style');
+      el.removeAttribute('class');
+      el.removeAttribute('id');
+    });
+    return node.innerHTML;
+  }
+
+  document.addEventListener('copy', (event) => {
+    const selection = document.getSelection();
+    if (!selection || selection.isCollapsed || !event.clipboardData) return;
+    const holder = document.createElement('div');
+    for (let i = 0; i < selection.rangeCount; i++) {
+      holder.appendChild(selection.getRangeAt(i).cloneContents());
+    }
+    event.clipboardData.setData('text/html', cleanHtml(holder));
+    event.clipboardData.setData('text/plain', selection.toString());
+    event.preventDefault();
+  });
+
+  async function write(html, text) {
+    if (html && window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([text], { type: 'text/plain' }),
+      })]);
+    } else {
+      await navigator.clipboard.writeText(text);
+    }
+  }
+
+  document.querySelectorAll('[data-copy]').forEach((button) => {
+    const label = button.textContent;
+    button.addEventListener('click', async () => {
+      // Keep the button's width while its label reads Copied.
+      button.style.minWidth = button.offsetWidth + 'px';
+      try {
+        if (button.dataset.copy === 'page') {
+          await write(cleanHtml(main.cloneNode(true)), markdown);
+        } else {
+          await write(null, markdown);
+        }
+        button.textContent = 'Copied';
+      } catch {
+        button.textContent = 'Copy failed';
+      }
+      setTimeout(() => { button.textContent = label; }, 1500);
+    });
+  });
+})();
+`;
+
 // Renders a complete document page. `backHref` points at the folder's index
 // page, relative to the page itself.
 export async function renderDocumentPage(source, { filePath, backHref = 'index.html', backLabel = 'Back to folder' } = {}) {
@@ -260,10 +338,16 @@ export async function renderDocumentPage(source, { filePath, backHref = 'index.h
 <body>
   <header class="bar">
     <a href="${escapeHtml(backHref)}">&larr; ${escapeHtml(backLabel)}</a>
+    <span class="copy-buttons">
+      <button type="button" data-copy="page" title="Copy the document as clean formatted text">Copy page</button>
+      <button type="button" data-copy="markdown" title="Copy the document's Markdown source">Copy Markdown</button>
+    </span>
   </header>
   <main>
 ${withContents}
   </main>
+  <script type="application/json" id="markdown-source">${JSON.stringify(source).replace(/</g, '\\u003c')}</script>
+  <script>${COPY_SCRIPT}</script>
 </body>
 </html>
 `;
