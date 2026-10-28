@@ -6,6 +6,10 @@ export const siteMounts = [
   {
     publicPath: '/',
     sourcePath: 'Decks',
+    // Markdown files here are published as document pages, such as lesson
+    // plans (`plan.md` is served as `plan.html`); see scripts/markdown-pages.mjs. Keep notes that
+    // should not be public out of Decks/, or exclude them in .pages-manifest.
+    markdownPages: true,
   },
 ];
 

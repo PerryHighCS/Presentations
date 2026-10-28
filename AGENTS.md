@@ -146,6 +146,26 @@ including crashing lines, is in `.agent/knowledge/code-tracing.md`.
   normal deck work.
 - Do not kill a running dev server unless requested.
 
+## Documents (Markdown Pages)
+
+Every Markdown file under `Decks/` is published as a document page, such as a lesson plan:
+`plan.md` becomes `plan.html` beside the decks, both at deploy time (`scripts/stage-site.mjs`) and on
+request in the dev server, using one shared renderer (`scripts/markdown-pages.mjs`). The index pages
+list a folder's documents under "Documents", above its "Slide Decks", without presentation links.
+Because of that:
+
+- Markdown under `Decks/` is public. Keep working notes, outlines, and agent plans elsewhere (for
+  example `.agent/plans/`), or exclude a file with an `exclude` rule in `.pages-manifest`.
+- Separate blocks (paragraphs, lists, code, tables, `---` dividers) with blank lines. Lines without a
+  blank line between them merge into one paragraph, and text directly above `---` turns into a
+  heading. Start the document with one `#` title. The contents list shows the next two heading
+  levels below it (for example each `##` section with its `###` parts listed underneath).
+- A document cannot share a name with a deck in the same folder; staging fails if `plan.md` would
+  overwrite `plan.html`. `index.md` is reserved too, because `index.html` is each folder's
+  generated listing.
+- The dev server loads the renderer when it starts, so restart it after changing
+  `scripts/markdown-pages.mjs`.
+
 ## Agent Tools (Checking Decks in a Browser)
 
 `.agent/tools/` holds Playwright scripts for checking decks against the dev

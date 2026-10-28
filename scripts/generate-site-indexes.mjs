@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildIndexPages, defaultTitleForFile, permalinkHashForFile } from './site-indexes.mjs';
+import { buildIndexPages, defaultTitleForFile, isDocumentFile, permalinkHashForFile } from './site-indexes.mjs';
 import { completedProjectsForFile, loadProjects } from './project-utils.mjs';
 import { createExclusionChecker, loadManifestRules } from './site-utils.mjs';
 
@@ -49,7 +49,8 @@ async function main() {
     {
       projects: await loadProjects(rootDir),
       getCompletedProjectsForPublicPath: async (publicPath) => completedProjectsForFile(path.join(siteDir, publicPath)),
-    }
+    },
+    async (publicPath) => isDocumentFile(path.join(siteDir, publicPath))
   );
 
   for (const [relativePath, html] of pages) {

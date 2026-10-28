@@ -49,6 +49,7 @@ export function normalizeMount(mount) {
   return {
     publicPath,
     sourcePath,
+    markdownPages: Boolean(mount.markdownPages),
   };
 }
 
@@ -182,6 +183,11 @@ export async function loadManifestRules(rootDir, options = {}) {
 }
 
 export function createExclusionChecker(rootDir, manifestRules) {
+  // Markdown is only published from mounts that render it as documents.
+  const markdownRoots = getNormalizedMounts()
+    .filter((mount) => mount.markdownPages)
+    .map((mount) => mount.sourcePath);
+
   return function isExcluded(relPath, isDir) {
     const relPosix = typeof relPath === 'string' ? relPath : toPosix(relPath);
     const parts = relPosix.split('/').filter(Boolean);
@@ -189,7 +195,11 @@ export function createExclusionChecker(rootDir, manifestRules) {
     if (parts.some((part) => defaultDirExcludes.has(part))) {
       return true;
     }
-    if (!isDir && relPosix.toLowerCase().endsWith('.md')) {
+    if (
+      !isDir &&
+      relPosix.toLowerCase().endsWith('.md') &&
+      !markdownRoots.some((root) => pathIsWithin(relPosix, root))
+    ) {
       return true;
     }
     if (defaultFileExcludes.has(path.posix.basename(relPosix))) {
@@ -273,13 +283,17 @@ export async function walkMountedFiles(rootDir, manifestRules, onFile) {
   }
 }
 
+// Public .html paths of every page, including the pages that Markdown
+// documents will be published as.
 export async function collectHtmlFiles(rootDir, manifestRules) {
-  const htmlFiles = [];
+  const htmlFiles = new Set();
   await walkMountedFiles(rootDir, manifestRules, async (file) => {
-    if (file.publicRelativePath.toLowerCase().endsWith('.html')) {
-      htmlFiles.push(file.publicRelativePath);
+    const lower = file.publicRelativePath.toLowerCase();
+    if (lower.endsWith('.html')) {
+      htmlFiles.add(file.publicRelativePath);
+    } else if (lower.endsWith('.md')) {
+      htmlFiles.add(file.publicRelativePath.replace(/\.md$/i, '.html'));
     }
   });
-  htmlFiles.sort((a, b) => a.localeCompare(b));
-  return htmlFiles;
+  return [...htmlFiles].sort((a, b) => a.localeCompare(b));
 }
