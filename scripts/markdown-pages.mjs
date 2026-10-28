@@ -6,7 +6,13 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import { Marked } from 'marked';
+// `marked` is loaded only when a page is rendered, so the path and title
+// helpers here also work in jobs that run without `npm ci` (the PR checks).
+let MarkedClass = null;
+async function loadMarked() {
+  MarkedClass ??= (await import('marked')).Marked;
+  return MarkedClass;
+}
 
 // Marks a generated page so the index pages list it under Documents rather
 // than Slide Decks (no launch links, permalinks, or project badges).
@@ -68,7 +74,7 @@ function slugify(text) {
 
 // Renders a Markdown document to its HTML body plus every heading after the
 // title, for the contents list.
-function renderBody(source) {
+function renderBody(source, Marked) {
   const usedIds = new Map();
   const headings = [];
   let titleSeen = false;
@@ -209,9 +215,9 @@ export const DOCUMENT_STYLE = `
 
 // Renders a complete document page. `backHref` points at the folder's index
 // page, relative to the page itself.
-export function renderDocumentPage(source, { filePath, backHref = 'index.html', backLabel = 'Back to folder' } = {}) {
+export async function renderDocumentPage(source, { filePath, backHref = 'index.html', backLabel = 'Back to folder' } = {}) {
   const title = titleFromMarkdown(source, filePath || 'Document');
-  const { body, headings } = renderBody(source);
+  const { body, headings } = renderBody(source, await loadMarked());
   const contentsHtml = renderContents(headings);
   // The contents list follows the title, or opens the page if it has none.
   const withContents = /<\/h1>\n/.test(body)
