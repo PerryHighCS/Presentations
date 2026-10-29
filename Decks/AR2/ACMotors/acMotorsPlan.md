@@ -2,6 +2,8 @@
 
 **Honors Automation and Robotics 2 · 5 class periods · 45 minutes per class**
 
+**Handouts:** [5 Day Note and Activity Records](https://drive.google.com/drive/u/0/folders/1kqLczxVce_jvGuFmFFz3nXYnz7ofPv43)
+
 **The central question for the week will be:**
 How do engineers generate electrical power, turn that power into controlled motion, and select the right motor for an industrial application?
 
