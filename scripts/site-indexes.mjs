@@ -75,7 +75,27 @@ export const PAGE_STYLE = `
   }
   h1 { margin: 0 0 8px; font-size: 1.7rem; }
   p { margin: 0 0 18px; color: var(--muted); }
-  .generated { margin: 18px 0 0; color: var(--muted); font-size: 0.92rem; }
+  .page-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    margin: 18px 0 0;
+  }
+  .generated { margin: 0; color: var(--muted); font-size: 0.92rem; }
+  .filter-toggle {
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  .filter-toggle:hover { color: var(--text); }
+  .filter-toggle[aria-expanded="true"], .filter-toggle.active { color: var(--text); border-color: var(--accent); }
   .back { display: block; margin: 0 0 18px; font-size: 0.92rem; }
   .back a { color: var(--muted); }
   ul { margin: 0; }
@@ -201,7 +221,9 @@ export const PAGE_STYLE = `
     margin-left: auto;
     width: calc(var(--chip-slots, 1) * 2rem + (var(--chip-slots, 1) - 1) * 4px);
   }
-  .project-chips + .file-actions { margin-left: 0; }
+  /* Status chips show only while the projects panel is open. */
+  .projects-open .project-chips + .file-actions { margin-left: 0; }
+  .wrap:not(.projects-open) .project-chips { display: none; }
   .tree .project-chip { width: 2rem; min-width: 0; padding: 0; text-align: center; }
   .project-chip {
     display: inline-block;
@@ -354,7 +376,18 @@ export const PAGE_SCRIPT = `
       const projectSelect = document.getElementById('project-filter');
       const statusSelect = document.getElementById('status-filter');
       const summary = document.getElementById('projects-summary');
+      const panel = document.getElementById('projects-panel');
+      const toggle = document.getElementById('filter-toggle');
       if (!projectSelect || !statusSelect) return;
+
+      // The panel and the rows' status chips start collapsed behind the
+      // footer's Projects button.
+      function setPanelOpen(open) {
+        panel.hidden = !open;
+        panel.closest('.wrap').classList.toggle('projects-open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+      }
+      toggle.addEventListener('click', () => setPanelOpen(panel.hidden));
 
       const files = [...document.querySelectorAll('.tree li.file')];
       const folders = [...document.querySelectorAll('.tree li.folder')];
@@ -376,6 +409,8 @@ export const PAGE_SCRIPT = `
         const project = projectSelect.value;
         const status = statusSelect.value;
         statusSelect.disabled = !project;
+        toggle.classList.toggle('active', !!project);
+        toggle.textContent = project ? 'Projects (on)' : 'Projects';
 
         const query = new URLSearchParams();
         if (project) {
@@ -452,6 +487,8 @@ export const PAGE_SCRIPT = `
       projectSelect.addEventListener('change', apply);
       statusSelect.addEventListener('change', apply);
       apply();
+      // A filter carried in from the URL is shown, not left hidden.
+      if (projectSelect.value) setPanelOpen(true);
     })();
 
     document.querySelectorAll('button[data-copy-path]').forEach((btn) => {
@@ -545,7 +582,7 @@ function renderProjectsPanel(projects) {
         `${escapeHtml(project.symbol)} ${escapeHtml(projectLabel(project))}</option>`
     )
     .join('');
-  return `<section class="projects" aria-label="Project progress">
+  return `<section class="projects" id="projects-panel" aria-label="Project progress" hidden>
       <ul class="projects-legend">${legend}</ul>
       <div class="projects-controls">
         <label>Project <select id="project-filter"><option value="">All presentations</option>${options}</select></label>
@@ -579,7 +616,10 @@ ${listing}
     </ul>
     <p id="projects-empty" hidden>No presentations here match this filter.</p>
     ${renderProjectsPanel(projects)}
-    <p class="generated" id="generated-time" data-generated-utc="${escapeHtml(generatedAtIso)}">Generated: ${escapeHtml(generatedAt)}</p>
+    <footer class="page-footer">
+      <p class="generated" id="generated-time" data-generated-utc="${escapeHtml(generatedAtIso)}">Generated: ${escapeHtml(generatedAt)}</p>
+      ${projects.length ? '<button type="button" class="filter-toggle" id="filter-toggle" aria-expanded="false" aria-controls="projects-panel">Projects</button>' : ''}
+    </footer>
   </main>
   <script>${PAGE_SCRIPT}</script>
 </body>
