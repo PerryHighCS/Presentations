@@ -1,0 +1,137 @@
+/* ============================================================
+   HPy UNIT 4 (LISTS) SHARED WIDGETS
+   Loaded after ../../theme.css by every deck in this unit.
+
+   1. List trace board   → .lt-board (code + memory + console)
+   2. Small helpers      → .ref-table, .ex-card, .q-line
+   ============================================================ */
+
+/* ─── 1. List trace board ───────────────────────────────────
+   Built by ListsUnit.prepare() from a LIST_TRACES entry. The
+   memory view is one SVG laid out once for the whole trace, so
+   nothing moves as the steps advance. */
+
+.lt-board { width: 100%; }
+.lt-grid {
+  display: grid;
+  grid-template-columns: var(--lt-cols, minmax(0, 1fr) minmax(0, 1fr));
+  gap: var(--gap);
+  align-items: start;
+}
+.lt-left, .lt-right { display: flex; flex-direction: column; gap: var(--gap-sm); min-width: 0; }
+
+.lt-code .code-body { padding: 12px 18px; }
+.lt-code .code-line { line-height: 1.5; }
+
+.lt-console, .lt-mem {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.lt-bar {
+  padding: 6px 16px;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: rgba(0,0,0,0.28);
+  border-bottom: 1px solid var(--accent-border);
+}
+.lt-console-out {
+  padding: 8px 16px;
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  line-height: 1.5;
+  color: var(--result);
+  background: #0c0906;
+  white-space: pre;
+}
+.lt-console-out .lt-err { color: var(--warn); }
+
+.lt-mem svg { display: block; margin: 14px 16px; overflow: visible; }
+.lt-mem text { font-family: var(--font-mono); }
+.lt-frame-box { fill: rgba(242,177,52,0.05); stroke: var(--accent-border); stroke-width: 1.5; }
+.lt-frame-name { font-size: 22px; fill: var(--accent); font-weight: 700; }
+.lt-var-name { font-size: 24px; fill: var(--text); font-weight: 600; }
+.lt-var-slot { fill: var(--bg); stroke: rgba(245,236,223,0.45); stroke-width: 1.5; }
+.lt-var-val { font-size: 24px; fill: var(--text); }
+.lt-dot { fill: var(--accent); }
+.lt-arrow { fill: none; stroke: var(--accent); stroke-width: 2.5; }
+.lt-arrowhead { fill: var(--accent); }
+.lt-idx { font-size: 22px; fill: var(--text-muted); }
+.lt-cell { fill: var(--bg); stroke: rgba(245,236,223,0.45); stroke-width: 1.5; }
+.lt-cell.hl { fill: rgba(242,177,52,0.16); stroke: var(--accent); stroke-width: 3; }
+.lt-cell.add { fill: rgba(124,217,146,0.14); stroke: var(--result); stroke-width: 3; }
+.lt-cell.bad { fill: rgba(255,107,91,0.14); stroke: var(--warn); stroke-width: 3; }
+.lt-cell-val { font-size: 24px; fill: var(--text); }
+.lt-empty { font-size: 22px; fill: var(--text-muted); font-style: italic; }
+.lt-candy-letter { font-size: 22px; font-weight: 700; fill: #1a1410; }
+.lt-ptr { fill: var(--result); }
+.lt-ptr-text { font-size: 24px; fill: var(--result); font-weight: 700; }
+.lt-ptr.past { fill: var(--warn); }
+.lt-ptr-text.past { fill: var(--warn); }
+.lt-obj-tag { font-size: 22px; fill: var(--text-muted); }
+
+.lt-say {
+  font-size: var(--body);
+  line-height: 1.45;
+  color: var(--text-muted);
+  border-left: 3px solid var(--accent);
+  padding: 4px 0 4px 16px;
+}
+.lt-say strong { color: var(--text); }
+.lt-say code { color: var(--text); font-family: var(--font-mono); font-size: var(--code); }
+
+/* ─── 2. Small helpers ────────────────────────────────────── */
+
+/* Reference-sheet table: what to record for each operation. */
+.ref-table { border-collapse: collapse; width: 100%; font-size: var(--small); }
+.ref-table th, .ref-table td {
+  border: 1px solid var(--accent-border);
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+  color: var(--text-muted);
+}
+.ref-table th { color: var(--accent); font-family: var(--font-mono); font-weight: 700; background: var(--accent-dim); }
+.ref-table td code { font-family: var(--font-mono); font-size: var(--code); color: var(--text); white-space: nowrap; }
+.ref-table .yes { color: var(--warn); font-weight: 700; }
+.ref-table .no { color: var(--result); font-weight: 700; }
+
+/* VS Code exercise card. */
+.ex-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(124,217,146,0.4);
+  border-left: 3px solid var(--result);
+  border-radius: 0 10px 10px 0;
+  padding: 16px 22px;
+}
+.ex-card h3 { color: var(--result); }
+.ex-card p, .ex-card li { font-size: var(--body); color: var(--text-muted); line-height: 1.5; }
+.ex-card code { font-family: var(--font-mono); font-size: var(--code); color: var(--text); }
+
+/* Index strip: a list's cells with positive indexes above and
+   negative indexes below. Set --n to the number of cells. */
+.idx-strip {
+  display: grid;
+  grid-template-columns: repeat(var(--n), var(--cw, 150px));
+  row-gap: 6px;
+  font-family: var(--font-mono);
+  text-align: center;
+}
+.idx-strip .ix { font-size: var(--small); color: var(--accent); }
+.idx-strip .ix.neg { color: var(--syntax-number); }
+.idx-strip .cell {
+  font-size: var(--code);
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1.5px solid rgba(245,236,223,0.45);
+  margin-left: -1.5px;
+  padding: 10px 4px;
+}
+.idx-strip .cell.hl { background: rgba(242,177,52,0.16); border-color: var(--accent); position: relative; z-index: 1; }
+
+/* Plain code snippet inline in prose at code size. */
+.reveal .ic { font-family: var(--font-mono); font-size: var(--code); color: var(--text); }
