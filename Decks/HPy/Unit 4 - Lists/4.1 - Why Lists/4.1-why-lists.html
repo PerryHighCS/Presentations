@@ -24,61 +24,142 @@
       </div>
     </section>
 
-    <!-- SLIDE 02 · THREE REVIEW WORDS -->
+    <!-- SLIDE 02 · REACTION GAME: PHASE 1 -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="mobcode:reaction-phase1:0"
+      data-activity-options='{"files": {"main.py": "import time\nimport random\n\n# How fast are you? Play a few rounds, then type q to stop.\n#\n# Phase 1: use an accumulator to print your average\n# time when the game ends.\n\nwhile True:\n    choice = input(\"Press Enter to play, or type q to quit: \")\n    if choice == \"q\":\n        break\n    print(\"Wait for it... press Enter as soon as you see GO!\")\n    time.sleep(random.uniform(1, 4))\n    print(\"GO!\")\n    start = time.time()\n    input()\n    ms = round((time.time() - start) * 1000)\n    print(ms, \"ms\")\n\n"}, "activeFile": "main.py", "runnerId": "brython-terminal", "startTryItMode": true}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">A Challenge &middot; Phase 1</span>
+        <h2>How fast are you?</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          Run the reaction game. Press Enter to start a round, wait, and press Enter again the moment you see <span style="color:var(--result);">GO!</span> Play as many rounds as you like, then type <code>q</code> to stop.
+        </p>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          <span style="color:var(--accent);">Phase 1:</span> use an <span style="color:var(--accent);">accumulator</span> to print your <span style="color:var(--accent);">average</span> reaction time when the game ends.
+        </p>
+      </div>
+      <aside class="notes">Give students a few minutes to play before they start coding. Phase 1 is an accumulator problem from Unit 2: a total and a count, updated inside the loop, and one division after it. If a student quits before playing, total / count divides by zero; that is a fine thing to notice and guard against.</aside>
+    </section>
+
+    <!-- SLIDE 03 · PHASE 1 SOLUTION -->
     <section>
-      <div class="slide-inner split split-40">
+      <div class="slide-inner split split-50">
         <div>
-          <span class="slide-tag">A Problem</span>
-          <h2>Three words from a review</h2>
+          <span class="slide-tag">Phase 1 &middot; Solution</span>
+          <h2>The accumulator pattern</h2>
           <p style="margin-top:var(--gap-sm);">
-            A customer review says the blender was <span style="color:var(--syntax-string);">amazing</span>, <span style="color:var(--syntax-string);">loud</span>, and <span style="color:var(--syntax-string);">perfect</span>. With what we know so far, each word needs its own variable.
+            An <span style="color:var(--accent);">accumulator</span> is a variable that builds up a result one loop pass at a time. The pattern has three parts.
           </p>
-          <p class="fragment fade-up" style="margin-top:var(--gap);">
-            Now handle a review with <span style="color:var(--warn);">30 words</span>. You would need 30 variables, 30 nearly identical <code>if</code> statements, and a new version of the program for every review length.
+          <ul class="bullets" style="margin-top:var(--gap-sm);">
+            <li><span style="color:var(--accent);">Before</span> the loop, start it at a neutral value: <code>total = 0</code> and <code>count = 0</code>.</li>
+            <li><span style="color:var(--accent);">Inside</span> the loop, update it with each new value: <code>total += ms</code> and <code>count += 1</code>.</li>
+            <li><span style="color:var(--accent);">After</span> the loop, use it: <code>total / count</code> is the average.</li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">total = 0
+count = 0
+while True:
+    ...      # play one round, get ms
+    total += ms
+    count += 1
+
+average = total / count
+print("Average:", round(average), "ms")</code></pre></div>
+        </div>
+      </div>
+      <aside class="notes">If a student quits before playing a round, count is 0 and the division crashes. Worth pointing out, and an if statement fixes it.</aside>
+    </section>
+
+    <!-- SLIDE 04 · PHASE 2 PLAN (RESONANCE) -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:beat-average-plan:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Phase 2: after the game prints your average, it should also print how many of your tries were faster than that average. Describe how you would change the program to count them. What would you need to keep track of, and when?","order":0,"responseTimeLimitMs":150000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Phase 2 &middot; Plan It</span>
+        <h2>How many tries beat your average?</h2>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1200px;">
+          <p>After the game prints your average, it should also print how many of your tries were <strong>faster</strong> than that average. Describe how you would change the program to count them. What would you need to keep track of, and <strong>when</strong>?</p>
+        </div>
+      </div>
+      <aside class="notes">Share a few responses before moving on. Common plans: compare each time to the average inside the loop (but the average is not known until the game ends, and a running average is not the final one), or store each time in t1, t2, t3 (but the number of rounds is not known when the code is written). The next slide names both problems.</aside>
+    </section>
+
+    <!-- SLIDE 05 · WHY PHASE 2 IS STUCK -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Why It's Hard</span>
+        <h2>The times are gone before you need them</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          To know whether a try beat the average, you need the average. But the average is not known until the <span style="color:var(--accent);">last</span> round is over, and by then every earlier time has been overwritten.
+        </p>
+        <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
+          You could store each time in its own variable, <code>t1</code>, <code>t2</code>, <code>t3</code>. But how many variables would you write? The player decides how many rounds to play <span style="color:var(--warn);">while the program runs</span>, long after you wrote it.
+        </p>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
+          <strong>This problem shows up everywhere.</strong> A guessing game that says "you already guessed that" must remember every guess so far. An animation that adds a dot wherever you click must remember every dot. In each case, the number of values is unknown, and the program has to come back to them later.
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 06 · COLLECTIONS AND THE LIST SOLUTION -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">4.1 Getting Started</span>
+          <h2>A list keeps every value</h2>
+          <p style="margin-top:var(--gap-sm);">
+            A <span style="color:var(--accent);">collection</span> stores any number of values under one name. This unit is about the most common one, the <span style="color:var(--accent);">list</span>. Other collections, like tuples, sets, and dictionaries, come in later units.
+          </p>
+          <p style="margin-top:var(--gap);">
+            Start with an empty list, <code>[]</code>. Each round, <code>times.append(ms)</code> adds the new time to the end. After the game, every time is still there, so a second loop can compare each one to the average.
           </p>
         </div>
         <div class="code-card">
           <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
-          <div class="code-body"><pre><code class="py">word1 = "amazing"
-word2 = "loud"
-word3 = "perfect"
+          <div class="code-body"><pre><code class="py">times = []
+while True:
+    ...      # play one round, get ms
+    times.append(ms)
 
-positive = 0
-if word1 == "amazing" or word1 == "perfect":
-    positive += 1
-if word2 == "amazing" or word2 == "perfect":
-    positive += 1
-if word3 == "amazing" or word3 == "perfect":
-    positive += 1
-print(positive)</code></pre></div>
+average = sum(times) / len(times)
+faster = 0
+for t in times:
+    if t &lt; average:
+        faster += 1
+print(faster, "tries beat your average")</code></pre></div>
         </div>
       </div>
+      <aside class="notes">append and sum get full treatment in 4.3 and 4.2. Here they only need to read the code. len works on lists just as it does on strings.</aside>
     </section>
 
-    <!-- SLIDE 03 · COLLECTIONS -->
-    <section>
+    <!-- SLIDE 07 · REACTION GAME: PHASE 2 -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="mobcode:reaction-finish:0"
+      data-activity-options='{"files": {"main.py": "import time\nimport random\n\n# Phase 2: count the tries that beat your average, using a list.\n# 1. Make an empty list called times before the loop.\n# 2. Inside the loop, add each time to it with times.append(ms).\n# 3. After the loop, loop over times and count the ones\n#    smaller than the average.\n\ntotal = 0\ncount = 0\nwhile True:\n    choice = input(\"Press Enter to play, or type q to quit: \")\n    if choice == \"q\":\n        break\n    print(\"Wait for it... press Enter as soon as you see GO!\")\n    time.sleep(random.uniform(1, 4))\n    print(\"GO!\")\n    start = time.time()\n    input()\n    ms = round((time.time() - start) * 1000)\n    print(ms, \"ms\")\n    total += ms\n    count += 1\n\naverage = total / count\nprint(\"Average:\", round(average), \"ms\")\n"}, "activeFile": "main.py", "runnerId": "brython-terminal", "startTryItMode": true}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
       <div class="slide-inner">
-        <span class="slide-tag">4.1 Getting Started</span>
-        <h2>A collection holds any number of values</h2>
-        <p style="margin-top:var(--gap-sm);max-width:1200px;">
-          A <span style="color:var(--accent);">collection</span> is a data structure that stores an arbitrary number of Python values under one name. A program can then use a loop to handle 3 values or 3,000 with the same few lines of code.
+        <span class="slide-tag">A Challenge &middot; Phase 2</span>
+        <h2>Count them with a list</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          Add a list called <code>times</code>, fill it during the game, and use it after the game to print how many tries beat your average. The steps are in the comments at the top of the program.
         </p>
-        <p style="margin-top:var(--gap);max-width:1200px;">
-          This unit is about the most common collection, the one-dimensional <span style="color:var(--accent);">list</span>. Python has other collections, such as tuples, two-dimensional lists, sets, and dictionaries, and you will meet them in later units.
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          Finished early? Also print your <span style="color:var(--result);">fastest</span> time.
         </p>
-        <div class="code-card fragment fade-up" style="margin-top:var(--gap);max-width:900px;">
-          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
-          <div class="code-body"><pre><code class="py">words = ["amazing", "loud", "perfect"]
-positive = 0
-for word in words:
-    if word == "amazing" or word == "perfect":
-        positive += 1
-print(positive)   # works for any number of words</code></pre></div>
-        </div>
       </div>
+      <aside class="notes">The extension can be done with a loop and a variable that tracks the smallest time so far; min(times) comes in 4.2. Keep this program: 4.2 and 4.3 can return to it.</aside>
     </section>
 
-    <!-- SLIDE 04 · WHERE THE UNIT IS GOING -->
+    <!-- SLIDE 08 · WHERE THE UNIT IS GOING -->
     <section>
       <div class="glow" style="width:480px;height:480px;background:radial-gradient(circle,rgba(124,217,146,0.10) 0%,transparent 70%);bottom:-120px;right:-80px;"></div>
       <div class="slide-inner">
@@ -91,12 +172,12 @@ print(positive)   # works for any number of words</code></pre></div>
           <strong>Driving question:</strong> Can a program help us understand consumer reviews, and when might its conclusions be misleading?
         </div>
         <p style="margin-top:var(--gap);max-width:1200px;">
-          Every skill in this unit is a tool for that project. Today's tool is the most basic one: turning a review into a list of words and looking at the pieces.
+          A review has the same problem as the reaction game: it is a sequence of values, here words, and the analysis needs to come back to them. Every skill in this unit is a tool for that project, starting with turning a review into a list of words.
         </p>
       </div>
     </section>
 
-    <!-- SLIDE 05 · LIST LITERALS -->
+    <!-- SLIDE 09 · LIST LITERALS -->
     <section>
       <div class="slide-inner split split-50">
         <div>
@@ -126,7 +207,7 @@ print(len(L))  # 0</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 06 · CREATING LISTS -->
+    <!-- SLIDE 10 · CREATING LISTS -->
     <section>
       <div class="slide-inner split split-50">
         <div>
@@ -154,12 +235,12 @@ print(L)        # [0, 1, 2, 3, 4]</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 07 · CHECKPOINT: LENGTH 4 -->
+    <!-- SLIDE 11 · CHECKPOINT: LENGTH 4 -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:length-four:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which of these does NOT create a list of length 4?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"[2, 6, 8, 15]","isCorrect":false},{"id":"q1b","text":"list(range(0, 20, 5))","isCorrect":false},{"id":"q1c","text":"range(2, 6)","isCorrect":true},{"id":"q1d","text":"[42] * 4","isCorrect":false}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Which of these does NOT create a list of length 4?", "order": 0, "responseTimeLimitMs": 45000, "options": [{"id": "q1a", "text": "`[2, 6, 8, 15]`", "isCorrect": false}, {"id": "q1b", "text": "`list(range(0, 20, 5))`", "isCorrect": false}, {"id": "q1c", "text": "`range(2, 6)`", "isCorrect": true}, {"id": "q1d", "text": "`[42] * 4`", "isCorrect": false}]}]}'>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint &middot; Creating Lists</span>
         <h2>Which one does <span style="color:var(--warn);">not</span> create a list of length 4?</h2>
@@ -173,7 +254,7 @@ print(L)        # [0, 1, 2, 3, 4]</code></pre></div>
       <aside class="notes">Answer: range(2, 6). It describes four numbers, but it is a range, not a list. Wrapping it as list(range(2, 6)) would make a list. Option B is [0, 5, 10, 15].</aside>
     </section>
 
-    <!-- SLIDE 08 · LISTS AND STRINGS ARE SEQUENCES -->
+    <!-- SLIDE 12 · LISTS AND STRINGS ARE SEQUENCES -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">4.2.3 List and String Similarities</span>
@@ -202,7 +283,7 @@ print(len(L))   # 4</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 09 · INDEXING -->
+    <!-- SLIDE 13 · INDEXING -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">Indexing</span>
@@ -221,7 +302,7 @@ print(len(L))   # 4</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 10 · INVALID INDEX -->
+    <!-- SLIDE 14 · INVALID INDEX -->
     <section>
       <div class="slide-inner split split-50">
         <div>
@@ -231,7 +312,7 @@ print(len(L))   # 4</code></pre></div>
             A list of length 3 has indexes 0, 1, and 2. Asking for <code>L[3]</code> stops the program with an <span style="color:var(--warn);">IndexError</span>.
           </p>
           <p style="margin-top:var(--gap);">
-            The empty list has <span style="color:var(--warn);">no</span> legal indexes at all, so even <code>L[0]</code> crashes. Code that reads the first word of a review has to handle a review with no words.
+            The empty list has <span style="color:var(--warn);">no</span> legal indexes at all, so even <code>L[0]</code> crashes. Code that looks at the first item of a list has to handle a list with no items.
           </p>
         </div>
         <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
@@ -250,14 +331,14 @@ print(E[0])</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 11 · SLICING -->
+    <!-- SLIDE 15 · SLICING -->
     <section>
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Slicing</span>
           <h2>A slice is a new, smaller list</h2>
           <p style="margin-top:var(--gap-sm);">
-            <code>L[start:end:step]</code> works exactly as it does on strings. It starts at <code>start</code> and goes up to, but <span style="color:var(--accent);">not including</span>, <code>end</code>. Leave a part out to use its default.
+            <code>L[start:end:step]</code> works exactly as it does on strings. It starts at <code>start</code> and goes up to, but <span style="color:var(--accent);">not including</span>, <code>end</code>. Each of the three parts is optional: leave out <code>start</code> to begin at index 0, <code>end</code> to go all the way to the end, or <code>step</code> to take every value.
           </p>
           <p style="margin-top:var(--gap);">
             Unlike indexing, slicing <span style="color:var(--result);">never crashes</span>. A slice that runs past the end just stops at the end, and a slice that selects nothing is <code>[]</code>.
@@ -270,6 +351,7 @@ print(L[2:5])    # [6, 7, 8]
 print(L[:4])     # [4, 5, 6, 7]
 print(L[4:])     # [8, 9]
 print(L[0:5:2])  # [4, 6, 8]
+print(L[4:1:-1]) # [8, 7, 6]
 print(L[::-1])   # [9, 8, 7, 6, 5, 4]
 print(L[1:1])    # []
 print(L[4:8])    # [8, 9]
@@ -278,12 +360,12 @@ print(L[6:])     # []</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 12 · CHECKPOINT: NOT EQUAL TO 3 -->
+    <!-- SLIDE 16 · CHECKPOINT: NOT EQUAL TO 3 -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:not-three:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"If L = list(range(1, 6)), which of these is NOT equal to 3?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"L[-3]","isCorrect":false},{"id":"q1b","text":"L[0] + L[1]","isCorrect":false},{"id":"q1c","text":"len(L[:3])","isCorrect":false},{"id":"q1d","text":"L[2]","isCorrect":false},{"id":"q1e","text":"L[-2]","isCorrect":true}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "If `L = list(range(1, 6))`, which of these is NOT equal to `3`?", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "`L[-3]`", "isCorrect": false}, {"id": "q1b", "text": "`L[0] + L[1]`", "isCorrect": false}, {"id": "q1c", "text": "`len(L[:3])`", "isCorrect": false}, {"id": "q1d", "text": "`L[2]`", "isCorrect": false}, {"id": "q1e", "text": "`L[-2]`", "isCorrect": true}]}]}'>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint &middot; Indexes and Slices</span>
         <h2>Which one is <span style="color:var(--warn);">not</span> equal to 3?</h2>
@@ -299,7 +381,7 @@ print(L[6:])     # []</code></pre></div>
       <aside class="notes">L is [1, 2, 3, 4, 5]. L[-2] is 4. Everything else is 3: L[-3] and L[2] are both 3, 1 + 2 is 3, and L[:3] is a three-item list.</aside>
     </section>
 
-    <!-- SLIDE 13 · LOOPING -->
+    <!-- SLIDE 17 · LOOPING -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">Looping</span>
@@ -331,12 +413,12 @@ for i in range(len(L)):
       </div>
     </section>
 
-    <!-- SLIDE 14 · PREDICT: WORDS TRACE -->
+    <!-- SLIDE 18 · PREDICT: WORDS TRACE -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:predict-words:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"words = [\"good\", \"bad\", \"okay\", \"great\"]. The program prints words[-2], then words[1:3], then words[i] for i in range(0, len(words), 2). What is the output, line by line?","order":0,"responseTimeLimitMs":90000,"options":[{"id":"q1a","text":"bad / [&#39;bad&#39;, &#39;okay&#39;, &#39;great&#39;] / good / okay","isCorrect":false},{"id":"q1b","text":"okay / [&#39;good&#39;, &#39;bad&#39;, &#39;okay&#39;] / good / bad / okay / great","isCorrect":false},{"id":"q1c","text":"bad / [&#39;bad&#39;, &#39;okay&#39;] / bad / great","isCorrect":false},{"id":"q1d","text":"okay / [&#39;bad&#39;, &#39;okay&#39;] / good / okay","isCorrect":true}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "What does this program print? Each `/` in the choices separates one line of output.\n\n```python\nwords = [\"good\", \"bad\", \"okay\", \"great\"]\nprint(words[-2])\nprint(words[1:3])\nfor i in range(0, len(words), 2):\n    print(words[i])\n```", "order": 0, "responseTimeLimitMs": 90000, "options": [{"id": "q1a", "text": "`bad / [&#39;bad&#39;, &#39;okay&#39;, &#39;great&#39;] / good / okay`", "isCorrect": false}, {"id": "q1b", "text": "`okay / [&#39;good&#39;, &#39;bad&#39;, &#39;okay&#39;] / good / bad / okay / great`", "isCorrect": false}, {"id": "q1c", "text": "`bad / [&#39;bad&#39;, &#39;okay&#39;] / bad / great`", "isCorrect": false}, {"id": "q1d", "text": "`okay / [&#39;bad&#39;, &#39;okay&#39;] / good / okay`", "isCorrect": true}]}]}'>
       <div class="slide-inner">
         <span class="slide-tag">Predict First</span>
         <h2>What does this print? Work it out on paper first.</h2>
@@ -358,7 +440,7 @@ for i in range(0, len(words), 2):
       <aside class="notes">The slash separates lines of output. Answer: okay, then ['bad', 'okay'], then good and okay from indexes 0 and 2.</aside>
     </section>
 
-    <!-- SLIDE 15 · TRACE: WORDS -->
+    <!-- SLIDE 19 · TRACE: WORDS -->
     <section>
       <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
         <span class="slide-tag">Trace It</span>
@@ -367,7 +449,7 @@ for i in range(0, len(words), 2):
       </div>
     </section>
 
-    <!-- SLIDE 16 · RUN IT -->
+    <!-- SLIDE 20 · RUN IT -->
     <section
       data-activity-id="mobcode"
       data-activity-trigger="slide-enter"
@@ -392,12 +474,12 @@ print(words[-5])</code></pre></div>
       <aside class="notes">empty[1:3] prints [] because slices never crash. empty[0], words[4], and words[-5] all raise IndexError. Ask why -5 fails when -4 works: the negative indexes for a length-4 list run from -1 to -4.</aside>
     </section>
 
-    <!-- SLIDE 17 · CHECKPOINT: COUNT EVENS -->
+    <!-- SLIDE 21 · CHECKPOINT: COUNT EVENS -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:count-evens:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"t = 0, then for v in L: if v % 2 == 0: t += 1, then print(t). For which list L does this print 3?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"L = list(range(2, 8))","isCorrect":true},{"id":"q1b","text":"L = [2, 3, 2, 3]","isCorrect":false},{"id":"q1c","text":"L = [3, 2, 3, 2, 3]","isCorrect":false},{"id":"q1d","text":"L = list(range(5, 10))","isCorrect":false}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "For which list `L` does this code print `3`?\n\n```python\nt = 0\nfor v in L:\n    if v % 2 == 0:\n        t += 1\nprint(t)\n```", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "`L = list(range(2, 8))`", "isCorrect": true}, {"id": "q1b", "text": "`L = [2, 3, 2, 3]`", "isCorrect": false}, {"id": "q1c", "text": "`L = [3, 2, 3, 2, 3]`", "isCorrect": false}, {"id": "q1d", "text": "`L = list(range(5, 10))`", "isCorrect": false}]}]}'>
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Checkpoint &middot; Looping</span>
@@ -421,69 +503,66 @@ print(t)</code></pre></div>
       <aside class="notes">The loop counts even values. list(range(2, 8)) is [2, 3, 4, 5, 6, 7], which has three evens. The other lists each have two.</aside>
     </section>
 
-    <!-- SLIDE 18 · SPLIT -->
+    <!-- SLIDE 22 · SPLIT -->
     <section>
       <div class="slide-inner split split-40">
         <div>
           <span class="slide-tag">From Text to a List</span>
-          <h2>split() turns a review into words</h2>
+          <h2>split() turns a string into a list of words</h2>
           <p style="margin-top:var(--gap-sm);">
             You have used <code>s.split(c)</code> in a <code>for</code> loop. It actually returns a <span style="color:var(--accent);">list of strings</span>, the pieces of <code>s</code> between each separator <code>c</code>. Now that we have lists, we can store that list and use it.
-          </p>
-          <p style="margin-top:var(--gap);">
-            This is the first step of every Review Detective analysis: text in, list of words out.
           </p>
         </div>
         <div class="code-card">
           <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
-          <div class="code-body"><pre><code class="py">review = "great blender but very loud"
-words = review.split(" ")
+          <div class="code-body"><pre><code class="py">sentence = "my dog likes long walks"
+words = sentence.split(" ")
 print(words)
-# ['great', 'blender', 'but', 'very', 'loud']
+# ['my', 'dog', 'likes', 'long', 'walks']
 print(len(words))     # 5
-print(words[-1])      # loud
-print(words[:2])      # ['great', 'blender']</code></pre></div>
+print(words[-1])      # walks
+print(words[:2])      # ['my', 'dog']</code></pre></div>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 19 · VS CODE EXERCISE -->
+    <!-- SLIDE 23 · VS CODE EXERCISE -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">VS Code &middot; exploring_collections.py</span>
         <h2>Exploring Collections</h2>
         <div class="ex-card" style="margin-top:var(--gap-sm);max-width:1250px;">
-          <p>Create <code>exploring_collections.py</code> in your Unit 4 folder. Start with a short review of your own, at least eight words long, stored in a string. Then write code that does each step and prints the result.</p>
+          <p>Create <code>exploring_collections.py</code> in your Unit 4 folder. Start with a sentence of your own, at least eight words long, stored in a string. Then write code that does each step and prints the result.</p>
           <ol class="bullets" style="margin-top:var(--gap-sm);">
-            <li>Split the review into a list called <code>words</code> and print how many words it has.</li>
+            <li>Split the sentence into a list called <code>words</code> and print how many words it has.</li>
             <li>Print the first three words, the last two words, and every other word, using one slice for each.</li>
-            <li>Print a numbered listing, one word per line, starting at 1: <code>1. great</code>, <code>2. blender</code>, and so on.</li>
+            <li>Print a numbered listing, one word per line, starting at 1: <code>1. my</code>, <code>2. dog</code>, and so on.</li>
             <li>Print the words in reverse order using a slice.</li>
           </ol>
         </div>
         <p style="margin-top:var(--gap);max-width:1250px;">
-          Save the file. You will keep adding to this folder all unit, and these files become your starting point for the project.
+          Save the file. You will keep adding to this folder all unit, and later lessons build on these files.
         </p>
       </div>
-      <aside class="notes">The numbered listing needs a loop by index (i + 1 for the number). Students who finish early can try a review with punctuation and notice that split(" ") leaves "loud!" attached to its punctuation; that problem comes back in the project.</aside>
+      <aside class="notes">The numbered listing needs a loop by index (i + 1 for the number). Students who finish early can try a sentence with punctuation and notice that split(" ") leaves "walks!" with its punctuation attached.</aside>
     </section>
 
-    <!-- SLIDE 20 · REFERENCE -->
+    <!-- SLIDE 24 · REFERENCE -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">List Programmer's Reference</span>
         <h2>Start your reference</h2>
         <p style="margin-top:var(--gap-sm);max-width:1250px;">
-          All unit, you will build your own reference of list operations. For each entry, record its syntax, what it does, what it returns, whether it changes the list, and a short example you have tested.
+          All unit, you will build your own reference of list operations. For each entry, record its syntax, what it does, what it returns, whether it changes the list, and a short example you have tested. The first row is done, and a few other cells are filled in. Test each operation and fill in the rest.
         </p>
         <table class="ref-table" style="margin-top:var(--gap);">
           <tr><th>Operation</th><th>What it does</th><th>Returns</th><th>Changes the list?</th></tr>
           <tr><td><code>[a, b, c]</code>, <code>[]</code>, <code>list()</code></td><td>create a list</td><td>a new list</td><td class="no">no</td></tr>
-          <tr><td><code>[v] * n</code>, <code>list(range(n))</code></td><td>create a list of length <code>n</code></td><td>a new list</td><td class="no">no</td></tr>
-          <tr><td><code>L[i]</code>, <code>L[-i]</code></td><td>read one value; crashes if out of range</td><td>the value</td><td class="no">no</td></tr>
-          <tr><td><code>L[a:b:c]</code></td><td>select a slice; never crashes</td><td>a new list</td><td class="no">no</td></tr>
-          <tr><td><code>len(L)</code></td><td>count the values</td><td>an int</td><td class="no">no</td></tr>
-          <tr><td><code>s.split(c)</code></td><td>break a string apart at each <code>c</code></td><td>a list of strings</td><td class="no">no</td></tr>
+          <tr><td><code>[v] * n</code>, <code>list(range(n))</code></td><td></td><td>a new list</td><td></td></tr>
+          <tr><td><code>L[i]</code>, <code>L[-i]</code></td><td>read one value; crashes if out of range</td><td></td><td></td></tr>
+          <tr><td><code>L[a:b:c]</code></td><td></td><td></td><td class="no">no</td></tr>
+          <tr><td><code>len(L)</code></td><td></td><td>an int</td><td></td></tr>
+          <tr><td><code>s.split(c)</code></td><td></td><td></td><td></td></tr>
         </table>
       </div>
     </section>
