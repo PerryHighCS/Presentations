@@ -83,7 +83,7 @@ print("no" in "noise")    # True</code></pre></div>
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:membership:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which of these prints True?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"print([2, 1] in [1, 2, 1])","isCorrect":false},{"id":"q1b","text":"print(\"ab\" in [\"a\", \"ab\", \"abc\"])","isCorrect":true},{"id":"q1c","text":"print(\"ab\" in [\"a\", \"b\", \"c\"])","isCorrect":false},{"id":"q1d","text":"print(\"ab\" in [\"A\", \"AB\", \"ABC\"])","isCorrect":false}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Which of these prints `True`?", "order": 0, "responseTimeLimitMs": 45000, "options": [{"id": "q1a", "text": "`print([2, 1] in [1, 2, 1])`", "isCorrect": false}, {"id": "q1b", "text": "`print(\"ab\" in [\"a\", \"ab\", \"abc\"])`", "isCorrect": true}, {"id": "q1c", "text": "`print(\"ab\" in [\"a\", \"b\", \"c\"])`", "isCorrect": false}, {"id": "q1d", "text": "`print(\"ab\" in [\"A\", \"AB\", \"ABC\"])`", "isCorrect": false}]}]}'>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint &middot; Membership</span>
         <h2>Which one prints <code>True</code>?</h2>
@@ -156,7 +156,7 @@ if 9 in L:
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:no-find:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Python lists have no L.find(v) method. Which of these is NOT a good way to deal with that?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"Use L.index(v), but first check that v in L is True","isCorrect":false},{"id":"q1b","text":"Write your own function listFind(L, v)","isCorrect":false},{"id":"q1c","text":"Convert L to a string with s = str(L), then use s.find(v)","isCorrect":true}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Python lists have no `L.find(v)` method. Which of these is NOT a good way to deal with that?", "order": 0, "responseTimeLimitMs": 45000, "options": [{"id": "q1a", "text": "Use `L.index(v)`, but first check that `v in L` is `True`", "isCorrect": false}, {"id": "q1b", "text": "Write your own function `listFind(L, v)`", "isCorrect": false}, {"id": "q1c", "text": "Convert `L` to a string with `s = str(L)`, then use `s.find(v)`", "isCorrect": true}]}]}'>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint &middot; Searching</span>
         <h2>Which is <span style="color:var(--warn);">not</span> a good way to search a list?</h2>
@@ -169,12 +169,43 @@ if 9 in L:
       <aside class="notes">str(L) produces text such as "[5, 3, 8]". s.find returns a character position in that text, not a list index, and it can match pieces of values.</aside>
     </section>
 
-    <!-- SLIDE 08 · PREDICT: DETECTIVE TRACE -->
+    <!-- SLIDE 08 · EXPLAIN: WHY NOT STR(L) -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Explain It</span>
+          <h2>Why <code>str(L)</code> does not work</h2>
+          <p style="margin-top:var(--gap-sm);">
+            <code>str(L)</code> turns the list into <span style="color:var(--accent);">text</span>: brackets, commas, spaces, and digits. <code>s.find</code> searches that text one character at a time, so it answers a different question.
+          </p>
+          <p class="fragment fade-up" style="margin-top:var(--gap);">
+            It returns a <span style="color:var(--warn);">character position</span>, not a list index: the <code>3</code> is character 4 of the text, but index 1 of the list. And it matches <span style="color:var(--warn);">pieces of values</span>: it finds an <code>8</code> inside <code>18</code>, even though <code>8</code> is not in the list.
+          </p>
+          <p class="fragment fade-up" style="margin-top:var(--gap);">
+            The two safe ways both work with the list's values: check <code>v in L</code> before calling <code>L.index(v)</code>, or loop over the indexes yourself, like <code>listFind</code>.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">L = [5, 3, 18]
+s = str(L)
+print(s)             # [5, 3, 18]
+
+print(s.find("3"))   # 4
+print(L.index(3))    # 1
+
+print(s.find("8"))   # 8
+print(8 in L)        # False</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 09 · PREDICT: DETECTIVE TRACE -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:predict-detective:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"words = [\"good\", \"bad\", \"good\", \"great\"]. What do the four print calls show, in order?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"True / 2 / 3 / False","isCorrect":true},{"id":"q1b","text":"True / 2 / 3 / True","isCorrect":false},{"id":"q1c","text":"True / 2 / 2 / False","isCorrect":false},{"id":"q1d","text":"True / 1 / 3 / False","isCorrect":false}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "What do the four `print` calls show, in order? Each `/` separates one line of output.\n\n```python\nwords = [\"good\", \"bad\",\n         \"good\", \"great\"]\nprint(\"good\" in words)\nprint(words.count(\"good\"))\nprint(words.index(\"great\"))\nprint([\"good\", \"bad\"] in words)\n```", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "`True / 2 / 3 / False`", "isCorrect": true}, {"id": "q1b", "text": "`True / 2 / 3 / True`", "isCorrect": false}, {"id": "q1c", "text": "`True / 2 / 2 / False`", "isCorrect": false}, {"id": "q1d", "text": "`True / 1 / 3 / False`", "isCorrect": false}]}]}'>
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Predict First</span>
@@ -198,7 +229,7 @@ print(["good", "bad"] in words)</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 09 · RUN IT -->
+    <!-- SLIDE 10 · RUN IT -->
     <section
       data-activity-id="mobcode"
       data-activity-trigger="slide-enter"
@@ -214,7 +245,7 @@ print(["good", "bad"] in words)</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 10 · WHY FALSE -->
+    <!-- SLIDE 11 · WHY FALSE -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">Explain It</span>
@@ -232,7 +263,7 @@ print(["good", "bad"] in words)</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 11 · TRACE: FINDFIRST -->
+    <!-- SLIDE 12 · TRACE: FINDFIRST -->
     <section>
       <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
         <span class="slide-tag">Trace It</span>
@@ -241,7 +272,7 @@ print(["good", "bad"] in words)</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 12 · LEN MIN MAX SUM -->
+    <!-- SLIDE 13 · LEN MIN MAX SUM -->
     <section>
       <div class="slide-inner split split-50">
         <div>
@@ -270,12 +301,12 @@ print(sum(["a", "b"]))     # crash!</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 13 · CHECKPOINT: MIN SUM LEN -->
+    <!-- SLIDE 14 · CHECKPOINT: MIN SUM LEN -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:min-sum-len:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"For a list L, min(L) == 0 and sum(L) == 1 and len(L) == 2. Which statement must be False?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"L contains no negative values","isCorrect":false},{"id":"q1b","text":"max(L) == 1","isCorrect":false},{"id":"q1c","text":"L contains exactly one 1","isCorrect":false},{"id":"q1d","text":"L contains no odd values","isCorrect":true}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "For a list `L`, `min(L) == 0` and `sum(L) == 1` and `len(L) == 2`. Which statement must be False?", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "`L` contains no negative values", "isCorrect": false}, {"id": "q1b", "text": "`max(L) == 1`", "isCorrect": false}, {"id": "q1c", "text": "`L` contains exactly one `1`", "isCorrect": false}, {"id": "q1d", "text": "`L` contains no odd values", "isCorrect": true}]}]}'>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint &middot; Summaries</span>
         <h2>Which statement must be <span style="color:var(--warn);">False</span>?</h2>
@@ -290,7 +321,7 @@ print(sum(["a", "b"]))     # crash!</code></pre></div>
       <aside class="notes">Two values, the smaller is 0, and they add to 1, so L holds 0 and 1 in some order. It contains the odd value 1.</aside>
     </section>
 
-    <!-- SLIDE 14 · EQUALITY -->
+    <!-- SLIDE 15 · EQUALITY -->
     <section>
       <div class="slide-inner split split-50">
         <div>
@@ -313,7 +344,7 @@ print([1, 2] != [1, 2])           # False</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 15 · ORDERING -->
+    <!-- SLIDE 16 · ORDERING -->
     <section>
       <div class="slide-inner split split-50">
         <div>
@@ -340,12 +371,12 @@ print([1, 2, 3] >= [1, 2, 3, 4])
       </div>
     </section>
 
-    <!-- SLIDE 16 · CHECKPOINT: SMALLEST LIST -->
+    <!-- SLIDE 17 · CHECKPOINT: SMALLEST LIST -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:smallest-list:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which of these lists is less than (<) all of the others?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"[\"e\"]","isCorrect":false},{"id":"q1b","text":"[\"dog\"]","isCorrect":false},{"id":"q1c","text":"[\"d\", \"o\"]","isCorrect":true},{"id":"q1d","text":"[\"d\", \"o\", \"g\"]","isCorrect":false}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Which of these lists is less than (`<`) all of the others?", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "`[\"e\"]`", "isCorrect": false}, {"id": "q1b", "text": "`[\"dog\"]`", "isCorrect": false}, {"id": "q1c", "text": "`[\"d\", \"o\"]`", "isCorrect": true}, {"id": "q1d", "text": "`[\"d\", \"o\", \"g\"]`", "isCorrect": false}]}]}'>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint &middot; Ordering</span>
         <h2>Which list is less than all the others?</h2>
@@ -359,7 +390,7 @@ print([1, 2, 3] >= [1, 2, 3, 4])
       <aside class="notes">["d", "o"] is a prefix of ["d", "o", "g"], so it is smaller. Against ["dog"], the first values differ: the string "d" is a prefix of "dog", so "d" &lt; "dog". Everything starting with "d" is less than ["e"].</aside>
     </section>
 
-    <!-- SLIDE 17 · TYPE AND LIST -->
+    <!-- SLIDE 18 · TYPE AND LIST -->
     <section>
       <div class="slide-inner split split-50">
         <div>
@@ -384,12 +415,12 @@ print(list(range(3)))   # [0, 1, 2]</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 18 · CHECKPOINT: TYPE -->
+    <!-- SLIDE 19 · CHECKPOINT: TYPE -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:type-list:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"If L is a list, which of these is False?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"type(L) == type(list())","isCorrect":false},{"id":"q1b","text":"type(L) == \"list\"","isCorrect":true},{"id":"q1c","text":"type(L) == list","isCorrect":false},{"id":"q1d","text":"type(type(L)) == type","isCorrect":false}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "If `L` is a list, which of these is `False`?", "order": 0, "responseTimeLimitMs": 45000, "options": [{"id": "q1a", "text": "`type(L) == type(list())`", "isCorrect": false}, {"id": "q1b", "text": "`type(L) == \"list\"`", "isCorrect": true}, {"id": "q1c", "text": "`type(L) == list`", "isCorrect": false}, {"id": "q1d", "text": "`type(type(L)) == type`", "isCorrect": false}]}]}'>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint &middot; type()</span>
         <h2>If <code>L</code> is a list, which is <span style="color:var(--warn);">False</span>?</h2>
@@ -402,24 +433,24 @@ print(list(range(3)))   # [0, 1, 2]</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 19 · VS CODE EXERCISE -->
+    <!-- SLIDE 20 · VS CODE EXERCISE -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">VS Code &middot; word_detective.py</span>
         <h2>Word Detective</h2>
         <div class="ex-card" style="margin-top:var(--gap-sm);max-width:1300px;">
-          <p>Write each function with a <span style="color:var(--accent);">loop</span>, not the builtin shortcut, so you practice the algorithm. Test each one with <code>assert</code> before moving on. None of them may change <code>words</code>.</p>
+          <p>In VS Code, create <code>word_detective.py</code> in your Unit 4 folder. Each function takes a <code>sentence</code>, a string like <code>"the red fox saw the blue sky"</code>. Start each one by splitting the sentence into a list of words, then use a <span style="color:var(--accent);">loop</span>, not the builtin shortcut, so you practice the algorithm. Test each function with <code>assert</code> before moving on.</p>
           <ol class="bullets" style="margin-top:var(--gap-sm);">
-            <li><code>countWord(words, target)</code> returns how many times <code>target</code> appears. Then check your answer against <code>words.count(target)</code>.</li>
-            <li><code>findFirst(words, target)</code> returns the first index of <code>target</code>, or <code>-1</code> if it is missing.</li>
-            <li><code>countMatches(words, vocab)</code> returns how many words in <code>words</code> appear in the list <code>vocab</code>. Try it with a small list of positive words and a small list of negative words.</li>
+            <li><code>countWord(sentence, target)</code> returns how many times the word <code>target</code> appears. Check it against <code>sentence.split(" ").count(target)</code>.</li>
+            <li><code>findFirst(sentence, target)</code> returns the index of the first word equal to <code>target</code>, counting words from 0, or <code>-1</code> if it is missing.</li>
+            <li><code>countMatches(sentence, targets)</code> takes a <span style="color:var(--accent);">list</span> of words as <code>targets</code> and returns how many words in the sentence appear in it. For example, <code>countMatches("the red fox saw the blue sky", ["red", "blue", "green"])</code> returns <code>2</code>.</li>
           </ol>
         </div>
       </div>
-      <aside class="notes">countMatches is the seed of the Sentiment Detective module. Use `in` against vocab inside the loop; that is a fine use of a builtin. Ask students for a test where words is empty, and one where every word matches.</aside>
+      <aside class="notes">In countMatches, use `in` against targets inside the loop; that is a fine use of a builtin. Ask for a test with an empty sentence: "".split(" ") returns [""], a list holding one empty string, not an empty list, which surprises most students. Also ask for a test where every word matches.</aside>
     </section>
 
-    <!-- SLIDE 20 · REFERENCE -->
+    <!-- SLIDE 21 · REFERENCE -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">List Programmer's Reference</span>
@@ -427,13 +458,14 @@ print(list(range(3)))   # [0, 1, 2]</code></pre></div>
         <table class="ref-table" style="margin-top:var(--gap-sm);">
           <tr><th>Operation</th><th>What it does</th><th>Returns</th><th>Changes the list?</th></tr>
           <tr><td><code>v in L</code>, <code>v not in L</code></td><td>is <code>v</code> one of the values?</td><td>a bool</td><td class="no">no</td></tr>
-          <tr><td><code>L.count(v)</code></td><td>how many times <code>v</code> appears</td><td>an int, maybe 0</td><td class="no">no</td></tr>
-          <tr><td><code>L.index(v)</code></td><td>first index of <code>v</code>; crashes if missing</td><td>an int</td><td class="no">no</td></tr>
-          <tr><td><code>min(L)</code>, <code>max(L)</code></td><td>smallest or largest; values must compare</td><td>a value</td><td class="no">no</td></tr>
-          <tr><td><code>sum(L)</code></td><td>total; numbers only</td><td>a number</td><td class="no">no</td></tr>
-          <tr><td><code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code></td><td>compare lists in dictionary order</td><td>a bool</td><td class="no">no</td></tr>
-          <tr><td><code>type(L)</code>, <code>list(s)</code></td><td>check the type; convert a sequence</td><td>a type; a new list</td><td class="no">no</td></tr>
+          <tr><td><code>L.count(v)</code></td><td>how many times <code>v</code> appears</td><td></td><td></td></tr>
+          <tr><td><code>L.index(v)</code></td><td></td><td></td><td class="no">no</td></tr>
+          <tr><td><code>min(L)</code>, <code>max(L)</code></td><td></td><td>a value</td><td></td></tr>
+          <tr><td><code>sum(L)</code></td><td>total; numbers only</td><td></td><td></td></tr>
+          <tr><td><code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code></td><td></td><td></td><td class="no">no</td></tr>
+          <tr><td><code>type(L)</code>, <code>list(s)</code></td><td></td><td>a type; a new list</td><td></td></tr>
         </table>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">The first row is done for you. Test each entry and fill in the blank cells.</p>
       </div>
     </section>
 
@@ -457,24 +489,24 @@ print(list(range(3)))   # [0, 1, 2]</code></pre></div>
         '            return i',
         '    return -1',
         '',
-        'review = ["meh", "bad", "bad"]',
-        'print(findFirst(review, "bad"))',
+        'ratings = ["meh", "bad", "bad"]',
+        'print(findFirst(ratings, "bad"))',
       ].join('\n'),
       consoleLines: 1,
       sayLines: 3,
       steps: [
         { line: 7, say: 'Python skips over the function definition. Line 7 runs first.' },
-        { line: 8, frames: [['global', { review: R }]], objs: { r: ['\'meh\'', '\'bad\'', '\'bad\''] },
-          say: '<code>review</code> refers to a list of three words.' },
-        { line: 2, frames: [['global', { review: R }], ['findFirst', { words: R, target: '\'bad\'' }]],
-          say: 'The call gets its own frame. <code>words</code> refers to the <strong>same</strong> list as <code>review</code>. We will study that arrow in 4.4.' },
-        { line: 3, frames: [['global', { review: R }], ['findFirst', { words: R, target: '\'bad\'', i: '0' }]],
+        { line: 8, frames: [['global', { ratings: R }]], objs: { r: ['\'meh\'', '\'bad\'', '\'bad\''] },
+          say: '<code>ratings</code> refers to a list of three words.' },
+        { line: 2, frames: [['global', { ratings: R }], ['findFirst', { words: R, target: '\'bad\'' }]],
+          say: 'The call gets its own frame. <code>words</code> refers to the <strong>same</strong> list as <code>ratings</code>. We will study that arrow in 4.4.' },
+        { line: 3, frames: [['global', { ratings: R }], ['findFirst', { words: R, target: '\'bad\'', i: '0' }]],
           ptr: [{ obj: 'r', idx: 0, name: 'i' }], say: 'First index: 0.' },
         { line: 2, hl: { r: { bad: [0] } }, say: '<code>\'meh\' == \'bad\'</code> is False, so the loop moves on.' },
-        { line: 3, frames: [['global', { review: R }], ['findFirst', { words: R, target: '\'bad\'', i: '1' }]],
+        { line: 3, frames: [['global', { ratings: R }], ['findFirst', { words: R, target: '\'bad\'', i: '1' }]],
           ptr: [{ obj: 'r', idx: 1, name: 'i' }], say: 'Next index: 1.' },
         { line: 4, hl: { r: { add: [1] } }, say: 'A match. The next line returns right away.' },
-        { line: 8, frames: [['global', { review: R }]], ptr: [],
+        { line: 8, frames: [['global', { ratings: R }]], ptr: [],
           say: '<code>return 1</code> ends the call. The loop never looks at index 2, so the result is the <strong>first</strong> match.' },
         { line: 9, print: '1', say: 'The list was only read. It is exactly as it was before the call.' },
       ],
