@@ -1,30 +1,35 @@
 # Python Lists Unit: Presentations, Activities, and Practice
 
-**Status:** Working instructional outline  
+**Status:** Working instructional outline. Presentations 1 to 4 are revised to match the finished decks.  
 **Culminating project:** Collaborative *Review Detective*  
 **Scope:** One dimensional Python lists. Tuples, two dimensional lists, dictionaries, and sets are outside this sequence.  
-**Environment:** Short presentations and MobCode investigations, hands on tracing, student owned VS Code exercise files, and a simple shared GitHub repository for the final project.
+**Environment:** Short presentations and MobCode investigations, hands on tracing at tables and whiteboards, student owned VS Code exercise files, and a simple shared GitHub repository for the final project.
 
 ## Instructional goals
 
 Students will be able to create and traverse lists, select and transform data, distinguish mutating and nonmutating operations, reason about references and aliases, debug loops that modify lists, and design testable list processing functions. Every student will apply these skills in their own module of a collaborative review analysis application.
 
+The early presentations use sentences, words, and general examples rather than customer reviews. The project is previewed once in Presentation 1 and introduced fully in Presentation 9, so students meet list skills on their own terms before applying them to reviews.
+
 ### Recurring instructional routines
 
 - **Predict, trace, verify, explain:** Students predict output before running MobCode examples. Complexity grows across the unit rather than saving tracing until the end.
-- **Physical list model:** Indexed trays (approximately eight slots) and colored candy make element replacement, insertion, removal, and shifting visible. Use a finger or marker to represent the current loop index.
-- **Memory model:** Retractable magnetic arrows on the whiteboard connect variable names to list objects. Students reproduce the same references as box and arrow drawings on paper.
-- **VS Code artifact:** Each investigation yields a retained `.py` file, not just a temporary MobCode response.
-- **Student built reference:** Students record operation, purpose, arguments, return value, mutation behavior, and a tested example. This grows across the unit.
+- **Physical list model:** Each group uses an indexed tray (eight slots labeled 0 to 7) and colored list items (green, red, yellow, purple, and orange) to make element replacement, insertion, removal, and shifting visible. A finger or marker represents the current loop index. A setup slide sends groups to the tables and has them pick up a tray and items on the way.
+- **Memory model:** Groups trace at stand-up whiteboards, using retractable magnetic arrows to connect variable names to list objects drawn on the board. The instructor demonstrates the first trace with the same arrows on the front board.
+- **TraceLift printouts:** Each whiteboard trace starts from a TraceLift printout of the program, taped to the board, as in the CSP tracing lessons. These sheets have no flaps: students draw the frames, list objects, and arrows beside the code. The programs are collected under "TraceLift Exercise Set" at the end of this plan.
+- **Trace boards and Python Tutor:** Deck trace boards step through each program for checking after students trace it themselves. In both the trace boards and Python Tutor, the marked line is the next line to run. Code examples that the deck does not step through carry a Python Tutor icon link built from the code on the slide.
+- **MobCode instructions in comments:** A running MobCode activity covers the slide, so every MobCode starter program carries its task and steps in its comments.
+- **VS Code artifact:** Each investigation yields a retained `.py` file in the student's Unit 4 folder, not just a temporary MobCode response.
+- **Student built reference:** Students record operation, purpose, arguments, return value, mutation behavior, and a tested example. Each deck ends with a partially completed reference table that shows a few examples and leaves the rest for students. This reference grows across the unit.
 
 ## At a glance
 
 | Presentation | Central question | Main class activity | VS Code exercise | Primary CMU coverage |
 |---|---|---|---|---|
-| 1. Why Lists? | Why use collections? | MobCode indexing and slice traces | Exploring Collections | 4.2.1–4.2.3 |
-| 2. Finding Things | How do we locate and summarize values? | List Detective predictions | Word Detective | 4.2.6–4.2.8 |
-| 3. Changing Things | What changes when we modify a list? | Indexed candy tray operations | Review Editor | 4.2.5, 4.2.8 |
-| 4. One List, Two Names | Why can two variables change together? | Magnetic arrow memory traces | Alias Experiments | 4.2.4–4.2.5 |
+| 1. Why Lists? | Why use collections? | Reaction game in MobCode | Exploring Collections | 4.1, 4.2.1–4.2.3 |
+| 2. Finding Things in Lists | How do we locate and summarize values? | List Detective predictions | Word Detective | 4.2.6–4.2.8 |
+| 3. Changing Lists | What changes when we modify a list? | Indexed tray operations | Word Editor | 4.2.5, 4.2.8, 4.2.9 |
+| 4. Aliases and Copies | Why can two variables change together? | Whiteboard traces with magnetic arrows | Alias Experiments | 4.2.4–4.2.6 |
 | 5. Building New Lists | How do we filter and transform data? | MobCode loop and result tracing | Review Text Processor | 4.2.10, 4.2.12 |
 | 6. The Disappearing Candy | Why does removal skip items? | Remove All the Reds | Remove and Filter | 4.2.10 |
 | 7. Changing or Returning? | What does a function promise its caller? | Function call memory traces | Function Design Challenge | 4.2.5, 4.2.12 |
@@ -38,47 +43,55 @@ Students will be able to create and traverse lists, select and transform data, d
 
 ## Presentation 1: Why Lists?
 
-**CMU:** 4.2.1 Introduction; 4.2.2 Creating Lists; 4.2.3 List and String Similarities; portions of 4.2.7 and 4.2.10.
+**Deck:** `4.1 - Why Lists/4.1-why-lists.html`
+
+**CMU:** 4.1 Getting Started; 4.2.1 Introduction; 4.2.2 Creating Lists; 4.2.3 List and String Similarities; portions of 4.2.7, 4.2.9, and 4.2.10.
 
 **Central question:** Why do we need collections instead of separate variables?
 
-**Presentation outline**
-1. Begin with three review words in three variables and challenge students to handle 30.
-2. List literals, empty lists, mixed types, and `list()`.
+**Opening: the reaction game.** Students run a MobCode reaction timer: the program says "wait for it", then "GO", and the player presses Enter as fast as possible. The starter comments give the task for each phase.
+
+1. **Phase 1 (MobCode):** Use an accumulator to print the player's average time when the game ends. The next slide explains the accumulator pattern: a running total and a count are enough, because computing an average never needs an earlier time again.
+2. **Phase 2 plan (Resonance, free response):** How would you count how many tries beat the average? Students discover that the average is not known until the end, by which time the earlier times are gone.
+3. **Why it is hard, then the list solution:** One variable per try does not scale and the number of tries is unknown. A list keeps every value under one name.
+4. **Phase 2 (MobCode):** Store the times in a list, then count the tries that beat the average. The extension is to report the fastest time.
+5. **Where the unit is going:** One slide previews Review Detective. This is the only project reference before Presentation 9.
+
+**Presentation outline (after the opening)**
+1. List literals, empty lists, mixed types, and `list()`.
+2. `list()`, `[v] * n`, and `list(range(n))`, and why short list names use a capital `L`.
 3. Strings and lists as ordered sequences.
-4. Positive and negative indexing, slicing, `len()`, and invalid indexes.
-5. Loops by value and by index.
-6. Alternate creation techniques: `[0] * n` and `list(range(n))`.
+4. Positive and negative indexing, `len()`, and invalid indexes, including a list with no items.
+5. Slicing: each of `start`, `end`, and `step` is optional, a negative step such as `L[4:1:-1]` walks backward, and a slice never crashes.
+6. Loops by value and by index.
+7. `split()` turns a string into a list of words.
 
-**MobCode trace:** Predict the output before running:
+**MobCode trace:** Predict the output of a word list trace that uses a negative index, a slice, and a loop with a step of 2, then run it.
 
-```python
-words = ["amazing", "terrible", "okay", "perfect"]
-print(words[-2])
-print(words[1:3])
-for i in range(0, len(words), 2):
-    print(words[i])
-```
+**Resonance checkpoints:** Questions show whole programs as fenced code blocks and single expressions or options as inline code.
 
-Add an empty list case and an invalid index to discuss errors.
+**VS Code: Exploring Collections (`exploring_collections.py`).** Students start with a sentence of their own, at least eight words long. They split it into `words`, print its length, print slices (the first three words, the last two, and every other word), print a numbered listing by index, and print the words reversed with a slice. An early finisher tries punctuation and sees that `split(" ")` leaves `"walks!"` with its punctuation attached.
 
-**VS Code: Exploring Collections.** Start with a short review string, use `split()` to obtain a word list, explore slices, and produce a numbered listing. Introduce `split()` here as a useful bridge, not an entire new API lecture.
-
-**Reference discoveries:** literals, `list()`, indexing, slicing, `len()`, looping, basic list creation.
+**Reference discoveries:** literals, `list()`, indexing, slicing, `len()`, looping, basic list creation, `split()`.
 
 ## Presentation 2: Finding Things in Lists
+
+**Deck:** `4.2 - Finding Things in Lists/4.2-finding-things-in-lists.html`
 
 **CMU:** 4.2.6 List Operators; 4.2.7 List Related Builtin Functions; nonmutating parts of 4.2.8 List Methods.
 
 **Central question:** How can a program find useful information without changing a collection?
 
 **Presentation outline**
-1. `in` and `not in`.
-2. `count()` and `index()`, including the exception for a missing value.
-3. `len()`, `min()`, `max()`, and `sum()` with compatible types.
-4. List equality and inequality.
-5. Brief exploration of lexicographic comparisons and prefix ordering.
-6. `type()` and `list()` as part of the reference, with limited slide time.
+1. Questions a program can ask of a list of words.
+2. `in` and `not in`.
+3. `count()` and `index()`, including the exception for a missing value.
+4. Lists have no `find()`. A checkpoint asks why `str(L).find(...)` is not a substitute, followed by an explanation slide using `L = [5, 3, 18]`.
+5. A predict and run trace, then an explanation of why a list inside `in` is false.
+6. A trace of a `findFirst` loop over a list named `ratings`.
+7. `len()`, `min()`, `max()`, and `sum()` with compatible types.
+8. List equality and inequality, then lexicographic ordering and prefix ordering.
+9. `type()` and `list()` as part of the reference, with limited slide time.
 
 **MobCode trace:**
 
@@ -92,13 +105,21 @@ print(["good", "bad"] in words)
 
 Ask why the last membership check is false even though both individual words appear.
 
-**VS Code: Word Detective.** Functions to count word occurrences, find the first matching index (returning `-1` when absent), and identify words matching small positive or negative vocabularies. Use loops for some solutions rather than replacing all algorithm work with builtins.
+**VS Code: Word Detective (`word_detective.py`).** Each function takes a sentence string, splits it into words, and uses a loop rather than the builtin shortcut. Students test each function with `assert` before moving on.
+
+- `countWord(sentence, target)` returns how many times the word appears. Check it against `sentence.split(" ").count(target)`.
+- `findFirst(sentence, target)` returns the index of the first matching word, or `-1` if it is missing.
+- `countMatches(sentence, targets)` takes a list of target words and returns how many words in the sentence appear in it. For example, `countMatches("the red fox saw the blue sky", ["red", "blue", "green"])` returns 2.
+
+Ask for a test with an empty sentence: `"".split(" ")` returns `[""]`, a list holding one empty string.
 
 **Reference discoveries:** comparison and membership operators, `count()`, `index()`, `min()`, `max()`, `sum()`, `type()`; exceptions and return values.
 
-## Presentation 3: Changing Things
+## Presentation 3: Changing Lists
 
-**CMU:** 4.2.5 List Mutability; mutating methods from 4.2.8; relevant operators from 4.2.6.
+**Deck:** `4.3 - Changing Lists/4.3-changing-lists.html`
+
+**CMU:** 4.2.5 List Mutability; mutating methods from 4.2.8; relevant operators from 4.2.6; `join()` from 4.2.9.
 
 **Central question:** How does changing a list differ from reading it?
 
@@ -106,35 +127,58 @@ Ask why the last membership check is false even though both individual words app
 1. Contrast `L[i] = value` with immutable string elements.
 2. `append()`, `extend()`, and `insert()`.
 3. `remove()` and `pop()`; value versus index; `pop()` returns the removed value.
-4. Index shifting after insertion and deletion.
-5. `sort()` and `reverse()` as in place changes.
-6. Many mutating methods return `None`, unlike `pop()`.
+4. Setup slide: groups move to the tables, picking up an indexed tray and list items on the way.
+5. The tray activity, then a trace board that checks it.
+6. Index shifting after insertion and deletion.
+7. `sort()` and `reverse()` as in place changes.
+8. Many mutating methods return `None`, unlike `pop()`.
+9. Predict both the returned values and the final contents, then run it.
+10. `join()` turns a list of words back into a string.
 
-**Physical tracing: Indexed candy trays.** Fill an indexed tray with colored candy. Students execute instructions: replace index 2, insert at index 1 (shift later candies), remove the first red, pop index 3, append a green. Record the tray after each operation and discuss which indexes moved. **Implementation note:** A fixed eight hole tray is a model, not a literal Python list container. For insertions that exceed capacity, use an overflow space or start with spare slots; empty physical slots are not list elements.
+**Physical tracing: Indexed trays (`tray.py`).** Each group's tray is a list named `tray`. Groups load it starting at slot 0 and run one line at a time, recording the tray and circling the items whose index changed:
 
-**MobCode trace:** Predict both final contents and returned values after method calls, particularly `append()` versus `pop()`.
+```python
+tray = ["green", "red", "yellow", "red", "purple"]
+tray[2] = "orange"
+tray.insert(1, "yellow")
+tray.remove("red")
+x = tray.pop(3)
+tray.append("green")
+```
 
-**VS Code: Review Editor.** Modify a review represented as words: replace, insert, remove, append, then reconstruct text with `join()` (introduce the essential form now, revisit later).
+The final tray is `["green", "yellow", "orange", "purple", "green"]`, and `x` holds `"red"`, kept in a separate spot because `pop` hands back the value it removed. **Implementation note:** A fixed eight slot tray is a model, not a literal Python list container. Empty slots are not list elements; the list ends at its last item. If a group runs out of slots, use an overflow space beside the tray.
 
-**Reference discoveries:** element assignment, `append`, `extend`, `insert`, `remove`, `pop`, `sort`, `reverse`, mutation and return behavior.
+**MobCode trace:** Predict both final contents and returned values after method calls, particularly `append()` versus `pop()`. The run includes an intentional crash for discussion.
 
-## Presentation 4: One List, Two Names
+**VS Code: Word Editor (`word_editor.py`).** Students split a sentence into words and make one edit per line, printing the joined result after each: replace a word by its index (found with `index`), insert a word at the start, remove one word and pop another (printing what `pop` returned), extend with two words, then sort and print with `", ".join(words)`. Each line gets a prediction comment before it runs.
 
-**CMU:** 4.2.4 Visualizing Code Execution; 4.2.5 List Mutability.
+**Reference discoveries:** element assignment, `append`, `extend`, `insert`, `remove`, `pop`, `sort`, `reverse`, `join`, mutation and return behavior.
+
+## Presentation 4: Aliases and Copies
+
+**Deck:** `4.4 - Aliases and Copies/4.4-aliases-and-copies.html`
+
+**CMU:** 4.2.4 Visualizing Code Execution; 4.2.5 List Mutability; `+`, `+=`, `*`, and `*=` from 4.2.6.
 
 **Central question:** Why can changing one variable seem to change another?
 
-**Presentation outline**
-1. Start with a prediction that is likely to expose a misconception.
-2. Object references and aliases with two arrows pointing to one object.
-3. Aliases versus separate but equal lists.
-4. `==` versus `is` and `is not`.
-5. `copy.copy()`; copies versus aliases. Briefly recognize alternate copying forms such as slicing, `list(L)`, `L.copy()`, `L + []`, and `L * 1`, consistent with CMU's preference for `copy.copy()`.
-6. Reassignment breaks an alias; mutation does not.
-7. Function parameters refer to the passed list object.
-8. Contrast `L = L + M` with `L += M`, and `L = L * n` with `L *= n`.
+**Room flow.** Students open with a Resonance prediction at their computers. On slide 3 groups move to the whiteboards with their TraceLift printouts and magnetic arrows, and they stay there for the traces and checkpoints. Slide 18 sends them back to their computers for the MobCode and VS Code work.
 
-**Physical tracing: Magnetic arrows.** Variable cards `a`, `b`, and `c` refer to drawn list objects. Change an element, copy the list, and reassign one variable. Students draw their own corresponding box and arrow traces. Compare:
+**Presentation outline**
+1. Hook prediction (Resonance): `b = a`, then `a.append(4)`, then `print(b)`.
+2. Boxes and arrows: frames, objects, and references, with a Python Tutor link to the hook program. Groups move to the whiteboards.
+3. **Instructor demonstration** at the front board with magnetic arrows: two variables can refer to the same list, and a third holds an equal but separate list. Students build the same picture at their whiteboards.
+4. Aliases versus copies, and `==` versus `is` and `is not`.
+5. `copy.copy()`, with a Python Tutor link for each example. Recognize alternate copying forms such as slicing, `list(L)`, `L.copy()`, `L + []`, and `L * 1` without using them, consistent with CMU's preference for `copy.copy()`.
+6. Reassigning moves an arrow (trace board), then mutation versus assignment.
+7. **Whiteboard trace:** groups trace `M[2] = 5` through an alias, then check with the revealed answer and Python Tutor.
+8. **Hands on: Move the arrows (`arrows.py`):** before each line, groups decide whether it is a mutation or an assignment. A trace board checks the result.
+9. `L = L + M` versus `L += M`, and `L = L * n` versus `L *= n`.
+10. Four patterns that help you remember: assignment operators (`+=`, `*=`) mutate while plain operators do not; methods mutate while past-tense functions (`sorted`, `reversed`) do not; mutating methods return `None` except `pop`; and non-mutating operations return a new list that must be stored. When the patterns are not enough, run the alias test.
+11. A parameter refers to the caller's list (trace board).
+12. Back to computers.
+
+**Physical tracing: Magnetic arrows.** Each group draws list objects beside its TraceLift printout and uses magnetic arrows for variable references, moving an arrow on reassignment and editing the drawn list on mutation. Contrast:
 
 ```python
 a = [1, 2, 3]
@@ -150,9 +194,9 @@ b = a
 a = a + [4]
 ```
 
-**MobCode:** Predict object identity, value equality, and contents after sequences of assignment and mutation.
+**MobCode: Identity predictions.** Predict object identity, value equality, and contents after sequences of assignment and mutation. The three-step checklist is in the starter comments.
 
-**VS Code: Alias Experiments.** Short experiments with `is`, `==`, `copy.copy()`, list arguments to functions, and augmented assignment. Each includes a prediction and explanation.
+**VS Code: Alias Experiments (`alias_experiments.py`).** Each experiment has a prediction comment above it and an explanation in terms of arrows below it. Students show two lists that are `==` but not `is` and two that are both; use the alias test to decide whether `L += [1]`, `L = L + [1]`, and `L.extend([1])` mutate `L`; and write `shout(words)`, which uppercases every word by index, then protect the caller with `copy.copy`.
 
 **Reference discoveries:** objects and aliases, copying, identity, reassignment, augmented operators, parameter aliases.
 
@@ -366,8 +410,93 @@ Each student retains a VS Code lab collection and contributes a separately testa
 1. Finalize exact Review Detective module roles so each student has comparable one dimensional list work.
 2. Decide how much review data and sentiment vocabulary to provide versus generate.
 3. Build the student reference sheet template, likely a single growing document or workbook.
-4. Decide whether the presentation sequence starts the project context early while delaying GitHub until later.
+4. **Decided:** Presentation 1 previews the project on one slide; the full project context and GitHub start in Presentation 9.
 5. Define compact MobCode tracing interactions, VS Code starter files, and exit checks for each presentation.
-6. Decide which experiments use actual candy and which use diagrams so physical materials are feasible for class size.
+6. **Decided for Presentations 3 and 6:** groups use indexed trays with colored list items (green, red, yellow, purple, and orange). Decide whether later presentations need physical materials.
+7. Prepare TraceLift sheets for whiteboard traces in Presentations 5 to 10 as those decks are finalized, and add them to the exercise set below.
 
 **Design principle:** Presentations introduce questions; investigations reveal behavior; VS Code provides durable practice; physical models make invisible list behavior visible; and the team project gives each student's list algorithms an authentic purpose.
+
+---
+
+## TraceLift Exercise Set
+
+TraceLift (https://print.mycode.run/tracelift) prints each program as a numbered code sheet for the whiteboard. Copy each block below into TraceLift as it is. These sheets have no `[[name]]` flaps: students draw frames, list objects, and arrows beside the code and use magnetic arrows for references. Print one sheet per group for each group trace, and one large sheet for the front board demonstration.
+
+### Lesson 4.4 Round 1: The Hook (slide 2, optional)
+
+Students first answer this as a Resonance question. A sheet lets groups redraw it at the board after slide 3.
+
+```text
+Title: Lesson 4.4 Round 1 - The Hook
+a = [1, 2, 3]
+b = a
+a.append(4)
+print(b)
+```
+
+### Lesson 4.4 Demo: Two Names, One List (slide 4, front board)
+
+The instructor traces this at the front board while groups copy the picture.
+
+```text
+Title: Lesson 4.4 Demo - Two Variables Can Refer to the Same List
+L = [1, 3]
+M = L
+N = [1, 3]
+L[0] = 42
+print(L, M, N)
+print(L is M, L is N, L == N)
+```
+
+### Lesson 4.4 Round 2: Reassigning Moves an Arrow (slide 8, optional)
+
+The deck steps through this on a trace board. Groups can trace it first.
+
+```text
+Title: Lesson 4.4 Round 2 - Reassigning Moves an Arrow
+L = [1, 3]
+M = L
+M = [1, 3]
+print(L == M, L is M)
+M[0] = 99
+print(L, M)
+```
+
+### Lesson 4.4 Round 3: Trace It (slide 10)
+
+```text
+Title: Lesson 4.4 Round 3 - Trace It
+L = [1, 2, 3]
+M = L
+M[2] = 5
+print(L, M)
+```
+
+### Lesson 4.4 Round 4: Move the Arrows (slide 11)
+
+```text
+Title: Lesson 4.4 Round 4 - Move the Arrows
+import copy
+a = [1, 2, 3]
+b = a
+c = copy.copy(a)
+a[0] = 9
+b.append(4)
+a = a + [5]
+print(a, b, c)
+```
+
+### Lesson 4.4 Round 5: A Parameter Refers to the Caller's List (slide 16, optional)
+
+The deck steps through this on a trace board. Groups draw a second frame for the call to `f`.
+
+```text
+Title: Lesson 4.4 Round 5 - A Parameter Refers to the Caller's List
+def f(M):
+    M[0] = 42
+
+L = [1, 3]
+f(L)
+print(L)
+```
