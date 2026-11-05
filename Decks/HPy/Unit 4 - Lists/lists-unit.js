@@ -4,8 +4,10 @@
 
    ListsUnit.prepare(traces)  call before initSyncDeckReveal so the
                               storyboard clones see the built DOM:
-                              highlights <code class="py"> blocks and
-                              builds every .lt-board[data-trace].
+                              highlights <code class="py"> blocks,
+                              adds Python Tutor links to
+                              .code-card[data-tutor], and builds every
+                              .lt-board[data-trace].
    ListsUnit.attach(Reveal)   call from afterInit: redraws boards as
                               their hidden step fragments advance.
 
@@ -66,6 +68,19 @@
   function highlight(code) {
     return code.split('\n').map(highlightLine).join('\n');
   }
+
+  // Python Tutor link icon: an upright snake in a mortarboard, and an outward arrow.
+  var TUTOR_ICON = '<svg viewBox="0 0 44 44" width="44" height="44" aria-hidden="true">' +
+    '<path d="M8 40 C2 40 3 34 9 34 C17 34 21 32 20 27 C19 22 10 23 10 17 C10 13 13 11.5 15 12" fill="none" stroke="#7cd992" stroke-width="4.2" stroke-linecap="round"/>' +
+    '<path d="M8 40 C12 40 14 39.5 16 39" fill="none" stroke="#7cd992" stroke-width="2.4" stroke-linecap="round"/>' +
+    '<ellipse cx="18.5" cy="12" rx="5.6" ry="4" fill="#7cd992"/>' +
+    '<circle cx="20" cy="11" r="1.2" fill="#1a1410"/>' +
+    '<path d="M23.8 13 l3.2 0.2 M27 13.2 l1.6 -1.2 M27 13.2 l1.6 1.2" stroke="#ff8a7e" stroke-width="1.1" stroke-linecap="round"/>' +
+    '<rect x="15" y="6" width="7" height="3.2" fill="#f2b134"/>' +
+    '<polygon points="10.5,5.5 18.5,2 26.5,5.5 18.5,9" fill="#f2b134"/>' +
+    '<path d="M10.5 5.5 V11" stroke="#f2b134" stroke-width="1.3"/><circle cx="10.5" cy="11.6" r="1.3" fill="#f2b134"/>' +
+    '<path d="M30 30 L40 20 M33.5 20 H40 V26.5" fill="none" stroke="#f2b134" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '</svg>';
 
   // ── fold steps 0..k into one state ───────────────────────
   function fold(steps, k) {
@@ -167,7 +182,7 @@
     };
   }
 
-  var CANDY = { red: '#ff6b5b', green: '#7cd992', yellow: '#f2d34a', blue: '#7ec8e3', orange: '#ffa94d', purple: '#c9a4ff' };
+  var CANDY = { red: '#ff6b5b', green: '#7cd992', yellow: '#f2d34a', blue: '#7cd992', orange: '#ffa94d', purple: '#c9a4ff' };
 
   function renderMem(L, s, uid) {
     var p = [];
@@ -321,6 +336,27 @@
   window.ListsUnit = {
     highlight: highlight,
     prepare: function (traces) {
+      // A .code-card[data-tutor] gets a Python Tutor icon link in its header,
+      // built from its own code so the link can never drift from what the
+      // slide shows. data-tutor-setup holds lines to run first (e.g. a
+      // variable the snippet uses but does not define), joined with "|".
+      document.querySelectorAll('.code-card[data-tutor]').forEach(function (card) {
+        var el = card.querySelector('code.py');
+        var hdr = card.querySelector('.code-hdr');
+        if (!el || !hdr) return;
+        var setup = card.getAttribute('data-tutor-setup');
+        var code = (setup ? setup.split('|').join('\n') + '\n' : '') + el.textContent.replace(/^\n/, '');
+        var a = document.createElement('a');
+        a.className = 'tutor-link';
+        a.href = 'https://pythontutor.com/visualize.html#code=' + encodeURIComponent(code) +
+          '&curInstr=0&mode=display&origin=opt-frontend.js';
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.title = 'Open in Python Tutor';
+        a.setAttribute('aria-label', 'Open in Python Tutor');
+        a.innerHTML = TUTOR_ICON;
+        hdr.appendChild(a);
+      });
       document.querySelectorAll('code.py').forEach(function (el) {
         el.innerHTML = highlight(el.textContent.replace(/^\n/, ''));
       });
