@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="10kn9yo">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.8 List Shortcuts and Comprehensions</title>
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../../theme.css">
+<link rel="stylesheet" href="../lists-unit.css">
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">HPy &middot; Unit 4 &middot; Lists</span>
+        <h1 class="title-h1">4.8 List Shortcuts and Comprehensions</h1>
+        <p class="subtitle">sorted and reversed &middot; split, splitlines, and join &middot; list comprehensions &middot; refactoring safely</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 02 · THE QUESTION -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">The Question</span>
+        <h2>When does a shortcut make code better?</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          You can now write any list algorithm with a loop. Python also has shortcuts that do common jobs in one line. A shortcut is worth using when it is <span style="color:var(--result);">clearer</span> than the loop and does <span style="color:var(--result);">exactly the same thing</span>, including whether it changes the list.
+        </p>
+        <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
+          That second part is where shortcuts bite. Many shortcuts come in pairs that look alike, where one builds a new list and the other mutates the old one. Today's job is to learn each pair and then refactor code without changing what it does.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 03 · SORTED VS SORT -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">4.2.7 sorted()</span>
+          <h2><code>sorted(L)</code> versus <code>L.sort()</code></h2>
+          <p style="margin-top:var(--gap-sm);">
+            <code>sorted(L)</code> is a function that returns a <span style="color:var(--result);">new</span> sorted list and leaves <code>L</code> alone. <code>L.sort()</code> is a method that <span style="color:var(--warn);">mutates</span> <code>L</code> and returns <code>None</code>.
+          </p>
+          <p style="margin-top:var(--gap);">
+            Both accept <code>reverse=True</code> to sort from largest to smallest. This is the clean fix for last lesson's <code>median</code>.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">L = [8, 3, 2, 6, 4]
+M = sorted(L)
+print(L)   # [8, 3, 2, 6, 4]
+print(M)   # [2, 3, 4, 6, 8]
+
+N = sorted(L, reverse=True)
+print(N)   # [8, 6, 4, 3, 2]
+
+def median(L):
+    M = sorted(L)
+    return M[len(M) // 2]</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 04 · TRACE: SORTED VS SORT -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Trace It</span>
+        <h2>One builds, one mutates</h2>
+        <div class="lt-board" data-trace="sorts" style="margin-top:var(--gap-sm);"></div>
+      </div>
+    </section>
+
+    <!-- SLIDE 05 · REVERSED -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">4.2.7 reversed()</span>
+          <h2><code>reversed(L)</code> is not a list</h2>
+          <p style="margin-top:var(--gap-sm);">
+            You might expect <code>reversed(L)</code> to return a reversed list. Instead it returns a special <span style="color:var(--accent);">iterator</span> object that hands out <code>L</code>'s values from back to front.
+          </p>
+          <p style="margin-top:var(--gap);">
+            A <code>for</code> loop can use it directly. To get an actual list, wrap it: <code>list(reversed(L))</code>. It never mutates <code>L</code>. Compare <code>L.reverse()</code>, which does.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">L = [8, 3, 2]
+print(reversed(L))
+# &lt;list_reverseiterator object ...&gt;
+
+print(list(reversed(L)))   # [2, 3, 8]
+print(L)                   # [8, 3, 2]
+
+for v in reversed(L):
+    print(v)               # 2, 3, 8
+
+L.reverse()
+print(L)                   # [2, 3, 8]</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 06 · CHECKPOINT: SORTED REVERSED -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:sorted-reversed:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "For which `L` does this NOT print `yes`?\n\n```python\nM = sorted(L, reverse=True)\nN = list(reversed(M))\nprint(\"yes\" if L == N else \"no\")\n```", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "`L = [3, 2, 1]`", "isCorrect": true}, {"id": "q1b", "text": "`L = list(range(32))`", "isCorrect": false}, {"id": "q1c", "text": "`L = [5]`", "isCorrect": false}, {"id": "q1d", "text": "`L = [1, 2, 3]`", "isCorrect": false}]}]}'>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Checkpoint &middot; sorted and reversed</span>
+          <h2>For which list does this <span style="color:var(--warn);">not</span> print yes?</h2>
+          <ul class="mcq-opts" style="margin-top:var(--gap);">
+            <li><span class="opt-key">A</span><code>L = [3, 2, 1]</code></li>
+            <li><span class="opt-key">B</span><code>L = list(range(32))</code></li>
+            <li><span class="opt-key">C</span><code>L = [5]</code></li>
+            <li><span class="opt-key">D</span><code>L = [1, 2, 3]</code></li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">M = sorted(L, reverse=True)
+N = list(reversed(M))
+print("yes" if L == N else "no")</code></pre></div>
+        </div>
+      </div>
+      <aside class="notes">N is L sorted smallest to largest, so this prints yes exactly when L was already in ascending order. [3, 2, 1] is not.</aside>
+    </section>
+
+    <!-- SLIDE 07 · SPLIT SPLITLINES JOIN -->
+    <section>
+      <div class="slide-inner split split-40">
+        <div>
+          <span class="slide-tag">4.2.9 List-Related String Methods</span>
+          <h2>Text to lists and back</h2>
+          <p style="margin-top:var(--gap-sm);">
+            <code>s.split(c)</code> breaks a string at each <code>c</code>. <code>s.splitlines()</code> breaks it at each line ending, which is how you turn a file of reviews, one per line, into a list of reviews.
+          </p>
+          <p style="margin-top:var(--gap);">
+            <code>c.join(L)</code> goes back, putting <code>c</code> between each pair. Use <code>"\n"</code> to make lines, or <code>""</code> to glue strings together with nothing between.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">text = """Great fan!
+Too loud.
+Works fine."""
+reviews = text.splitlines()
+print(reviews)
+# ['Great fan!', 'Too loud.', 'Works fine.']
+
+print(" | ".join(reviews))
+# Great fan! | Too loud. | Works fine.
+print("".join(["H", "i", "!"]))   # Hi!</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 08 · CHECKPOINT: JOIN -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:join-false:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Which of the following is False?", "order": 0, "responseTimeLimitMs": 75000, "options": [{"id": "q1a", "text": "For a multiline string `s` that does not end in a newline, if `L = s.splitlines()`, then `s == \"\\n\".join(L)` must be `True`.", "isCorrect": false}, {"id": "q1b", "text": "If `L` is a list of names, then `\",\".join(L)` is a comma-separated string of those names.", "isCorrect": false}, {"id": "q1c", "text": "For any non-empty string `s` that does not end in a newline, `s.split(\"\\n\") == s.splitlines()` is always `True`.", "isCorrect": false}, {"id": "q1d", "text": "For any list `L`, if `s = \"-\".join(L)`, then `\"-\" in s` must be `True`.", "isCorrect": true}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint &middot; split and join</span>
+        <h2>Which statement is <span style="color:var(--warn);">false</span>?</h2>
+        <ul class="mcq-opts" style="margin-top:var(--gap);max-width:1250px;">
+          <li><span class="opt-key">A</span>For a multiline string <code>s</code> that does not end in a newline, if <code>L = s.splitlines()</code>, then <code>s == "\n".join(L)</code> must be <code>True</code>.</li>
+          <li><span class="opt-key">B</span>If <code>L</code> is a list of names, then <code>",".join(L)</code> is a comma-separated string of those names.</li>
+          <li><span class="opt-key">C</span>For any non-empty string <code>s</code> that does not end in a newline, <code>s.split("\n") == s.splitlines()</code> is always <code>True</code>.</li>
+          <li><span class="opt-key">D</span>For any list <code>L</code>, if <code>s = "-".join(L)</code>, then <code>"-" in s</code> must be <code>True</code>.</li>
+        </ul>
+      </div>
+      <aside class="notes">If L has zero or one values, join has no pairs to separate, so no "-" appears: "-".join(["a"]) is "a".</aside>
+    </section>
+
+    <!-- SLIDE 09 · COMPREHENSIONS -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">4.2.11 List Comprehensions</span>
+          <h2>A loop that builds a list, in one line</h2>
+          <p style="margin-top:var(--gap-sm);">
+            <code>[expression for variable in iterable]</code> builds a new list. Read it from right to left: the <span style="color:var(--syntax-string);">iterable</span> is what you loop over, the <span style="color:var(--syntax-number);">variable</span> takes each value in turn, and the <span style="color:var(--accent);">expression</span> computes what goes into the result.
+          </p>
+          <p style="margin-top:var(--gap);">
+            The iterable can be a list, a <code>range</code>, or a string.
+          </p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">the loop</span></div>
+            <div class="code-body"><pre><code class="py">L = [2, 4, 1, 5]
+M = []
+for v in L:
+    M.append(v ** 2)
+print(M)   # [4, 16, 1, 25]</code></pre></div>
+          </div>
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">the comprehension</span></div>
+            <div class="code-body"><pre><code class="py">M = [v ** 2 for v in L]
+print(M)   # [4, 16, 1, 25]
+print([v ** 2 for v in range(5)])
+# [0, 1, 4, 9, 16]</code></pre></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 10 · WITH A CONDITION -->
+    <section>
+      <div class="slide-inner split split-40">
+        <div>
+          <span class="slide-tag">Using a Conditional</span>
+          <h2>Add <code>if</code> to filter</h2>
+          <p style="margin-top:var(--gap-sm);">
+            Adding <code>if condition</code> at the end, as in <code>[expr for v in L if cond]</code>, keeps only the values where the condition is <code>True</code>. That is the filter and transform pattern from 4.5, in one line.
+          </p>
+          <p style="margin-top:var(--gap);">
+            Keep comprehensions <span style="color:var(--accent);">short and clear</span>. If you need more than a simple expression and a simple condition, write the loop instead.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">L = [2, 4, 1, 5]
+print([v ** 2 for v in L if v % 2 == 0])
+# [4, 16]
+
+words = ["Great", "fan", "but", "LOUD"]
+print([w.lower() for w in words
+       if len(w) > 3])
+# ['great', 'loud']</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 11 · CHECKPOINT: COMPREHENSION -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:comprehension:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Which comprehension builds the same `M` as this loop?\n\n```python\nM = []\nfor v in L:\n    if v % 2 == 1:\n        M.append(v * 10)\n```", "order": 0, "responseTimeLimitMs": 50000, "options": [{"id": "q1a", "text": "`M = [if v % 2 == 1 then v * 10 for v in L]`", "isCorrect": false}, {"id": "q1b", "text": "`M = [v * 10 for v in L if v % 2 == 1]`", "isCorrect": true}, {"id": "q1c", "text": "`M = [for v in L: if v % 2 == 1: v * 10]`", "isCorrect": false}, {"id": "q1d", "text": "`M = [v * 10 for v in L] if (v % 2 == 1)`", "isCorrect": false}]}]}'>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Checkpoint &middot; Comprehensions</span>
+          <h2>Which comprehension builds the same list?</h2>
+          <ul class="mcq-opts" style="margin-top:var(--gap);">
+            <li><span class="opt-key">A</span><code>M = [if v % 2 == 1 then v * 10 for v in L]</code></li>
+            <li><span class="opt-key">B</span><code>M = [v * 10 for v in L if v % 2 == 1]</code></li>
+            <li><span class="opt-key">C</span><code>M = [for v in L: if v % 2 == 1: v * 10]</code></li>
+            <li><span class="opt-key">D</span><code>M = [v * 10 for v in L] if (v % 2 == 1)</code></li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">M = []
+for v in L:
+    if v % 2 == 1:
+        M.append(v * 10)</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 12 · OPERATORS RECAP -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">The Shortcut Pairs</span>
+        <h2>New list, or same list changed?</h2>
+        <table class="ref-table" style="margin-top:var(--gap-sm);font-size:var(--code);">
+          <tr><th>Builds a new list</th><th>Mutates the existing list</th></tr>
+          <tr><td><code>sorted(L)</code></td><td><code>L.sort()</code></td></tr>
+          <tr><td><code>list(reversed(L))</code>, <code>L[::-1]</code></td><td><code>L.reverse()</code></td></tr>
+          <tr><td><code>L = L + M</code></td><td><code>L += M</code>, <code>L.extend(M)</code></td></tr>
+          <tr><td><code>L = L * n</code></td><td><code>L *= n</code></td></tr>
+          <tr><td><code>[f(v) for v in L if test(v)]</code></td><td>a <code>while</code> loop with <code>pop</code></td></tr>
+        </table>
+        <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
+          Swapping a shortcut from one column for one in the other column changes what the code <span style="color:var(--warn);">does</span>, even if the printed output looks the same.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 13 · PREDICT: MAKEOVER -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:makeover:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Which statement about these two versions is true?\n\nVersion 1:\n\n```python\nresult = []\nfor word in words:\n    if len(word) > 5:\n        result.append(word)\n```\n\nVersion 2:\n\n```python\nresult = [word for word in words\n          if len(word) > 5]\n```", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "They build the same list, but version 2 mutates `words`", "isCorrect": false}, {"id": "q1b", "text": "Version 2 builds the words in reverse order", "isCorrect": false}, {"id": "q1c", "text": "They build the same list, and neither one changes `words`", "isCorrect": true}, {"id": "q1d", "text": "Version 1 mutates `words` because it calls `append`", "isCorrect": false}]}]}'>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Code Makeover &middot; Predict</span>
+          <h2>Is the makeover the same program?</h2>
+          <ul class="mcq-opts" style="margin-top:var(--gap);">
+            <li><span class="opt-key">A</span>They build the same list, but version 2 mutates <code>words</code></li>
+            <li><span class="opt-key">B</span>Version 2 builds the words in reverse order</li>
+            <li><span class="opt-key">C</span>They build the same list, and neither one changes <code>words</code></li>
+            <li><span class="opt-key">D</span>Version 1 mutates <code>words</code> because it calls <code>append</code></li>
+          </ul>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">version 1</span></div>
+            <div class="code-body"><pre><code class="py">result = []
+for word in words:
+    if len(word) > 5:
+        result.append(word)</code></pre></div>
+          </div>
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">version 2</span></div>
+            <div class="code-body"><pre><code class="py">result = [word for word in words
+          if len(word) > 5]</code></pre></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 14 · MOBCODE: MAKEOVER -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="mobcode:makeover:0"
+      data-activity-options='{"files": {"main.py": "import copy\n\n# Code Makeover: rewrite each function body to be shorter\n# and clearer, using sorted, join, or a comprehension.\n# The tests must still pass, and that includes the checks\n# that the input list is unchanged.\n#\n# Run the tests BEFORE you change anything, to see them pass.\n# Then run them again after every change.\n\ndef shortWords(words):\n    result = []\n    for word in words:\n        if len(word) <= 3:\n            result.append(word.lower())\n    return result\n\ndef alphabetical(words):\n    result = copy.copy(words)\n    result.sort()\n    return result\n\ndef asSentence(words):\n    s = \"\"\n    for i in range(len(words)):\n        if i > 0:\n            s += \" \"\n        s += words[i]\n    return s\n\ndef test():\n    words = [\"The\", \"fan\", \"is\", \"LOUD\"]\n    original = copy.copy(words)\n    assert(shortWords(words) == [\"the\", \"fan\", \"is\"])\n    assert(alphabetical(words) == [\"LOUD\", \"The\", \"fan\", \"is\"])\n    assert(asSentence(words) == \"The fan is LOUD\")\n    assert(asSentence([]) == \"\")\n    assert(words == original)\n    print(\"All tests passed!\")\n\ntest()\n"}, "activeFile": "main.py", "runnerId": "brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Code Makeover</span>
+        <h2>Shorter, and still the same program</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          Run the tests first to see them pass. Then rewrite each function body to be shorter and clearer, using <code>sorted</code>, <code>join</code>, or a comprehension. Run the tests after <span style="color:var(--accent);">every</span> change. These are <span style="color:var(--accent);">regression tests</span>: they prove the makeover did not change behavior, including leaving <code>words</code> alone.
+        </p>
+      </div>
+      <aside class="notes">Targets: [w.lower() for w in words if len(w) &lt;= 3]; return sorted(words); return " ".join(words). Uppercase letters sort before lowercase, which is why "LOUD" and "The" come first. If a student writes words.sort() in alphabetical, the last assert catches it.</aside>
+    </section>
+
+    <!-- SLIDE 15 · WHEN NOT TO -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Readability</span>
+        <h2>When to keep the loop</h2>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);margin-top:var(--gap-sm);max-width:1250px;">
+          <div class="key-prop"><strong>The work is more than one expression and one condition.</strong> Nested <code>if</code>s, several steps, or a counter all belong in a loop.</div>
+          <div class="key-prop"><strong>The goal is to mutate a list.</strong> A comprehension always builds a new list. It cannot be a mutating <code>removeAll</code>.</div>
+          <div class="key-prop"><strong>You need the index or a neighbor.</strong> Loops like <code>negatedWords</code> from 4.5 read more clearly as loops.</div>
+          <div class="key-prop"><strong>Nobody on your team can read it yet.</strong> Clear code is code your teammates can trace. That matters whenever you share code.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 16 · VS CODE EXERCISE -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">VS Code &middot; refactoring_lab.py</span>
+        <h2>Refactoring Lab</h2>
+        <div class="ex-card" style="margin-top:var(--gap-sm);max-width:1300px;">
+          <p>In VS Code, create <code>refactoring_lab.py</code> in your Unit 4 folder. Copy three functions from your 4.5, 4.6, and 4.7 files into it, along with their tests.</p>
+          <ol class="bullets" style="margin-top:var(--gap-sm);">
+            <li>Make sure every test passes <em>before</em> you change anything, and that the tests check the input after each call.</li>
+            <li>Refactor each function with a shortcut where it makes the code clearer. Run the tests after each change.</li>
+            <li>For one function, decide that the loop is clearer and leave it. Write a comment explaining why.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 17 · REFERENCE -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">List Programmer's Reference</span>
+        <h2>Add today's entries</h2>
+        <table class="ref-table" style="margin-top:var(--gap-sm);">
+          <tr><th>Operation</th><th>What it does</th><th>Returns</th><th>Changes the list?</th></tr>
+          <tr><td><code>sorted(L)</code>, <code>sorted(L, reverse=True)</code></td><td>sort into a new list</td><td>a new list</td><td class="no">no</td></tr>
+          <tr><td><code>reversed(L)</code></td><td>back-to-front iterator; wrap in <code>list()</code></td><td></td><td></td></tr>
+          <tr><td><code>s.splitlines()</code></td><td></td><td></td><td class="no">no</td></tr>
+          <tr><td><code>"\n".join(L)</code>, <code>"".join(L)</code></td><td></td><td>a string</td><td></td></tr>
+          <tr><td><code>[expr for v in L]</code></td><td>transform every value</td><td></td><td></td></tr>
+          <tr><td><code>[expr for v in L if cond]</code></td><td></td><td></td><td class="no">no</td></tr>
+        </table>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">The first row is done for you. Test each entry and fill in the blank cells.</p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../lists-unit.js"></script>
+<script>
+  var LIST_TRACES = {
+    sorts: {
+      cols: '600px minmax(0,1fr)',
+      code: [
+        'L = [3, 1, 2]',
+        'A = L',
+        'M = sorted(L)',
+        'L.sort()',
+        'print(A, M)',
+        'print(A is L, M is L)',
+      ].join('\n'),
+      consoleLines: 2,
+      sayLines: 3,
+      steps: [
+        { line: 1, say: '<code>A</code> will be an alias, so we can see whether each operation mutates.' },
+        { line: 2, frames: [['global', { L: '@x' }]], objs: { x: ['3', '1', '2'] }, say: 'One list.' },
+        { line: 3, frames: [['global', { L: '@x', A: '@x' }]], say: '<code>A</code> and <code>L</code> are aliases.' },
+        { line: 4, frames: [['global', { L: '@x', A: '@x', M: '@y' }]], objs: { y: ['1', '2', '3'] }, hl: { y: { add: [0, 1, 2] } },
+          say: '<code>sorted(L)</code> built a brand-new sorted list. The original is untouched.' },
+        { line: 5, objs: { x: ['1', '2', '3'] }, hl: { x: { hl: [0, 1, 2] } },
+          say: '<code>L.sort()</code> rearranged the original list in place, so <code>A</code> sees it too.' },
+        { line: 6, print: '[1, 2, 3] [1, 2, 3]', say: 'The output looks the same for both lists.' },
+        { line: 7, print: 'True False', say: 'But only the arrows show the difference: <code>M</code> is a separate list.' },
+      ],
+    },
+  };
+  ListsUnit.prepare(LIST_TRACES);
+</script>
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+  initSyncDeckReveal({
+    deckId: 'hpy-4-8-list-shortcuts-and-comprehensions',
+    standaloneHosting: {
+      activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    afterInit: function (Reveal) {
+      ListsUnit.attach(Reveal);
+    },
+    revealOverrides: {
+      hash: true,
+      hashOneBasedIndex: true,
+      transition: 'fade',
+      transitionSpeed: 'fast',
+      backgroundTransition: 'none',
+      center: false,
+      controls: true,
+      controlsLayout: 'edges',
+      progress: true,
+      slideNumber: 'c/t',
+      keyboard: true,
+      touch: true,
+      fragments: true,
+      width: 1600,
+      height: 900,
+      margin: 0.04,
+      minScale: 0.2,
+      maxScale: 2.5,
+    },
+  });
+</script>
+</body>
+</html>

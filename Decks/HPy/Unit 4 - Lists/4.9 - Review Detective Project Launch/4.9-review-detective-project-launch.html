@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="129b61l">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.9 Review Detective Project Launch</title>
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../../theme.css">
+<link rel="stylesheet" href="../lists-unit.css">
+<style>
+  /* ── Slide 11: the pull, edit and test, commit, push cycle ── */
+  .git-cycle { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-sm); margin-top: var(--gap); }
+  .git-step {
+    background: var(--bg-card); border: 1px solid var(--accent-border); border-top: 3px solid var(--accent);
+    border-radius: 0 0 10px 10px; padding: 14px 16px;
+  }
+  .git-step h3 { font-family: var(--font-mono); color: var(--accent); }
+  .git-step p { font-size: var(--body); line-height: 1.4; color: var(--text-muted); margin-top: 6px; }
+  .git-step code { font-size: var(--code); }
+</style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(124,217,146,0.12) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">HPy &middot; Unit 4 &middot; Lists</span>
+        <h1 class="title-h1">4.9 Review Detective Project Launch</h1>
+        <p class="subtitle">the investigation &middot; team modules &middot; contracts before code &middot; your first shared GitHub repository</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 02 · DRIVING QUESTION -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">The Project</span>
+        <h2>Can a program help us understand reviews?</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          Your team will build <span style="color:var(--result);">Review Detective</span>, a console program that reads consumer reviews and reports on the language in them: how positive or negative it sounds, which words it leans on, and where its signals conflict.
+        </p>
+        <div class="callout-result" style="margin-top:var(--gap);max-width:1250px;">
+          <strong>Driving question:</strong> Can a program help us understand consumer reviews, and when might its conclusions be misleading?
+        </div>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          The second half of that question matters as much as the first. A finished project reports what the program found <span style="color:var(--accent);">and</span> where its analysis falls short.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 03 · WHAT IT CANNOT CLAIM -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Honest Claims</span>
+        <h2>What the program can and cannot tell us</h2>
+        <div class="split split-50" style="margin-top:var(--gap-sm);flex:0 0 auto;align-items:start;">
+        <div class="key-prop">
+          <strong style="color:var(--result);">Review Detective can</strong> count, compare, and describe language. It can show that one review uses twice as many negative words as another, or repeats one adjective eight times, and point to the exact words.
+        </div>
+        <div class="key-prop">
+          <strong style="color:var(--warn);">Review Detective cannot</strong> prove that a review is fake, or that a sentiment score is the truth about a product. Word counts miss sarcasm, negation, and context. Your report should say so.
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 04 · THE DATA -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The Shared Data</span>
+          <h2>One review per line</h2>
+          <p style="margin-top:var(--gap-sm);">
+            Every team gets the same <code>sample_reviews.txt</code>, with one review per line. <code>splitlines</code> turns the file into a list of reviews, and <code>split</code> turns each review into a list of words.
+          </p>
+          <p style="margin-top:var(--gap);">
+            Everything after that is list processing, and every module receives its words in the <span style="color:var(--accent);">same agreed format</span>: a list of lowercase words with punctuation removed.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">text = open("sample_reviews.txt").read()
+reviews = text.splitlines()
+
+for review in reviews:
+    words = cleanWords(review)
+    # words is a list like:
+    # ['great', 'fan', 'but', 'loud']
+    ...</code></pre></div>
+        </div>
+      </div>
+      <aside class="notes">cleanWords (lowercase, strip punctuation, split) can be provided in the starter files so no student's role is mostly input handling. Reading a file with open() is new; it is the only file I/O students need.</aside>
+    </section>
+
+    <!-- SLIDE 05 · THREE MODULES -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Team Architecture</span>
+        <h2>Three investigators, three modules</h2>
+        <table class="ref-table" style="margin-top:var(--gap-sm);font-size:var(--code);">
+          <tr><th>Module</th><th>Investigates</th><th>List skills it leans on</th></tr>
+          <tr><td><code>sentiment.py</code><br>Sentiment Detective</td><td>positive and negative language, and a defensible sentiment estimate</td><td>searching, counting, filtering, accumulating</td></tr>
+          <tr><td><code>language.py</code><br>Language Detective</td><td>vocabulary, repetition, and the most used words</td><td>building lists, membership, sorting, slicing</td></tr>
+          <tr><td><code>investigator.py</code><br>Review Investigator</td><td>exaggeration, conflicting signals, and how edits change the results</td><td>comparing lists, filtering, copying versus mutating</td></tr>
+        </table>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          Each teammate owns one module and writes all of its list algorithms. Nobody's job is "just the input" or "just the report."
+        </p>
+      </div>
+      <aside class="notes">These are the planning draft's candidate modules and are still provisional. Adjust names and responsibilities to the final rubric before class, and check that the Review Investigator has list work comparable to the other two. For pairs, merge Investigator into the other two; for groups of four, split Language Detective into vocabulary and repetition.</aside>
+    </section>
+
+    <!-- SLIDE 06 · EVERY MODULE MUST -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Individual Expectations</span>
+        <h2>Your module must show that you can&hellip;</h2>
+        <ul class="bullets" style="margin-top:var(--gap-sm);max-width:1250px;">
+          <li>create lists and fill them, and traverse lists with loops;</li>
+          <li>search, count, or filter values with conditions;</li>
+          <li>build a new list by transforming or selecting values from another list;</li>
+          <li>perform one intentional, documented list mutation, and explain why it belongs there;</li>
+          <li>define and test several functions that take lists as arguments or return them;</li>
+          <li>explain a trace of your own code, including any aliases.</li>
+        </ul>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          Your grade comes from your code, your tests, your traces, and your explanations. It does <span style="color:var(--accent);">not</span> come from how many commits you make.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 07 · CONTRACTS FIRST -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Contracts Before Code</span>
+          <h2>Agree on the interface first</h2>
+          <p style="margin-top:var(--gap-sm);">
+            Before anyone writes a loop, the team agrees on every shared function's <span style="color:var(--accent);">name</span>, <span style="color:var(--accent);">parameters</span>, <span style="color:var(--accent);">return value</span>, and whether it <span style="color:var(--accent);">mutates</span> its inputs.
+          </p>
+          <p style="margin-top:var(--gap);">
+            Then <code>main.py</code> can depend on what each function promises, not on how it is written. You can test your module against the shared sample inputs without waiting for anyone.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">sentiment.py</span></div>
+          <div class="code-body"><pre><code class="py">def countPositive(words, positiveWords):
+    # Returns the number of words in words
+    # that appear in positiveWords.
+    # Does not change either list.
+    ...
+
+def sentimentScore(words, positiveWords,
+                   negativeWords):
+    # Returns positives minus negatives.
+    # Does not change any list.
+    ...</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 08 · CHECKPOINT: CONTRACT -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:good-contract:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Which comment is a complete contract for `topWords(words, n)`?", "order": 0, "responseTimeLimitMs": 50000, "options": [{"id": "q1a", "text": "Returns a new list of the `n` most common words, most common first. Does not change `words`.", "isCorrect": true}, {"id": "q1b", "text": "Finds the top words using a loop and a list of counts.", "isCorrect": false}, {"id": "q1c", "text": "Sorts `words` and returns the first `n`.", "isCorrect": false}, {"id": "q1d", "text": "Returns a list.", "isCorrect": false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint &middot; Contracts</span>
+        <h2>Which is a complete contract for <code>topWords(words, n)</code>?</h2>
+        <ul class="mcq-opts" style="margin-top:var(--gap);max-width:1200px;">
+          <li><span class="opt-key">A</span>Returns a new list of the <code>n</code> most common words, most common first. Does not change <code>words</code>.</li>
+          <li><span class="opt-key">B</span>Finds the top words using a loop and a list of counts.</li>
+          <li><span class="opt-key">C</span>Sorts <code>words</code> and returns the first <code>n</code>.</li>
+          <li><span class="opt-key">D</span>Returns a list.</li>
+        </ul>
+      </div>
+      <aside class="notes">B describes how, not what. C describes a mutating implementation and leaves out what "top" means. D is too vague to test. A says what is returned, in what order, and what happens to the input, so a teammate can write a test from it.</aside>
+    </section>
+
+    <!-- SLIDE 09 · STUBS AND TESTS -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Independent Modules</span>
+          <h2>Stubs, imports, and test files</h2>
+          <p style="margin-top:var(--gap-sm);">
+            A <span style="color:var(--accent);">stub</span> is a function that keeps its contract's shape but returns a placeholder. With stubs in place, <code>main.py</code> runs from day one.
+          </p>
+          <p style="margin-top:var(--gap);">
+            <code>import</code> lets one file use another file's functions. Keep each module's tests in its own test file, which imports the module and runs the tests. That way, importing the module into <code>main.py</code> never runs your tests.
+          </p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">language.py (a stub)</span></div>
+            <div class="code-body"><pre><code class="py">def topWords(words, n):
+    return []    # TODO: real version</code></pre></div>
+          </div>
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">test_language.py</span></div>
+            <div class="code-body"><pre><code class="py">from language import topWords
+
+def testTopWords():
+    words = ["so", "loud", "so"]
+    assert(topWords(words, 1) == ["so"])
+    assert(words == ["so", "loud", "so"])
+
+testTopWords()</code></pre></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 10 · REPOSITORY -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The Repository</span>
+          <h2>One repository, clear owners</h2>
+          <p style="margin-top:var(--gap-sm);">
+            Each team shares one GitHub repository. Every file has an <span style="color:var(--accent);">owner</span>, and you only edit files you own.
+          </p>
+          <p style="margin-top:var(--gap);">
+            Shared files, like <code>main.py</code> and <code>README.md</code>, need a team rule. For example, one person owns <code>main.py</code>, and everyone else asks them for changes.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">review-detective/</span></div>
+          <div class="code-body"><pre><code>main.py               # shared: team rule
+sentiment.py          # owner: student A
+test_sentiment.py     # owner: student A
+language.py           # owner: student B
+test_language.py      # owner: student B
+investigator.py       # owner: student C
+test_investigator.py  # owner: student C
+sample_reviews.txt    # shared input
+README.md             # findings and limits</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 11 · GIT CYCLE -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Version Control</span>
+        <h2>Pull, edit and test, commit, push</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          Git keeps every saved version of the project, and GitHub shares it with your team. You will use the <span style="color:var(--accent);">Source Control</span> view in VS Code for one simple cycle, every time you sit down to work.
+        </p>
+        <div class="git-cycle">
+          <div class="git-step fragment fade-up"><h3>1. Pull</h3><p>Download your teammates' latest commits before you start, so you build on the newest version.</p></div>
+          <div class="git-step fragment fade-up"><h3>2. Edit and test</h3><p>Change only your own files. Run your test file until it passes.</p></div>
+          <div class="git-step fragment fade-up"><h3>3. Commit</h3><p>Save a snapshot with a message that says what changed and why, like <code>topWords handles ties</code>.</p></div>
+          <div class="git-step fragment fade-up"><h3>4. Push</h3><p>Upload your commits to GitHub. The <strong>Sync Changes</strong> button pulls and then pushes.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 12 · PUSH REJECTED -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">When a Push Is Rejected</span>
+        <h2>Someone pushed first</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          If a teammate pushed after your last pull, GitHub <span style="color:var(--warn);">rejects</span> your push, because your copy is missing their work. That is normal, not an error in your code.
+        </p>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          Pull to bring their commits into your copy, run your tests again, then push. Because each of you edits separate files, Git can usually combine the work on its own. Two people editing the same file at the same time is what causes a <span style="color:var(--warn);">merge conflict</span>, which is why ownership matters.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 13 · CHECKPOINT: REJECTED -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:push-rejected:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "You commit your changes to `language.py` and push, and the push is rejected. What should you do?", "order": 0, "responseTimeLimitMs": 45000, "options": [{"id": "q1a", "text": "Delete your copy of the repository and clone it again", "isCorrect": false}, {"id": "q1b", "text": "Copy your teammate&#39;s files into yours by hand", "isCorrect": false}, {"id": "q1c", "text": "Pull, run your tests again, then push", "isCorrect": true}, {"id": "q1d", "text": "Keep working and never push until the project is done", "isCorrect": false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint &middot; GitHub</span>
+        <h2>Your push was rejected. What do you do?</h2>
+        <ul class="mcq-opts" style="margin-top:var(--gap);max-width:1100px;">
+          <li><span class="opt-key">A</span>Delete your copy of the repository and clone it again</li>
+          <li><span class="opt-key">B</span>Copy your teammate's files into yours by hand</li>
+          <li><span class="opt-key">C</span>Pull, run your tests again, then push</li>
+          <li><span class="opt-key">D</span>Keep working and never push until the project is done</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SLIDE 14 · TEAM DESIGN ACTIVITY -->
+    <section>
+      <div class="glow" style="width:480px;height:480px;background:radial-gradient(circle,rgba(124,217,146,0.10) 0%,transparent 70%);bottom:-120px;right:-80px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Team Design Activity</span>
+        <h2>Write the contracts together</h2>
+        <ul class="bullets" style="margin-top:var(--gap-sm);max-width:1250px;">
+          <li>Choose your modules. Each teammate drafts the contracts for <span style="color:var(--accent);">three</span> functions in their module: name, parameters, return value, and mutation.</li>
+          <li>For each function, write one test input from <code>sample_reviews.txt</code> and the exact result you expect, worked out by hand.</li>
+          <li>Trade drafts. Your teammates check that each contract is complete enough to write a test from, and that <code>main.py</code> can call it.</li>
+          <li>Record the agreed contracts in <code>README.md</code>. That is your team's first commit.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SLIDE 15 · VS CODE: START THE PROJECT -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">VS Code &middot; Collaborative Project</span>
+        <h2>First work session</h2>
+        <div class="ex-card" style="margin-top:var(--gap-sm);max-width:1300px;">
+          <ol class="bullets">
+            <li>Clone your team's repository and open it in VS Code.</li>
+            <li>Write stubs for all three of your functions, so <code>main.py</code> can call them.</li>
+            <li>Write your test file from the contracts, and watch the tests fail against the stubs.</li>
+            <li>Replace one stub with a real implementation until its tests pass. Then pull, commit, and push.</li>
+          </ol>
+        </div>
+        <p style="margin-top:var(--gap);max-width:1300px;">
+          Reuse your lab files from this unit. Most of what your module needs, you have already written once.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../lists-unit.js"></script>
+<script>
+  ListsUnit.prepare({});
+</script>
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+  initSyncDeckReveal({
+    deckId: 'hpy-4-9-review-detective-project-launch',
+    standaloneHosting: {
+      activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+      hash: true,
+      hashOneBasedIndex: true,
+      transition: 'fade',
+      transitionSpeed: 'fast',
+      backgroundTransition: 'none',
+      center: false,
+      controls: true,
+      controlsLayout: 'edges',
+      progress: true,
+      slideNumber: 'c/t',
+      keyboard: true,
+      touch: true,
+      fragments: true,
+      width: 1600,
+      height: 900,
+      margin: 0.04,
+      minScale: 0.2,
+      maxScale: 2.5,
+    },
+  });
+</script>
+</body>
+</html>

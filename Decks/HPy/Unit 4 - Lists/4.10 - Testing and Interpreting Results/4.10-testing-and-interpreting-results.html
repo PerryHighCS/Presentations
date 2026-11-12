@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1hiq5v2">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.10 Testing and Interpreting Results</title>
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../../theme.css">
+<link rel="stylesheet" href="../lists-unit.css">
+<style>
+  /* ── Slide 13: "Fool the Detective" live word-list scorer ──────────
+     The same simple algorithm a Sentiment Detective module might use:
+     lowercase, strip punctuation, split, count matches against two
+     word lists. Students edit the review and watch the verdict. The
+     word strip has a fixed height so the stats never move. */
+  .fd { display: flex; flex-direction: column; gap: 14px; }
+  .fd textarea {
+    width: 100%; height: 132px; resize: none; padding: 12px 16px;
+    font-family: var(--font-mono); font-size: var(--code); line-height: 1.5;
+    color: var(--text); background: var(--bg-card);
+    border: 1px solid var(--accent-border); border-radius: 10px;
+  }
+  .fd textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .fd-bar {
+    font-family: var(--font-mono); font-size: var(--small); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);
+  }
+  .fd-words {
+    height: 166px; overflow: hidden; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px;
+    padding: 12px; background: #0c0906; border-radius: 10px; border: 1px solid var(--accent-border);
+  }
+  .fd-w { font-family: var(--font-mono); font-size: var(--code); padding: 2px 10px; border-radius: 6px; color: var(--text-muted); border: 1px solid rgba(245,236,223,0.2); }
+  .fd-w.pos { color: var(--result); border-color: var(--result); background: rgba(124,217,146,0.12); }
+  .fd-w.neg { color: var(--warn); border-color: var(--warn); background: rgba(255,107,91,0.12); }
+  .fd-stats { display: grid; grid-template-columns: repeat(3, 200px) minmax(0, 1fr) auto; gap: 14px; align-items: stretch; }
+  .fd-stat { background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 10px; padding: 8px 14px; }
+  .fd-stat .k { font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted); }
+  .fd-stat .v { font-family: var(--font-mono); font-size: 40px; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .fd-stat.pos .v { color: var(--result); }
+  .fd-stat.neg .v { color: var(--warn); }
+  .fd-verdict .v { font-family: var(--font-ui); }
+  /* Slide 6: long output options wrap inside the narrow column. */
+  .reveal .mcq-opts.wrap code { white-space: normal; }
+
+  .fd-reset {
+    align-self: center; font-family: var(--font-ui); font-size: var(--small); font-weight: 700; padding: 10px 18px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--accent-border); background: var(--accent-dim); color: var(--accent);
+  }
+</style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">HPy &middot; Unit 4 &middot; Lists</span>
+        <h1 class="title-h1">4.10 Testing and Interpreting Results</h1>
+        <p class="subtitle">tracing complex list code &middot; edge cases &middot; correct code versus trustworthy conclusions</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 02 · TWO QUESTIONS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">The Question</span>
+        <h2>Can we trust the results?</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          Before Review Detective's report means anything, two different questions need answers.
+        </p>
+        <div class="split split-50" style="margin-top:var(--gap);flex:0 0 auto;align-items:start;">
+          <div class="key-prop">
+            <strong style="color:var(--accent);">Is the code correct?</strong> Does each function do exactly what its contract says, on every input, including the strange ones? Tracing and testing answer this.
+          </div>
+          <div class="key-prop fragment fade-up">
+            <strong style="color:var(--syntax-string);">Is the conclusion valid?</strong> Even if every function is perfect, does the number it produces mean what the report claims? Only careful interpretation answers this.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 03 · TRACING PROTOCOL -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">4.2.13 Code Tracing with Lists</span>
+        <h2>Predict, trace, run, explain</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          Lists are the first mutable data we have traced, so these traces can be hard. Use the same protocol every time, and keep scratch paper out.
+        </p>
+        <ul class="bullets" style="margin-top:var(--gap);max-width:1250px;">
+          <li><strong>Predict:</strong> read the whole program and guess the output before tracing.</li>
+          <li><strong>Trace:</strong> draw frames, variables, and list objects as boxes and arrows, one line at a time.</li>
+          <li><strong>Run:</strong> check your trace against the real output.</li>
+          <li><strong>Explain:</strong> for any line you got wrong, name the exact step where your drawing went wrong.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SLIDE 04 · PREDICT: CT4 -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:ct4:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "What are the four lines this program prints? Each `/` separates one line of output.\n\n```python\nimport copy\ndef ct(L):\n    M = L\n    N = copy.copy(L)\n    x = L.append(-2)\n    print(x)\n    M[1] = -5\n    N[0] = -4\n    print(M)\n    return N\nL = [1, 3]\nprint(ct(L))\nprint(L)\n```", "order": 0, "responseTimeLimitMs": 150000, "options": [{"id": "q1a", "text": "`None / [1, -5, -2] / [-4, 3] / [1, 3]`", "isCorrect": false}, {"id": "q1b", "text": "`[1, 3, -2] / [1, -5, -2] / [-4, 3] / [1, -5, -2]`", "isCorrect": false}, {"id": "q1c", "text": "`None / [1, -5, -2] / [-4, -5, -2] / [1, -5, -2]`", "isCorrect": false}, {"id": "q1d", "text": "`None / [1, -5, -2] / [-4, 3] / [1, -5, -2]`", "isCorrect": true}]}]}'>
+      <div class="slide-inner split split-40">
+        <div>
+          <span class="slide-tag">Trace 1 &middot; Predict</span>
+          <h2>Four lines of output</h2>
+          <p style="margin-top:var(--gap-sm);">Draw the boxes and arrows on paper first.</p>
+          <ul class="mcq-opts" style="margin-top:var(--gap);">
+            <li><span class="opt-key">A</span><code>None / [1, -5, -2] / [-4, 3] / [1, 3]</code></li>
+            <li><span class="opt-key">B</span><code>[1, 3, -2] / [1, -5, -2] / [-4, 3] / [1, -5, -2]</code></li>
+            <li><span class="opt-key">C</span><code>None / [1, -5, -2] / [-4, -5, -2] / [1, -5, -2]</code></li>
+            <li><span class="opt-key">D</span><code>None / [1, -5, -2] / [-4, 3] / [1, -5, -2]</code></li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">import copy
+def ct(L):
+    M = L
+    N = copy.copy(L)
+    x = L.append(-2)
+    print(x)
+    M[1] = -5
+    N[0] = -4
+    print(M)
+    return N
+L = [1, 3]
+print(ct(L))
+print(L)</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 05 · TRACE: CT4 -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Trace 1 &middot; Check</span>
+        <div class="lt-board" data-trace="ct4"></div>
+      </div>
+    </section>
+
+    <!-- SLIDE 06 · PREDICT: CT1 -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:ct1:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "What are the three lines this program prints? Each `/` separates one line of output.\n\n```python\ndef ct(L):\n    M = [v*10 for v in L]\n    N1 = [x**2 for x in L if x > L[0]]\n    L = sorted(L)\n    N2 = [x**2 for x in L if x > L[0]]\n    print(L + M)\n    return N1 + N2 + [max(L)] * (1 + min(L))\nL = [4, 1, 6]\nprint(ct(L))\nprint(L)\n```", "order": 0, "responseTimeLimitMs": 180000, "options": [{"id": "q1a", "text": "`[1, 4, 6, 40, 10, 60] / [36, 16, 36, 6, 6] / [1, 4, 6]`", "isCorrect": false}, {"id": "q1b", "text": "`[1, 4, 6, 40, 10, 60] / [36, 16, 36, 6, 6] / [4, 1, 6]`", "isCorrect": true}, {"id": "q1c", "text": "`[4, 1, 6, 40, 10, 60] / [36, 16, 36, 6, 6] / [4, 1, 6]`", "isCorrect": false}, {"id": "q1d", "text": "`[1, 4, 6, 40, 10, 60] / [36, 36, 6, 6] / [4, 1, 6]`", "isCorrect": false}]}]}'>
+      <div class="slide-inner split split-40">
+        <div>
+          <span class="slide-tag">Trace 2 &middot; Predict</span>
+          <h2>Three lines of output</h2>
+          <ul class="mcq-opts wrap" style="margin-top:var(--gap);">
+            <li><span class="opt-key">A</span><code>[1, 4, 6, 40, 10, 60] / [36, 16, 36, 6, 6] / [1, 4, 6]</code></li>
+            <li><span class="opt-key">B</span><code>[1, 4, 6, 40, 10, 60] / [36, 16, 36, 6, 6] / [4, 1, 6]</code></li>
+            <li><span class="opt-key">C</span><code>[4, 1, 6, 40, 10, 60] / [36, 16, 36, 6, 6] / [4, 1, 6]</code></li>
+            <li><span class="opt-key">D</span><code>[1, 4, 6, 40, 10, 60] / [36, 36, 6, 6] / [4, 1, 6]</code></li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">def ct(L):
+    M = [v*10 for v in L]
+    N1 = [x**2 for x in L if x > L[0]]
+    L = sorted(L)
+    N2 = [x**2 for x in L if x > L[0]]
+    print(L + M)
+    return N1 + N2 + [max(L)] * (1 + min(L))
+L = [4, 1, 6]
+print(ct(L))
+print(L)</code></pre></div>
+        </div>
+      </div>
+      <aside class="notes">The key line is L = sorted(L). It builds a new sorted list and moves only the local L's arrow, so the caller's list stays [4, 1, 6]. N1 uses the original order (only 6 > 4), N2 the sorted one (4 and 6 > 1). [max(L)] * (1 + min(L)) is [6] * 2.</aside>
+    </section>
+
+    <!-- SLIDE 07 · EXPLAIN CT1 -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Trace 2 &middot; Explain</span>
+        <h2>The line that decides everything</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          <code>L = sorted(L)</code> builds a new, sorted list and points the <span style="color:var(--accent);">local</span> <code>L</code> at it. The caller's list is never mutated, so the last line prints <code>[4, 1, 6]</code>.
+        </p>
+        <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
+          Lines 3 and 5 are the same comprehension, but they run on different lists. <code>N1</code> filters the original order, where <code>L[0]</code> is 4, and keeps only 6. <code>N2</code> filters the sorted list, where <code>L[0]</code> is 1, and keeps 4 and 6.
+        </p>
+        <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
+          If line 4 had been <code>L.sort()</code>, the caller's list would have been sorted too, and the last line would print <code>[1, 4, 6]</code>. One line, two very different programs.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 08 · PREDICT: CT3 -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:ct3:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "What are the two lines this program prints? Each `/` separates one line of output.\n\n```python\ndef ct(L):\n    M = []\n    while sum(L) > sum(M):\n        M.extend(L[:2])\n    v = M.pop(0)\n    v += M.pop()\n    M.insert(1, v)\n    print(M)\nprint(ct(list(range(4, 8))))\n```", "order": 0, "responseTimeLimitMs": 150000, "options": [{"id": "q1a", "text": "`[5, 9, 4, 5, 4] / [5, 9, 4, 5, 4]`", "isCorrect": false}, {"id": "q1b", "text": "`[9, 5, 4, 5, 4] / None`", "isCorrect": false}, {"id": "q1c", "text": "`[5, 9, 4, 5, 4] / None`", "isCorrect": true}, {"id": "q1d", "text": "`[5, 4, 5, 4] / 9`", "isCorrect": false}]}]}'>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Trace 3 &middot; Predict</span>
+          <h2>Two lines of output</h2>
+          <ul class="mcq-opts" style="margin-top:var(--gap);">
+            <li><span class="opt-key">A</span><code>[5, 9, 4, 5, 4] / [5, 9, 4, 5, 4]</code></li>
+            <li><span class="opt-key">B</span><code>[9, 5, 4, 5, 4] / None</code></li>
+            <li><span class="opt-key">C</span><code>[5, 9, 4, 5, 4] / None</code></li>
+            <li><span class="opt-key">D</span><code>[5, 4, 5, 4] / 9</code></li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">def ct(L):
+    M = []
+    while sum(L) &gt; sum(M):
+        M.extend(L[:2])
+    v = M.pop(0)
+    v += M.pop()
+    M.insert(1, v)
+    print(M)
+print(ct(list(range(4, 8))))</code></pre></div>
+        </div>
+      </div>
+      <aside class="notes">L is [4, 5, 6, 7], sum 22. M grows [4, 5], then [4, 5, 4, 5], then [4, 5, 4, 5, 4, 5] with sum 27, and the loop stops. pop(0) gives 4, pop() gives 5, so v is 9, inserted at index 1. ct has no return statement, so the outer print shows None.</aside>
+    </section>
+
+    <!-- SLIDE 09 · MOBCODE: CT2 -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="mobcode:ct2:0"
+      data-activity-options='{"files": {"main.py": "# Trace this on paper first. It prints a single line.\n# Draw M as a row of indexed boxes and update it for each\n# pass of the loop. Watch the negative index.\n# Write your prediction here:\n# prediction:\n\ndef ct(L):\n    M = list(range(len(L)))\n    for i in range(0, len(L), 2):\n        j = L[i]\n        v = L[i+1]\n        M[-j] += v\n    return M\n\nprint(ct([1, 3, 3, 7]))\n"}, "activeFile": "main.py", "runnerId": "brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Trace 4 &middot; On Your Own</span>
+        <h2>Trace it, then run it</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          This one prints a single line. Draw <code>M</code> as an indexed row of boxes and update it on paper for each pass of the loop. Watch the <span style="color:var(--syntax-number);">negative index</span>. Write your prediction in the comment, then run it.
+        </p>
+      </div>
+      <aside class="notes">M starts [0, 1, 2, 3]. i = 0: j = 1, v = 3, M[-1] becomes 6. i = 2: j = 3, v = 7, M[-3] (index 1) becomes 8. Prints [0, 8, 2, 6].</aside>
+    </section>
+
+    <!-- SLIDE 10 · EDGE CASES -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Testing</span>
+        <h2>Edge cases that expose hidden bugs</h2>
+        <table class="ref-table" style="margin-top:var(--gap-sm);font-size:var(--code);">
+          <tr><th>Test input</th><th>What it catches</th></tr>
+          <tr><td>an empty review, <code>[]</code></td><td>crashes from <code>L[0]</code>, <code>max</code>, or dividing by <code>len</code></td></tr>
+          <tr><td>a one-word review</td><td>loops that compare neighbors or start at index 1</td></tr>
+          <tr><td>the same word repeated</td><td>the skipping bug, ties in "most common", duplicates</td></tr>
+          <tr><td><code>"Great!"</code> versus <code>"great"</code></td><td>capitalization and punctuation that make matches fail</td></tr>
+          <tr><td>the input list after the call</td><td>a function that breaks its non-mutating promise</td></tr>
+        </table>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          Add at least one test of each kind to every module before integration.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 11 · CORRECT VS VALID -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Correct Is Not the Same as Valid</span>
+        <h2>A perfect count can still mislead</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          A sentiment counter can count every positive and negative word exactly right and still reach the wrong conclusion about a review.
+        </p>
+        <ul class="bullets" style="margin-top:var(--gap);max-width:1250px;">
+          <li><strong>Negation:</strong> <span style="color:var(--syntax-string);">"not good"</span> counts as one positive word.</li>
+          <li><strong>Sarcasm:</strong> <span style="color:var(--syntax-string);">"Great, it broke on day two"</span> counts <code>great</code> as praise.</li>
+          <li><strong>Repetition:</strong> one enthusiastic reviewer who types <span style="color:var(--syntax-string);">"love love love"</span> outweighs a careful one.</li>
+          <li><strong>Context:</strong> <span style="color:var(--syntax-string);">"cheap"</span> is good news for a price and bad news for a hinge.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SLIDE 12 · FOOL THE DETECTIVE -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Fool the Detective</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Change the verdict, not the meaning</h2>
+        <div class="fd" id="fool-detective">
+          <textarea aria-label="Review text" spellcheck="false"></textarea>
+          <div class="fd-bar">The words the program sees</div>
+          <div class="fd-words"></div>
+          <div class="fd-stats">
+            <div class="fd-stat pos"><div class="k">positive</div><div class="v" data-k="pos">0</div></div>
+            <div class="fd-stat neg"><div class="k">negative</div><div class="v" data-k="neg">0</div></div>
+            <div class="fd-stat"><div class="k">score</div><div class="v" data-k="score">0</div></div>
+            <div class="fd-stat fd-verdict"><div class="k">verdict</div><div class="v" data-k="verdict">Mixed</div></div>
+            <button class="fd-reset" type="button">Reset</button>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">The starting review is clearly negative but scores 0, because "not good" counts as positive. Challenges: (1) make the verdict flip without changing what the review means; (2) change what it means without changing the verdict; (3) find the shortest edit that makes it Positive. Students record each edit and why the algorithm missed it.</aside>
+    </section>
+
+    <!-- SLIDE 13 · FRQ: WHAT FOOLED IT -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:fooled:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Describe one edit that changed the verdict without changing what the review means. Why did the algorithm miss it, and what change to the algorithm would catch it?","order":0,"responseTimeLimitMs":180000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Explain It</span>
+        <h2>What fooled the detective?</h2>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1200px;">
+          <p>Describe one edit that changed the verdict without changing what the review means. <strong>Why</strong> did the algorithm miss it, and what change to the algorithm would catch it?</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 14 · VS CODE: INTEGRATION -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">VS Code &middot; Integration and Investigation</span>
+        <h2>Finish, combine, and investigate</h2>
+        <div class="ex-card" style="margin-top:var(--gap-sm);max-width:1300px;">
+          <ol class="bullets">
+            <li>Finish your module. Every function passes its tests, including the edge cases and the input-unchanged checks.</li>
+            <li>Pull, integrate through <code>main.py</code>, and run the full program on the sample reviews.</li>
+            <li>Run two contrasting reviews, then edit one on purpose and run it again. Record what changed.</li>
+            <li>In <code>README.md</code>, document one case your analysis handles well and one where its interpretation is limited.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 15 · PRESENTING -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Presenting Your Module</span>
+        <h2>What to show</h2>
+        <ul class="bullets" style="margin-top:var(--gap-sm);max-width:1250px;">
+          <li>One function you wrote: its <strong>contract</strong>, and whether it mutates anything and why.</li>
+          <li>A <strong>test</strong> that checks an edge case, and the input after the call.</li>
+          <li>A <strong>trace</strong> of one call, drawn as boxes and arrows, including any aliases.</li>
+          <li>A <strong>limitation</strong>: an input where your function is correct but the conclusion would mislead.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SLIDE 16 · FINAL REFLECTION -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:reflection:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Can a program help us understand consumer reviews? If Review Detective were used in a real purchasing decision, what is one thing you would change or warn the user about?","order":0,"responseTimeLimitMs":180000}]}'>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(124,217,146,0.12) 0%,transparent 70%);bottom:-120px;right:-80px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Reflection</span>
+        <h2>Back to the driving question</h2>
+        <div class="frq-box" style="margin-top:var(--gap);max-width:1200px;">
+          <p>Can a program help us understand consumer reviews? If Review Detective were used in a real purchasing decision, what is <strong>one thing</strong> you would change, or warn the user about?</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../lists-unit.js"></script>
+<script>
+  var A = '@a';
+  var CT = function (vars) { return [['global', { L: A }], ['ct', vars]]; };
+  var LIST_TRACES = {
+    ct4: {
+      layout: 'three',
+      cols: 'auto auto minmax(0,1fr)',
+      gap: 80,
+      code: [
+        'import copy',
+        'def ct(L):',
+        '    M = L',
+        '    N = copy.copy(L)',
+        '    x = L.append(-2)',
+        '    print(x)',
+        '    M[1] = -5',
+        '    N[0] = -4',
+        '    print(M)',
+        '    return N',
+        'L = [1, 3]',
+        'print(ct(L))',
+        'print(L)',
+      ].join('\n'),
+      consoleLines: 4,
+      sayLines: 3,
+      steps: [
+        { line: 1, say: 'Step through and compare with your drawing.' },
+        { line: 11, say: '<code>copy</code> is imported and <code>ct</code> is defined. Nothing else runs yet.' },
+        { line: 12, frames: [['global', { L: A }]], objs: { a: ['1', '3'] }, say: 'The global <code>L</code> refers to <code>[1, 3]</code>.' },
+        { line: 3, frames: CT({ L: A }), say: 'The parameter <code>L</code> is a second arrow to the same list.' },
+        { line: 4, frames: CT({ L: A, M: A }), say: '<code>M = L</code>: a third arrow, still one list.' },
+        { line: 5, frames: CT({ L: A, M: A, N: '@b' }), objs: { b: ['1', '3'] }, say: '<code>N</code> is a real copy.' },
+        { line: 6, frames: CT({ L: A, M: A, N: '@b', x: 'None' }), objs: { a: ['1', '3', '-2'] }, hl: { a: { add: [2] } },
+          say: '<code>append</code> mutated the shared list and returned <code>None</code>, so <code>x</code> is <code>None</code>.' },
+        { line: 7, print: 'None', say: 'That is the first line of output.' },
+        { line: 8, objs: { a: ['1', '-5', '-2'] }, hl: { a: { add: [1] } }, say: 'Mutation through <code>M</code> changes the one shared list.' },
+        { line: 9, objs: { b: ['-4', '3'] }, hl: { b: { add: [0] } }, say: 'Mutation through <code>N</code> changes only the copy.' },
+        { line: 10, print: '[1, -5, -2]', say: '<code>M</code> shows both the append and the -5.' },
+        { line: 12, frames: [['global', { L: A }]], say: '<code>ct</code> returns <code>N</code>\'s list to line 12, and its frame is gone.' },
+        { line: 13, objs: { b: null }, print: '[-4, 3]', say: 'The returned copy is printed.' },
+        { line: 14, print: '[1, -5, -2]', say: 'The caller\'s list kept every change made through the parameter and <code>M</code>.' },
+      ],
+    },
+  };
+  ListsUnit.prepare(LIST_TRACES);
+</script>
+<script>
+  function initFoolDetective(root) {
+    if (!root) return;
+    var START = 'Great blender, but it broke after two days. Not good at all. I returned it.';
+    var POS = ['good', 'great', 'love', 'amazing', 'perfect', 'excellent', 'nice', 'best', 'happy', 'fast', 'quiet', 'easy', 'sturdy', 'recommend'];
+    var NEG = ['bad', 'terrible', 'awful', 'broke', 'broken', 'worst', 'hate', 'loud', 'slow', 'cheap', 'returned', 'disappointed', 'waste', 'noisy'];
+    var ta = root.querySelector('textarea');
+    var strip = root.querySelector('.fd-words');
+    var val = function (k) { return root.querySelector('[data-k="' + k + '"]'); };
+    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+    function update() {
+      // the module's algorithm: lowercase, strip punctuation, split, count matches
+      var words = ta.value.toLowerCase().replace(/[^a-z0-9\s']/g, ' ').split(/\s+/).filter(function (w) { return w; });
+      var pos = 0, neg = 0;
+      strip.innerHTML = words.map(function (w) {
+        var cls = POS.indexOf(w) >= 0 ? (pos++, ' pos') : NEG.indexOf(w) >= 0 ? (neg++, ' neg') : '';
+        return '<span class="fd-w' + cls + '">' + esc(w) + '</span>';
+      }).join('');
+      var score = pos - neg;
+      val('pos').textContent = pos;
+      val('neg').textContent = neg;
+      val('score').textContent = score;
+      var v = val('verdict');
+      v.textContent = score > 0 ? 'Positive' : score < 0 ? 'Negative' : 'Mixed';
+      v.style.color = score > 0 ? 'var(--result)' : score < 0 ? 'var(--warn)' : 'var(--text)';
+    }
+    ta.value = START;
+    ta.addEventListener('input', update);
+    root.querySelector('.fd-reset').addEventListener('click', function () { ta.value = START; update(); });
+    update();
+  }
+  initFoolDetective(document.getElementById('fool-detective'));
+</script>
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+  initSyncDeckReveal({
+    deckId: 'hpy-4-10-testing-and-interpreting-results',
+    standaloneHosting: {
+      activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    afterInit: function (Reveal) {
+      ListsUnit.attach(Reveal);
+    },
+    revealOverrides: {
+      hash: true,
+      hashOneBasedIndex: true,
+      transition: 'fade',
+      transitionSpeed: 'fast',
+      backgroundTransition: 'none',
+      center: false,
+      controls: true,
+      controlsLayout: 'edges',
+      progress: true,
+      slideNumber: 'c/t',
+      keyboard: true,
+      touch: true,
+      fragments: true,
+      width: 1600,
+      height: 900,
+      margin: 0.04,
+      minScale: 0.2,
+      maxScale: 2.5,
+    },
+  });
+</script>
+</body>
+</html>

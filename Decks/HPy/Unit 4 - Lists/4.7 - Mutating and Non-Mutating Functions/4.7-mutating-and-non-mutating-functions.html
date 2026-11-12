@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="130adra">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.7 Mutating and Non-Mutating Functions</title>
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../../theme.css">
+<link rel="stylesheet" href="../lists-unit.css">
+<style>
+  /* ── Slide 15: "Who Changed the List?" hidden-fault investigation ──
+     One culprit function secretly mutates the shared words list. Students
+     spend a time budget on tests, strike suspects their evidence rules
+     out, then choose a culprit and a fix and tag supporting readings.
+     Built to .agent/knowledge/troubleshooting-activities.md. Every panel
+     has a fixed height so nothing moves as tabs and readings change. */
+  .wc { width: 100%; }
+  .wc-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .wc-tab {
+    font-family: var(--font-mono); font-size: var(--small); font-weight: 700;
+    padding: 8px 16px; border-radius: 8px 8px 0 0; cursor: pointer;
+    border: 1px solid var(--accent-border); border-bottom: none;
+    background: transparent; color: var(--text-muted);
+  }
+  .wc-tab.is-on { background: var(--accent-dim); color: var(--accent); }
+  .wc-tab:disabled { color: var(--text-dim); cursor: default; }
+  .wc-spacer { flex: 1; }
+  .wc-clock { font-family: var(--font-mono); font-size: var(--small); color: var(--text); }
+  .wc-clock b { color: var(--accent); }
+  .wc-clock.low b { color: var(--warn); }
+  .wc-btn {
+    font-family: var(--font-ui); font-size: var(--small); font-weight: 700;
+    padding: 8px 16px; border-radius: 6px; cursor: pointer;
+    border: 1px solid rgba(124,217,146,0.45); background: rgba(124,217,146,0.1); color: var(--result);
+  }
+  .wc-btn:disabled { opacity: 0.6; cursor: default; }
+  .wc-btn.alt { border-color: var(--accent-border); background: var(--accent-dim); color: var(--accent); }
+
+  .wc-panel {
+    height: 700px; border: 1px solid var(--accent-border); border-radius: 0 10px 10px 10px;
+    background: var(--bg-card); padding: 18px 20px; display: none; overflow: hidden;
+  }
+  .wc-panel.is-on { display: grid; gap: 20px; }
+  .wc-case { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+  .wc-inv { grid-template-columns: 500px minmax(0,1fr); }
+  .wc-diag { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+  .wc-rec { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+
+  .wc h3 { font-size: var(--small); font-family: var(--font-mono); color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  .wc code { font-family: var(--font-mono); font-size: var(--code); }
+  .wc p.wc-txt { font-size: var(--code); line-height: 1.5; color: var(--text-muted); }
+  .wc p.wc-txt strong { color: var(--text); }
+  .wc pre.wc-out {
+    margin: 8px 0 0; padding: 10px 14px; background: #0c0906; border-radius: 8px;
+    font-family: var(--font-mono); font-size: var(--code); line-height: 1.4; color: var(--result);
+    white-space: pre-wrap; word-break: break-word; box-shadow: none; width: auto;
+  }
+  .wc-log { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .wc-log li { font-size: var(--small); color: var(--text-muted); line-height: 1.4; padding-left: 14px; border-left: 2px solid var(--accent-border); }
+  .wc-log li b { color: var(--text); font-family: var(--font-mono); font-weight: 600; }
+
+  .wc-tests { display: flex; flex-direction: column; gap: 8px; }
+  .wc-test {
+    display: flex; align-items: center; gap: 10px; text-align: left; cursor: pointer;
+    font-family: var(--font-ui); font-size: var(--small); color: var(--text);
+    padding: 8px 12px; border-radius: 8px; border: 1px solid var(--accent-border); background: rgba(242,177,52,0.04);
+  }
+  .wc-test:hover:not(:disabled) { border-color: var(--accent); }
+  .wc-test:disabled { opacity: 0.55; cursor: default; }
+  .wc-test.done { border-color: rgba(124,217,146,0.45); }
+  .wc-test .lbl { flex: 1; }
+  .wc-test code { font-family: var(--font-mono); font-size: var(--code); }
+  .wc-cost { font-family: var(--font-mono); font-size: var(--small); color: var(--accent); white-space: nowrap; }
+  .wc-test.risky .wc-cost { color: var(--warn); }
+
+  .wc-reading { display: flex; flex-direction: column; min-height: 0; }
+  .wc-reading .wc-out { flex: 1; overflow: hidden; margin-top: 0; }
+  .wc-rtitle { font-family: var(--font-mono); font-size: var(--small); color: var(--text); margin-bottom: 8px; }
+  .wc-warn { background: rgba(255,107,91,0.10); border-left: 3px solid var(--warn); padding: 12px 14px; border-radius: 0 8px 8px 0; font-size: var(--small); color: var(--text-muted); line-height: 1.5; }
+  .wc-warn strong { color: var(--warn); }
+  .wc-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 40px; }
+  .wc-chip {
+    font-family: var(--font-mono); font-size: var(--small); padding: 4px 10px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--accent-border); background: transparent; color: var(--text-muted);
+  }
+  .wc-chip.is-on { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+  .wc-sus { display: flex; flex-direction: column; gap: 8px; }
+  .wc-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 6px 10px; border: 1px solid var(--accent-border); border-radius: 8px; }
+  .wc-row .nm { font-family: var(--font-mono); font-size: var(--small); color: var(--text); }
+  .wc-row.struck .nm { text-decoration: line-through; color: var(--text-dim); }
+  .wc-tog {
+    font-family: var(--font-mono); font-size: var(--small); padding: 4px 10px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--accent-border); background: transparent; color: var(--text-muted);
+  }
+  .wc-tog.is-on { color: var(--warn); border-color: var(--warn); background: rgba(255,107,91,0.1); }
+  .wc-tog.pick.is-on { color: var(--result); border-color: var(--result); background: rgba(124,217,146,0.12); }
+  .wc-fixes { display: flex; flex-direction: column; gap: 6px; }
+  .wc-fix {
+    text-align: left; font-family: var(--font-ui); font-size: var(--small); line-height: 1.35; cursor: pointer;
+    padding: 7px 12px; border-radius: 8px; border: 1px solid var(--accent-border); background: transparent; color: var(--text-muted);
+  }
+  .wc-fix.is-on { border-color: var(--result); color: var(--text); background: rgba(124,217,146,0.1); }
+
+  .wc-score { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .wc-score li { display: grid; grid-template-columns: 170px 1fr; gap: 10px; font-size: var(--small); color: var(--text-muted); line-height: 1.4; }
+  .wc-score li b { font-family: var(--font-mono); color: var(--text); }
+  .wc-score .ok { color: var(--result); }
+  .wc-score .no { color: var(--warn); }
+</style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">HPy &middot; Unit 4 &middot; Lists</span>
+        <h1 class="title-h1">4.7 Mutating and Non-Mutating Functions</h1>
+        <p class="subtitle">what a function promises its caller &middot; parameters and local lists &middot; contracts and tests</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 02 · THE SURPRISE -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">The Question</span>
+          <h2>The answer was right. So what went wrong?</h2>
+          <p style="margin-top:var(--gap-sm);">
+            A teammate's <code>median</code> function returns the correct median. But after you call it, your list of star ratings is in a different order than before.
+          </p>
+          <p class="fragment fade-up" style="margin-top:var(--gap);">
+            Nothing in the call <code>median(stars)</code> says "and also rearrange my list." The function broke a <span style="color:var(--accent);">promise</span> its caller assumed it would keep.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">def median(L):
+    L.sort()
+    return L[len(L) // 2]
+
+stars = [5, 1, 4]
+print(median(stars))   # 4
+print(stars)           # [1, 4, 5] ?!</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 03 · FUNCTION FRAMES ACTIVITY -->
+    <section>
+      <div class="glow" style="width:480px;height:480px;background:radial-gradient(circle,rgba(124,217,146,0.10) 0%,transparent 70%);bottom:-120px;right:-80px;"></div>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Hands On &middot; Function Frames</span>
+          <h2>Draw both frames</h2>
+          <p style="margin-top:var(--gap-sm);">
+            On paper, draw a box for the <span style="color:var(--accent);">global</span> frame and, when the call happens, a second box for the <span style="color:var(--accent);">removeFirst</span> frame. Draw one list object outside both frames.
+          </p>
+          <p style="margin-top:var(--gap);">
+            Trace the program line by line. Every variable that refers to the list gets its own arrow. When the call ends, cross out the function's frame. What is left?
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">frames.py</span></div>
+          <div class="code-body"><pre><code class="py">def removeFirst(items):
+    items.pop(0)
+
+numbers = [10, 20, 30]
+removeFirst(numbers)
+print(numbers)</code></pre></div>
+        </div>
+      </div>
+      <aside class="notes">Use the magnetic arrows again on the board: one arrow for numbers, a second for items during the call. After the call, remove the items card and its arrow; the list stays changed.</aside>
+    </section>
+
+    <!-- SLIDE 04 · TRACE: REMOVEFIRST -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Check Your Frames</span>
+        <h2>Mutating through a parameter</h2>
+        <div class="lt-board" data-trace="removeFirst" style="margin-top:var(--gap-sm);"></div>
+      </div>
+    </section>
+
+    <!-- SLIDE 05 · PREDICT: RESET -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:predict-reset:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "What does `print(numbers)` show?\n\n```python\ndef resetList(items):\n    items = []\n    items.append(99)\n\nnumbers = [10, 20, 30]\nresetList(numbers)\nprint(numbers)\n```", "order": 0, "responseTimeLimitMs": 50000, "options": [{"id": "q1a", "text": "`[]`", "isCorrect": false}, {"id": "q1b", "text": "`[99]`", "isCorrect": false}, {"id": "q1c", "text": "`[10, 20, 30]`", "isCorrect": true}, {"id": "q1d", "text": "`[10, 20, 30, 99]`", "isCorrect": false}]}]}'>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Predict First</span>
+          <h2>Now the function reassigns its parameter</h2>
+          <ul class="mcq-opts" style="margin-top:var(--gap);">
+            <li><span class="opt-key">A</span><code>[]</code></li>
+            <li><span class="opt-key">B</span><code>[99]</code></li>
+            <li><span class="opt-key">C</span><code>[10, 20, 30]</code></li>
+            <li><span class="opt-key">D</span><code>[10, 20, 30, 99]</code></li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">frames.py</span></div>
+          <div class="code-body"><pre><code class="py">def resetList(items):
+    items = []
+    items.append(99)
+
+numbers = [10, 20, 30]
+resetList(numbers)
+print(numbers)</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 06 · TRACE: RESET -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Trace It</span>
+        <h2>Reassigning a parameter only moves the local arrow</h2>
+        <div class="lt-board" data-trace="resetList" style="margin-top:var(--gap-sm);"></div>
+      </div>
+    </section>
+
+    <!-- SLIDE 07 · THE DEFAULT -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">4.2.12 Writing Functions</span>
+        <h2>Functions must be non-mutating by default</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          When you write a function that takes a list, you decide whether it may change that list. The default answer is <span style="color:var(--result);">no</span>. A caller who asks for a median, a count, or a list of long words does not expect their data to change.
+        </p>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          A function should be <span style="color:var(--warn);">mutating</span> only when changing the list is clearly its job, like <code>removeAll(L, v)</code> or <code>L.sort()</code>. Then its name and its comment must say so.
+        </p>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
+          <strong>Python's naming pattern helps.</strong> A command verb like <code>sort</code> or <code>removeAll</code> suggests a change. A past-tense or noun name like <code>sorted</code> or <code>longWords</code> suggests a new result. Use the same pattern for your own functions.
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 08 · TWO REMOVEALLS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Mutating and Non-Mutating removeAll</span>
+        <h2>Same job, two promises, two ways to call</h2>
+        <div class="split split-50" style="margin-top:var(--gap-sm);flex:0 0 auto;align-items:start;">
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">mutating</span></div>
+            <div class="code-body"><pre><code class="py"># Mutates L: removes every v.
+# Returns None.
+def removeAll(L, v):
+    i = 0
+    while i &lt; len(L):
+        if L[i] == v:
+            L.pop(i)
+        else:
+            i += 1
+
+removeAll(L, 2)</code></pre></div>
+          </div>
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">non-mutating</span></div>
+            <div class="code-body"><pre><code class="py"># Returns a new list without v.
+# Does not change L.
+def removeAll(L, v):
+    result = []
+    for value in L:
+        if value != v:
+            result.append(value)
+    return result
+
+M = removeAll(L, 2)</code></pre></div>
+          </div>
+        </div>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          The mutating version is called on a line by itself, because it returns <code>None</code>. The non-mutating version's result must be <span style="color:var(--accent);">stored</span>, or it is lost.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 09 · LOCAL MUTATION -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">A Common Question</span>
+        <h2>Can a non-mutating function call <code>append</code>?</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          Yes. The non-mutating <code>removeAll</code> calls <code>result.append(value)</code>, a mutating method. That is fine, because <code>result</code> is a <span style="color:var(--accent);">local</span> list the function created. Nobody outside the function has an arrow to it until it is returned.
+        </p>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          Non-mutating means one thing: the function does not change its <span style="color:var(--result);">parameters</span>. It may build, change, sort, and pop its own local lists as much as it likes. A safe way to fix <code>median</code> is to sort a local copy:
+        </p>
+        <div class="code-card fragment fade-up" style="margin-top:var(--gap);max-width:760px;">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">def median(L):
+    M = copy.copy(L)
+    M.sort()            # changes M, not L
+    return M[len(M) // 2]</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 10 · CHECKPOINT -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:function-rules:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Which of the following is False?", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "Unless we specifically say a function is mutating, it must be non-mutating.", "isCorrect": false}, {"id": "q1b", "text": "All mutating functions return `None` because they directly change their parameters.", "isCorrect": true}, {"id": "q1c", "text": "A non-mutating function may create new local lists and mutate those.", "isCorrect": false}, {"id": "q1d", "text": "When you write a function that takes a list, you must decide whether it is allowed to change the list.", "isCorrect": false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint &middot; Function Promises</span>
+        <h2>Which statement is <span style="color:var(--warn);">false</span>?</h2>
+        <ul class="mcq-opts" style="margin-top:var(--gap);max-width:1200px;">
+          <li><span class="opt-key">A</span>Unless we specifically say a function is mutating, it must be non-mutating.</li>
+          <li><span class="opt-key">B</span>All mutating functions return <code>None</code> because they directly change their parameters.</li>
+          <li><span class="opt-key">C</span>A non-mutating function may create new local lists and mutate those.</li>
+          <li><span class="opt-key">D</span>When you write a function that takes a list, you must decide whether it is allowed to change the list.</li>
+        </ul>
+      </div>
+      <aside class="notes">B is false: mutating functions generally return None, but L.pop() is mutating and returns the removed value. A function can both mutate and return something useful, as long as its contract says so.</aside>
+    </section>
+
+    <!-- SLIDE 11 · CONTRACTS AND TESTS -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Contracts</span>
+          <h2>Say it, then test it</h2>
+          <p style="margin-top:var(--gap-sm);">
+            Start every list function with a comment that states its <span style="color:var(--accent);">contract</span>: what it returns, and whether it changes its arguments.
+          </p>
+          <p style="margin-top:var(--gap);">
+            Then test both halves of the promise. Check the return value, and check the argument <span style="color:var(--accent);">after the call</span>: unchanged for a non-mutating function, changed in exactly the promised way for a mutating one.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">def testMedian():
+    stars = [5, 1, 4]
+    assert(median(stars) == 4)
+    assert(stars == [5, 1, 4])
+
+def testRemoveAll():
+    L = [2, 1, 2, 2]
+    assert(removeAll(L, 2) == None)
+    assert(L == [1])</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 12 · MOBCODE: BROKEN PROMISES -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="mobcode:broken-promises:0"
+      data-activity-options='{"files": {"main.py": "# Each function promises NOT to change its argument.\n# The tests check the return value AND the argument.\n# Two functions break their promise. Find them and fix them\n# without changing what they return.\n#\n# Run the tests. The first assert that fails points at the\n# first broken promise. Fix it, run again, and repeat.\n\ndef median(L):\n    L.sort()\n    return L[len(L) // 2]\n\ndef lastWord(words):\n    return words.pop()\n\ndef countLong(words, n):\n    count = 0\n    for word in words:\n        if len(word) >= n:\n            count += 1\n    return count\n\ndef test():\n    stars = [5, 1, 4]\n    assert(median(stars) == 4)\n    assert(stars == [5, 1, 4])\n    words = [\"so\", \"very\", \"loud\"]\n    assert(lastWord(words) == \"loud\")\n    assert(words == [\"so\", \"very\", \"loud\"])\n    assert(countLong(words, 4) == 2)\n    assert(words == [\"so\", \"very\", \"loud\"])\n    print(\"All tests passed!\")\n\ntest()\n"}, "activeFile": "main.py", "runnerId": "brython-terminal"}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Find the Broken Promises</span>
+        <h2>Two functions change what they should only read</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          Each function promises not to change its argument, and the tests check both the return value and the argument afterward. Run the tests, use the failing <code>assert</code> to find the first broken promise, fix it, and repeat. Your fixes must not change what any function returns.
+        </p>
+      </div>
+      <aside class="notes">median sorts its argument; lastWord pops it. Fixes: sort a copy in median, and use words[-1] in lastWord. countLong is fine. Point out that the first failing assert is on the line after the call, not inside the function.</aside>
+    </section>
+
+    <!-- SLIDE 13 · CASE BRIEFING -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Investigation &middot; Briefing</span>
+        <h2>Who changed the list?</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          A team of programmers runs four analysis functions on one shared list of words from a review. Someone's function quietly changes that list, so the report at the end is wrong. Your job is to find out <span style="color:var(--accent);">whose</span>, using as little time as you can.
+        </p>
+        <ul class="bullets" style="margin-top:var(--gap);max-width:1250px;">
+          <li>Read the <strong>case file</strong>: the bug report, the expected output, and the team's commit log.</li>
+          <li>Spend your <strong>12 minutes</strong> on tests. Each test returns real evidence, but not every test helps.</li>
+          <li>Strike out the suspects your evidence rules out, then name the culprit and a fix, and tag the readings that prove it.</li>
+        </ul>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          Some choices are bad practice. They cost time and go on your record.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 14 · INVESTIGATION WIDGET -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:36px;">
+        <span class="slide-tag">Investigation &middot; Who Changed the List?</span>
+        <div class="wc" id="who-changed"></div>
+      </div>
+      <aside class="notes">Four hidden causes, dealt in shuffled order so New case shows each once before repeats. A careful path is: read the case file, run main.py (2 min), compare against the expected output, then run the alias test on one or two suspects (3 min each). Running every test does not fit in 12 minutes. The two red tests are bad practice and are never carried out.</aside>
+    </section>
+
+    <!-- SLIDE 15 · VS CODE EXERCISE -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">VS Code &middot; function_design.py</span>
+        <h2>Function Design Challenge</h2>
+        <div class="ex-card" style="margin-top:var(--gap-sm);max-width:1300px;">
+          <p>In VS Code, create <code>function_design.py</code> in your Unit 4 folder. Write each pair: a mutating version with a command-verb name, and a non-mutating version that returns a new list. Each function gets a contract comment, and each test checks the return value and the argument after the call.</p>
+          <ol class="bullets" style="margin-top:var(--gap-sm);">
+            <li><code>lowercaseAll(words)</code> and <code>lowercased(words)</code></li>
+            <li><code>removeShort(words, n)</code> and <code>withoutShort(words, n)</code></li>
+            <li><code>replaceAll(words, old, new)</code> and <code>replaced(words, old, new)</code></li>
+          </ol>
+          <p style="margin-top:var(--gap-sm);">Then go back to your 4.5 and 4.6 files and add a contract comment to every list function you have written.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 16 · REFERENCE -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">List Programmer's Reference</span>
+        <h2>Add today's rules</h2>
+        <table class="ref-table" style="margin-top:var(--gap-sm);">
+          <tr><th>Rule</th><th>Why</th></tr>
+          <tr><td>Parameters are aliases of the caller's lists</td><td>mutating a parameter changes the caller's list</td></tr>
+          <tr><td>Reassigning a parameter only moves the local arrow</td><td><code>items = []</code> never reaches the caller</td></tr>
+          <tr><td>Default to non-mutating</td><td></td></tr>
+          <tr><td>Local lists may be mutated freely</td><td></td></tr>
+          <tr><td>Mutating functions say so in the name and comment</td><td>call them on their own line; they usually return <code>None</code></td></tr>
+          <tr><td>Test the argument after the call</td><td></td></tr>
+        </table>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">The first row is done for you. Test each entry and fill in the blank cells.</p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../lists-unit.js"></script>
+<script>
+  var N = '@n';
+  var LIST_TRACES = {
+    removeFirst: {
+      cols: '560px minmax(0,1fr)',
+      file: 'frames.py',
+      code: [
+        'def removeFirst(items):',
+        '    items.pop(0)',
+        '',
+        'numbers = [10, 20, 30]',
+        'removeFirst(numbers)',
+        'print(numbers)',
+      ].join('\n'),
+      consoleLines: 1,
+      sayLines: 3,
+      steps: [
+        { line: 4, say: 'The definition is skipped until the call.' },
+        { line: 5, frames: [['global', { numbers: N }]], objs: { n: ['10', '20', '30'] }, say: 'One list, one arrow.' },
+        { line: 2, frames: [['global', { numbers: N }], ['removeFirst', { items: N }]],
+          say: 'The call creates a frame. <code>items</code> is a second arrow to the <strong>same</strong> list.' },
+        { line: 5, objs: { n: ['20', '30'] }, hl: { n: { hl: [0, 1] } },
+          say: '<code>items.pop(0)</code> mutated the shared list. That was the last line, so the call returns.' },
+        { line: 6, frames: [['global', { numbers: N }]], say: 'The frame is gone. The change is not.' },
+        { line: 7, print: '[20, 30]', say: '<code>removeFirst</code> is a mutating function, which is fine only if its contract says so.' },
+      ],
+    },
+    resetList: {
+      cols: '560px minmax(0,1fr)',
+      file: 'frames.py',
+      code: [
+        'def resetList(items):',
+        '    items = []',
+        '    items.append(99)',
+        '',
+        'numbers = [10, 20, 30]',
+        'resetList(numbers)',
+        'print(numbers)',
+      ].join('\n'),
+      consoleLines: 1,
+      sayLines: 3,
+      steps: [
+        { line: 5, say: 'Same setup as before.' },
+        { line: 6, frames: [['global', { numbers: N }]], objs: { n: ['10', '20', '30'] }, say: '<code>numbers</code> refers to the list.' },
+        { line: 2, frames: [['global', { numbers: N }], ['resetList', { items: N }]], say: 'Again, <code>items</code> starts as an alias.' },
+        { line: 3, frames: [['global', { numbers: N }], ['resetList', { items: '@e' }]], objs: { e: [] },
+          say: '<code>items = []</code> is an assignment. It moves only the <strong>local</strong> arrow to a new empty list.' },
+        { line: 6, objs: { e: ['99'] }, hl: { e: { add: [0] } },
+          say: 'This append mutates the new local list. The caller\'s list is not involved.' },
+        { line: 7, frames: [['global', { numbers: N }]], objs: { e: null }, say: 'The call ends. Nothing refers to the local list any more, so it is gone.' },
+        { line: 8, print: '[10, 20, 30]', say: 'Assigning to a parameter can never change the caller\'s list. Only mutation can.' },
+      ],
+    },
+  };
+  ListsUnit.prepare(LIST_TRACES);
+</script>
+<script>
+  /* ── "Who Changed the List?" ─────────────────────────────
+     The four analysis functions are simulated for real in JS, each
+     with a buggy flag. Every reading is produced by running them, so
+     the evidence is always consistent with the hidden cause. */
+  function initWhoChanged(root) {
+    if (!root) return;
+    var REVIEW = 'the fan is great but the fan is loud !';
+    var POSITIVE = ['great', 'good', 'love'];
+    var STOP = ['the', 'is', 'but', 'a', 'and'];
+    var BUDGET = 12;
+    var hasLetter = function (w) { return /[a-z]/i.test(w); };
+    var rep = function (L) { return '[' + L.map(function (w) { return '\'' + w + '\''; }).join(', ') + ']'; };
+
+    var FUNCS = [
+      { id: 'avg', call: 'averageLength(words)', run: function (W, bug) {
+          var use = W;
+          if (bug) { var i = 0; while (i < W.length) { if (!hasLetter(W[i])) W.splice(i, 1); else i++; } }
+          else use = W.filter(hasLetter);
+          var t = 0; use.forEach(function (w) { t += w.length; });
+          return (Math.round(t / use.length * 100) / 100).toFixed(2);
+        },
+        explain: '<strong>averageLength</strong> popped every token with no letters, like <code>"!"</code>, out of the caller\'s list before averaging. Its own answer was right, so return-value tests passed. The fix: skip those tokens while summing, or filter them into a local list, instead of removing them from <code>words</code>.' },
+      { id: 'pos', call: 'countPositive(words, POSITIVE)', run: function (W, bug) {
+          if (bug) { STOP.forEach(function (s) { while (W.indexOf(s) >= 0) W.splice(W.indexOf(s), 1); }); }
+          return String(W.filter(function (w) { return POSITIVE.indexOf(w) >= 0; }).length);
+        },
+        explain: '<strong>countPositive</strong> removed filler words like <code>"the"</code> and <code>"is"</code> from the caller\'s list before counting. Filler words are never positive, so its count was still right. The fix: skip filler words inside the loop, or build a local filtered list.' },
+      { id: 'uni', call: 'uniqueCount(words)', run: function (W, bug) {
+          if (bug) { var i = 0; while (i < W.length) { if (W.slice(0, i).indexOf(W[i]) >= 0) W.splice(i, 1); else i++; } return String(W.length); }
+          var seen = []; W.forEach(function (w) { if (seen.indexOf(w) < 0) seen.push(w); }); return String(seen.length);
+        },
+        explain: '<strong>uniqueCount</strong> popped repeated words out of the caller\'s list and then returned its length. The count was right, but the review lost its repeats. The fix: build a local <code>seen</code> list with <code>not in</code> and return its length.' },
+      { id: 'lng', call: 'longestWords(words, 2)', run: function (W, bug) {
+          var M = bug ? W : W.slice(); var out = [];
+          for (var k = 0; k < 2; k++) { var b = 0; for (var i = 1; i < M.length; i++) if (M[i].length > M[b].length) b = i; out.push(M.splice(b, 1)[0]); }
+          return rep(out);
+        },
+        explain: '<strong>longestWords</strong> found each longest word and popped it out of the caller\'s list. It returned the right words, and the review lost them. The fix: pop from <code>copy.copy(words)</code>, a local copy, instead of from <code>words</code>.' },
+    ];
+    var LABELS = ['Average length', 'Positive words', 'Unique words', 'Longest'];
+    var SUSPECTS = FUNCS.map(function (f) { return { id: f.id, nm: f.call }; })
+      .concat([{ id: 'split', nm: 'review.split(" ")' }]);
+
+    function runMain(bugId) {
+      var W = REVIEW.split(' ');
+      var out = ['Words: ' + W.length];
+      var vals = FUNCS.map(function (f, k) { var v = f.run(W, f.id === bugId); out.push(LABELS[k] + ': ' + v); return v; });
+      out.push('Words: ' + W.length);
+      out.push(W.join(' '));
+      return { text: out.join('\n'), vals: vals };
+    }
+    var EXPECTED = runMain(null);
+
+    function aliasTest(fid, bugId) {
+      var f = FUNCS.filter(function (x) { return x.id === fid; })[0];
+      var W = REVIEW.split(' ');
+      var before = W.slice();
+      var r = f.run(W, fid === bugId);
+      var same = W.join('\u0000') === before.join('\u0000');
+      return { text: '>>> before = copy.copy(words)\n>>> ' + f.call + '\n' + r +
+        '\n>>> words == before\n' + (same ? 'True' : 'False') + '\n>>> words\n' + rep(W), same: same };
+    }
+
+    var TESTS = [
+      { id: 'main', label: 'Run <code>main.py</code> and read the output', cost: 2 },
+      { id: 'alias-avg', label: 'Alias test: <code>averageLength</code>', cost: 3 },
+      { id: 'alias-pos', label: 'Alias test: <code>countPositive</code>', cost: 3 },
+      { id: 'alias-uni', label: 'Alias test: <code>uniqueCount</code>', cost: 3 },
+      { id: 'alias-lng', label: 'Alias test: <code>longestWords</code>', cost: 3 },
+      { id: 'asserts', label: 'Run the return-value tests', cost: 2 },
+      { id: 'version', label: 'Check the Python version', cost: 1 },
+      { id: 'delete', label: 'Delete the last two prints', cost: 1, risky: true },
+      { id: 'push', label: 'Edit their module and push a fix now', cost: 2, risky: true },
+    ];
+    var FIXES = [
+      { id: 'local', txt: 'Change the guilty function so it works on a local list it builds or copies, and leaves words alone.' },
+      { id: 'copyall', txt: 'In main.py, pass copy.copy(words) to every function.' },
+      { id: 'resplit', txt: 'In main.py, split the review again just before the last two prints.' },
+      { id: 'sort', txt: 'Sort words at the end so it is in a predictable order.' },
+    ];
+
+    var deck = [];
+    function deal() {
+      if (!deck.length) {
+        deck = FUNCS.map(function (f) { return f.id; });
+        for (var i = deck.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = deck[i]; deck[i] = deck[j]; deck[j] = t; }
+      }
+      return deck.pop();
+    }
+
+    var S;
+    function fresh() {
+      S = { bug: deal(), used: 0, readings: [], view: -1, tab: 'case', struck: {}, pick: null, fix: null, tags: {}, risky: [], done: false };
+    }
+
+    function run(t) {
+      if (S.done || S.used + t.cost > BUDGET) return;
+      S.used += t.cost;
+      var r;
+      if (t.risky) {
+        S.risky.push(t.id);
+        r = { id: t.id, title: t.id === 'delete' ? 'Not done: deleting the prints' : 'Not done: pushing an untested fix', warn: true,
+          text: t.id === 'delete'
+            ? '<strong>That hides the symptom.</strong> The words list would still be damaged, and any later code would still use it. Find the cause instead.'
+            : '<strong>Each module has an owner.</strong> Show the owner your evidence, change it together, and run the module\'s tests before you commit and push.' };
+      } else if (t.id === 'main') {
+        var m = runMain(S.bug);
+        r = { id: 'main', title: 'main.py output', text: m.text, vals: m.vals };
+      } else if (t.id.indexOf('alias-') === 0) {
+        var a = aliasTest(t.id.slice(6), S.bug);
+        r = { id: t.id, title: 'Alias test: ' + FUNCS.filter(function (x) { return x.id === t.id.slice(6); })[0].call.split('(')[0], text: a.text, same: a.same, fid: t.id.slice(6) };
+      } else if (t.id === 'asserts') {
+        r = { id: 'asserts', title: 'Return-value tests', text: FUNCS.map(function (f) { return 'test ' + f.call.split('(')[0] + ' ... passed'; }).join('\n') + '\n4 passed, 0 failed' };
+      } else {
+        r = { id: 'version', title: 'Python version', text: '>>> import sys\n>>> sys.version\n\'3.12.3\'' };
+      }
+      S.readings.push(r);
+      S.view = S.readings.length - 1;
+      render();
+    }
+
+    // Which suspects does this case's evidence actually rule out?
+    function ruledOut() {
+      var out = {};
+      S.readings.forEach(function (r) {
+        if (r.id === 'main') {
+          out.split = true;
+          var first = -1;
+          r.vals.forEach(function (v, k) { if (first < 0 && v !== EXPECTED.vals[k]) first = k; });
+          if (first >= 0) FUNCS.slice(first).forEach(function (f) { out[f.id] = true; });
+        }
+        if (r.fid && r.same) out[r.fid] = true;
+      });
+      return out;
+    }
+
+    function submit() {
+      if (!S.pick || !S.fix) return;
+      S.done = true;
+      S.tab = 'rec';
+      render();
+    }
+
+    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    function record() {
+      var R = ruledOut();
+      var strikes = Object.keys(S.struck).filter(function (k) { return S.struck[k]; });
+      var good = strikes.filter(function (k) { return R[k] && k !== S.bug; });
+      var right = S.pick === S.bug;
+      var key = S.readings.some(function (r) { return r.fid === S.bug; });
+      var support = Object.keys(S.tags).filter(function (i) {
+        var r = S.readings[i];
+        return S.tags[i] && r && (r.fid === S.bug || r.id === 'main');
+      });
+      var fixTxt = { local: ['ok', 'cures the cause'], copyall: ['no', 'hides the symptom: the function still breaks its promise for every other caller'],
+        resplit: ['no', 'hides the symptom: words is still damaged in between'], sort: ['no', 'does not fix anything'] }[S.fix];
+      if (S.fix === 'local' && !right) fixTxt = ['no', 'the right kind of fix, applied to the wrong function'];
+      var f = FUNCS.filter(function (x) { return x.id === S.bug; })[0];
+      var line = function (k, cls, v) { return '<li><b>' + k + '</b><span class="' + cls + '">' + v + '</span></li>'; };
+      return '<div><h3>Your record</h3><ul class="wc-score">' +
+        line('Key evidence', key ? 'ok' : 'no', key ? 'You ran the alias test on the culprit.' : 'You never ran the alias test on the culprit.') +
+        line('Practice', S.risky.length ? 'no' : 'ok', S.risky.length ? S.risky.length + ' bad-practice choice' + (S.risky.length > 1 ? 's' : '') : 'No bad-practice choices.') +
+        line('Ruling out', good.length === strikes.length ? 'ok' : 'no', good.length + ' of ' + strikes.length + ' strikes backed by your own evidence') +
+        line('Diagnosis', right ? 'ok' : 'no', right ? 'Correct: ' + esc(f.call) : 'Not it. The culprit was ' + esc(f.call) + '.') +
+        line('Fix', fixTxt[0], fixTxt[1]) +
+        line('Defense', right && support.length ? 'ok' : 'no', right ? support.length + ' supporting reading' + (support.length === 1 ? '' : 's') + ' tagged' : 'Only counts with a correct diagnosis.') +
+        line('Time', S.used <= BUDGET ? 'ok' : 'no', S.used + ' of ' + BUDGET + ' minutes') +
+        '</ul></div><div><h3>What really happened</h3><p class="wc-txt">' + f.explain + '</p>' +
+        '<p class="wc-txt" style="margin-top:12px;">Return-value tests could not catch this, because the return value was correct. Only checking the argument <strong>after</strong> the call does.</p>' +
+        '<div style="margin-top:16px;"><button class="wc-btn alt" data-wc="new">New case</button></div></div>';
+    }
+
+    function render() {
+      var left = BUDGET - S.used;
+      var h = '<div class="wc-top">';
+      [['case', '1 Case file'], ['inv', '2 Investigate'], ['diag', '3 Diagnose'], ['rec', '4 Record']].forEach(function (t) {
+        h += '<button class="wc-tab' + (S.tab === t[0] ? ' is-on' : '') + '" data-tab="' + t[0] + '"' +
+          ((t[0] === 'rec' && !S.done) || (S.done && t[0] !== 'rec' && t[0] !== 'inv' && t[0] !== 'case') ? ' disabled' : '') + '>' + t[1] + '</button>';
+      });
+      h += '<span class="wc-spacer"></span><span class="wc-clock' + (left <= 3 ? ' low' : '') + '">time left: <b>' + left + '</b> of ' + BUDGET + ' min</span></div>';
+
+      h += '<div class="wc-panel wc-case' + (S.tab === 'case' ? ' is-on' : '') + '"><div>' +
+        '<h3>Bug report</h3><p class="wc-txt">"The word count at the end of the report does not match the count at the start, and the review printed on the last line is <strong>not the review we typed</strong>. Every function\'s own tests pass."</p>' +
+        '<h3 style="margin-top:14px;">Expected output</h3><pre class="wc-out">' + esc(EXPECTED.text) + '</pre></div>' +
+        '<div><h3>Commit log, oldest first</h3><ul class="wc-log">' +
+        '<li><b>Ari</b> averageLength now skips tokens like "!" that have no letters</li>' +
+        '<li><b>Sam</b> fixed a typo in README.md</li>' +
+        '<li><b>Jordan</b> countPositive ignores filler words like "the" and "is"</li>' +
+        '<li><b>Maya</b> uniqueCount handles repeated words</li>' +
+        '<li><b>Lee</b> longestWords pulls out the n longest words</li>' +
+        '<li><b>Sam</b> added sample_reviews.txt</li></ul>' +
+        '<h3 style="margin-top:14px;">main.py runs, in order</h3><p class="wc-txt"><code>words = review.split(" ")</code>, then ' +
+        FUNCS.map(function (f) { return '<code>' + f.call + '</code>'; }).join(', ') + ', then prints the count and the joined words.</p></div></div>';
+
+      h += '<div class="wc-panel wc-inv' + (S.tab === 'inv' ? ' is-on' : '') + '"><div class="wc-tests">';
+      TESTS.forEach(function (t) {
+        var done = S.readings.some(function (r) { return r.id === t.id; });
+        h += '<button class="wc-test' + (t.risky ? ' risky' : '') + (done ? ' done' : '') + '" data-test="' + t.id + '"' +
+          (S.done || S.used + t.cost > BUDGET ? ' disabled' : '') + '><span class="lbl">' + t.label + '</span><span class="wc-cost">' + t.cost + ' min</span></button>';
+      });
+      h += '</div><div class="wc-reading">';
+      var r = S.readings[S.view];
+      if (!r) h += '<div class="wc-rtitle">No readings yet</div><pre class="wc-out" style="color:var(--text-dim);"># Choose a test on the left. Its reading appears here.</pre>';
+      else if (r.warn) h += '<div class="wc-rtitle">' + esc(r.title) + '</div><div class="wc-warn">' + r.text + '</div><div style="flex:1;"></div>';
+      else h += '<div class="wc-rtitle">' + esc(r.title) + '</div><pre class="wc-out">' + esc(r.text) + '</pre>';
+      h += '<div class="wc-chips">' + S.readings.map(function (x, i) {
+        return '<button class="wc-chip' + (i === S.view ? ' is-on' : '') + '" data-view="' + i + '">' + (i + 1) + '. ' + esc(x.title.replace('Not done: ', '')) + '</button>';
+      }).join('') + '</div></div></div>';
+
+      h += '<div class="wc-panel wc-diag' + (S.tab === 'diag' ? ' is-on' : '') + '"><div>' +
+        '<h3>Suspects: strike out, then pick one</h3><div class="wc-sus">';
+      SUSPECTS.forEach(function (s) {
+        h += '<div class="wc-row' + (S.struck[s.id] ? ' struck' : '') + '"><span class="nm">' + esc(s.nm) + '</span>' +
+          '<button class="wc-tog' + (S.struck[s.id] ? ' is-on' : '') + '" data-strike="' + s.id + '">strike</button>' +
+          '<button class="wc-tog pick' + (S.pick === s.id ? ' is-on' : '') + '" data-pick="' + s.id + '">culprit</button></div>';
+      });
+      h += '</div><h3 style="margin-top:14px;">Tag the readings that prove it</h3><div class="wc-chips">' +
+        (S.readings.length ? S.readings.map(function (x, i) {
+          return x.warn ? '' : '<button class="wc-chip' + (S.tags[i] ? ' is-on' : '') + '" data-tag="' + i + '">' + (i + 1) + '. ' + esc(x.title) + '</button>';
+        }).join('') : '<span class="wc-txt" style="font-size:var(--small);color:var(--text-dim);">No readings yet.</span>') + '</div></div>' +
+        '<div><h3>Choose a fix</h3><div class="wc-fixes">' + FIXES.map(function (fx) {
+          return '<button class="wc-fix' + (S.fix === fx.id ? ' is-on' : '') + '" data-fix="' + fx.id + '">' + esc(fx.txt) + '</button>';
+        }).join('') + '</div><div style="margin-top:16px;"><button class="wc-btn" data-wc="submit"' + (S.pick && S.fix ? '' : ' disabled') + '>Submit diagnosis</button></div></div></div>';
+
+      h += '<div class="wc-panel wc-rec' + (S.tab === 'rec' ? ' is-on' : '') + '">' + (S.done ? record() : '') + '</div>';
+      root.innerHTML = h;
+    }
+
+    root.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (!b || !root.contains(b)) return;
+      if (b.dataset.tab) { S.tab = b.dataset.tab; render(); return; }
+      if (b.dataset.test) { run(TESTS.filter(function (t) { return t.id === b.dataset.test; })[0]); return; }
+      if (b.dataset.view) { S.view = +b.dataset.view; render(); return; }
+      if (S.done && b.dataset.wc !== 'new') return;
+      if (b.dataset.strike) { S.struck[b.dataset.strike] = !S.struck[b.dataset.strike]; if (S.pick === b.dataset.strike) S.pick = null; }
+      else if (b.dataset.pick) { S.pick = b.dataset.pick; S.struck[b.dataset.pick] = false; }
+      else if (b.dataset.tag) S.tags[b.dataset.tag] = !S.tags[b.dataset.tag];
+      else if (b.dataset.fix) S.fix = b.dataset.fix;
+      else if (b.dataset.wc === 'submit') { submit(); return; }
+      else if (b.dataset.wc === 'new') fresh();
+      render();
+    });
+
+    fresh();
+    render();
+  }
+  initWhoChanged(document.getElementById('who-changed'));
+</script>
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+  initSyncDeckReveal({
+    deckId: 'hpy-4-7-mutating-and-non-mutating-functions',
+    standaloneHosting: {
+      activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    afterInit: function (Reveal) {
+      ListsUnit.attach(Reveal);
+    },
+    revealOverrides: {
+      hash: true,
+      hashOneBasedIndex: true,
+      transition: 'fade',
+      transitionSpeed: 'fast',
+      backgroundTransition: 'none',
+      center: false,
+      controls: true,
+      controlsLayout: 'edges',
+      progress: true,
+      slideNumber: 'c/t',
+      keyboard: true,
+      touch: true,
+      fragments: true,
+      width: 1600,
+      height: 900,
+      margin: 0.04,
+      minScale: 0.2,
+      maxScale: 2.5,
+    },
+  });
+</script>
+</body>
+</html>

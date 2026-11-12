@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1f6h52a">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.4 Aliases and Copies</title>
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../../theme.css">
+<link rel="stylesheet" href="../lists-unit.css">
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 01 · TITLE -->
+    <section>
+      <div class="glow" style="width:520px;height:520px;background:radial-gradient(circle,rgba(242,177,52,0.14) 0%,transparent 70%);top:-100px;right:-60px;"></div>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">HPy &middot; Unit 4 &middot; Lists</span>
+        <h1 class="title-h1">4.4 Aliases and Copies</h1>
+        <p class="subtitle">why changing one variable can change another &middot; is versus == &middot; copying &middot; mutating versus non-mutating</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 02 · PREDICT: THE HOOK -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:alias-hook:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "What is printed?\n\n```python\na = [1, 2, 3]\nb = a\na.append(4)\nprint(b)\n```", "order": 0, "responseTimeLimitMs": 40000, "options": [{"id": "q1a", "text": "`[1, 2, 3]`", "isCorrect": false}, {"id": "q1b", "text": "`[1, 2, 3, 4]`", "isCorrect": true}, {"id": "q1c", "text": "`[4]`", "isCorrect": false}, {"id": "q1d", "text": "It crashes", "isCorrect": false}]}]}'>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Predict First</span>
+          <h2>We never touched <code>b</code>. What does it print?</h2>
+          <ul class="mcq-opts" style="margin-top:var(--gap);">
+            <li><span class="opt-key">A</span><code>[1, 2, 3]</code></li>
+            <li><span class="opt-key">B</span><code>[1, 2, 3, 4]</code></li>
+            <li><span class="opt-key">C</span><code>[4]</code></li>
+            <li><span class="opt-key">D</span>It crashes</li>
+          </ul>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">a = [1, 2, 3]
+b = a
+a.append(4)
+print(b)</code></pre></div>
+        </div>
+      </div>
+      <aside class="notes">Collect answers but do not reveal yet. Many students will say [1, 2, 3], reasoning from how b = a works with numbers. The rest of the lesson explains the answer.</aside>
+    </section>
+
+    <!-- SLIDE 03 · VISUALIZING -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">4.2.4 Visualizing Code Execution</span>
+        <h2>Boxes and arrows</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          To truly understand lists we need a picture of memory. Each function call gets a <span style="color:var(--accent);">frame</span> holding its variables. A list is an <span style="color:var(--accent);">object</span> that lives outside the frames, and a variable holds an <span style="color:var(--accent);">arrow</span> to it, called a reference.
+        </p>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          The website <a href="https://pythontutor.com/visualize.html#code=a%20%3D%20%5B1,%202,%203%5D%0Ab%20%3D%20a%0Aa.append%284%29%0Aprint%28b%29&amp;curInstr=0&amp;mode=display&amp;origin=opt-frontend.js" target="_blank" rel="noopener">pythontutor.com</a> draws these diagrams for any Python program, one line at a time. The step-by-step traces in these slides draw the same picture.
+        </p>
+        <div class="callout-result fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
+          <strong>Move to the whiteboards.</strong> For the rest of the lesson, draw each list object on the board and use the <span style="color:var(--accent);">magnetic arrows</span> to show which list each variable refers to. Build the picture yourself before each step; the traces on the slides and Python Tutor are for checking it.
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 04 · TRACE: ALIASES -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Demonstration &middot; 4.2.5 Aliases</span>
+        <h2>Two variables can refer to the same list</h2>
+        <div class="lt-board" data-trace="alias" style="margin-top:var(--gap-sm);"></div>
+      </div>
+      <aside class="notes">Walk through this one as a demonstration with the magnetic arrows on the front board, step by step with the trace, while students build the same picture at their whiteboards.</aside>
+    </section>
+
+    <!-- SLIDE 05 · ALIAS VS COPY DEFINITIONS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Aliases and Copies</span>
+        <h2>Aliases versus copies</h2>
+        <div class="split split-50" style="margin-top:var(--gap-sm);flex:0 0 auto;align-items:start;">
+          <div class="key-prop">
+            <strong style="color:var(--accent);">Aliases</strong> are two variables that refer to the <strong>same</strong> list. A change made through either name shows up through both, because there is only one list.
+          </div>
+          <div class="key-prop">
+            <strong style="color:var(--syntax-string);">Copies</strong> are two lists that are <strong>equal</strong> but separate. A change to one copy never changes the other.
+          </div>
+        </div>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          Python checks for aliases with <code>is</code>. <code>L is M</code> is <code>True</code> only when both arrows point at the same object, and <code>L is not M</code> is its opposite. Compare that with <code>==</code>, which only asks whether the values match.
+        </p>
+        <ul class="bullets fragment fade-up" style="margin-top:var(--gap);">
+          <li>If <code>L is M</code>, then <code>L == M</code> must be <code>True</code>, since a list always equals itself.</li>
+          <li>If <code>L == M</code> is <code>False</code>, then they cannot be aliases.</li>
+          <li>Copies have <code>L == M</code> but <code>L is not M</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SLIDE 06 · CHECKPOINT: NOT TRUE -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:is-equal:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Which of the following is NOT true?", "order": 0, "responseTimeLimitMs": 50000, "options": [{"id": "q1a", "text": "If `L is M` is `True`, then `L == M` must be `True`.", "isCorrect": false}, {"id": "q1b", "text": "If `L` is an alias of `M`, then `L is M` must be `True`.", "isCorrect": false}, {"id": "q1c", "text": "If `L == M` is `True`, then `L is M` must be `True`.", "isCorrect": true}, {"id": "q1d", "text": "If `L` is a copy (and not an alias) of `M`, then `L is not M` must be `True`.", "isCorrect": false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint &middot; is and ==</span>
+        <h2>Which statement is <span style="color:var(--warn);">not</span> true?</h2>
+        <ul class="mcq-opts" style="margin-top:var(--gap);max-width:1150px;">
+          <li><span class="opt-key">A</span>If <code>L is M</code> is <code>True</code>, then <code>L == M</code> must be <code>True</code>.</li>
+          <li><span class="opt-key">B</span>If <code>L</code> is an alias of <code>M</code>, then <code>L is M</code> must be <code>True</code>.</li>
+          <li><span class="opt-key">C</span>If <code>L == M</code> is <code>True</code>, then <code>L is M</code> must be <code>True</code>.</li>
+          <li><span class="opt-key">D</span>If <code>L</code> is a copy, not an alias, of <code>M</code>, then <code>L is not M</code> must be <code>True</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SLIDE 07 · COPY.COPY -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Making a Copy</span>
+          <h2><code>copy.copy(L)</code></h2>
+          <p style="margin-top:var(--gap-sm);">
+            To get a separate list with the same values, <code>import copy</code> and call <code>copy.copy(L)</code>. It creates a new list, so the result is a copy, not an alias.
+          </p>
+          <p style="margin-top:var(--gap);">
+            Python has other ways to copy a list, and you will see them in other people's code. Recognize them, but in your own code always use <code>copy.copy</code>, because it says exactly what it does.
+          </p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);">
+          <div class="code-card" data-tutor>
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">do it this way</span></div>
+            <div class="code-body"><pre><code class="py">import copy
+L = [1, 3]
+N = copy.copy(L)
+print(L == N, L is N)   # True False</code></pre></div>
+          </div>
+          <div class="code-card" data-tutor data-tutor-setup="a = [1, 3]">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">recognize, but don't use</span></div>
+            <div class="code-body"><pre><code class="py">c = a[:]       # any slice is a new list
+d = a + []     # + makes a new list
+e = list(a)
+f = a.copy()
+g = a * 1      # * makes a new list</code></pre></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 08 · TRACE: BREAKING AN ALIAS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Breaking Aliases</span>
+        <h2>Reassigning moves an arrow</h2>
+        <div class="lt-board" data-trace="breakAlias" style="margin-top:var(--gap-sm);"></div>
+      </div>
+    </section>
+
+    <!-- SLIDE 09 · MUTATION VS REASSIGNMENT -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">The Key Distinction</span>
+        <h2>Mutation versus reassignment</h2>
+        <div class="split split-50" style="margin-top:var(--gap-sm);flex:0 0 auto;align-items:start;">
+          <div class="key-prop">
+            <strong style="color:var(--warn);">Mutation</strong> changes the object at the end of the arrow: <code>M[0] = 42</code>, <code>M.append(4)</code>, <code>M.sort()</code>. Every alias sees the change.
+          </div>
+          <div class="key-prop">
+            <strong style="color:var(--syntax-string);">Reassignment</strong> of the variable itself, like <code>M = [42, 3]</code> or <code>M = copy.copy(M)</code>, points <code>M</code> at a different object. The old list and its other aliases are untouched, and the alias is broken.
+          </div>
+        </div>
+        <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
+          This holds even when the new list is equal to the old one. After <code>M = [42, 3]</code>, <code>L == M</code> can still be <code>True</code>, but <code>L is M</code> is <code>False</code>.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 10 · WHITEBOARD TRACE: M[2] = 5 -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Trace It &middot; Whiteboards</span>
+          <h2>Trace it at your whiteboard</h2>
+          <p style="margin-top:var(--gap-sm);">
+            Trace this program at your whiteboard, one line at a time. Draw each list as it is created, place a magnetic arrow from each variable to its list, and update the picture after every line. Then write down what the last line prints.
+          </p>
+          <div class="callout-result fragment fade-up" style="margin-top:var(--gap);">
+            <strong>It prints <code>[1, 2, 5] [1, 2, 5]</code>.</strong> <code>M = L</code> made <code>M</code> an alias, so <code>M[2] = 5</code> changed the one list that both names refer to. Step through it in Python Tutor to check your trace.
+          </div>
+        </div>
+        <div class="code-card" data-tutor>
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">L = [1, 2, 3]
+M = L
+M[2] = 5
+print(L, M)</code></pre></div>
+        </div>
+      </div>
+      <aside class="notes">Give groups a couple of minutes before revealing the answer. Look for one list with two arrows after line 2, and a change to that one list on line 3. A group that drew two lists has treated M = L as a copy.</aside>
+    </section>
+
+    <!-- SLIDE 11 · MAGNETIC ARROWS ACTIVITY -->
+    <section>
+      <div class="glow" style="width:480px;height:480px;background:radial-gradient(circle,rgba(124,217,146,0.10) 0%,transparent 70%);bottom:-120px;right:-80px;"></div>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Hands On &middot; Magnetic Arrows</span>
+          <h2>Move the arrows</h2>
+          <p style="margin-top:var(--gap-sm);">
+            Tape your code sheet to the whiteboard, write the variable names <code>a</code>, <code>b</code>, and <code>c</code>, and draw each list object as it is created. Run the program one line at a time, moving your magnetic arrows and editing the lists.
+          </p>
+          <p style="margin-top:var(--gap);">
+            Before each line, mark it on your code sheet. Write <strong style="color:var(--warn);">M</strong> if it <span style="color:var(--warn);">mutates a list</span>, <strong style="color:var(--syntax-string);">A</strong> if it points an arrow at a list that <span style="color:var(--syntax-string);">already exists</span>, or <strong style="color:var(--result);">N</strong> if it makes a <span style="color:var(--result);">new list</span> and points an arrow at it. Then make the change on the board.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">arrows.py</span></div>
+          <div class="code-body"><pre><code class="py">import copy
+a = [1, 2, 3]
+b = a
+c = copy.copy(a)
+a[0] = 9
+b.append(4)
+a = a + [5]
+print(a, b, c)</code></pre></div>
+        </div>
+      </div>
+      <aside class="notes">Marks: lines 2, 4, and 7 are N; line 3 is A; lines 5 and 6 are M; lines 1 and 8 get no mark. A is an alias and N is a copy or other new list, so b = a and c = copy.copy(a) get different marks even though both point an arrow. Line 5 is the trap: a[0] = 9 has an equals sign, but it changes the list, so it is M. Line 7 is the one to slow down on: a + [5] builds a whole new list first, and only then does the assignment move a's arrow to it. b keeps pointing at the old list. Compare with the hook program, where a.append(4) mutated the shared list.</aside>
+    </section>
+
+    <!-- SLIDE 12 · TRACE: MAGNETIC ARROWS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Check Your Arrows</span>
+        <h2>Step through <code>arrows.py</code></h2>
+        <div class="lt-board" data-trace="arrows" style="margin-top:var(--gap-sm);"></div>
+      </div>
+    </section>
+
+    <!-- SLIDE 13 · + VS += -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">4.2.6 List Operators</span>
+        <h2><code>L = L * 2</code> is not the same as <code>L *= 2</code></h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          Make an alias <code>M</code> first, then change <code>L</code>. If <code>M</code> sees the change, the operation was <span style="color:var(--warn);">mutating</span>. This alias test works for any operation you are unsure about.
+        </p>
+        <div class="split split-50" style="margin-top:var(--gap);flex:0 0 auto;align-items:start;">
+          <div class="code-card" data-tutor>
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">non-mutating: a new list</span></div>
+            <div class="code-body"><pre><code class="py">L = ["a", "b"]
+M = L
+L = L * 2
+print(L is M)   # False
+print(M)        # ['a', 'b']</code></pre></div>
+          </div>
+          <div class="code-card fragment fade-up" data-tutor>
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">mutating: the same list</span></div>
+            <div class="code-body"><pre><code class="py">L = ["a", "b"]
+M = L
+L *= 2
+print(L is M)   # True
+print(M)        # ['a', 'b', 'a', 'b']</code></pre></div>
+          </div>
+        </div>
+        <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
+          <code>+</code> and <code>+=</code> follow the same rule. <code>L = L + [3]</code> builds a new list, and <code>L += [3]</code> mutates <code>L</code>, just like <code>L.extend([3])</code>.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 14 · PYTHON'S PATTERNS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Mutating vs Non-Mutating</span>
+        <h2>Four patterns that help you remember</h2>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);margin-top:var(--gap-sm);max-width:1250px;">
+          <div class="key-prop fragment fade-up"><strong>Assignment operators mutate; plain operators don't.</strong> <code>+=</code> and <code>*=</code> change the list. <code>+</code> and <code>*</code> build a new one.</div>
+          <div class="key-prop fragment fade-up"><strong>Methods mutate; past-tense functions don't.</strong> <code>L.sort()</code> and <code>L.reverse()</code> change <code>L</code>. <code>sorted(L)</code> and <code>reversed(L)</code> leave it alone.</div>
+          <div class="key-prop fragment fade-up"><strong>Non-mutating operations return a new list.</strong> Store the result, as in <code>M = sorted(L)</code> or <code>M = L + [3]</code>, or the new list is lost.</div>
+          <div class="key-prop fragment fade-up"><strong>Mutating methods return <code>None</code>.</strong> They change the list you already have, so there is nothing new to hand back. That makes <code>L = L.sort()</code> a trap: <code>sort</code> sorts the list, then the assignment points <code>L</code> at <code>None</code>, and the sorted list is lost. <code>pop</code> is the exception; it returns the value it removed.</div>
+        </div>
+        <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
+          When the patterns are not enough, run the alias test: make <code>M = L</code>, do the operation on <code>L</code>, and print <code>M</code>.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 15 · CHECKPOINT: WHICH MUTATES -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:which-mutates:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Which of these mutates `L`?", "order": 0, "responseTimeLimitMs": 40000, "options": [{"id": "q1a", "text": "`M = L + [3]`", "isCorrect": false}, {"id": "q1b", "text": "`L = L * 5`", "isCorrect": false}, {"id": "q1c", "text": "`M = copy.copy(L)`", "isCorrect": false}, {"id": "q1d", "text": "`L *= 5`", "isCorrect": true}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint &middot; Mutation</span>
+        <h2>Which one mutates <code>L</code>?</h2>
+        <ul class="mcq-opts" style="margin-top:var(--gap);max-width:600px;">
+          <li><span class="opt-key">A</span><code>M = L + [3]</code></li>
+          <li><span class="opt-key">B</span><code>L = L * 5</code></li>
+          <li><span class="opt-key">C</span><code>M = copy.copy(L)</code></li>
+          <li><span class="opt-key">D</span><code>L *= 5</code></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SLIDE 16 · TRACE: PARAMETERS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Parameters Are Aliases</span>
+        <h2>A parameter refers to the caller&#39;s list</h2>
+        <div class="lt-board" data-trace="param" style="margin-top:var(--gap-sm);"></div>
+      </div>
+    </section>
+
+    <!-- SLIDE 17 · CHECKPOINT: TRUE STATEMENT -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:copy-true:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Which of the following is true?", "order": 0, "responseTimeLimitMs": 50000, "options": [{"id": "q1a", "text": "Parameters are copies, not aliases.", "isCorrect": false}, {"id": "q1b", "text": "`L + []` creates a copy of `L`, but it is better to use `copy.copy(L)`.", "isCorrect": true}, {"id": "q1c", "text": "A list `M` can be both a copy of `L` and an alias of `L`.", "isCorrect": false}, {"id": "q1d", "text": "There are several ways to copy a list, and you should use whichever way you prefer.", "isCorrect": false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint &middot; Copies and Parameters</span>
+        <h2>Which statement is true?</h2>
+        <ul class="mcq-opts" style="margin-top:var(--gap);max-width:1150px;">
+          <li><span class="opt-key">A</span>Parameters are copies, not aliases.</li>
+          <li><span class="opt-key">B</span><code>L + []</code> creates a copy of <code>L</code>, but it is better to use <code>copy.copy(L)</code>.</li>
+          <li><span class="opt-key">C</span>A list <code>M</code> can be both a copy of <code>L</code> and an alias of <code>L</code>.</li>
+          <li><span class="opt-key">D</span>There are several ways to copy a list, and you should use whichever way you prefer.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SLIDE 18 · WHITEBOARD TRACE: FUNCTION CALL -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Trace It &middot; Whiteboards</span>
+          <h2>Trace a function call</h2>
+          <p style="margin-top:var(--gap-sm);">
+            Trace this program from your code sheet. When <code>addItems</code> is called, draw a new frame for it with its own variable <code>M</code>. Mark each line <strong style="color:var(--warn);">M</strong>, <strong style="color:var(--syntax-string);">A</strong>, or <strong style="color:var(--result);">N</strong> as before, and write down what the last line prints.
+          </p>
+          <div class="callout-result fragment fade-up" style="margin-top:var(--gap);">
+            <strong>It prints <code>[1, 2, 3, 4]</code>.</strong> The parameter <code>M</code> is an alias, so <code>M.append(4)</code> changed the caller&#39;s list. <code>M = M + [5]</code> made a new list and moved only the parameter&#39;s arrow, so the <code>6</code> went onto a list that is gone when the function ends.
+          </div>
+        </div>
+        <div class="code-card" data-tutor>
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">def addItems(M):
+    M.append(4)
+    M = M + [5]
+    M.append(6)
+
+L = [1, 2, 3]
+addItems(L)
+print(L)</code></pre></div>
+        </div>
+      </div>
+      <aside class="notes">Marks: line 6 is N; line 7 is A, since the call points the parameter M at L&#39;s list; line 2 is M; line 3 is N; line 4 is M, but it mutates the new list, not L&#39;s. Lines 1 and 8 get no mark. Look for a second frame, and for line 3 moving only the arrow in that frame. A group that prints [1, 2, 3, 4, 5, 6] has treated M = M + [5] as a mutation.</aside>
+    </section>
+
+    <!-- SLIDE 19 · BACK TO COMPUTERS -->
+    <section>
+      <div class="glow" style="width:480px;height:480px;background:radial-gradient(circle,rgba(124,217,146,0.10) 0%,transparent 70%);bottom:-120px;right:-80px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Hands On &middot; Wrap Up</span>
+        <h2>Back to your computers</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          Put the magnetic arrows back and erase your whiteboard. Then return to your seat and open MobCode for the next activity.
+        </p>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          Bring a sheet of paper. On the next slide you will trace a program on paper and predict what it prints before you run it.
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 20 · TRACE ON PAPER -->
+    <section>
+      <div class="slide-inner split split-40">
+        <div>
+          <span class="slide-tag">Predict, Then Run &middot; Paper</span>
+          <h2>Trace it on paper first</h2>
+          <p style="margin-top:var(--gap-sm);">
+            Trace this program on paper before you run it. Draw the boxes and arrows as each line runs, and update them as you go.
+          </p>
+          <p style="margin-top:var(--gap);">
+            Next to each <code>print</code> line, write what you predict it prints. The next slide opens the program in MobCode so you can check.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">import copy
+words = ["loud", "fast"]
+saved = words
+backup = copy.copy(words)
+words += ["cheap"]
+print(saved)
+print(backup)
+print(saved is words, backup == words)
+
+words = words + ["sturdy"]
+print(saved)
+print(saved is words, saved == words)
+
+backup.append("cheap")
+print(backup == saved, backup is saved)</code></pre></div>
+        </div>
+      </div>
+      <aside class="notes">Give groups several minutes. Move to the next slide only when most students have a prediction for every print line. There is no Python Tutor link here on purpose, so the answers stay hidden until students run it.</aside>
+    </section>
+
+    <!-- SLIDE 21 · MOBCODE + PYTHON TUTOR (vertical stack) -->
+    <section>
+      <!-- SLIDE 21 · MOBCODE: IDENTITY PREDICTIONS -->
+      <section
+        data-activity-id="mobcode"
+        data-activity-trigger="slide-enter"
+        data-activity-instance-key="mobcode:identity:0"
+        data-activity-options='{"files": {"main.py": "import copy\n\n# 1. Type the predictions from your paper as comments at the\n#    end of each print line.\n# 2. Run it.\n# 3. For any line you got wrong, find the exact step where\n#    your drawing went wrong.\n\nwords = [\"loud\", \"fast\"]\nsaved = words\nbackup = copy.copy(words)\nwords += [\"cheap\"]\nprint(saved)\nprint(backup)\nprint(saved is words, backup == words)\n\nwords = words + [\"sturdy\"]\nprint(saved)\nprint(saved is words, saved == words)\n\nbackup.append(\"cheap\")\nprint(backup == saved, backup is saved)\n"}, "activeFile": "main.py", "runnerId": "brython-terminal"}'>
+        <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+        <div class="slide-inner">
+          <span class="slide-tag">Predict, Then Run</span>
+          <h2>Check your predictions</h2>
+          <p style="margin-top:var(--gap-sm);max-width:1200px;">
+            Type the predictions from your paper as comments at the end of each <code>print</code> line, and then run the program. For any line you got wrong, find the exact step where your drawing went wrong.
+          </p>
+        </div>
+        <aside class="notes">Expected: ['loud', 'fast', 'cheap'] / ['loud', 'fast'] / True False / ['loud', 'fast', 'cheap'] / False False / True False. The fourth print is the one to discuss: words = words + [...] built a new list, so saved still has three words while words has four.</aside>
+      </section>
+
+      <!-- SLIDE 22 · PYTHON TUTOR: IDENTITY PREDICTIONS -->
+      <section>
+        <div class="slide-inner split split-40">
+          <div>
+            <span class="slide-tag">Check Your Drawing</span>
+            <h2>Step through it in Python Tutor</h2>
+            <p style="margin-top:var(--gap-sm);">
+              If a prediction was wrong, open this program in Python Tutor with the icon on the code. Step through it one line at a time and compare each picture with your drawing on paper.
+            </p>
+            <p style="margin-top:var(--gap);">
+              Find the first step where your drawing and Python Tutor disagree. That step is where your mental model went wrong.
+            </p>
+          </div>
+          <div class="code-card" data-tutor>
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body"><pre><code class="py">import copy
+words = ["loud", "fast"]
+saved = words
+backup = copy.copy(words)
+words += ["cheap"]
+print(saved)
+print(backup)
+print(saved is words, backup == words)
+
+words = words + ["sturdy"]
+print(saved)
+print(saved is words, saved == words)
+
+backup.append("cheap")
+print(backup == saved, backup is saved)</code></pre></div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- SLIDE 23 · VS CODE EXERCISE -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">VS Code &middot; alias_experiments.py</span>
+        <h2>Alias Experiments</h2>
+        <div class="ex-card" style="margin-top:var(--gap-sm);max-width:1300px;">
+          <p>In VS Code, create <code>alias_experiments.py</code> in your Unit 4 folder. Write each experiment as a short block of code. Above it, write a comment with your prediction. Below it, after running, write a comment that explains the result in terms of arrows.</p>
+          <ol class="bullets" style="margin-top:var(--gap-sm);">
+            <li>Show two lists that are <code>==</code> but not <code>is</code>, and two that are both.</li>
+            <li>Use the alias test to decide whether <code>L += [1]</code>, <code>L = L + [1]</code>, and <code>L.extend([1])</code> mutate <code>L</code>.</li>
+            <li>Write a function <code>shout(words)</code> that changes every word to uppercase by index. Show that the caller's list changed, then protect the caller with <code>copy.copy</code>.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 24 · REFERENCE -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">List Programmer's Reference</span>
+        <h2>Add today's entries</h2>
+        <table class="ref-table" style="margin-top:var(--gap-sm);">
+          <tr><th>Operation</th><th>What it does</th><th>Returns</th><th>Changes the list?</th></tr>
+          <tr><td><code>M = L</code></td><td>makes <code>M</code> an alias of <code>L</code></td><td>N/A (a statement)</td><td class="no">no</td></tr>
+          <tr><td><code>L is M</code>, <code>L is not M</code></td><td>are these the same object?</td><td></td><td></td></tr>
+          <tr><td><code>copy.copy(L)</code></td><td></td><td></td><td class="no">no</td></tr>
+          <tr><td><code>L + M</code>, <code>L * n</code></td><td></td><td>a new list</td><td></td></tr>
+          <tr><td><code>L += M</code>, <code>L *= n</code></td><td>join or repeat in place</td><td></td><td></td></tr>
+          <tr><td><code>f(L)</code></td><td>calls <code>f</code>; its parameter becomes an alias of <code>L</code></td><td>whatever <code>f</code> returns</td><td>only if <code>f</code> mutates it</td></tr>
+        </table>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">The first and last rows are done for you. Test each entry and fill in the blank cells.</p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../lists-unit.js"></script>
+<script>
+  var LIST_TRACES = {
+    alias: {
+      cols: '600px minmax(0,1fr)',
+      code: [
+        'L = [1, 3]',
+        'M = L',
+        'N = [1, 3]',
+        'L[0] = 42',
+        'print(L, M, N)',
+        'print(L is M, L is N, L == N)',
+      ].join('\n'),
+      consoleLines: 2,
+      sayLines: 3,
+      steps: [
+        { line: 1, say: 'Line 1 creates a list and an arrow to it.' },
+        { line: 2, frames: [['global', { L: '@x' }]], objs: { x: ['1', '3'] }, say: '<code>L</code> refers to a list holding 1 and 3.' },
+        { line: 3, frames: [['global', { L: '@x', M: '@x' }]],
+          say: '<code>M = L</code> copies the <strong>arrow</strong>, not the list. Both names now refer to the same list: they are aliases.' },
+        { line: 4, frames: [['global', { L: '@x', M: '@x', N: '@y' }]], objs: { y: ['1', '3'] },
+          say: 'A list literal always builds a new list. <code>N</code> refers to a second list that happens to hold the same values.' },
+        { line: 5, objs: { x: ['42', '3'] }, hl: { x: { add: [0] } },
+          say: 'Mutating through <code>L</code> changes the one list that <code>L</code> and <code>M</code> share. <code>N</code>\'s list is separate.' },
+        { line: 6, print: '[42, 3] [42, 3] [1, 3]', say: '<code>M</code> shows the change even though line 4 never mentioned <code>M</code>.' },
+        { line: 7, print: 'True False False', say: '<code>L is M</code> because they share one list. <code>N</code> is a different list, and now its values differ too.' },
+      ],
+    },
+    breakAlias: {
+      cols: '560px minmax(0,1fr)',
+      code: [
+        'L = [1, 3]',
+        'M = L',
+        'M = [1, 3]',
+        'print(L == M, L is M)',
+        'M[0] = 99',
+        'print(L, M)',
+      ].join('\n'),
+      consoleLines: 2,
+      sayLines: 3,
+      steps: [
+        { line: 1, say: 'Start with one list.' },
+        { line: 2, frames: [['global', { L: '@x' }]], objs: { x: ['1', '3'] }, say: '<code>L</code> refers to the list.' },
+        { line: 3, frames: [['global', { L: '@x', M: '@x' }]], say: '<code>M</code> becomes an alias of <code>L</code>.' },
+        { line: 4, frames: [['global', { L: '@x', M: '@y' }]], objs: { y: ['1', '3'] },
+          say: 'Assigning to <code>M</code> moves <strong>its</strong> arrow to a new list. <code>L</code> and its list are untouched. The alias is broken.' },
+        { line: 5, print: 'True False', say: 'The two lists are still equal, but they are no longer the same object.' },
+        { line: 6, objs: { y: ['99', '3'] }, hl: { y: { add: [0] } }, say: 'Now a mutation through <code>M</code> changes only <code>M</code>\'s list.' },
+        { line: 7, print: '[1, 3] [99, 3]', say: '<code>M = copy.copy(M)</code> would have broken the alias the same way, by pointing <code>M</code> at a new list.' },
+      ],
+    },
+    arrows: {
+      cols: '480px minmax(0,1fr)',
+      file: 'arrows.py',
+      code: [
+        'import copy',
+        'a = [1, 2, 3]',
+        'b = a',
+        'c = copy.copy(a)',
+        'a[0] = 9',
+        'b.append(4)',
+        'a = a + [5]',
+        'print(a, b, c)',
+      ].join('\n'),
+      consoleLines: 1,
+      sayLines: 3,
+      gap: 90,
+      steps: [
+        { line: 1, say: 'Follow along with the arrows on the board.' },
+        { line: 2, say: '<code>import copy</code> gives us <code>copy.copy</code>.' },
+        { line: 3, frames: [['global', { a: '@x' }]], objs: { x: ['1', '2', '3'] }, say: '<code>a</code> refers to a new list.' },
+        { line: 4, frames: [['global', { a: '@x', b: '@x' }]], say: 'Assignment: <code>b</code> becomes an alias of <code>a</code>.' },
+        { line: 5, frames: [['global', { a: '@x', b: '@x', c: '@y' }]], objs: { y: ['1', '2', '3'] },
+          say: '<code>copy.copy</code> builds a second list. <code>c</code> is a copy, not an alias.' },
+        { line: 6, objs: { x: ['9', '2', '3'] }, hl: { x: { add: [0] } }, say: 'Mutation through <code>a</code>. <code>b</code> shares the change, and <code>c</code> does not.' },
+        { line: 7, objs: { x: ['9', '2', '3', '4'] }, hl: { x: { add: [3] } }, say: 'Mutation through <code>b</code>. <code>a</code> shares this change too.' },
+        { line: 7, objs: { z: ['9', '2', '3', '4', '5'] }, hl: { z: { add: [4] } },
+          say: 'First the right side runs: <code>a + [5]</code> builds a brand-new list. Nothing refers to it yet.' },
+        { line: 8, frames: [['global', { a: '@z', b: '@x', c: '@y' }]],
+          say: 'Then the assignment moves <code>a</code>\'s arrow to the new list. <code>b</code> stays behind on the old one.' },
+        { line: 9, print: '[9, 2, 3, 4, 5] [9, 2, 3, 4] [1, 2, 3]', say: 'Three variables, three different lists.' },
+      ],
+    },
+    param: {
+      cols: '520px minmax(0,1fr)',
+      code: [
+        'def f(M):',
+        '    M[0] = 42',
+        '',
+        'L = [1, 3]',
+        'f(L)',
+        'print(L)',
+      ].join('\n'),
+      consoleLines: 1,
+      sayLines: 3,
+      steps: [
+        { line: 4, say: 'The definition is skipped until the call.' },
+        { line: 5, frames: [['global', { L: '@x' }]], objs: { x: ['1', '3'] }, say: '<code>L</code> refers to a list.' },
+        { line: 2, frames: [['global', { L: '@x' }], ['f', { M: '@x' }]],
+          say: 'Calling <code>f(L)</code> makes a new frame. The parameter <code>M</code> receives a copy of the <strong>arrow</strong>, so it is an alias of <code>L</code>.' },
+        { line: 5, objs: { x: ['42', '3'] }, hl: { x: { add: [0] } },
+          say: 'Line 2 mutated the shared list through <code>M</code>. That was the last line of <code>f</code>, so the call returns to line 5.' },
+        { line: 6, frames: [['global', { L: '@x' }]], hl: { x: { add: [0] } }, say: '<code>f</code>\'s frame and <code>M</code> are gone, but the mutation stays, because it happened to the caller\'s list.' },
+        { line: 7, print: '[42, 3]', say: 'A function that receives a list can change the caller\'s list, because its parameter is an alias.' },
+      ],
+    },
+  };
+  ListsUnit.prepare(LIST_TRACES);
+</script>
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+  initSyncDeckReveal({
+    deckId: 'hpy-4-4-aliases-and-copies',
+    standaloneHosting: {
+      activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    afterInit: function (Reveal) {
+      ListsUnit.attach(Reveal);
+    },
+    revealOverrides: {
+      hash: true,
+      hashOneBasedIndex: true,
+      transition: 'fade',
+      transitionSpeed: 'fast',
+      backgroundTransition: 'none',
+      center: false,
+      controls: true,
+      controlsLayout: 'edges',
+      progress: true,
+      slideNumber: 'c/t',
+      keyboard: true,
+      touch: true,
+      fragments: true,
+      width: 1600,
+      height: 900,
+      margin: 0.04,
+      minScale: 0.2,
+      maxScale: 2.5,
+    },
+  });
+</script>
+</body>
+</html>
