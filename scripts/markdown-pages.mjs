@@ -249,6 +249,27 @@ export const DOCUMENT_STYLE = `
   pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; overflow-x: auto; }
   :not(pre) > code { overflow-wrap: anywhere; }
   pre code { background: none; padding: 0; }
+  /* Copy button on each code block. The wrapper holds the button so it
+     stays in the corner while a wide block scrolls sideways. */
+  .code-block { position: relative; }
+  .code-block > pre { padding-right: 72px; }
+  .code-copy {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font: 600 13px/1 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--accent);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 8px;
+    cursor: pointer;
+    user-select: none;
+    opacity: 0.85;
+  }
+  .code-block:hover .code-copy, .code-copy:focus-visible { opacity: 1; }
+  .code-copy:hover { border-color: var(--accent); }
+  .code-copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .table-wrap { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; font-size: 0.95em; }
   th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; vertical-align: top; }
@@ -264,7 +285,8 @@ export const DOCUMENT_STYLE = `
   nav.contents ol.sub li + li::before { content: " \\00b7  "; color: var(--muted); }
   @media print {
     body { font-size: 11pt; }
-    .bar, nav.contents { display: none; }
+    .bar, nav.contents, .code-copy { display: none; }
+    .code-block > pre { padding-right: 14px; }
     main { max-width: none; padding: 0; }
     a { color: inherit; text-decoration: none; }
     h1, h2, h3, h4 { break-after: avoid; }
@@ -290,6 +312,7 @@ const COPY_SCRIPT = `
   // back at this document (a copied "#section" link opens that section here,
   // since the copy drops the heading ids).
   function cleanHtml(node, { wholePage = false } = {}) {
+    node.querySelectorAll('.code-copy').forEach((button) => button.remove());
     if (wholePage) node.querySelectorAll('nav.contents').forEach((nav) => nav.remove());
     node.querySelectorAll('a[href], img[src]').forEach((el) => {
       const attr = el.hasAttribute('href') ? 'href' : 'src';
@@ -421,6 +444,34 @@ const COPY_SCRIPT = `
       const step = event.key === 'ArrowDown' ? 1 : -1;
       items[(i + step + items.length) % items.length].focus();
     }
+  });
+
+  // A Copy button on each code block copies just that block's code as plain
+  // text, without the trailing newline.
+  main.querySelectorAll('pre').forEach((pre) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'code-block';
+    pre.replaceWith(wrapper);
+    wrapper.appendChild(pre);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'code-copy';
+    button.textContent = 'Copy';
+    button.title = 'Copy this code';
+    button.setAttribute('aria-label', 'Copy this code');
+    wrapper.appendChild(button);
+    let timer = null;
+    button.addEventListener('click', async () => {
+      button.style.minWidth = button.offsetWidth + 'px';
+      try {
+        await navigator.clipboard.writeText(pre.textContent.replace(/\\n$/, ''));
+        button.textContent = 'Copied';
+      } catch {
+        button.textContent = 'Failed';
+      }
+      clearTimeout(timer);
+      timer = setTimeout(() => { button.textContent = 'Copy'; }, 1500);
+    });
   });
 
   toggle.addEventListener('click', (event) => setMenu(menu.hidden, event.detail === 0));
