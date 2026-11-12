@@ -20,7 +20,7 @@
       <div class="slide-inner slide-center">
         <span class="slide-tag">HPy &middot; Unit 4 &middot; Lists</span>
         <h1 class="title-h1">4.6 Removing Items in a Loop</h1>
-        <p class="subtitle">the case of the disappearing candy &middot; why removal skips items &middot; three safe ways to remove them all</p>
+        <p class="subtitle">the case of the disappearing reds &middot; why removal skips items &middot; three safe ways to remove them all</p>
       </div>
     </section>
 
@@ -30,7 +30,7 @@
         <span class="slide-tag">The Task</span>
         <h2>Remove every value that matches</h2>
         <p style="margin-top:var(--gap-sm);max-width:1250px;">
-          Python has <code>L.remove(v)</code>, but it only removes the <span style="color:var(--accent);">first</span> match. Review Detective needs to strip every filler word from a review, and the tray needs every red candy gone. So we need our own <code>removeAll</code>.
+          Python has <code>L.remove(v)</code>, but it only removes the <span style="color:var(--accent);">first</span> match. Cleaning up text means stripping out every filler word, and the tray needs every red item gone. So we need our own <code>removeAll</code>.
         </p>
         <p style="margin-top:var(--gap);max-width:1250px;">
           The obvious plan is to loop over the indexes and <code>pop</code> each match as we find it. Today we find out why the obvious plan fails, in two different ways, and how to fix it.
@@ -43,7 +43,7 @@
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:predict-for-pop:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"L = [2, 8, 6, 4]. The loop pops every value greater than 5, then prints L. What happens?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"It prints [2, 4]","isCorrect":false},{"id":"q1b","text":"It crashes before printing","isCorrect":true},{"id":"q1c","text":"It prints [2, 6, 4]","isCorrect":false},{"id":"q1d","text":"It prints [2, 8, 6, 4]","isCorrect":false}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "What happens when this runs?\n\n```python\nL = [2, 8, 6, 4]\nfor i in range(len(L)):\n    if L[i] > 5:\n        L.pop(i)\nprint(L)\n```", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "It prints `[2, 4]`", "isCorrect": false}, {"id": "q1b", "text": "It crashes before printing", "isCorrect": true}, {"id": "q1c", "text": "It prints `[2, 6, 4]`", "isCorrect": false}, {"id": "q1d", "text": "It prints `[2, 8, 6, 4]`", "isCorrect": false}]}]}'>
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Predict First</span>
@@ -92,7 +92,23 @@ print(L)</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 06 · CANDY ACTIVITY -->
+    <!-- SLIDE 06 · TRAY SETUP -->
+    <section>
+      <div class="glow" style="width:480px;height:480px;background:radial-gradient(circle,rgba(124,217,146,0.10) 0%,transparent 70%);bottom:-120px;right:-80px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Hands On &middot; Get Set Up</span>
+        <h2>Move to the tables</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          Move to a table with your group. On the way, pick up <span style="color:var(--accent);">a code sheet</span>, <span style="color:var(--accent);">one indexed tray</span>, and a cup of <span style="color:var(--accent);">list items</span> in several colors.
+        </p>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          Your tray has eight numbered slots, 0 through 7, and each slot holds one list item. Leave the items in the cup for now. The next slide shows how to load the tray.
+        </p>
+      </div>
+      <aside class="notes">Set the trays and cups of items out before class, by the path to the tables, so groups can grab them without a line. Print one code sheet per group from the Code Sheet Exercise Set in the unit plan. This activity needs four reds in each cup, plus one each of green, purple, orange, and yellow.</aside>
+    </section>
+
+    <!-- SLIDE 07 · TRAY ACTIVITY -->
     <section>
       <div class="glow" style="width:480px;height:480px;background:radial-gradient(circle,rgba(124,217,146,0.10) 0%,transparent 70%);bottom:-120px;right:-80px;"></div>
       <div class="slide-inner split split-50">
@@ -100,25 +116,25 @@ print(L)</code></pre></div>
           <span class="slide-tag">Hands On &middot; Remove All the Reds</span>
           <h2>Follow the code exactly</h2>
           <p style="margin-top:var(--gap-sm);">
-            Load your tray: green, red, red, yellow, red, green, red, yellow. One person's finger is <code>i</code>, starting at slot 0. Another person runs the code, line by line.
+            Load your tray: green, red, red, purple, red, orange, red, yellow. One person's finger is <code>i</code>, starting at slot 0. Another person runs the code, line by line.
           </p>
           <p style="margin-top:var(--gap);">
-            Follow the code <span style="color:var(--warn);">literally</span>, even if you can see it is about to go wrong. When you pop a candy, slide every later candy left to close the gap. Then move the finger exactly as line 5 says.
+            Follow the code <span style="color:var(--warn);">literally</span>, even if you can see it is about to go wrong. When you pop an item, slide every later item left to close the gap. Then move the finger exactly as line 5 says, and write the new value of <code>i</code> on your code sheet.
           </p>
         </div>
         <div class="code-card">
           <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">reds.py</span></div>
           <div class="code-body"><pre><code class="py">i = 0
-while i &lt; len(candies):
-    if candies[i] == "red":
-        candies.pop(i)
+while i &lt; len(items):
+    if items[i] == "red":
+        items.pop(i)
     i += 1</code></pre></div>
         </div>
       </div>
-      <aside class="notes">The final tray should be green, red, yellow, green, yellow: one red survives. If a group ends with no reds, they cheated the finger forward correctly instead of following line 5. Ask groups to find which red survived and why. Then have them repair the code before the next slide.</aside>
+      <aside class="notes">The final tray should be green, red, purple, orange, yellow: one red survives. If a group ends with no reds, they cheated the finger forward correctly instead of following line 5. Ask groups to find which red survived and why. Then have them repair the code before the next slide.</aside>
     </section>
 
-    <!-- SLIDE 07 · TRACE: WHILE SKIP -->
+    <!-- SLIDE 08 · TRACE: WHILE SKIP -->
     <section>
       <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
         <span class="slide-tag">Trace It &middot; Bug 2</span>
@@ -127,11 +143,11 @@ while i &lt; len(candies):
       </div>
     </section>
 
-    <!-- SLIDE 08 · WHY IT SKIPS -->
+    <!-- SLIDE 09 · WHY IT SKIPS -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">Explain It</span>
-        <h2>The next candy slides under your finger</h2>
+        <h2>The next item slides under your finger</h2>
         <p style="margin-top:var(--gap-sm);max-width:1250px;">
           When <code>pop(i)</code> removes a value, the value that was at <code>i + 1</code> shifts left into index <code>i</code>. That value has <span style="color:var(--warn);">not been checked yet</span>, but then <code>i += 1</code> moves past it.
         </p>
@@ -144,12 +160,12 @@ while i &lt; len(candies):
       </div>
     </section>
 
-    <!-- SLIDE 09 · CHECKPOINT: BOOK REMOVEALL -->
+    <!-- SLIDE 10 · CHECKPOINT: BOOK REMOVEALL -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:skip-result:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"This removeAll adds 1 to i even after it pops. L = [1, 3, 2, 2, 3, 2, 4]; removeAll(L, 2); print(L). What happens?","order":0,"responseTimeLimitMs":75000,"options":[{"id":"q1a","text":"It crashes and never prints anything","isCorrect":false},{"id":"q1b","text":"It correctly prints [1, 3, 3, 4]","isCorrect":false},{"id":"q1c","text":"It incorrectly prints [1, 3, 2, 3, 4]","isCorrect":true},{"id":"q1d","text":"It incorrectly prints [1, 3, 3]","isCorrect":false}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "This `removeAll` adds 1 to `i` even after it pops. What happens?\n\n```python\ndef removeAll(L, v):\n    i = 0\n    while i < len(L):\n        if L[i] == v:\n            L.pop(i)\n        i += 1\n\nL = [1, 3, 2, 2, 3, 2, 4]\nremoveAll(L, 2)\nprint(L)\n```", "order": 0, "responseTimeLimitMs": 75000, "options": [{"id": "q1a", "text": "It crashes and never prints anything", "isCorrect": false}, {"id": "q1b", "text": "It correctly prints `[1, 3, 3, 4]`", "isCorrect": false}, {"id": "q1c", "text": "It incorrectly prints `[1, 3, 2, 3, 4]`", "isCorrect": true}, {"id": "q1d", "text": "It incorrectly prints `[1, 3, 3]`", "isCorrect": false}]}]}'>
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Checkpoint &middot; Index Shifting</span>
@@ -178,7 +194,7 @@ print(L)</code></pre></div>
       <aside class="notes">The 2s at indexes 2 and 3 are adjacent. Popping index 2 shifts the second 2 into index 2, and i moves on to 3, so that 2 survives. The last 2 is not adjacent to another match, so it is removed.</aside>
     </section>
 
-    <!-- SLIDE 10 · TRACE: FIXED -->
+    <!-- SLIDE 11 · TRACE: FIXED -->
     <section>
       <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
         <span class="slide-tag">The Fix</span>
@@ -187,7 +203,7 @@ print(L)</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 11 · TWO KEYS -->
+    <!-- SLIDE 12 · TWO KEYS -->
     <section>
       <div class="slide-inner split split-50">
         <div>
@@ -220,7 +236,7 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 12 · OTHER APPROACHES -->
+    <!-- SLIDE 13 · OTHER APPROACHES -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">Safer Alternatives</span>
@@ -255,12 +271,12 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 13 · CHECKPOINT: WHICH TEST -->
+    <!-- SLIDE 14 · CHECKPOINT: WHICH TEST -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:which-test:0"
-      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A teammate wrote removeAll and says it passes all their tests. Which test would catch the skipping bug if it is there?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"removeAll([1, 2, 3], 2) leaves [1, 3]","isCorrect":false},{"id":"q1b","text":"removeAll([], 2) leaves []","isCorrect":false},{"id":"q1c","text":"removeAll([1, 3], 2) leaves [1, 3]","isCorrect":false},{"id":"q1d","text":"removeAll([2, 2], 2) leaves []","isCorrect":true}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "A teammate wrote `removeAll` and says it passes all their tests. Which test would catch the skipping bug if it is there?", "order": 0, "responseTimeLimitMs": 45000, "options": [{"id": "q1a", "text": "`removeAll([1, 2, 3], 2)` leaves `[1, 3]`", "isCorrect": false}, {"id": "q1b", "text": "`removeAll([], 2)` leaves `[]`", "isCorrect": false}, {"id": "q1c", "text": "`removeAll([1, 3], 2)` leaves `[1, 3]`", "isCorrect": false}, {"id": "q1d", "text": "`removeAll([2, 2], 2)` leaves `[]`", "isCorrect": true}]}]}'>
       <div class="slide-inner">
         <span class="slide-tag">Checkpoint &middot; Testing</span>
         <h2>Which test catches the skipping bug?</h2>
@@ -273,12 +289,12 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 14 · MOBCODE: THREE SUSPECTS -->
+    <!-- SLIDE 15 · MOBCODE: THREE SUSPECTS -->
     <section
       data-activity-id="mobcode"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="mobcode:three-suspects:0"
-      data-activity-options='{"files":{"main.py":"# Three teammates each wrote removeAll(L, v).\n# Read all three and predict which ones are broken\n# and how, before you run anything.\n\ndef removeAllA(L, v):\n    for i in range(len(L)):\n        if L[i] == v:\n            L.pop(i)\n\ndef removeAllB(L, v):\n    i = 0\n    while i < len(L):\n        if L[i] == v:\n            L.pop(i)\n        i += 1\n\ndef removeAllC(L, v):\n    i = len(L) - 1\n    while i >= 0:\n        if L[i] == v:\n            L.pop(i)\n        i -= 1\n\ndef test(removeAll):\n    for start in [[], [1, 3], [2, 2], [2, 1, 2], [1, 2, 2, 3]]:\n        L = list(start)\n        removeAll(L, 2)\n        print(start, \"->\", L)\n\n# Test one at a time:\ntest(removeAllC)\n"},"activeFile":"main.py","runnerId":"brython-terminal"}'>
+      data-activity-options='{"files": {"main.py": "# Three teammates each wrote removeAll(L, v).\n# Read all three and predict which ones are broken\n# and how, before you run anything.\n#\n# Then test them one at a time. The test cases include an\n# empty list and matches that sit next to each other.\n# For each broken version, write a one-sentence comment that\n# names the bug, and fix it with the smallest change you can.\n\ndef removeAllA(L, v):\n    for i in range(len(L)):\n        if L[i] == v:\n            L.pop(i)\n\ndef removeAllB(L, v):\n    i = 0\n    while i < len(L):\n        if L[i] == v:\n            L.pop(i)\n        i += 1\n\ndef removeAllC(L, v):\n    i = len(L) - 1\n    while i >= 0:\n        if L[i] == v:\n            L.pop(i)\n        i -= 1\n\ndef test(removeAll):\n    for start in [[], [1, 3], [2, 2], [2, 1, 2], [1, 2, 2, 3]]:\n        L = list(start)\n        removeAll(L, 2)\n        print(start, \"->\", L)\n\n# Test one at a time:\ntest(removeAllC)\n"}, "activeFile": "main.py", "runnerId": "brython-terminal"}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Find the Bug &middot; Three Suspects</span>
@@ -293,24 +309,24 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
       <aside class="notes">A crashes on any list where a pop happens before the end (IndexError). B skips adjacent matches: [2, 2] becomes [2]. C is correct: walking backward means a pop only shifts values that were already checked. Ask students why going backward avoids the problem; it is a good extension but not required.</aside>
     </section>
 
-    <!-- SLIDE 15 · VS CODE EXERCISE -->
+    <!-- SLIDE 16 · VS CODE EXERCISE -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">VS Code &middot; remove_and_filter.py</span>
         <h2>Remove and Filter</h2>
         <div class="ex-card" style="margin-top:var(--gap-sm);max-width:1300px;">
-          <p>Write both versions and a test function for each. Comment each function's contract: does it change <code>L</code>, and what does it return?</p>
+          <p>In VS Code, create <code>remove_and_filter.py</code> in your Unit 4 folder. Write both versions and a test function for each. Comment each function's contract: does it change <code>L</code>, and what does it return?</p>
           <ol class="bullets" style="margin-top:var(--gap-sm);">
             <li><code>removeAll(L, v)</code> mutates <code>L</code>, removing every <code>v</code>, and returns <code>None</code>.</li>
             <li><code>filterOut(L, v)</code> returns a new list without any <code>v</code>, and leaves <code>L</code> unchanged.</li>
             <li>Test both with an empty list, a list with no matches, adjacent matches, and a list where every value matches.</li>
-            <li>Use <code>filterOut</code> to remove every filler word, like <code>"um"</code> or <code>"like"</code>, from a review's word list.</li>
+            <li>Use <code>filterOut</code> to remove every filler word, like <code>"um"</code> or <code>"like"</code>, from a list of words.</li>
           </ol>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 16 · REFERENCE -->
+    <!-- SLIDE 17 · REFERENCE -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">List Programmer's Reference</span>
@@ -318,11 +334,12 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
         <table class="ref-table" style="margin-top:var(--gap-sm);">
           <tr><th>Situation</th><th>What goes wrong</th><th>Safe approach</th></tr>
           <tr><td><code>pop</code> inside <code>for i in range(len(L))</code></td><td>range is fixed at the start; crashes</td><td>use <code>while i &lt; len(L)</code></td></tr>
-          <tr><td><code>pop(i)</code> then <code>i += 1</code></td><td>the shifted value is skipped</td><td>only advance in an <code>else</code></td></tr>
-          <tr><td><code>while v in L: L.remove(v)</code></td><td>correct, but searches twice per pass</td><td>fine for short lists</td></tr>
-          <tr><td>need the original kept</td><td>mutating destroys it</td><td>build a new list with a filter</td></tr>
-          <tr><td>testing any removal</td><td>bugs hide in easy cases</td><td>test adjacent, all, none, and empty</td></tr>
+          <tr><td><code>pop(i)</code> then <code>i += 1</code></td><td>the shifted value is skipped</td><td></td></tr>
+          <tr><td><code>while v in L: L.remove(v)</code></td><td></td><td></td></tr>
+          <tr><td>need the original kept</td><td></td><td>build a new list with a filter</td></tr>
+          <tr><td>testing any removal</td><td>bugs hide in easy cases</td><td></td></tr>
         </table>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">The first row is done for you. Test each entry and fill in the blank cells.</p>
       </div>
     </section>
 
@@ -369,38 +386,38 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
       layout: 'wide',
       file: 'reds.py',
       code: [
-        'candies = ["green", "red", "red", "yellow",',
-        '           "red", "green", "red", "yellow"]',
+        'items = ["green", "red", "red", "purple",',
+        '         "red", "orange", "red", "yellow"]',
         'i = 0',
-        'while i < len(candies):',
-        '    if candies[i] == "red":',
-        '        candies.pop(i)',
+        'while i < len(items):',
+        '    if items[i] == "red":',
+        '        items.pop(i)',
         '    i += 1',
       ].join('\n'),
       consoleLines: 0,
       sayLines: 4,
       steps: [
         { line: 1, say: 'Load the tray, and put the finger at slot 0.' },
-        { line: 3, frames: [['global', { candies: '@c' }]], candy: { c: true },
-          objs: { c: ['green', 'red', 'red', 'yellow', 'red', 'green', 'red', 'yellow'] }, say: 'Four reds, and two of them are side by side.' },
-        { line: 4, frames: [['global', { candies: '@c', i: '0' }]], ptr: [{ obj: 'c', idx: 0, name: 'i' }], say: 'The finger starts at index 0.' },
+        { line: 3, frames: [['global', { items: '@c' }]], candy: { c: true },
+          objs: { c: ['green', 'red', 'red', 'purple', 'red', 'orange', 'red', 'yellow'] }, say: 'Four reds, and two of them are side by side.' },
+        { line: 4, frames: [['global', { items: '@c', i: '0' }]], ptr: [{ obj: 'c', idx: 0, name: 'i' }], say: 'The finger starts at index 0.' },
         { line: 7, say: 'Green is not red. Move the finger.' },
-        { line: 5, frames: [['global', { candies: '@c', i: '1' }]], ptr: [{ obj: 'c', idx: 1, name: 'i' }], say: 'Check index 1.' },
+        { line: 5, frames: [['global', { items: '@c', i: '1' }]], ptr: [{ obj: 'c', idx: 1, name: 'i' }], say: 'Check index 1.' },
         { line: 6, hl: { c: { bad: [1] } }, say: 'Red, so pop index 1.' },
-        { line: 7, objs: { c: ['green', 'red', 'yellow', 'red', 'green', 'red', 'yellow'] }, hl: { c: { hl: [1, 2, 3, 4, 5, 6] } },
-          say: 'Popped. Every later candy shifted left, so the <strong>second red</strong> slid under the finger at index 1.' },
-        { line: 5, frames: [['global', { candies: '@c', i: '2' }]], ptr: [{ obj: 'c', idx: 2, name: 'i' }], hl: { c: { bad: [1] } },
+        { line: 7, objs: { c: ['green', 'red', 'purple', 'red', 'orange', 'red', 'yellow'] }, hl: { c: { hl: [1, 2, 3, 4, 5, 6] } },
+          say: 'Popped. Every later item shifted left, so the <strong>second red</strong> slid under the finger at index 1.' },
+        { line: 5, frames: [['global', { items: '@c', i: '2' }]], ptr: [{ obj: 'c', idx: 2, name: 'i' }], hl: { c: { bad: [1] } },
           say: 'Line 7 moved the finger anyway. The red at index 1 was never checked, and it never will be.' },
-        { line: 7, say: 'Yellow. Move the finger.' },
-        { line: 5, frames: [['global', { candies: '@c', i: '3' }]], ptr: [{ obj: 'c', idx: 3, name: 'i' }], say: 'Check index 3.' },
+        { line: 7, say: 'Purple. Move the finger.' },
+        { line: 5, frames: [['global', { items: '@c', i: '3' }]], ptr: [{ obj: 'c', idx: 3, name: 'i' }], say: 'Check index 3.' },
         { line: 6, hl: { c: { bad: [3] } }, say: 'Red, so pop index 3.' },
-        { line: 7, objs: { c: ['green', 'red', 'yellow', 'green', 'red', 'yellow'] }, hl: { c: { hl: [3, 4, 5] } },
-          say: 'Popped. Green slid into index 3.' },
-        { line: 5, frames: [['global', { candies: '@c', i: '4' }]], ptr: [{ obj: 'c', idx: 4, name: 'i' }],
-          say: 'The finger skips that green, which happens to be harmless. Check index 4.' },
+        { line: 7, objs: { c: ['green', 'red', 'purple', 'orange', 'red', 'yellow'] }, hl: { c: { hl: [3, 4, 5] } },
+          say: 'Popped. Orange slid into index 3.' },
+        { line: 5, frames: [['global', { items: '@c', i: '4' }]], ptr: [{ obj: 'c', idx: 4, name: 'i' }],
+          say: 'The finger skips that orange, which happens to be harmless. Check index 4.' },
         { line: 6, hl: { c: { bad: [4] } }, say: 'Red, so pop index 4.' },
-        { line: 7, objs: { c: ['green', 'red', 'yellow', 'green', 'yellow'] }, hl: { c: { hl: [4] } }, say: 'Popped. Yellow slid into index 4.' },
-        { line: 4, frames: [['global', { candies: '@c', i: '5' }]], ptr: [{ obj: 'c', idx: 5, name: 'i' }],
+        { line: 7, objs: { c: ['green', 'red', 'purple', 'orange', 'yellow'] }, hl: { c: { hl: [4] } }, say: 'Popped. Yellow slid into index 4.' },
+        { line: 4, frames: [['global', { items: '@c', i: '5' }]], ptr: [{ obj: 'c', idx: 5, name: 'i' }],
           say: '<code>i</code> is 5 and the length is 5, so the loop stops.' },
         { line: 8, ptr: [], hl: { c: { bad: [1] } },
           say: 'No crash this time, but one red survived: the one that was next to another red.' },
@@ -409,11 +426,11 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
     fixed: {
       cols: '540px minmax(0,1fr)',
       code: [
-        'candies = ["red", "red", "green"]',
+        'items = ["red", "red", "green"]',
         'i = 0',
-        'while i < len(candies):',
-        '    if candies[i] == "red":',
-        '        candies.pop(i)',
+        'while i < len(items):',
+        '    if items[i] == "red":',
+        '        items.pop(i)',
         '    else:',
         '        i += 1',
       ].join('\n'),
@@ -421,8 +438,8 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
       sayLines: 4,
       steps: [
         { line: 1, say: 'Two adjacent reds, the case that broke the last version.' },
-        { line: 2, frames: [['global', { candies: '@c' }]], candy: { c: true }, objs: { c: ['red', 'red', 'green'] }, say: 'Three candies.' },
-        { line: 3, frames: [['global', { candies: '@c', i: '0' }]], ptr: [{ obj: 'c', idx: 0, name: 'i' }], say: 'Start at index 0.' },
+        { line: 2, frames: [['global', { items: '@c' }]], candy: { c: true }, objs: { c: ['red', 'red', 'green'] }, say: 'Three items.' },
+        { line: 3, frames: [['global', { items: '@c', i: '0' }]], ptr: [{ obj: 'c', idx: 0, name: 'i' }], say: 'Start at index 0.' },
         { line: 4, say: '0 &lt; 3, so the loop runs.' },
         { line: 5, hl: { c: { bad: [0] } }, say: 'Red. Pop it.' },
         { line: 3, objs: { c: ['red', 'green'] }, hl: { c: { hl: [0, 1] } },
@@ -432,7 +449,7 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
         { line: 3, objs: { c: ['green'] }, hl: { c: { hl: [0] } }, say: 'Green slid into index 0. Still no move.' },
         { line: 4, say: '0 &lt; 1.' },
         { line: 7, say: 'Not red, so this time the <code>else</code> runs.' },
-        { line: 3, frames: [['global', { candies: '@c', i: '1' }]], ptr: [{ obj: 'c', idx: 1, name: 'i' }], say: 'The finger moves to index 1.' },
+        { line: 3, frames: [['global', { items: '@c', i: '1' }]], ptr: [{ obj: 'c', idx: 1, name: 'i' }], say: 'The finger moves to index 1.' },
         { line: 8, ptr: [], say: '1 &lt; 1 is False, so the loop ends. Every red is gone.' },
       ],
     },
