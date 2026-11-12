@@ -58,13 +58,13 @@ print(b)</code></pre></div>
         <span class="slide-tag">4.2.4 Visualizing Code Execution</span>
         <h2>Boxes and arrows</h2>
         <p style="margin-top:var(--gap-sm);max-width:1250px;">
-          To understand lists we need a picture of memory. Each function call gets a <span style="color:var(--accent);">frame</span> holding its variables. A list is an <span style="color:var(--accent);">object</span> that lives outside the frames, and a variable holds an <span style="color:var(--accent);">arrow</span> to it, called a reference.
+          To truly understand lists we need a picture of memory. Each function call gets a <span style="color:var(--accent);">frame</span> holding its variables. A list is an <span style="color:var(--accent);">object</span> that lives outside the frames, and a variable holds an <span style="color:var(--accent);">arrow</span> to it, called a reference.
         </p>
         <p style="margin-top:var(--gap);max-width:1250px;">
-          The website <a href="https://pythontutor.com/visualize.html#code=a%20%3D%20%5B1,%202,%203%5D%0Ab%20%3D%20a%0Aa.append%284%29%0Aprint%28b%29&amp;curInstr=0&amp;mode=display&amp;origin=opt-frontend.js" target="_blank" rel="noopener">pythontutor.com</a> draws these diagrams for any Python program, one line at a time. Our trace boards draw the same picture. In both, the marked line is the <span style="color:var(--accent);">next</span> line to run, not the one that just ran.
+          The website <a href="https://pythontutor.com/visualize.html#code=a%20%3D%20%5B1,%202,%203%5D%0Ab%20%3D%20a%0Aa.append%284%29%0Aprint%28b%29&amp;curInstr=0&amp;mode=display&amp;origin=opt-frontend.js" target="_blank" rel="noopener">pythontutor.com</a> draws these diagrams for any Python program, one line at a time. The step-by-step traces in these slides draw the same picture.
         </p>
         <div class="callout-result fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
-          <strong>Move to the whiteboards.</strong> For the rest of the lesson, draw each list object on the board and use the <span style="color:var(--accent);">magnetic arrows</span> to show which list each variable refers to. Build the picture yourself before each step of a trace; the trace boards and the visualizer are for checking it.
+          <strong>Move to the whiteboards.</strong> For the rest of the lesson, draw each list object on the board and use the <span style="color:var(--accent);">magnetic arrows</span> to show which list each variable refers to. Build the picture yourself before each step; the traces on the slides and Python Tutor are for checking it.
         </div>
       </div>
     </section>
@@ -167,13 +167,13 @@ g = a * 1      # * makes a new list</code></pre></div>
     <section>
       <div class="slide-inner">
         <span class="slide-tag">The Key Distinction</span>
-        <h2>Mutation versus assignment</h2>
+        <h2>Mutation versus reassignment</h2>
         <div class="split split-50" style="margin-top:var(--gap-sm);flex:0 0 auto;align-items:start;">
           <div class="key-prop">
             <strong style="color:var(--warn);">Mutation</strong> changes the object at the end of the arrow: <code>M[0] = 42</code>, <code>M.append(4)</code>, <code>M.sort()</code>. Every alias sees the change.
           </div>
           <div class="key-prop">
-            <strong style="color:var(--syntax-string);">Assignment</strong> to the variable itself, like <code>M = [42, 3]</code> or <code>M = copy.copy(M)</code>, points <code>M</code> at a different object. The old list and its other aliases are untouched, and the alias is broken.
+            <strong style="color:var(--syntax-string);">Reassignment</strong> of the variable itself, like <code>M = [42, 3]</code> or <code>M = copy.copy(M)</code>, points <code>M</code> at a different object. The old list and its other aliases are untouched, and the alias is broken.
           </div>
         </div>
         <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
@@ -214,10 +214,10 @@ print(L, M)</code></pre></div>
           <span class="slide-tag">Hands On &middot; Magnetic Arrows</span>
           <h2>Move the arrows</h2>
           <p style="margin-top:var(--gap-sm);">
-            At your whiteboard, write the variable names <code>a</code>, <code>b</code>, and <code>c</code>, and draw each list object as it is created. Run the program one line at a time, moving your magnetic arrows and editing the lists.
+            Tape your code sheet to the whiteboard, write the variable names <code>a</code>, <code>b</code>, and <code>c</code>, and draw each list object as it is created. Run the program one line at a time, moving your magnetic arrows and editing the lists.
           </p>
           <p style="margin-top:var(--gap);">
-            Before each line, your group decides: is this a <span style="color:var(--warn);">mutation</span> or an <span style="color:var(--syntax-string);">assignment</span>?
+            Before each line, mark it on your code sheet. Write <strong style="color:var(--warn);">M</strong> if it <span style="color:var(--warn);">mutates a list</span>, <strong style="color:var(--syntax-string);">A</strong> if it points an arrow at a list that <span style="color:var(--syntax-string);">already exists</span>, or <strong style="color:var(--result);">N</strong> if it makes a <span style="color:var(--result);">new list</span> and points an arrow at it. Then make the change on the board.
           </p>
         </div>
         <div class="code-card">
@@ -232,7 +232,7 @@ a = a + [5]
 print(a, b, c)</code></pre></div>
         </div>
       </div>
-      <aside class="notes">Line 7 is the one to slow down on: a + [5] builds a whole new list first, and only then does the assignment move a's arrow to it. b keeps pointing at the old list. Compare with the hook program, where a.append(4) mutated the shared list.</aside>
+      <aside class="notes">Marks: lines 2, 4, and 7 are N; line 3 is A; lines 5 and 6 are M; lines 1 and 8 get no mark. A is an alias and N is a copy or other new list, so b = a and c = copy.copy(a) get different marks even though both point an arrow. Line 5 is the trap: a[0] = 9 has an equals sign, but it changes the list, so it is M. Line 7 is the one to slow down on: a + [5] builds a whole new list first, and only then does the assignment move a's arrow to it. b keeps pointing at the old list. Compare with the hook program, where a.append(4) mutated the shared list.</aside>
     </section>
 
     <!-- SLIDE 12 · TRACE: MAGNETIC ARROWS -->
@@ -283,9 +283,9 @@ print(M)        # ['a', 'b', 'a', 'b']</code></pre></div>
         <h2>Four patterns that help you remember</h2>
         <div style="display:flex;flex-direction:column;gap:var(--gap-sm);margin-top:var(--gap-sm);max-width:1250px;">
           <div class="key-prop fragment fade-up"><strong>Assignment operators mutate; plain operators don't.</strong> <code>+=</code> and <code>*=</code> change the list. <code>+</code> and <code>*</code> build a new one.</div>
-          <div class="key-prop fragment fade-up"><strong>Methods mutate; past-tense functions don't.</strong> <code>L.sort()</code> and <code>L.reverse()</code> change <code>L</code>. <code>sorted(L)</code> and <code>reversed(L)</code> leave it alone. You will meet those two in 4.8.</div>
-          <div class="key-prop fragment fade-up"><strong>Mutating methods return <code>None</code>.</strong> They change the list you already have, so there is nothing new to hand back: after <code>x = L.sort()</code>, <code>x</code> is <code>None</code>. <code>pop</code> is the exception; it returns the value it removed.</div>
+          <div class="key-prop fragment fade-up"><strong>Methods mutate; past-tense functions don't.</strong> <code>L.sort()</code> and <code>L.reverse()</code> change <code>L</code>. <code>sorted(L)</code> and <code>reversed(L)</code> leave it alone.</div>
           <div class="key-prop fragment fade-up"><strong>Non-mutating operations return a new list.</strong> Store the result, as in <code>M = sorted(L)</code> or <code>M = L + [3]</code>, or the new list is lost.</div>
+          <div class="key-prop fragment fade-up"><strong>Mutating methods return <code>None</code>.</strong> They change the list you already have, so there is nothing new to hand back. That makes <code>L = L.sort()</code> a trap: <code>sort</code> sorts the list, then the assignment points <code>L</code> at <code>None</code>, and the sorted list is lost. <code>pop</code> is the exception; it returns the value it removed.</div>
         </div>
         <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
           When the patterns are not enough, run the alias test: make <code>M = L</code>, do the operation on <code>L</code>, and print <code>M</code>.
@@ -338,7 +338,35 @@ print(M)        # ['a', 'b', 'a', 'b']</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 18 · BACK TO COMPUTERS -->
+    <!-- SLIDE 18 · WHITEBOARD TRACE: FUNCTION CALL -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Trace It &middot; Whiteboards</span>
+          <h2>Trace a function call</h2>
+          <p style="margin-top:var(--gap-sm);">
+            Trace this program from your code sheet. When <code>addItems</code> is called, draw a new frame for it with its own variable <code>M</code>. Mark each line <strong style="color:var(--warn);">M</strong>, <strong style="color:var(--syntax-string);">A</strong>, or <strong style="color:var(--result);">N</strong> as before, and write down what the last line prints.
+          </p>
+          <div class="callout-result fragment fade-up" style="margin-top:var(--gap);">
+            <strong>It prints <code>[1, 2, 3, 4]</code>.</strong> The parameter <code>M</code> is an alias, so <code>M.append(4)</code> changed the caller&#39;s list. <code>M = M + [5]</code> made a new list and moved only the parameter&#39;s arrow, so the <code>6</code> went onto a list that is gone when the function ends.
+          </div>
+        </div>
+        <div class="code-card" data-tutor>
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">def addItems(M):
+    M.append(4)
+    M = M + [5]
+    M.append(6)
+
+L = [1, 2, 3]
+addItems(L)
+print(L)</code></pre></div>
+        </div>
+      </div>
+      <aside class="notes">Marks: line 6 is N; line 7 is A, since the call points the parameter M at L&#39;s list; line 2 is M; line 3 is N; line 4 is M, but it mutates the new list, not L&#39;s. Lines 1 and 8 get no mark. Look for a second frame, and for line 3 moving only the arrow in that frame. A group that prints [1, 2, 3, 4, 5, 6] has treated M = M + [5] as a mutation.</aside>
+    </section>
+
+    <!-- SLIDE 19 · BACK TO COMPUTERS -->
     <section>
       <div class="glow" style="width:480px;height:480px;background:radial-gradient(circle,rgba(124,217,146,0.10) 0%,transparent 70%);bottom:-120px;right:-80px;"></div>
       <div class="slide-inner">
@@ -348,29 +376,101 @@ print(M)        # ['a', 'b', 'a', 'b']</code></pre></div>
           Put the magnetic arrows back and erase your whiteboard. Then return to your seat and open MobCode for the next activity.
         </p>
         <p style="margin-top:var(--gap);max-width:1250px;">
-          Bring a sheet of paper. In the next activity, you will draw the boxes and arrows on paper, write a prediction for every <code>print</code> line, and then run the program. MobCode will cover this slide, so the steps are also in the comments at the top of the code.
+          Bring a sheet of paper. On the next slide you will trace a program on paper and predict what it prints before you run it.
         </p>
       </div>
     </section>
 
-    <!-- SLIDE 19 · MOBCODE: IDENTITY PREDICTIONS -->
-    <section
-      data-activity-id="mobcode"
-      data-activity-trigger="slide-enter"
-      data-activity-instance-key="mobcode:identity:0"
-      data-activity-options='{"files": {"main.py": "import copy\n\n# 1. On paper, draw the boxes and arrows as you read each line.\n# 2. Write your prediction for each print as a comment at the\n#    end of its line.\n# 3. Run it. For any line you got wrong, find the exact step\n#    where your drawing went wrong.\n\nreviews = [\"loud\", \"fast\"]\nsaved = reviews\nbackup = copy.copy(reviews)\nreviews += [\"cheap\"]\nprint(saved)\nprint(backup)\nprint(saved is reviews, backup == reviews)\n\nreviews = reviews + [\"sturdy\"]\nprint(saved)\nprint(saved is reviews, saved == reviews)\n\nbackup.append(\"cheap\")\nprint(backup == saved, backup is saved)\n"}, "activeFile": "main.py", "runnerId": "brython-terminal"}'>
-      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
-      <div class="slide-inner">
-        <span class="slide-tag">Predict, Then Run</span>
-        <h2>Identity, equality, and contents</h2>
-        <p style="margin-top:var(--gap-sm);max-width:1200px;">
-          Draw the boxes and arrows on paper as you read the program. Write a prediction comment at the end of every <code>print</code> line, and then run it. For any line you got wrong, find the exact step where your drawing went wrong.
-        </p>
+    <!-- SLIDE 20 · TRACE ON PAPER -->
+    <section>
+      <div class="slide-inner split split-40">
+        <div>
+          <span class="slide-tag">Predict, Then Run &middot; Paper</span>
+          <h2>Trace it on paper first</h2>
+          <p style="margin-top:var(--gap-sm);">
+            Trace this program on paper before you run it. Draw the boxes and arrows as each line runs, and update them as you go.
+          </p>
+          <p style="margin-top:var(--gap);">
+            Next to each <code>print</code> line, write what you predict it prints. The next slide opens the program in MobCode so you can check.
+          </p>
+        </div>
+        <div class="code-card">
+          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+          <div class="code-body"><pre><code class="py">import copy
+words = ["loud", "fast"]
+saved = words
+backup = copy.copy(words)
+words += ["cheap"]
+print(saved)
+print(backup)
+print(saved is words, backup == words)
+
+words = words + ["sturdy"]
+print(saved)
+print(saved is words, saved == words)
+
+backup.append("cheap")
+print(backup == saved, backup is saved)</code></pre></div>
+        </div>
       </div>
-      <aside class="notes">Expected: ['loud', 'fast', 'cheap'] / ['loud', 'fast'] / True False / ['loud', 'fast', 'cheap'] / False False / True False. The second-to-last line is the one to discuss: reviews = reviews + [...] built a new list, so saved still has three words while reviews has four.</aside>
+      <aside class="notes">Give groups several minutes. Move to the next slide only when most students have a prediction for every print line. There is no Python Tutor link here on purpose, so the answers stay hidden until students run it.</aside>
     </section>
 
-    <!-- SLIDE 20 · VS CODE EXERCISE -->
+    <!-- SLIDE 21 · MOBCODE + PYTHON TUTOR (vertical stack) -->
+    <section>
+      <!-- SLIDE 21 · MOBCODE: IDENTITY PREDICTIONS -->
+      <section
+        data-activity-id="mobcode"
+        data-activity-trigger="slide-enter"
+        data-activity-instance-key="mobcode:identity:0"
+        data-activity-options='{"files": {"main.py": "import copy\n\n# 1. Type the predictions from your paper as comments at the\n#    end of each print line.\n# 2. Run it.\n# 3. For any line you got wrong, find the exact step where\n#    your drawing went wrong.\n\nwords = [\"loud\", \"fast\"]\nsaved = words\nbackup = copy.copy(words)\nwords += [\"cheap\"]\nprint(saved)\nprint(backup)\nprint(saved is words, backup == words)\n\nwords = words + [\"sturdy\"]\nprint(saved)\nprint(saved is words, saved == words)\n\nbackup.append(\"cheap\")\nprint(backup == saved, backup is saved)\n"}, "activeFile": "main.py", "runnerId": "brython-terminal"}'>
+        <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(242,177,52,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+        <div class="slide-inner">
+          <span class="slide-tag">Predict, Then Run</span>
+          <h2>Check your predictions</h2>
+          <p style="margin-top:var(--gap-sm);max-width:1200px;">
+            Type the predictions from your paper as comments at the end of each <code>print</code> line, and then run the program. For any line you got wrong, find the exact step where your drawing went wrong.
+          </p>
+        </div>
+        <aside class="notes">Expected: ['loud', 'fast', 'cheap'] / ['loud', 'fast'] / True False / ['loud', 'fast', 'cheap'] / False False / True False. The fourth print is the one to discuss: words = words + [...] built a new list, so saved still has three words while words has four.</aside>
+      </section>
+
+      <!-- SLIDE 22 · PYTHON TUTOR: IDENTITY PREDICTIONS -->
+      <section>
+        <div class="slide-inner split split-40">
+          <div>
+            <span class="slide-tag">Check Your Drawing</span>
+            <h2>Step through it in Python Tutor</h2>
+            <p style="margin-top:var(--gap-sm);">
+              If a prediction was wrong, open this program in Python Tutor with the icon on the code. Step through it one line at a time and compare each picture with your drawing on paper.
+            </p>
+            <p style="margin-top:var(--gap);">
+              Find the first step where your drawing and Python Tutor disagree. That step is where your mental model went wrong.
+            </p>
+          </div>
+          <div class="code-card" data-tutor>
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
+            <div class="code-body"><pre><code class="py">import copy
+words = ["loud", "fast"]
+saved = words
+backup = copy.copy(words)
+words += ["cheap"]
+print(saved)
+print(backup)
+print(saved is words, backup == words)
+
+words = words + ["sturdy"]
+print(saved)
+print(saved is words, saved == words)
+
+backup.append("cheap")
+print(backup == saved, backup is saved)</code></pre></div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- SLIDE 23 · VS CODE EXERCISE -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">VS Code &middot; alias_experiments.py</span>
@@ -386,21 +486,21 @@ print(M)        # ['a', 'b', 'a', 'b']</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 21 · REFERENCE -->
+    <!-- SLIDE 24 · REFERENCE -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">List Programmer's Reference</span>
         <h2>Add today's entries</h2>
         <table class="ref-table" style="margin-top:var(--gap-sm);">
           <tr><th>Operation</th><th>What it does</th><th>Returns</th><th>Changes the list?</th></tr>
-          <tr><td><code>M = L</code></td><td>makes <code>M</code> an alias of <code>L</code></td><td>(a statement)</td><td class="no">no</td></tr>
+          <tr><td><code>M = L</code></td><td>makes <code>M</code> an alias of <code>L</code></td><td>N/A (a statement)</td><td class="no">no</td></tr>
           <tr><td><code>L is M</code>, <code>L is not M</code></td><td>are these the same object?</td><td></td><td></td></tr>
           <tr><td><code>copy.copy(L)</code></td><td></td><td></td><td class="no">no</td></tr>
           <tr><td><code>L + M</code>, <code>L * n</code></td><td></td><td>a new list</td><td></td></tr>
           <tr><td><code>L += M</code>, <code>L *= n</code></td><td>join or repeat in place</td><td></td><td></td></tr>
-          <tr><td><code>f(L)</code></td><td></td><td></td><td>only if <code>f</code> mutates it</td></tr>
+          <tr><td><code>f(L)</code></td><td>calls <code>f</code>; its parameter becomes an alias of <code>L</code></td><td>whatever <code>f</code> returns</td><td>only if <code>f</code> mutates it</td></tr>
         </table>
-        <p style="margin-top:var(--gap-sm);max-width:1250px;">The first row is done for you. Test each entry and fill in the blank cells.</p>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">The first and last rows are done for you. Test each entry and fill in the blank cells.</p>
       </div>
     </section>
 
@@ -514,7 +614,7 @@ print(M)        # ['a', 'b', 'a', 'b']</code></pre></div>
         { line: 5, objs: { x: ['42', '3'] }, hl: { x: { add: [0] } },
           say: 'Line 2 mutated the shared list through <code>M</code>. That was the last line of <code>f</code>, so the call returns to line 5.' },
         { line: 6, frames: [['global', { L: '@x' }]], hl: { x: { add: [0] } }, say: '<code>f</code>\'s frame and <code>M</code> are gone, but the mutation stays, because it happened to the caller\'s list.' },
-        { line: 7, print: '[42, 3]', say: 'A function that receives a list can change the caller\'s list. In 4.7 we decide when it <strong>should</strong>.' },
+        { line: 7, print: '[42, 3]', say: 'A function that receives a list can change the caller\'s list, because its parameter is an alias.' },
       ],
     },
   };

@@ -14,9 +14,9 @@ The early presentations use sentences, words, and general examples rather than c
 ### Recurring instructional routines
 
 - **Predict, trace, verify, explain:** Students predict output before running MobCode examples. Complexity grows across the unit rather than saving tracing until the end.
-- **Physical list model:** Each group uses an indexed tray (eight slots labeled 0 to 7) and colored list items (green, red, yellow, purple, and orange) to make element replacement, insertion, removal, and shifting visible. A finger or marker represents the current loop index. A setup slide sends groups to the tables and has them pick up a tray and items on the way.
+- **Physical list model:** Each group uses a code sheet, an indexed tray (eight slots labeled 0 to 7) and colored list items (green, red, yellow, purple, and orange) to make element replacement, insertion, removal, and shifting visible. A finger or marker represents the current loop index. A setup slide sends groups to the tables and has them pick up a code sheet, a tray, and items on the way.
 - **Memory model:** Groups trace at stand-up whiteboards, using retractable magnetic arrows to connect variable names to list objects drawn on the board. The instructor demonstrates the first trace with the same arrows on the front board.
-- **TraceLift printouts:** Each whiteboard trace starts from a TraceLift printout of the program, taped to the board, as in the CSP tracing lessons. These sheets have no flaps: students draw the frames, list objects, and arrows beside the code. The programs are collected under "TraceLift Exercise Set" at the end of this plan.
+- **Code sheets:** Each whiteboard trace and each tray trace starts from a printed code sheet of the program, as in the CSP tracing lessons. At the whiteboard, groups tape up the sheet and draw the frames, list objects, and arrows beside the code. At the tables, the sheet lies beside the tray, so groups can point at the line they are running and record the tray beside each line. The sheets have no flaps on the code; a line under the title holds a blank space for each variable the group must track. The slides call them code sheets. The programs are collected under "Code Sheet Exercise Set" at the end of this plan.
 - **Trace boards and Python Tutor:** Deck trace boards step through each program for checking after students trace it themselves. In both the trace boards and Python Tutor, the marked line is the next line to run. Code examples that the deck does not step through carry a Python Tutor icon link built from the code on the slide.
 - **MobCode instructions in comments:** A running MobCode activity covers the slide, so every MobCode starter program carries its task and steps in its comments.
 - **VS Code artifact:** Each investigation yields a retained `.py` file in the student's Unit 4 folder, not just a temporary MobCode response.
@@ -127,7 +127,7 @@ Ask for a test with an empty sentence: `"".split(" ")` returns `[""]`, a list ho
 1. Contrast `L[i] = value` with immutable string elements.
 2. `append()`, `extend()`, and `insert()`.
 3. `remove()` and `pop()`; value versus index; `pop()` returns the removed value.
-4. Setup slide: groups move to the tables, picking up an indexed tray and list items on the way.
+4. Setup slide: groups move to the tables, picking up a code sheet, an indexed tray, and list items on the way.
 5. The tray activity, then a trace board that checks it.
 6. Index shifting after insertion and deletion.
 7. `sort()` and `reverse()` as in place changes.
@@ -135,7 +135,7 @@ Ask for a test with an empty sentence: `"".split(" ")` returns `[""]`, a list ho
 9. Predict both the returned values and the final contents, then run it.
 10. `join()` turns a list of words back into a string.
 
-**Physical tracing: Indexed trays (`tray.py`).** Each group's tray is a list named `tray`. Groups load it starting at slot 0 and run one line at a time, recording the tray and circling the items whose index changed:
+**Physical tracing: Indexed trays (`tray.py`).** Each group's tray is a list named `tray`. Groups load it starting at slot 0 and run one line at a time from their code sheet, recording the tray beside each line and circling the items whose index changed:
 
 ```python
 tray = ["green", "red", "yellow", "red", "purple"]
@@ -162,7 +162,7 @@ The final tray is `["green", "yellow", "orange", "purple", "green"]`, and `x` ho
 
 **Central question:** Why can changing one variable seem to change another?
 
-**Room flow.** Students open with a Resonance prediction at their computers. On slide 3 groups move to the whiteboards with their TraceLift printouts and magnetic arrows, and they stay there for the traces and checkpoints. Slide 18 sends them back to their computers for the MobCode and VS Code work.
+**Room flow.** Students open with a Resonance prediction at their computers. On slide 3 groups move to the whiteboards with their code sheets and magnetic arrows, and they stay there for the traces and checkpoints. Slide 19 sends them back to their computers for the MobCode and VS Code work.
 
 **Presentation outline**
 1. Hook prediction (Resonance): `b = a`, then `a.append(4)`, then `print(b)`.
@@ -170,15 +170,18 @@ The final tray is `["green", "yellow", "orange", "purple", "green"]`, and `x` ho
 3. **Instructor demonstration** at the front board with magnetic arrows: two variables can refer to the same list, and a third holds an equal but separate list. Students build the same picture at their whiteboards.
 4. Aliases versus copies, and `==` versus `is` and `is not`.
 5. `copy.copy()`, with a Python Tutor link for each example. Recognize alternate copying forms such as slicing, `list(L)`, `L.copy()`, `L + []`, and `L * 1` without using them, consistent with CMU's preference for `copy.copy()`.
-6. Reassigning moves an arrow (trace board), then mutation versus assignment.
+6. Reassigning moves an arrow (trace board), then mutation versus reassignment.
 7. **Whiteboard trace:** groups trace `M[2] = 5` through an alias, then check with the revealed answer and Python Tutor.
-8. **Hands on: Move the arrows (`arrows.py`):** before each line, groups decide whether it is a mutation or an assignment. A trace board checks the result.
+8. **Hands on: Move the arrows (`arrows.py`):** before each line, groups mark it on their code sheet: **M** if it mutates a list, **A** if it points an arrow at a list that already exists (an alias), or **N** if it makes a new list and points an arrow at it (`copy.copy(a)` and `a + [5]`). `a[0] = 9` is the trap, since it has an equals sign but is M. A trace board checks the result.
 9. `L = L + M` versus `L += M`, and `L = L * n` versus `L *= n`.
-10. Four patterns that help you remember: assignment operators (`+=`, `*=`) mutate while plain operators do not; methods mutate while past-tense functions (`sorted`, `reversed`) do not; mutating methods return `None` except `pop`; and non-mutating operations return a new list that must be stored. When the patterns are not enough, run the alias test.
+10. Four patterns that help you remember: assignment operators (`+=`, `*=`) mutate while plain operators do not; methods mutate while past-tense functions (`sorted`, `reversed`) do not; non-mutating operations return a new list that must be stored; and mutating methods return `None` except `pop`, so `L = L.sort()` turns `L` into `None`. When the patterns are not enough, run the alias test.
 11. A parameter refers to the caller's list (trace board).
-12. Back to computers.
+12. **Whiteboard trace:** a function call. `addItems(M)` mutates the caller's list through the parameter, then reassigns the parameter to a new list, so only the first change reaches the caller.
+13. Back to computers.
+14. **Trace on paper:** students trace the MobCode program on paper and predict every `print` before it opens.
+15. MobCode: students type their predictions as comments, run the program, and find where any wrong prediction went wrong. A slide below the MobCode slide shows the program with a Python Tutor link, so students can step through it and find the first step where their drawing disagrees.
 
-**Physical tracing: Magnetic arrows.** Each group draws list objects beside its TraceLift printout and uses magnetic arrows for variable references, moving an arrow on reassignment and editing the drawn list on mutation. Contrast:
+**Physical tracing: Magnetic arrows.** Each group draws list objects beside its code sheet and uses magnetic arrows for variable references, moving an arrow on reassignment and editing the drawn list on mutation. Contrast:
 
 ```python
 a = [1, 2, 3]
@@ -194,7 +197,7 @@ b = a
 a = a + [4]
 ```
 
-**MobCode: Identity predictions.** Predict object identity, value equality, and contents after sequences of assignment and mutation. The three-step checklist is in the starter comments.
+**MobCode: Identity predictions.** Predict object identity, value equality, and contents after sequences of assignment and mutation. A slide before the MobCode slide shows the program so students trace it on paper and write their predictions before they can run it. The steps are repeated in the starter comments, since MobCode covers the slide.
 
 **VS Code: Alias Experiments (`alias_experiments.py`).** Each experiment has a prediction comment above it and an explanation in terms of arrows below it. Students show two lists that are `==` but not `is` and two that are both; use the alias test to decide whether `L += [1]`, `L = L + [1]`, and `L.extend([1])` mutate `L`; and write `shout(words)`, which uppercases every word by index, then protect the caller with `copy.copy`.
 
@@ -413,15 +416,30 @@ Each student retains a VS Code lab collection and contributes a separately testa
 4. **Decided:** Presentation 1 previews the project on one slide; the full project context and GitHub start in Presentation 9.
 5. Define compact MobCode tracing interactions, VS Code starter files, and exit checks for each presentation.
 6. **Decided for Presentations 3 and 6:** groups use indexed trays with colored list items (green, red, yellow, purple, and orange). Decide whether later presentations need physical materials.
-7. Prepare TraceLift sheets for whiteboard traces in Presentations 5 to 10 as those decks are finalized, and add them to the exercise set below.
+7. Prepare code sheets for whiteboard and tray traces in Presentations 5 to 10 as those decks are finalized, and add them to the exercise set below.
 
 **Design principle:** Presentations introduce questions; investigations reveal behavior; VS Code provides durable practice; physical models make invisible list behavior visible; and the team project gives each student's list algorithms an authentic purpose.
 
 ---
 
-## TraceLift Exercise Set
+## Code Sheet Exercise Set
 
-TraceLift (https://print.mycode.run/tracelift) prints each program as a numbered code sheet for the whiteboard. Copy each block below into TraceLift as it is. These sheets have no `[[name]]` flaps: students draw frames, list objects, and arrows beside the code and use magnetic arrows for references. Print one sheet per group for each group trace, and one large sheet for the front board demonstration.
+Make the code sheets with TraceLift (https://print.mycode.run/tracelift), which prints each program as a numbered code sheet. Copy each block below into TraceLift as it is. The code itself has no `[[name]]` flaps. Where a sheet needs space to record a variable, a comment line under the title uses flaps such as `# [[x]]` as blank spaces for students to fill in. Because it is a comment, the code's line numbers still match the slides. Print one sheet per group for each group trace, and one large sheet for the front board demonstration.
+
+### Lesson 4.3: Be the List (slides 6 and 7, tables)
+
+The tray is the list, so the sheet only needs a space for `x`, the value `pop` hands back. Groups record the tray beside each line.
+
+```text
+Title: Lesson 4.3 - Be the List
+# [[x]]
+tray = ["green", "red", "yellow", "red", "purple"]
+tray[2] = "orange"
+tray.insert(1, "yellow")
+tray.remove("red")
+x = tray.pop(3)
+tray.append("green")
+```
 
 ### Lesson 4.4 Round 1: The Hook (slide 2, optional)
 
@@ -499,4 +517,34 @@ def f(M):
 L = [1, 3]
 f(L)
 print(L)
+```
+
+### Lesson 4.4 Round 6: Trace a Function Call (slide 18)
+
+Groups draw a second frame for the call to `addItems` and mark each line M, A, or N.
+
+```text
+Title: Lesson 4.4 Round 6 - Trace a Function Call
+def addItems(M):
+    M.append(4)
+    M = M + [5]
+    M.append(6)
+
+L = [1, 2, 3]
+addItems(L)
+print(L)
+```
+
+### Lesson 4.6: Remove All the Reds (slides 6 and 7, tables)
+
+Groups load the tray as the slide shows: green, red, red, purple, red, orange, red, yellow. The tray is `items`, and one student's finger is `i`; the space for `i` lets the group write each new value. Line 5 on the slide is line 5 on the sheet.
+
+```text
+Title: Lesson 4.6 - Remove All the Reds
+# [[i]]
+i = 0
+while i < len(items):
+    if items[i] == "red":
+        items.pop(i)
+    i += 1
 ```
