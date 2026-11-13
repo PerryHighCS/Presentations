@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="f1gjzi">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Writing Responses: The Three-Sentence Plan | AP CSP</title>
+
+<!-- SyncDeck bundled runtime CSS (includes Reveal core + shared plugin styles) -->
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<!-- Shared CSP theme -->
+<link rel="stylesheet" href="../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: Writing Responses (Three-Sentence Plan)
+   ============================================================ */
+
+:root {
+  /* The CSP theme's tokens sit below the repo's size floors, so this
+     deck raises them: 30px body, 24px code, 22px captions and labels. */
+  --body:  30px;
+  --code:  24px;
+  --small: 22px;
+  --tag:   18px;
+  /* Body text brighter than the shared theme's 0.6 alpha so prose
+     clears 7:1 on both the page and card backgrounds. */
+  --text-body: #b8cac7;
+  --purple: #b4a0fb;
+}
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+.frq-box p { color: var(--text-body); }
+.reveal .bullets li { font-size: var(--body); line-height: 1.45; color: var(--text-body); }
+.reveal :not(pre) > code { font-size: var(--code); }
+
+/* ─── Semantic colors, used the same way on every slide ──────────────
+   .s1  sentence 1: restate and answer      (teal)
+   .s2  sentence 2: more details            (amber)
+   .s3  sentence 3: an actual example       (green)
+   .pt  a part of a multi-part prompt       (purple)
+   ─────────────────────────────────────────────────────────────── */
+.s1 { color: var(--teal); }
+.s2 { color: var(--amber); }
+.s3 { color: var(--green); }
+.pt { color: var(--purple); }
+.em { color: var(--text); font-weight: 600; }
+
+/* Prompt box: the writing prompt being answered */
+.prompt-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,212,59,0.4);
+  border-left: 4px solid var(--yellow);
+  border-radius: 4px;
+  padding: 18px 26px;
+}
+.prompt-box p { font-size: var(--body); line-height: 1.5; color: var(--text); }
+.prompt-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--yellow);
+  margin-bottom: 8px;
+}
+.source {
+  font-size: var(--small);
+  color: var(--text-body);
+  margin-top: 10px;
+}
+.source a { color: var(--teal); }
+
+/* Step cards for the three sentences */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap);
+}
+.step {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-top: 5px solid var(--step-color, var(--teal));
+  border-radius: 4px;
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.step.c1 { --step-color: var(--teal); }
+.step.c2 { --step-color: var(--amber); }
+.step.c3 { --step-color: var(--green); }
+.step-num {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--step-color);
+}
+.step-title { font-size: 36px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.step p { font-size: var(--body); line-height: 1.45; }
+
+/* One sentence of the worked example */
+.sentence-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-left: 6px solid var(--step-color, var(--teal));
+  border-radius: 4px;
+  padding: 24px 30px;
+}
+.sentence-card.c1 { --step-color: var(--teal); }
+.sentence-card.c2 { --step-color: var(--amber); }
+.sentence-card.c3 { --step-color: var(--green); }
+.sentence-card p { font-size: 34px; line-height: 1.5; color: var(--text); }
+.sentence-card .step-num { display: block; margin-bottom: 10px; }
+
+/* Sentence starters */
+.starters {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.starters li {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  font-size: 36px;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  padding: 16px 24px;
+}
+.starters .k {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  min-width: 190px;
+  flex-shrink: 0;
+}
+
+/* Student sample images */
+.samples {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+}
+.samples figure { margin: 0; text-align: center; }
+.samples img {
+  height: 560px;
+  width: auto;
+  border-radius: 4px;
+  border: 1px solid var(--teal-border);
+  display: block;
+}
+.samples figcaption {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--text-body);
+  margin-top: 12px;
+}
+
+/* Typed transcripts of the samples */
+.transcript {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  padding: 18px 24px;
+}
+.transcript p { font-size: var(--body); line-height: 1.4; color: var(--text); }
+.transcript .prompt-label { color: var(--teal); }
+
+/* Prompt parts: always visible, highlighted one at a time as fragments */
+.reveal .fragment.part-mark {
+  opacity: 1 !important;
+  visibility: inherit !important;
+}
+.part-mark {
+  border-bottom: 3px solid transparent;
+  border-radius: 3px;
+  padding: 0 2px;
+  transition: background 0.4s var(--ease), border-color 0.4s var(--ease);
+}
+.part-mark.visible {
+  background: rgba(180,160,251,0.16);
+  border-bottom-color: var(--purple);
+}
+.part-mark .pn {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  color: #0f1d1a;
+  background: var(--purple);
+  border-radius: 999px;
+  padding: 0 10px;
+  margin-right: 6px;
+  vertical-align: 3px;
+}
+.part-mark.visible .pn { display: inline-block; }
+.part-mark.alt.visible {
+  background: rgba(226,245,242,0.08);
+  border-bottom: 3px dashed var(--text-body);
+}
+.part-mark.alt .pn { background: var(--text-body); }
+
+/* Two-part plan columns */
+.plan-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+}
+.plan-col {
+  background: var(--bg-card);
+  border: 1px solid rgba(180,160,251,0.45);
+  border-radius: 4px;
+  padding: 22px 26px;
+}
+.plan-col h3 { font-size: 34px; color: var(--purple); margin-bottom: 14px; line-height: 1.3; }
+.plan-col ol { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.plan-col li { font-size: var(--body); color: var(--text); }
+.plan-col li .step-num { margin-right: 12px; }
+
+/* A finished multi-sentence response */
+.response p { font-size: var(--body); line-height: 1.6; color: var(--text); }
+.reveal .response :not(pre) > code { color: #5fe6d4; }
+
+/* Big transition text */
+.reveal p.impact {
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text);
+  max-width: 1300px;
+}
+
+/* Resource links */
+.links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.links li {
+  font-size: var(--body);
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 4px;
+  padding: 16px 24px;
+}
+.links a { color: var(--teal); text-decoration: none; border-bottom: 1px solid rgba(0,201,177,0.4); }
+.links .note { display: block; font-size: var(--small); color: var(--text-body); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     STORYBOARD STRIP
+     ============================================================ -->
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+<!-- ============================================================
+     SLIDE 01 · Title
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:700px;height:700px;background:radial-gradient(circle,rgba(0,201,177,0.12) 0%,transparent 70%);top:-180px;right:-80px;"></div>
+  <div class="glow" style="width:400px;height:400px;background:radial-gradient(circle,rgba(255,212,59,0.09) 0%,transparent 70%);bottom:-60px;left:6%;"></div>
+
+  <div class="slide-inner slide-center">
+    <p style="font-family:var(--font-mono);font-size:var(--small);letter-spacing:0.2em;color:var(--teal);text-transform:uppercase;margin-bottom:var(--gap);">AP Computer Science Principles · Create Task</p>
+    <h1 class="title-h1" style="font-size:84px;">Responding to the Writing Prompts</h1>
+    <p style="margin-top:var(--gap);font-size:44px;color:var(--text);">The <span class="s1">Three</span>-<span class="s2">Sentence</span> <span class="s3">Plan</span></p>
+  </div>
+
+  <aside class="notes">This deck covers how to answer the written-response prompts on the AP CSP exam, which ask about the program in each student's Personalized Project Reference.</aside>
+</section>
+
+<!-- ============================================================
+     SLIDE 02 · What Matters
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Before You Write</span>
+    <h2>What Matters to the Scorers</h2>
+
+    <ul class="bullets" style="gap:20px;">
+      <li class="fragment fade-up">Each response should look like you spent <span class="em">10 or more minutes</span> writing it.</li>
+      <li class="fragment fade-up">You know more about your project than the scorer does, so your job is to <span class="s1">help them understand it</span>.</li>
+      <li class="fragment fade-up">Each response earns <span class="em">full credit or no credit</span>. There is no partial credit, so <span class="s2">address the whole prompt</span>.</li>
+      <li class="fragment fade-up">Creativity, grammar, and spelling <span class="em">do not count</span> toward your score.</li>
+      <li class="fragment fade-up">The goal is not just to be correct. The goal is to <span class="s3">convince the scorer that you are correct</span>.</li>
+    </ul>
+  </div>
+
+  <aside class="notes">Spend a moment on the last point. A short answer may be correct in the student's head, but the scorer only sees what is written.</aside>
+</section>
+
+<!-- ============================================================
+     SLIDE 03 · Student Samples (scans)
+     ============================================================ -->
+<section>
+  <div class="slide-inner" style="padding-top:48px;padding-bottom:48px;">
+    <span class="slide-tag">Student Samples</span>
+    <h2 style="margin-bottom:18px;">Which One Looks Like a Complete Answer?</h2>
+
+    <div class="samples">
+      <figure>
+        <img src="media/ap24-q1-sample-f.png" alt="Handwritten exam response, Sample F: three short lines stating that one input is the variable jump, which tells the program to execute the jumping motion. The rest of the page is blank.">
+        <figcaption>Sample F</figcaption>
+      </figure>
+      <figure>
+        <img src="media/ap24-q1-sample-e.png" alt="Handwritten exam response, Sample E: about two thirds of the page filled with a detailed description of a rock, paper, scissors input and how it is compared with the computer&#39;s choice.">
+        <figcaption>Sample E</figcaption>
+      </figure>
+    </div>
+    <p class="source" style="text-align:center;">Both samples answer Question 1 from the <a href="https://apcentral.collegeboard.org/media/pdf/ap24-frq-csp-set-1.pdf" target="_blank" rel="noopener">2024 AP CSP exam, Set 1</a>.</p>
+  </div>
+
+  <aside class="notes">AP Exam 2024 FRQ Set 1 Q1 Sample F (left) and Sample E (right). Let students look before reading the details; the point is how each one looks at a glance.</aside>
+</section>
+
+<!-- ============================================================
+     SLIDE 04 · Check: Which looks complete? (Resonance)
+     ============================================================ -->
+<section
+    data-activity-id="resonance"
+    data-activity-trigger="slide-enter"
+    data-activity-instance-key="resonance:4:1"
+    data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Which student sample looks like a complete answer to the writing prompt?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"[![Sample F: three short handwritten lines at the top of an otherwise blank page](https://perryhighcs.github.io/Presentations/CSP/CreateTask/media/ap24-q1-sample-f-thumb.jpg)](https://perryhighcs.github.io/Presentations/CSP/CreateTask/media/ap24-q1-sample-f.png)\n\nSample F: a few lines about the variable jump","isCorrect":false},{"id":"q1b","text":"[![Sample E: handwriting filling about two thirds of the page](https://perryhighcs.github.io/Presentations/CSP/CreateTask/media/ap24-q1-sample-e-thumb.jpg)](https://perryhighcs.github.io/Presentations/CSP/CreateTask/media/ap24-q1-sample-e.png)\n\nSample E: most of a page about the rock, paper, scissors input","isCorrect":true},{"id":"q1c","text":"They look equally complete","isCorrect":false}]}]}'>
+  <div class="slide-inner slide-center" style="padding-top:44px;padding-bottom:44px;">
+    <span class="slide-tag">Check In</span>
+    <h2 style="margin-bottom:18px;">Which Sample Looks Complete?</h2>
+
+    <div class="samples" style="gap:80px;">
+      <figure>
+        <img src="media/ap24-q1-sample-f-thumb.jpg" style="height:440px;" alt="Sample F: three short handwritten lines at the top of an otherwise blank page.">
+        <figcaption style="font-size:var(--body);color:var(--text-body);"><span class="opt-key">A</span> Sample F</figcaption>
+      </figure>
+      <figure>
+        <img src="media/ap24-q1-sample-e-thumb.jpg" style="height:440px;" alt="Sample E: handwriting filling about two thirds of the page.">
+        <figcaption style="font-size:var(--body);color:var(--text-body);"><span class="opt-key">B</span> Sample E</figcaption>
+      </figure>
+    </div>
+    <ul class="mcq-opts" style="margin-top:18px;">
+      <li><span class="opt-key">C</span> They look equally complete</li>
+    </ul>
+  </div>
+
+  <aside class="notes">The answer is Sample E. Even before reading it, the longer response looks like the student spent time explaining their program.</aside>
+</section>
+
+<!-- ============================================================
+     SLIDE 05 · Student Samples (transcripts)
+     ============================================================ -->
+<section>
+  <div class="slide-inner" style="padding-top:44px;padding-bottom:44px;">
+    <div class="prompt-box" style="margin-bottom:var(--gap);">
+      <span class="prompt-label">Prompt</span>
+      <p>Programs accept input to achieve their intended functionality. Describe at least one valid input to your program and what your program does with that input.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:0.45fr 1.55fr;gap:var(--gap);align-items:start;">
+      <div class="transcript">
+        <span class="prompt-label">Sample F</span>
+        <p>One input in my program is the variable jump. This is used to tell the program to execute the jumping motion.</p>
+      </div>
+      <div class="transcript">
+        <span class="prompt-label">Sample E</span>
+        <p>One valid input to my program would be if a user clicked the desired x &amp; y coordinates that would select the picture of the rock which was created using shapes. Once the user has clicked the image of their choice, in this situation the rock out of rock, paper, or scissors, it is compared with the computer&#39;s choice which is chosen at random. If the user and the computer&#39;s choice is the same then it will result in a tie and no points are awarded to either the computer or player. If the rock is chosen by the user and the scissors are chosen by the computer then the player will win and receive one point to their score. If the computer chooses paper when the user chose rock then it will result in a win for the computer and they will gain an additional point to their score. Whatever the outcome is, the new score of the player and the computer will be displayed.</p>
+      </div>
+    </div>
+  </div>
+
+  <aside class="notes">AP Exam 2024 FRQ Set 1 Q1 Sample F and Sample E, typed so they are easier to read. Sample E names the input, explains what happens with it, and walks through specific cases. That is the kind of detail the three-sentence plan builds in on purpose.</aside>
+</section>
+
+<!-- ============================================================
+     SLIDE 06 · The Three-Sentence Plan
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Plan</span>
+    <h2>The Three-Sentence Plan</h2>
+    <p style="margin-bottom:var(--gap);">Follow this pattern of three sentences. Each sentence has its own job.</p>
+
+    <div class="steps">
+      <div class="step c1 fragment fade-up">
+        <span class="step-num">Sentence 1</span>
+        <span class="step-title">Restate and answer the question.</span>
+        <p>Reuse the prompt&#39;s own words so the scorer can see you answered what was asked.</p>
+      </div>
+      <div class="step c2 fragment fade-up">
+        <span class="step-num">Sentence 2</span>
+        <span class="step-title">Elaborate with more details.</span>
+        <p>Explain how your program does it. This sentence often starts with <span class="s2">&ldquo;More specifically,&rdquo;</span></p>
+      </div>
+      <div class="step c3 fragment fade-up">
+        <span class="step-num">Sentence 3</span>
+        <span class="step-title">Provide an actual example.</span>
+        <p>Use real values, names, or situations from your program. Start with <span class="s3">&ldquo;For example,&rdquo;</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 07 · Example Writing Prompt
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Worked Example</span>
+    <h2>An Example Writing Prompt</h2>
+
+    <div class="prompt-box" style="max-width:1300px;">
+      <span class="prompt-label">Prompt</span>
+      <p style="font-size:40px;">Explain how you could have or did investigate the intended user of your program to decide the design of your program&#39;s user interface.</p>
+    </div>
+    <p class="source">From <a href="https://docs.google.com/document/d/1OxcIPkjl64bIbWdsMjjAJ6fu2SPb_0_v_RvgcY5wyFM/edit" target="_blank" rel="noopener">Mr. C&#39;s Practice Prompts #1</a></p>
+
+    <p style="margin-top:var(--gap-lg);">On the next slides, we will build a response to this prompt one sentence at a time. The example program is a <span class="em">pet recommendation quiz</span> for customers at a pet store.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 08 · Sentence 1: Restate and answer
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Worked Example · Sentence 1</span>
+    <h2>Restate and Answer the Question</h2>
+
+    <div class="prompt-box" style="margin-bottom:var(--gap);">
+      <span class="prompt-label">Prompt</span>
+      <p>Explain how you could have or did <span class="s1">investigate the intended user</span> of your program <span class="s1">to decide the design of your program&#39;s user interface</span>.</p>
+    </div>
+
+    <div class="sentence-card c1 fragment fade-up">
+      <span class="step-num">Sentence 1 · Restate, then answer</span>
+      <p><span class="s1">I could have investigated the intended users of my program to decide the design of my program&#39;s user interface</span> by interviewing a group of customers at the pet store to find out their preferences.</p>
+    </div>
+  </div>
+
+  <aside class="notes">Point out that the teal words in the response are copied straight from the prompt. The answer itself is the part after "by".</aside>
+</section>
+
+<!-- ============================================================
+     SLIDE 09 · Sentence 2: More details
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Worked Example · Sentence 2</span>
+    <h2>Add More Details</h2>
+
+    <div class="sentence-card c1" style="margin-bottom:var(--gap);opacity:0.75;">
+      <p style="font-size:var(--body);">I could have investigated the intended users of my program to decide the design of my program&#39;s user interface by interviewing a group of customers at the pet store to find out their preferences.</p>
+    </div>
+
+    <div class="sentence-card c2 fragment fade-up">
+      <span class="step-num">Sentence 2 · More details</span>
+      <p><span class="s2">More specifically,</span> my user interface gives the user an &lsquo;A&rsquo;, &lsquo;B&rsquo;, &lsquo;C&rsquo;, and &lsquo;D&rsquo; option for each question, so the customers could suggest what options would be available to choose from instead of just using the choices I can think up.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 10 · Sentence 3: An actual example
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Worked Example · Sentence 3</span>
+    <h2>Give an Actual Example</h2>
+
+    <div class="sentence-card c2" style="margin-bottom:var(--gap);opacity:0.75;">
+      <p style="font-size:var(--body);">More specifically, my user interface gives the user an &lsquo;A&rsquo;, &lsquo;B&rsquo;, &lsquo;C&rsquo;, and &lsquo;D&rsquo; option for each question, so the customers could suggest what options would be available to choose from instead of just using the choices I can think up.</p>
+    </div>
+
+    <div class="sentence-card c3 fragment fade-up">
+      <span class="step-num">Sentence 3 · Actual example</span>
+      <p><span class="s3">For example,</span> the second question is about colors, so if the popular colors of customers at the pet store are yellow, pink, cyan, and black, I could make those the four options when helping to choose a new pet.</p>
+    </div>
+  </div>
+
+  <aside class="notes">The example uses specific values: a specific question, and four specific colors. That is what makes it an actual example rather than a restatement.</aside>
+</section>
+
+<!-- ============================================================
+     SLIDE 11 · The complete response
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Worked Example</span>
+    <h2>The Complete Response</h2>
+
+    <div class="prompt-box" style="margin-bottom:var(--gap);">
+      <span class="prompt-label">Prompt</span>
+      <p>Explain how you could have or did investigate the intended user of your program to decide the design of your program&#39;s user interface.</p>
+    </div>
+
+    <div class="transcript response">
+      <p><span class="s1">I could have investigated the intended users of my program to decide the design of my program&#39;s user interface by interviewing a group of customers at the pet store to find out their preferences.</span> <span class="s2">More specifically, my user interface gives the user an &lsquo;A&rsquo;, &lsquo;B&rsquo;, &lsquo;C&rsquo;, and &lsquo;D&rsquo; option for each question, so the customers could suggest what options should be available to choose from instead of just using the choices I can think up.</span> <span class="s3">For example, the second question is about colors, so if the popular colors of customers at the pet store are yellow, pink, cyan, and black, I could make those the four options when helping to choose a new pet.</span></p>
+    </div>
+  </div>
+
+  <aside class="notes">Three sentences, written as one paragraph. Compare its length to Sample F from earlier.</aside>
+</section>
+
+<!-- ============================================================
+     SLIDE 12 · Try it: procedure prompt (Resonance)
+     ============================================================ -->
+<section
+    data-activity-id="resonance"
+    data-activity-trigger="slide-enter"
+    data-activity-instance-key="resonance:12:1"
+    data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Prompt: Consider the procedure identified in part (i) of the Procedure section of your Personalized Project Reference. Describe how this procedure helps manage the complexity of your program. How should each of your three sentences start? Write the opening words of all three.","order":0,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Your Turn</span>
+    <h2>How Should the Three Sentences Start?</h2>
+
+    <div class="prompt-box">
+      <span class="prompt-label">Prompt</span>
+      <p>Consider the procedure identified in part (i) of the Procedure section of your Personalized Project Reference. Describe how this procedure helps manage the complexity of your program.</p>
+    </div>
+    <p style="margin-top:var(--gap);">Write the <span class="em">opening words</span> of all three sentences you would use to answer this prompt.</p>
+  </div>
+  <aside class="notes">Students answer about their 4.12 Decision Maker app, where the procedure is updateScreen. It has no parameter, so this prompt asks about managing complexity instead. Strong answers point out that every onEvent calls the same updateScreen, so the code that builds the recommendation is written once instead of being copied into each event.</aside>
+</section>
+
+<!-- ============================================================
+     SLIDE 13 · Starters: procedure prompt
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Your Turn · Answer</span>
+    <h2>Sentence Starters for the Procedure Prompt</h2>
+
+    <div class="prompt-box" style="margin-bottom:var(--gap);">
+      <span class="prompt-label">Prompt</span>
+      <p>Consider the procedure identified in part (i) of the Procedure section of your Personalized Project Reference. <span class="s1">Describe how this procedure helps manage the complexity of your program.</span></p>
+    </div>
+
+    <ul class="starters">
+      <li class="fragment fade-up"><span class="k s1">Sentence 1</span><span><span class="s1">My procedure helps manage the complexity of my program by</span>&hellip;</span></li>
+      <li class="fragment fade-up"><span class="k s2">Sentence 2</span><span class="s2">More specifically, &hellip;</span></li>
+      <li class="fragment fade-up"><span class="k s3">Sentence 3</span><span class="s3">For example, &hellip;</span></li>
+    </ul>
+  </div>
+  <aside class="notes">A 4.12 example: "My procedure helps manage the complexity of my program by putting all the code that builds the recommendation in one function, updateScreen. More specifically, each onEvent updates its variable and then calls updateScreen, so the recommendation logic is written once instead of once per input. For example, when the user changes the age dropdown or the name box, both onEvents call updateScreen, and a fix to the recommendation only has to be made in one place."</aside>
+</section>
+
+<!-- ============================================================
+     SLIDE 14 · Try it: list prompt (Resonance)
+     ============================================================ -->
+<section
+    data-activity-id="resonance"
+    data-activity-trigger="slide-enter"
+    data-activity-instance-key="resonance:14:1"
+    data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Prompt: Consider the list identified in the List section of your Personalized Project Reference. Describe how your program could be written without the use of a list. If it is not possible for your program to work without the use of a list, describe how your program&#39;s functionality would be limited. How should each of your three sentences start? Write the opening words of all three.","order":0,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Your Turn</span>
+    <h2>How Should the Three Sentences Start?</h2>
+
+    <div class="prompt-box">
+      <span class="prompt-label">Prompt</span>
+      <p>Consider the list identified in the List section of your Personalized Project Reference. Describe how your program could be written without the use of a list. If it is not possible for your program to work without the use of a list, describe how your program&#39;s functionality would be limited.</p>
+    </div>
+    <p class="source">From the <a href="https://docs.google.com/document/d/11HxGrK9eH4SkXWq-1zFUwkkhfBAo-tHV0i2dhGFg5q0/" target="_blank" rel="noopener">2024 AP Daily video</a></p>
+
+    <p style="margin-top:var(--gap);">Write the <span class="em">opening words</span> of all three sentences you would use to answer this prompt.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 15 · Starters: list prompt
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Your Turn · Answer</span>
+    <h2>Sentence Starters for the List Prompt</h2>
+
+    <div class="prompt-box" style="margin-bottom:var(--gap);">
+      <span class="prompt-label">Prompt</span>
+      <p>Consider the list identified in the List section of your Personalized Project Reference. <span class="s1">Describe how your program could be written without the use of a list.</span> If it is not possible for your program to work without the use of a list, describe how your program&#39;s functionality would be limited.</p>
+    </div>
+
+    <ul class="starters">
+      <li class="fragment fade-up"><span class="k s1">Sentence 1</span><span><span class="s1">My program could be written without the use of a list by</span>&hellip;</span></li>
+      <li class="fragment fade-up"><span class="k s2">Sentence 2</span><span class="s2">More specifically, &hellip;</span></li>
+      <li class="fragment fade-up"><span class="k s3">Sentence 3</span><span class="s3">For example, &hellip;</span></li>
+    </ul>
+  </div>
+
+  <aside class="notes">If a student's program truly cannot work without the list, the first sentence restates the second half of the prompt instead: "Without the use of a list, my program's functionality would be limited because..."</aside>
+</section>
+
+<!-- ============================================================
+     SLIDE 16 · Three sentences, and three more
+     ============================================================ -->
+<section>
+  <div class="glow" style="width:600px;height:600px;background:radial-gradient(circle,rgba(180,160,251,0.12) 0%,transparent 70%);top:-120px;left:-80px;"></div>
+  <div class="slide-inner slide-center">
+    <p class="impact"><span class="s1">Three sentences</span>&hellip; and <span class="s2">three more sentences</span>, and <span class="s3">three more sentences</span>, and <span class="pt">three more sentences</span>, and&hellip;</p>
+  </div>
+
+  <aside class="notes">Transition: most prompts ask for more than one thing, so most answers need more than one set of three sentences.</aside>
+</section>
+
+<!-- ============================================================
+     SLIDE 17 · One Prompt, Many Parts
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Multi-Part Prompts</span>
+    <h2>Most Prompts Have More Than One Part</h2>
+
+    <p style="margin-bottom:var(--gap);">Many prompts ask for several things at once. Watch for a list of command words such as <span class="pt">&ldquo;Identify&hellip; Explain&hellip; Describe&hellip;&rdquo;</span> and for requests joined by <span class="pt">&ldquo;&hellip;and&hellip;&rdquo;</span></p>
+
+    <div class="callout accent-red fragment fade-up" style="margin-bottom:var(--gap);">
+      <p>Remember that there is <span class="em">no partial credit</span>. If you answer some parts of a prompt but not all of them, the response earns nothing.</p>
+    </div>
+
+    <div class="callout accent-green fragment fade-up">
+      <p>So address each part <span class="em">separately and completely</span>, and write <span class="s3">three sentences for each part</span> of the prompt.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 18 · Example of multiple parts
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Multi-Part Prompts</span>
+    <h2>Finding the Parts of a Prompt</h2>
+
+    <div class="prompt-box">
+      <span class="prompt-label">Prompt</span>
+      <p style="font-size:38px;line-height:1.6;">Consider the procedure identified in part (i) of the Procedure section of your Personalized Project Reference. <span class="part-mark fragment"><span class="pn">1</span>Describe a call to the procedure</span> and <span class="part-mark fragment"><span class="pn">2</span>explain what behavior this call can be used to test in your program.</span></p>
+    </div>
+    <p class="source">From the <a href="https://docs.google.com/document/d/11HxGrK9eH4SkXWq-1zFUwkkhfBAo-tHV0i2dhGFg5q0/" target="_blank" rel="noopener">2024 AP Daily video</a></p>
+
+    <p class="fragment fade-up" style="margin-top:var(--gap);">The first sentence only sets the scene. The word <span class="pt">&ldquo;and&rdquo;</span> splits the request into <span class="pt">two parts</span>, so this response needs two sets of three sentences.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 19 · The plan for each part
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Multi-Part Prompts</span>
+    <h2>Three Sentences for Each Part</h2>
+
+    <div class="plan-cols">
+      <div class="plan-col fragment fade-up">
+        <h3>Part 1: Describe a call to the procedure&hellip;</h3>
+        <ol>
+          <li><span class="step-num s1">1</span>Restate and answer</li>
+          <li><span class="step-num s2">2</span>More details</li>
+          <li><span class="step-num s3">3</span>Actual example</li>
+        </ol>
+      </div>
+      <div class="plan-col fragment fade-up">
+        <h3>Part 2: Explain what behavior this call can be used to test&hellip;</h3>
+        <ol>
+          <li><span class="step-num s1">1</span>Restate and answer</li>
+          <li><span class="step-num s2">2</span>More details</li>
+          <li><span class="step-num s3">3</span>Actual example</li>
+        </ol>
+      </div>
+    </div>
+
+    <p class="fragment fade-up" style="margin-top:var(--gap);">That adds up to <span class="em">six sentences</span>. The next two slides show a response that follows this plan for the pet quiz program.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 20 · Multi-part response: Part 1
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Multi-Part Example · Part 1 of 2</span>
+    <h2>Part 1: Describe a Call to the Procedure</h2>
+
+    <div class="transcript response">
+      <p><span class="s1">A call to my procedure could be <code>point_calc(q1)</code> to tally points for the user&#39;s response to a question.</span></p>
+      <p class="fragment fade-up" style="margin-top:14px;"><span class="s2">More specifically, when the user responds to question 1 their response is stored in the variable <code>q1</code>, and <code>point_calc</code> is called with the value of their response as the parameter.</span></p>
+      <p class="fragment fade-up" style="margin-top:14px;"><span class="s3">For example, <code>q1</code> could have the value &lsquo;B&rsquo;, so the call to <code>point_calc(q1)</code> is like calling <code>point_calc(&#39;B&#39;)</code>.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 21 · Multi-part response: Part 2
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Multi-Part Example · Part 2 of 2</span>
+    <h2>Part 2: Explain What Behavior the Call Tests</h2>
+
+    <div class="transcript response">
+      <p><span class="s1">The behavior of this call can be used to test whether the appropriate number of points is added and changes the final pet recommendation.</span></p>
+      <p class="fragment fade-up" style="margin-top:14px;"><span class="s2">More specifically, the value of the parameter increases the recommendation points total based on the letter: <code>point_calc(&#39;A&#39;)</code> should add 4 points, <code>point_calc(&#39;B&#39;)</code> should add 8, <code>point_calc(&#39;C&#39;)</code> should add 12, and <code>point_calc(&#39;D&#39;)</code> should add 16. Then the points total after 4 questions determines the pet recommendation.</span></p>
+      <p class="fragment fade-up" style="margin-top:14px;"><span class="s3">For example, answering all the questions with &lsquo;A&rsquo; would call <code>point_calc()</code> four times for a total of 16 and recommend a small bird, but if Question 1 is answered &lsquo;B&rsquo; the point total should be 20 and recommend a lizard as a pet instead.</span></p>
+    </div>
+  </div>
+
+  <aside class="notes">On the exam, both parts are written together as one response. They are split across two slides here only so the text fits.</aside>
+</section>
+
+<!-- ============================================================
+     SLIDE 22 · Dissect a prompt: order of code (Resonance)
+     ============================================================ -->
+<section
+    data-activity-id="resonance"
+    data-activity-trigger="slide-enter"
+    data-activity-instance-key="resonance:22:1"
+    data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Prompt: Consider the sequence of the algorithm within the procedure included in part (i) of the Procedure section of your Personalized Project Reference. Identify a change to the order of your code that would cause the functionality of the procedure to be different. Describe the change in functionality and explain how that is the result of the code change. If the functionality can not be changed by the order of the code, explain why not. How many parts does this prompt ask you to answer?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"One part","isCorrect":false},{"id":"q1b","text":"Two parts","isCorrect":false},{"id":"q1c","text":"Three parts","isCorrect":true},{"id":"q1d","text":"Four parts","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Dissect a Prompt</span>
+    <h2>How Many Parts Are There?</h2>
+
+    <div class="prompt-box">
+      <span class="prompt-label">Prompt</span>
+      <p>Consider the sequence of the algorithm within the procedure included in part (i) of the Procedure section of your Personalized Project Reference. Identify a change to the order of your code that would cause the functionality of the procedure to be different. Describe the change in functionality and explain how that is the result of the code change. If the functionality can not be changed by the order of the code, explain why not.</p>
+    </div>
+    <p class="source">From <a href="https://docs.google.com/document/d/1qxxTdTHhmo09xHzIXDnKrL6gFy3A1MGAN5pejlPwwdU/" target="_blank" rel="noopener">Mr. C&#39;s Practice Prompts #2</a></p>
+
+    <ul class="mcq-opts" style="flex-direction:row;gap:40px;">
+      <li><span class="opt-key">A</span> One part</li>
+      <li><span class="opt-key">B</span> Two parts</li>
+      <li><span class="opt-key">C</span> Three parts</li>
+      <li><span class="opt-key">D</span> Four parts</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 23 · Dissected: order of code
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Dissect a Prompt · Answer</span>
+    <h2>Three Parts, So Three Sets of Sentences</h2>
+
+    <div class="prompt-box">
+      <span class="prompt-label">Prompt</span>
+      <p style="font-size:34px;line-height:1.65;">Consider the sequence of the algorithm within the procedure included in part (i) of the Procedure section of your Personalized Project Reference. <span class="part-mark fragment"><span class="pn">1</span>Identify a change to the order of your code that would cause the functionality of the procedure to be different.</span> <span class="part-mark fragment"><span class="pn">2</span>Describe the change in functionality</span> and <span class="part-mark fragment"><span class="pn">3</span>explain how that is the result of the code change.</span> <span class="part-mark alt fragment"><span class="pn">or</span>If the functionality can not be changed by the order of the code, explain why not.</span></p>
+    </div>
+
+    <p class="fragment fade-up" style="margin-top:var(--gap);">Plan to write <span class="pt">three sets of three sentences</span>. The last sentence of the prompt is a backup: use it only if reordering your code truly cannot change what the procedure does.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 24 · Dissect a prompt: same outcome (Resonance)
+     ============================================================ -->
+<section
+    data-activity-id="resonance"
+    data-activity-trigger="slide-enter"
+    data-activity-instance-key="resonance:24:1"
+    data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Prompt: Consider the procedure and procedure call identified in parts (i) and (ii) of the Procedure section of your Personalized Project Reference. Describe the outcome that your procedure call is intended to produce. Write a new procedure call with at least one different argument value that will produce the same outcome, if possible, and explain why this procedure call produces the same outcome. If it is not possible to write a new procedure call that produces the same outcome, explain why this is not possible. How many parts does this prompt ask you to answer?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Three parts","isCorrect":true},{"id":"q1b","text":"One part","isCorrect":false},{"id":"q1c","text":"Two parts","isCorrect":false},{"id":"q1d","text":"Four parts","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Dissect a Prompt</span>
+    <h2>How Many Parts Are There?</h2>
+
+    <div class="prompt-box">
+      <span class="prompt-label">Prompt</span>
+      <p>Consider the procedure and procedure call identified in parts (i) and (ii) of the Procedure section of your Personalized Project Reference. Describe the outcome that your procedure call is intended to produce. Write a new procedure call with at least one different argument value that will produce the same outcome, if possible, and explain why this procedure call produces the same outcome. If it is not possible to write a new procedure call that produces the same outcome, explain why this is not possible.</p>
+    </div>
+    <p class="source">From the <a href="https://apcentral.collegeboard.org/media/pdf/ap24-frq-csp-set-2.pdf" target="_blank" rel="noopener">2024 AP CSP exam, Set 2</a></p>
+
+    <ul class="mcq-opts" style="flex-direction:row;gap:40px;">
+      <li><span class="opt-key">A</span> Three parts</li>
+      <li><span class="opt-key">B</span> One part</li>
+      <li><span class="opt-key">C</span> Two parts</li>
+      <li><span class="opt-key">D</span> Four parts</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 25 · Dissected: same outcome
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Dissect a Prompt · Answer</span>
+    <h2>Three Parts Again</h2>
+
+    <div class="prompt-box">
+      <span class="prompt-label">Prompt</span>
+      <p style="font-size:32px;line-height:1.65;">Consider the procedure and procedure call identified in parts (i) and (ii) of the Procedure section of your Personalized Project Reference. <span class="part-mark fragment"><span class="pn">1</span>Describe the outcome that your procedure call is intended to produce.</span> <span class="part-mark fragment"><span class="pn">2</span>Write a new procedure call with at least one different argument value that will produce the same outcome,</span> if possible, and <span class="part-mark fragment"><span class="pn">3</span>explain why this procedure call produces the same outcome.</span> <span class="part-mark alt fragment"><span class="pn">or</span>If it is not possible to write a new procedure call that produces the same outcome, explain why this is not possible.</span></p>
+    </div>
+
+    <p class="fragment fade-up" style="margin-top:var(--gap);">Plan to write <span class="pt">three sets of three sentences</span> here too. Part 2 is the new call itself, and the sentences around it should show the exact argument values you chose.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 26 · Summary
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Summary</span>
+    <h2>The Three-Sentence Plan</h2>
+
+    <div class="steps">
+      <div class="step c1">
+        <span class="step-num">Sentence 1</span>
+        <span class="step-title">Restate and answer the question.</span>
+      </div>
+      <div class="step c2">
+        <span class="step-num">Sentence 2</span>
+        <span class="step-title">Elaborate with more details.</span>
+      </div>
+      <div class="step c3">
+        <span class="step-num">Sentence 3</span>
+        <span class="step-title">Provide an actual example.</span>
+      </div>
+    </div>
+
+    <p class="fragment fade-up" style="margin-top:var(--gap-lg);font-size:56px;font-weight:700;color:var(--text);text-align:center;">&hellip;for <span class="pt">each part</span> of the prompt!</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 27 · College Board resources
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Resources</span>
+    <h2>College Board Resources</h2>
+
+    <ul class="links">
+      <li><a href="https://apclassroom.collegeboard.org/103/home?apd=ai09wfkp9y" target="_blank" rel="noopener">College Board Teacher Webinar about Create Task Updates</a></li>
+      <li><a href="https://apcentral.collegeboard.org/media/pdf/ap-computer-science-principles-course-and-exam-description.pdf" target="_blank" rel="noopener">AP CSP Course and Exam Description</a></li>
+      <li><a href="https://apcentral.collegeboard.org/media/pdf/ap-csp-personalized-project-reference-tip-sheet.pdf" target="_blank" rel="noopener">College Board Create Task Tip Sheet</a></li>
+      <li><a href="https://www.youtube.com/watch?v=pJFUUOM7UMU" target="_blank" rel="noopener">2024 AP Daily Video about Writing Prompt 1</a></li>
+      <li><a href="https://www.youtube.com/watch?v=qeNo0xFoo3U" target="_blank" rel="noopener">2024 AP Daily Video about Writing Prompt 2</a></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 28 · More resources
+     ============================================================ -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Resources</span>
+    <h2>More Practice and Examples</h2>
+
+    <ul class="links">
+      <li><a href="https://docs.google.com/document/d/1tKbDtGHwcsExT8rpVaTPtNpr2s2T0PKzqFHMB-Bokq8/" target="_blank" rel="noopener">Mr. C&#39;s Performance Task Summary and Prompts Collection</a></li>
+      <li><a href="https://drive.google.com/drive/u/1/folders/1lsXutowBeVBrrEl8aEumyu2-SOwhiAkX" target="_blank" rel="noopener">Mr. C&#39;s Personalized Project Reference Samples</a></li>
+      <li><a href="https://docs.google.com/presentation/d/18jO44p-IB_7z2GAvV0kO2dogc05v5Sk_lj-6F6bEovI/" target="_blank" rel="noopener">Mr. C&#39;s Tips and Tricks for Responding to the Writing Prompts</a></li>
+    </ul>
+  </div>
+</section>
+
+</div><!-- .slides -->
+</div><!-- .reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+initSyncDeckReveal({
+  deckId: 'writing-responses',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+});
+</script>
+
+</body>
+</html>
