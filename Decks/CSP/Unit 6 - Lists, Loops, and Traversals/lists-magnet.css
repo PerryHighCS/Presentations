@@ -1,0 +1,375 @@
+/* ============================================================
+   UNIT 6 LIST MAGNET STYLES (shared by every Unit 6 deck)
+   Deck-level type tokens, semantic emphasis, the 7-cell dry-erase
+   list magnet, trace board layout, and shared slide components.
+   Load after ../../theme.css. Engine: lists-magnet.js.
+   ============================================================ */
+:root {
+  --body:  30px;
+  --small: 22px;
+  --code:  24px;
+  /* Body text brighter than the shared theme's 0.6 alpha so prose
+     clears 7:1 on both the page and card backgrounds. */
+  --text-body: #b8cac7;
+  --text-soft: #a3b4b1;
+  --sky:       #74c0fc;
+
+  /* The dry-erase list magnet (matches the physical magnet) */
+  --mag-red:    #d8382f;
+  --mag-cell:   #fbfaf6;
+  --mag-line:   #2b2b2b;
+  --mag-out:    #e4e0d6;
+  --mag-new:    #fff0a6;
+  --mag-read:   #d7ebff;
+  --mag-num:    #6e3000;
+  --mag-str:    #134a1f;
+  --mag-idx:    #333333;
+  --cell-w:     150px;
+  --cell-h:     64px;
+}
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+.bullets li { color: var(--text-body); font-size: var(--body); }
+
+/* ─── Semantic inline emphasis (consistent across the deck) ─────────
+   i.n  a name (variable or list) or code, in code font, teal
+   i.v  a number value, gold
+   i.s  a string value, green
+   i.x  an index, sky blue
+   i.u  the special value undefined, sky blue
+   i.a  a tracing action (gets, look up, shift, evaluate), amber
+   i.c  a concept word (list, element, index, length), teal
+   ─────────────────────────────────────────────────────────────── */
+.reveal i.n, .reveal i.v, .reveal i.s, .reveal i.x, .reveal i.u {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-weight: 500;
+}
+.reveal i.n { color: var(--teal); }
+.reveal i.v { color: var(--gold); }
+.reveal i.s { color: var(--green); }
+.reveal i.x { color: var(--sky); }
+.reveal i.u { color: var(--sky); }
+.reveal i.a { font-style: normal; color: var(--amber); font-weight: 600; }
+.reveal i.c { font-style: normal; color: var(--teal); font-weight: 600; }
+
+/* Code must read exactly as typed: JetBrains Mono would otherwise draw
+   >= and != as single ligature glyphs. */
+.reveal pre, .reveal code, .code-line, .mag-cell, .mem-val, .con-body,
+.reveal i.n, .reveal i.v, .reveal i.s, .reveal i.x, .reveal i.u {
+  font-variant-ligatures: none;
+}
+
+/* ─── Syntax tokens (shared by trace boards and static code cards) ── */
+.tk-kw  { color: var(--amber); font-weight: 600; }
+.tk-nm  { color: var(--teal); }
+.tk-fn  { color: var(--text); font-weight: 600; }
+.tk-str { color: var(--green); }
+.tk-num { color: var(--gold); }
+.tk-p   { color: var(--text); }
+
+.code-card pre code { font-size: 24px; line-height: 1.6; }
+.code-card .code-body { padding: 16px 24px; }
+.reveal .clang { font-size: 24px; }
+
+/* ─── List magnet ────────────────────────────────────────────────── */
+.magnet {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-template-rows: var(--cell-h) 34px;
+  background: var(--mag-cell);
+  border: 12px solid var(--mag-red);
+  border-radius: 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+.mag-cell, .mag-idx {
+  width: var(--cell-w);
+  box-sizing: border-box;
+  border-left: 1.5px solid var(--mag-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  transition: background 0.25s var(--ease);
+}
+.mag-cell:nth-child(1), .mag-idx:nth-child(2) { border-left: none; }
+.mag-cell {
+  font-size: 28px;
+  font-weight: 600;
+  white-space: nowrap;
+  border-bottom: 1.5px solid var(--mag-line);
+}
+.mag-idx {
+  font-size: 22px;
+  color: var(--mag-idx);
+}
+.mag-cell.mv-num { color: var(--mag-num); }
+.mag-cell.mv-str { color: var(--mag-str); }
+.mag-cell.out, .mag-idx.out { background: var(--mag-out); }
+.mag-cell.changed { background: var(--mag-new); }
+.mag-cell.read { background: var(--mag-read); box-shadow: inset 0 0 0 4px #1c64b8; }
+
+/* Plain list (no magnet): only the list's real cells, in deck colors.
+   A dashed ghost cell marks an index read past the end. */
+.magnet.plain {
+  background: var(--bg-card);
+  border: 2px solid rgba(226,245,242,0.55);
+  border-radius: 6px;
+  box-shadow: none;
+}
+.magnet.plain .mag-cell, .magnet.plain .mag-idx { border-color: rgba(226,245,242,0.4); }
+.magnet.plain .mag-cell.mv-num { color: var(--gold); }
+.magnet.plain .mag-cell.mv-str { color: var(--green); }
+.magnet.plain .mag-idx { color: var(--sky); }
+.magnet.plain .mag-cell.changed { background: rgba(255,212,59,0.16); }
+.magnet.plain .mag-cell.read { background: rgba(116,192,252,0.16); box-shadow: inset 0 0 0 3px var(--sky); }
+.magnet.plain .mag-cell.ghost,
+.magnet.plain .mag-idx.ghost {
+  background: repeating-linear-gradient(45deg, transparent 0 10px, rgba(226,245,242,0.06) 10px 20px);
+}
+.magnet.plain .mag-cell.ghost { border-bottom-style: dashed; }
+.magnet.plain .mag-cell.ghost.read { box-shadow: inset 0 0 0 3px var(--sky); }
+.magnet.plain .mag-idx.ghost { color: var(--text-soft); }
+
+.list-block { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.list-head {
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+}
+.list-name {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--teal);
+}
+.list-len {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  color: var(--text-soft);
+}
+.list-len b { color: var(--text); font-weight: 600; }
+
+/* Smaller magnet for static slides with several lists */
+.mag-sm { --cell-w: 118px; --cell-h: 56px; }
+.mag-sm .mag-cell { font-size: 24px; }
+
+/* ─── Trace board layout ─────────────────────────────────────────── */
+.board-inner {
+  justify-content: flex-start !important;
+  padding: 34px 64px 36px !important;
+  gap: 16px;
+}
+.board-head h2 {
+  font-size: 46px;
+  margin-bottom: 6px;
+}
+.board-head .slide-tag { margin-bottom: 8px; }
+.board-prompt {
+  font-size: 30px !important;
+  line-height: 1.4 !important;
+  max-width: 1440px;
+}
+.board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--side-w, 600px);
+  grid-template-rows: auto auto;
+  gap: 18px 26px;
+  min-height: 0;
+}
+.board-main { grid-column: 1; grid-row: 1; min-width: 0; }
+.board-side { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.board > .mem-panel { grid-column: 1 / -1; grid-row: 2; }
+
+.panel, .trace-code {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,201,177,0.4);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.panel-hdr {
+  padding: 4px 16px;
+  background: rgba(0,201,177,0.12);
+  border-bottom: 1px solid rgba(0,201,177,0.4);
+  font-family: var(--font-mono);
+  font-size: 24px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6ff0de;
+  text-align: center;
+}
+
+/* Code lines */
+.trace-code .code-body { padding: 14px 20px; }
+.code-line {
+  display: flex;
+  gap: 14px;
+  padding: 2px 8px;
+  margin: 2px -8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  line-height: 1.55;
+  white-space: pre;
+  border: 1px solid transparent;
+  transition: background 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+.code-line .car {
+  flex: 0 0 auto;
+  width: 0.9em;
+  color: var(--amber);
+  font-weight: 700;
+}
+.code-line .ln {
+  flex: 0 0 auto;
+  width: 1.4em;
+  text-align: right;
+  color: var(--text-soft);
+  user-select: none;
+}
+.code-line.current {
+  background: rgba(255,212,59,0.12);
+  border-color: rgba(255,212,59,0.45);
+}
+.code-line.current .car::before { content: '\25B6'; }
+.code-line.current .ln { color: var(--amber); font-weight: 700; }
+.code-line.done .car::before { content: '\2713'; color: var(--teal); font-weight: 400; }
+
+/* TraceLift flaps (only for plain variables; list accesses use the magnet) */
+.flap {
+  display: inline-block;
+  padding: 0 6px;
+  margin: 0 1px;
+  border: 2px dashed rgba(0,201,177,0.7);
+  border-radius: 5px;
+  line-height: 1.3;
+  color: var(--teal);
+}
+.flap .flap-val { display: none; }
+.flap.lifted { border-style: solid; border-color: rgba(255,159,67,0.75); background: rgba(255,159,67,0.12); }
+.flap.lifted .flap-name { display: none; }
+.flap.lifted .flap-val { display: inline; }
+
+.mem-body {
+  padding: 14px 22px 18px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px 40px;
+  min-height: 150px;
+}
+.mem-empty, .con-empty {
+  font-size: 22px;
+  font-style: italic;
+  color: var(--text-soft);
+  align-self: center;
+}
+.mem-col { min-width: 84px; }
+.mem-col-name {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  color: var(--teal);
+  border-bottom: 2px solid rgba(226,245,242,0.55);
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+}
+.mem-val { font-family: var(--font-mono); font-size: 26px; line-height: 1.4; }
+.mem-val.blank { height: 36px; }
+.mem-val.struck { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--text-soft) !important; }
+.mv-num { color: var(--gold); }
+.mv-str { color: var(--green); }
+.mv-undef { color: var(--sky); }
+
+.con-panel { flex: 0 0 auto; }
+.con-body {
+  padding: 8px 16px;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.work-panel {
+  flex: 1 1 auto;
+  border-left: 4px solid var(--amber);
+  background: rgba(255,212,59,0.05);
+  border-radius: 3px;
+  padding: 14px 22px;
+  font-size: 30px;
+  line-height: 1.45;
+  color: var(--text-body);
+  overflow: hidden;
+}
+.work-panel:empty { visibility: hidden; }
+
+/* Exercise slides: swap the prompt once the check begins */
+section[data-trace-exercise] .during-check { display: none; }
+section[data-trace-exercise].is-checking .before-check { display: none; }
+section[data-trace-exercise].is-checking .during-check { display: block; }
+
+.trace-step { display: none !important; }
+
+/* ─── Static slide components ────────────────────────────────────── */
+.wb {
+  display: grid;
+  grid-template-columns: auto auto;
+  border: 2px solid rgba(226,245,242,0.55);
+  border-radius: 8px;
+  background: rgba(226,245,242,0.03);
+  width: max-content;
+  flex: 0 0 auto;
+}
+.wb > div { padding: 16px 20px; }
+.wb-label {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 10px;
+}
+.wb-prog { border-right: 2px solid rgba(226,245,242,0.55); }
+.wb .code-line { font-size: 24px; }
+
+.var-row { display: flex; gap: 22px; flex-wrap: wrap; }
+.var-row .mem-col { min-width: 140px; }
+
+.rule-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-left: 3px solid var(--teal);
+  border-radius: 3px;
+  padding: 14px 22px;
+}
+.rule-card .rule-when {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.rule-card p { font-size: 30px !important; line-height: 1.45 !important; }
+
+.cmd-ref {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  line-height: 1.7;
+  color: var(--text);
+}
+.cmd-ref .tk-fn { color: var(--text); }
+
+.exit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 32px;
+}
+.exit-q {
+  font-size: 30px !important;
+  line-height: 1.4 !important;
+  margin-bottom: 10px !important;
+}
