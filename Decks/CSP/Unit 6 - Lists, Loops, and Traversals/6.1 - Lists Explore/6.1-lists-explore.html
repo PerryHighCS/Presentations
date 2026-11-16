@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="acwj1e">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6.1 Lists Explore</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: 6.1 Lists Explore
+   ============================================================ */
+
+:root {
+  --body:  30px;
+  --small: 22px;
+  --code:  24px;
+  /* Body text brighter than the shared theme's 0.6 alpha so prose
+     clears 7:1 on both the page and card backgrounds. */
+  --text-body: #b8cac7;
+  --text-soft: #a3b4b1;
+  --sky:       #74c0fc;
+
+  /* The dry-erase list magnet (matches the physical magnet) */
+  --mag-red:    #d8382f;
+  --mag-cell:   #fbfaf6;
+  --mag-line:   #2b2b2b;
+  --mag-out:    #e4e0d6;
+  --mag-new:    #fff0a6;
+  --mag-read:   #d7ebff;
+  --mag-num:    #6e3000;
+  --mag-str:    #134a1f;
+  --mag-idx:    #333333;
+  --cell-w:     150px;
+  --cell-h:     64px;
+}
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+.bullets li { color: var(--text-body); font-size: var(--body); }
+
+/* ─── Semantic inline emphasis (consistent across the deck) ─────────
+   i.n  a name (variable or list) or code, in code font, teal
+   i.v  a number value, gold
+   i.s  a string value, green
+   i.x  an index, sky blue
+   i.a  a tracing action (gets, look up, shift, evaluate), amber
+   i.c  a concept word (list, element, index, length), teal
+   ─────────────────────────────────────────────────────────────── */
+.reveal i.n, .reveal i.v, .reveal i.s, .reveal i.x {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-weight: 500;
+}
+.reveal i.n { color: var(--teal); }
+.reveal i.v { color: var(--gold); }
+.reveal i.s { color: var(--green); }
+.reveal i.x { color: var(--sky); }
+.reveal i.a { font-style: normal; color: var(--amber); font-weight: 600; }
+.reveal i.c { font-style: normal; color: var(--teal); font-weight: 600; }
+
+/* ─── Syntax tokens (shared by trace boards and static code cards) ── */
+.tk-kw  { color: var(--amber); font-weight: 600; }
+.tk-nm  { color: var(--teal); }
+.tk-fn  { color: var(--text); font-weight: 600; }
+.tk-str { color: var(--green); }
+.tk-num { color: var(--gold); }
+.tk-p   { color: var(--text); }
+
+.code-card pre code { font-size: 24px; line-height: 1.6; }
+.code-card .code-body { padding: 16px 24px; }
+.reveal .clang { font-size: 24px; }
+
+/* ─── List magnet ────────────────────────────────────────────────── */
+.magnet {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-template-rows: var(--cell-h) 34px;
+  background: var(--mag-cell);
+  border: 12px solid var(--mag-red);
+  border-radius: 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+.mag-cell, .mag-idx {
+  width: var(--cell-w);
+  box-sizing: border-box;
+  border-left: 1.5px solid var(--mag-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  transition: background 0.25s var(--ease);
+}
+.mag-cell:nth-child(1), .mag-idx:nth-child(2) { border-left: none; }
+.mag-cell {
+  font-size: 28px;
+  font-weight: 600;
+  white-space: nowrap;
+  border-bottom: 1.5px solid var(--mag-line);
+}
+.mag-idx {
+  font-size: 22px;
+  color: var(--mag-idx);
+}
+.mag-cell.mv-num { color: var(--mag-num); }
+.mag-cell.mv-str { color: var(--mag-str); }
+.mag-cell.out, .mag-idx.out { background: var(--mag-out); }
+.mag-cell.changed { background: var(--mag-new); }
+.mag-cell.read { background: var(--mag-read); box-shadow: inset 0 0 0 4px #1c64b8; }
+
+.list-block { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.list-head {
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+}
+.list-name {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--teal);
+}
+.list-len {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  color: var(--text-soft);
+}
+.list-len b { color: var(--text); font-weight: 600; }
+
+/* Smaller magnet for static slides with several lists */
+.mag-sm { --cell-w: 118px; --cell-h: 56px; }
+.mag-sm .mag-cell { font-size: 24px; }
+
+/* ─── Trace board layout ─────────────────────────────────────────── */
+.board-inner {
+  justify-content: flex-start !important;
+  padding: 34px 64px 36px !important;
+  gap: 16px;
+}
+.board-head h2 {
+  font-size: 46px;
+  margin-bottom: 6px;
+}
+.board-head .slide-tag { margin-bottom: 8px; }
+.board-prompt {
+  font-size: 30px !important;
+  line-height: 1.4 !important;
+  max-width: 1440px;
+}
+.board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--side-w, 600px);
+  grid-template-rows: auto auto;
+  gap: 18px 26px;
+  min-height: 0;
+}
+.board-main { grid-column: 1; grid-row: 1; min-width: 0; }
+.board-side { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.board > .mem-panel { grid-column: 1 / -1; grid-row: 2; }
+
+.panel, .trace-code {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,201,177,0.4);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.panel-hdr {
+  padding: 4px 16px;
+  background: rgba(0,201,177,0.12);
+  border-bottom: 1px solid rgba(0,201,177,0.4);
+  font-family: var(--font-mono);
+  font-size: 24px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6ff0de;
+  text-align: center;
+}
+
+/* Code lines */
+.trace-code .code-body { padding: 14px 20px; }
+.code-line {
+  display: flex;
+  gap: 14px;
+  padding: 2px 8px;
+  margin: 2px -8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  line-height: 1.55;
+  white-space: pre;
+  border: 1px solid transparent;
+  transition: background 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+.code-line .car {
+  flex: 0 0 auto;
+  width: 0.9em;
+  color: var(--amber);
+  font-weight: 700;
+}
+.code-line .ln {
+  flex: 0 0 auto;
+  width: 1.4em;
+  text-align: right;
+  color: var(--text-soft);
+  user-select: none;
+}
+.code-line.current {
+  background: rgba(255,212,59,0.12);
+  border-color: rgba(255,212,59,0.45);
+}
+.code-line.current .car::before { content: '\25B6'; }
+.code-line.current .ln { color: var(--amber); font-weight: 700; }
+.code-line.done .car::before { content: '\2713'; color: var(--teal); font-weight: 400; }
+
+/* TraceLift flaps (only for plain variables; list accesses use the magnet) */
+.flap {
+  display: inline-block;
+  padding: 0 6px;
+  margin: 0 1px;
+  border: 2px dashed rgba(0,201,177,0.7);
+  border-radius: 5px;
+  line-height: 1.3;
+  color: var(--teal);
+}
+.flap .flap-val { display: none; }
+.flap.lifted { border-style: solid; border-color: rgba(255,159,67,0.75); background: rgba(255,159,67,0.12); }
+.flap.lifted .flap-name { display: none; }
+.flap.lifted .flap-val { display: inline; }
+
+.mem-body {
+  padding: 14px 22px 18px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px 40px;
+  min-height: 150px;
+}
+.mem-empty, .con-empty {
+  font-size: 22px;
+  font-style: italic;
+  color: var(--text-soft);
+  align-self: center;
+}
+.mem-col { min-width: 84px; }
+.mem-col-name {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  color: var(--teal);
+  border-bottom: 2px solid rgba(226,245,242,0.55);
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+}
+.mem-val { font-family: var(--font-mono); font-size: 26px; line-height: 1.4; }
+.mem-val.blank { height: 36px; }
+.mem-val.struck { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--text-soft) !important; }
+.mv-num { color: var(--gold); }
+.mv-str { color: var(--green); }
+
+.con-panel { flex: 0 0 auto; }
+.con-body {
+  padding: 8px 16px;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.work-panel {
+  flex: 1 1 auto;
+  border-left: 4px solid var(--amber);
+  background: rgba(255,212,59,0.05);
+  border-radius: 3px;
+  padding: 14px 22px;
+  font-size: 30px;
+  line-height: 1.45;
+  color: var(--text-body);
+  overflow: hidden;
+}
+.work-panel:empty { visibility: hidden; }
+
+/* Exercise slides: swap the prompt once the check begins */
+section[data-trace-exercise] .during-check { display: none; }
+section[data-trace-exercise].is-checking .before-check { display: none; }
+section[data-trace-exercise].is-checking .during-check { display: block; }
+
+.trace-step { display: none !important; }
+
+/* ─── Static slide components ────────────────────────────────────── */
+.wb {
+  display: grid;
+  grid-template-columns: auto auto;
+  border: 2px solid rgba(226,245,242,0.55);
+  border-radius: 8px;
+  background: rgba(226,245,242,0.03);
+  width: max-content;
+  flex: 0 0 auto;
+}
+.wb > div { padding: 16px 20px; }
+.wb-label {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 10px;
+}
+.wb-prog { border-right: 2px solid rgba(226,245,242,0.55); }
+.wb .code-line { font-size: 24px; }
+
+.var-row { display: flex; gap: 22px; flex-wrap: wrap; }
+.var-row .mem-col { min-width: 140px; }
+
+.rule-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-left: 3px solid var(--teal);
+  border-radius: 3px;
+  padding: 14px 22px;
+}
+.rule-card .rule-when {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.rule-card p { font-size: 30px !important; line-height: 1.45 !important; }
+
+/* Element / index annotation around a magnet */
+.anno-wrap { display: inline-flex; flex-direction: column; gap: 8px; }
+.anno-row {
+  display: grid;
+  grid-template-columns: repeat(3, var(--cell-w)) 1fr;
+  padding-left: 12px;
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+}
+.anno-row span { position: relative; }
+.anno-el span { color: var(--green); }
+.anno-ix span { color: var(--sky); }
+.anno-el span::after,
+.anno-ix span::before {
+  content: '';
+  display: block;
+  width: 2px;
+  height: 16px;
+  margin: 4px auto;
+  background: currentColor;
+}
+
+.vocab {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 28px;
+}
+.vocab .rule-card p { font-size: 30px !important; }
+
+.cmd-ref {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  line-height: 1.7;
+  color: var(--text);
+}
+.cmd-ref .tk-fn { color: var(--text); }
+
+.exit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 32px;
+}
+.exit-q {
+  font-size: 30px !important;
+  line-height: 1.4 !important;
+  margin-bottom: 10px !important;
+}
+.ap-table {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 12px 48px;
+  font-family: var(--font-mono);
+  font-size: 26px;
+  align-items: center;
+}
+.ap-table .hd {
+  font-family: var(--font-body);
+  font-size: 22px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 6 &middot; Lesson 6.1</span>
+        <h1 class="title-h1">Lists Explore</h1>
+        <p style="max-width:1150px;line-height:1.55;margin-top:var(--gap);">A variable gives a name to <i class="a">one</i> value. Today we will learn how a <i class="c">list</i> lets one name hold a whole collection of values, and we will <i class="a">become the computer</i> again to trace programs that use them.</p>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(216,56,47,0.10),transparent 70%);"></div>
+      <aside class="notes">Pairs work at the stand-up whiteboards, as in Unit 4. Each pair needs a whiteboard, a marker, an eraser, the magnet pointer, two or three list magnets (7 cells, indexes 0 to 6), and the TraceLift program sheets for the tracing rounds. The list programs have no flaps, because students read list values straight from the magnet cells.</aside>
+    </section>
+
+    <!-- SLIDE 2 · WARM-UP -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Brainstorm lists of information that you run into every day. Name one, and explain why it is useful to keep that information together in a list.","order":0,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Warm-Up</span>
+        <h2>Lists in Everyday Life</h2>
+        <p style="max-width:1300px;">Brainstorm <i class="c">lists of information</i> that you run into every day. Name one, and explain why it is <i class="a">useful</i> to keep that information together in a list.</p>
+      </div>
+      <aside class="notes">Give students about 2 minutes, then share a few responses and ask what would be harder if the same information were not kept together in a list. Likely answers: playlists, contacts, group chat messages, a class roster, a grade book, a shopping list, a leaderboard, a weekly schedule. Useful because they keep related information together and in order.</aside>
+    </section>
+
+    <!-- SLIDE 3 · ONE VARIABLE, ONE VALUE -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">What We Know</span>
+        <h2>A Variable Holds One Value</h2>
+        <div style="display:grid;grid-template-columns:1fr 360px;gap:var(--gap-lg);align-items:center;">
+          <div>
+            <div class="code-card" style="max-width:640px;"><div class="code-hdr"><span class="clang">javascript</span></div><div class="code-body"><pre><code data-hl>var myName = "José";</code></pre></div></div>
+            <p style="margin-top:var(--gap);">In Unit 4, every <i class="c">variable</i> got its own column in the Memory Trace, and each column held <i class="a">one current value</i>. Here, <i class="n">myName</i> holds the string <i class="s">"José"</i>.</p>
+          </div>
+          <div class="callout" style="padding:22px 28px;">
+            <div class="wb-label">Memory Trace</div>
+            <div class="mem-col"><div class="mem-col-name">myName</div><div class="mem-val mv-str">"José"</div></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Quick review of the Unit 4 model: var makes a named place in memory, and assignment stores one value there.</aside>
+    </section>
+
+    <!-- SLIDE 4 · A LOT OF INFORMATION -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:52px;">
+        <span class="slide-tag">The Problem</span>
+        <h2>What If We Have a Lot of Information?</h2>
+        <p style="max-width:1400px;">Suppose an app tracks the high temperature for each day of the week. With only variables, it needs a separate name for every day.</p>
+        <div class="var-row" style="margin-top:var(--gap);">
+          <div class="mem-col"><div class="mem-col-name">tempMon</div><div class="mem-val mv-num">81</div></div>
+          <div class="mem-col"><div class="mem-col-name">tempTue</div><div class="mem-val mv-num">86</div></div>
+          <div class="mem-col"><div class="mem-col-name">tempWed</div><div class="mem-val mv-num">88</div></div>
+          <div class="mem-col"><div class="mem-col-name">tempThu</div><div class="mem-val mv-num">92</div></div>
+          <div class="mem-col"><div class="mem-col-name">tempFri</div><div class="mem-val mv-num">76</div></div>
+          <div class="mem-col"><div class="mem-col-name">tempSat</div><div class="mem-val mv-num">95</div></div>
+          <div class="mem-col"><div class="mem-col-name">tempSun</div><div class="mem-val mv-num">74</div></div>
+        </div>
+        <div class="callout accent-amber fragment fade-up" style="margin-top:var(--gap-lg);max-width:1400px;">
+          <h3>Do This</h3>
+          <p>With your partner, discuss the challenges you would run into if you had to store <i class="v">10</i>, or <i class="v">100</i>, or <i class="v">1,000</i> pieces of information using only variables.</p>
+        </div>
+      </div>
+      <aside class="notes">Push for concrete problems: you must invent and remember every name, you cannot easily ask for "the third day," adding a day means changing the program, and computing an average means typing every name. Do not introduce lists yet; the next slides do that.</aside>
+    </section>
+
+    <!-- SLIDE 5 · SECTION: CREATING AND ACCESSING -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Part 1</span>
+        <h1 class="title-h1" style="font-size:84px;">Creating and Accessing Lists</h1>
+      </div>
+      <div class="glow" style="width:700px;height:700px;left:-200px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.08),transparent 68%);"></div>
+    </section>
+
+    <!-- SLIDE 6 · THE LIST MAGNET -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:52px;">
+        <span class="slide-tag">Setup</span>
+        <h2>The List Magnet</h2>
+        <p style="max-width:1400px;">A <i class="c">list</i> is one variable that holds many values in order. On your whiteboard, a list is a <i class="a">magnet</i> with the list&rsquo;s name written above it.</p>
+        <div style="margin-top:var(--gap);" data-magnet="lunchFood" data-values='["pizza","soup","nachos"]'></div>
+        <ul class="bullets" style="margin-top:var(--gap);gap:12px;">
+          <li class="fragment fade-up">Each cell holds <i class="a">one value</i>, and the cells are numbered starting at <i class="x">0</i>.</li>
+          <li class="fragment fade-up">A list is named with the same rules as a variable: no spaces, and it cannot start with a number.</li>
+          <li class="fragment fade-up">Cells after the last value are empty, and they are <i class="a">not part of the list</i>.</li>
+        </ul>
+      </div>
+      <aside class="notes">This replaces the gallon-baggie model from the Code.org lesson. The name above the magnet is the variable (the gallon bag), and each cell is one element (a small baggie). Our magnets have 7 cells, so every list today has at most 7 elements; real lists can be much longer. Write values with quotes for strings, just like in code.</aside>
+    </section>
+
+    <!-- SLIDE 7 · DO THIS: MAKE A LIST -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Your Turn &middot; Whiteboards</span>
+        <h2>Make a List</h2>
+        <div class="callout accent-amber" style="max-width:1400px;">
+          <h3>Do This</h3>
+          <p>Choose a name for a list and write it above your magnet. Then fill in the list with <i class="a">2 to 4 values</i>. Use any mix of numbers and strings, and remember the quotes on strings.</p>
+        </div>
+        <p style="margin-top:var(--gap);max-width:1400px;">When you are done, <i class="a">share your list</i> with a nearby group. Read it to them as &ldquo;at index <i class="x">0</i> is &hellip;, at index <i class="x">1</i> is &hellip;&rdquo;</p>
+        <div style="margin-top:var(--gap-lg);" data-magnet="favSnacks" data-values='["chips",3,"grapes"]' data-small></div>
+      </div>
+      <aside class="notes">Keep these lists on the boards; students write the code that creates them in a few slides. Check that each list starts at cell 0 and has no gaps.</aside>
+    </section>
+
+    <!-- SLIDE 8 · ELEMENTS, INDEXES, LENGTH -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:52px;">
+        <span class="slide-tag">Vocabulary</span>
+        <h2>Elements, Indexes, and Length</h2>
+        <div class="anno-wrap">
+          <div class="anno-row anno-el"><span>element</span><span>element</span><span>element</span></div>
+          <div data-magnet="lunchFood" data-values='["pizza","soup","nachos"]' data-noname></div>
+          <div class="anno-row anno-ix"><span>index</span><span>index</span><span>index</span></div>
+        </div>
+        <p style="margin-top:var(--gap);max-width:1400px;">Each value in a list is an <i class="s">element</i>, and each element has its own <i class="x">index</i>. Indexes start at <i class="x">0</i> and count up. The <i class="c">length</i> of a list is how many elements it contains, so this list has length <i class="v">3</i> and indexes from <i class="x">0</i> to <i class="x">2</i>.</p>
+        <p class="fragment fade-up" style="margin-top:var(--gap-sm);max-width:1400px;">Sometimes we think about the <i class="a">whole list</i> by its name, <i class="n">lunchFood</i>. Other times we think about <i class="a">one element</i> inside it.</p>
+      </div>
+      <aside class="notes">Point out that the last index is always one less than the length, because counting starts at 0. In the baggie version of this lesson, all the small bags fold into the big bag: the whole list travels under one name.</aside>
+    </section>
+
+    <!-- SLIDE 9 · CREATING A LIST -->
+    <section data-trace-board="mkList">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Creating a List</span>
+          <h2>Creating a List in Code</h2>
+          <p class="board-prompt">Square brackets make a <i class="c">list</i>, and commas separate its elements. This command creates a list and assigns it to a variable.</p>
+        </div>
+      </div>
+      <aside class="notes">Read the line as "myList gets the list pizza, 4." Evaluate first, then assign: the right side builds the list, and then the name gets it. A list can mix strings and numbers.</aside>
+    </section>
+
+    <!-- SLIDE 10 · DO THIS: WRITE THE COMMAND -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Your Turn &middot; Whiteboards</span>
+        <h2>Write the Command</h2>
+        <div class="callout accent-amber" style="max-width:1400px;">
+          <h3>Do This</h3>
+          <p>On your whiteboard, write the command that creates the list on your magnet. Then write the command that creates another group&rsquo;s list, and share both with that group so they can check it.</p>
+        </div>
+        <div class="code-card" style="margin-top:var(--gap-lg);max-width:760px;"><div class="code-hdr"><span class="clang">example</span></div><div class="code-body"><pre><code data-hl>var favSnacks = ["chips", 3, "grapes"];</code></pre></div></div>
+      </div>
+      <aside class="notes">Common errors: parentheses or curly braces instead of square brackets, missing commas, and missing quotes on strings.</aside>
+    </section>
+
+    <!-- SLIDE 11 · ACCESSING AN ELEMENT -->
+    <section data-trace-board="access">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Accessing Elements</span>
+          <h2>Accessing an Element</h2>
+          <p class="board-prompt">The expression <i class="n">lunchFood[1]</i> <i class="a">accesses</i> the value at index <i class="x">1</i>. It also uses square brackets.</p>
+        </div>
+      </div>
+      <aside class="notes">On the whiteboard, students find the magnet named lunchFood and read the cell whose index is 1. The highlighted cell on the board is the one being read. Accessing does not remove or change the element.</aside>
+    </section>
+
+    <!-- SLIDE 12 · CHECK: ACCESS -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:12:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"`lunchFood` is `[\"pizza\", \"soup\", \"nachos\"]`. What does `lunchFood[2]` access?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"`\"soup\"`","isCorrect":false},{"id":"q1b","text":"`\"pizza\"`","isCorrect":false},{"id":"q1c","text":"`\"nachos\"`","isCorrect":true},{"id":"q1d","text":"Nothing, because the list does not have an element at index 2","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"`lunchFood` is `[\"pizza\", \"soup\", \"nachos\"]`. What does `lunchFood[0]` access?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"Nothing, because indexes start at 1","isCorrect":false},{"id":"q2b","text":"`\"pizza\"`","isCorrect":true},{"id":"q2c","text":"`\"nachos\"`","isCorrect":false},{"id":"q2d","text":"`3`, the length of the list","isCorrect":false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Check</span>
+        <h2>What Do These Access?</h2>
+        <p>The list <i class="n">lunchFood</i> holds <i class="s">"pizza"</i>, <i class="s">"soup"</i>, and <i class="s">"nachos"</i>. What does <i class="n">lunchFood[2]</i> access? What does <i class="n">lunchFood[0]</i> access?</p>
+      </div>
+      <aside class="notes">Answers: lunchFood[2] is "nachos" and lunchFood[0] is "pizza". Students who choose "soup" for index 2 are counting from 1. Have pairs compare with another group before revealing.</aside>
+    </section>
+
+    <!-- SLIDE 13 · LISTS AND EXPRESSIONS -->
+    <section data-trace-board="expr">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Lists and Expressions</span>
+          <h2>Lists in Expressions</h2>
+          <p class="board-prompt">When a list access appears in an expression, <i class="a">look up</i> the value in that cell, <i class="a">substitute</i> it, and then <i class="a">evaluate</i>.</p>
+        </div>
+      </div>
+      <aside class="notes">This is the same Look up, Substitute, Evaluate routine from Unit 4. The only new part is where the value lives: in a cell of the magnet instead of a variable column. Students write the substituted expression on the board next to the line, since list accesses have no flaps.</aside>
+    </section>
+
+    <!-- SLIDE 14 · DO THIS: EXPRESSIONS -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Your Turn &middot; Whiteboards</span>
+        <h2>Write Expressions With Your List</h2>
+        <div class="callout accent-amber" style="max-width:1400px;">
+          <h3>Do This</h3>
+          <p>Write <i class="a">three expressions</i> that use accesses to the list on your magnet, like <i class="n">myNumbers[0] + myNumbers[2]</i>. Then trade boards with another group and have them evaluate your expressions.</p>
+        </div>
+        <p style="margin-top:var(--gap);max-width:1400px;">Remember that <i class="n">+</i> adds numbers but joins strings, so <i class="s">"to"</i> + <i class="s">"day"</i> is <i class="s">"today"</i>.</p>
+      </div>
+      <aside class="notes">Encourage at least one expression that mixes an access with a literal, such as favSnacks[1] * 10, and one that joins strings. Students who finish early can try an index that is past the end of their list; in App Lab that access gives undefined.</aside>
+    </section>
+
+    <!-- SLIDE 15 · ASSIGNING TO AN ELEMENT -->
+    <section data-trace-board="setIdx">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Changing Elements</span>
+          <h2>Assigning to an Element</h2>
+          <p class="board-prompt"><i class="n">myNumbers[0] = 5;</i> assigns a value to one index. Discuss with your partner: what will the list contain after line 3 runs?</p>
+        </div>
+      </div>
+      <aside class="notes">Read myNumbers[0] = 5 as "myNumbers at index 0 gets 5." Just like variable assignment, the old value is thrown away and replaced, so students erase that one cell and write the new value. The other cells do not change.</aside>
+    </section>
+
+    <!-- SLIDE 16 · ROUND 1A -->
+    <section data-trace-board="stuff" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 1A</span>
+          <h2>Trace the Changes</h2>
+          <p class="board-prompt before-check">Trace this program with your partner. When an element changes, erase that cell and write the new value. Then compare with another group.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. For each line, evaluate the right side first, then assign.</p>
+        </div>
+      </div>
+      <aside class="notes">Watch line 3: myStuff[2] gets a copy of the value in cell 1, so both cells hold "cat". Line 5 looks up myStuff[0] twice; it is 15 both times, so the result is 30.</aside>
+    </section>
+
+    <!-- SLIDE 17 · ROUND 1B -->
+    <section data-trace-board="idxExpr" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 1B</span>
+          <h2>Expressions as Indexes</h2>
+          <p class="board-prompt before-check">An index can be an expression. Evaluate the index first, then use it. Trace this program and compare with another group.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. What index did line 3 use?</p>
+        </div>
+      </div>
+      <aside class="notes">Line 3 is the challenge: the index is myStuff[2], which is 3, so the assignment changes cell 3. Have students write the evaluated index on the board next to the line.</aside>
+    </section>
+
+    <!-- SLIDE 18 · SECTION: CHANGING YOUR LIST -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Part 2</span>
+        <h1 class="title-h1" style="font-size:84px;">Changing Your List</h1>
+        <p style="margin-top:var(--gap);max-width:1150px;">Now we will learn three commands that change the <i class="a">length</i> of a list by removing or adding elements.</p>
+      </div>
+      <div class="glow" style="width:700px;height:700px;right:-200px;bottom:-200px;background:radial-gradient(circle,rgba(216,56,47,0.08),transparent 68%);"></div>
+    </section>
+
+    <!-- SLIDE 19 · REMOVEITEM -->
+    <section data-trace-board="remove">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Changing Your List &middot; removeItem</span>
+          <h2>removeItem(list, index)</h2>
+          <p class="board-prompt">Removes the element at the given index. Discuss with your partner: what will the list contain after line 3 runs?</p>
+        </div>
+      </div>
+      <aside class="notes">On the magnet, students erase the removed value, then move every value to its right one cell to the left, working left to right. The last filled cell ends up empty, so the length goes down by one.</aside>
+    </section>
+
+    <!-- SLIDE 20 · APPENDITEM -->
+    <section data-trace-board="append">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Changing Your List &middot; appendItem</span>
+          <h2>appendItem(list, item)</h2>
+          <p class="board-prompt">Adds an element to the end of the list. Discuss with your partner: what will the list contain after line 3 runs?</p>
+        </div>
+      </div>
+      <aside class="notes">Append means "add to the end." A new index is added to the list, and the new item goes there. On the magnet, that is the first empty cell. Nothing else moves.</aside>
+    </section>
+
+    <!-- SLIDE 21 · INSERTITEM -->
+    <section data-trace-board="insert">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Changing Your List &middot; insertItem</span>
+          <h2>insertItem(list, index, item)</h2>
+          <p class="board-prompt">Inserts an element at the given index. Discuss with your partner: what will the list contain after line 3 runs?</p>
+        </div>
+      </div>
+      <aside class="notes">To make room on the magnet, students start at the last element and move each value one cell to the right until the target index is free, then write the new item there. Starting from the right keeps them from writing over a value they still need.</aside>
+    </section>
+
+    <!-- SLIDE 22 · ROUND 2A -->
+    <section data-trace-board="aList" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 2A</span>
+          <h2>Add and Remove</h2>
+          <p class="board-prompt before-check">Trace this program with your partner, then compare with another group. What is the <i class="c">length</i> of the list at the end?</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Notice which elements shift on each line.</p>
+        </div>
+      </div>
+      <aside class="notes">Command reference: removeItem(list, index), appendItem(list, item), insertItem(list, index, item). The final list is 20, "pow", "bang", 5, 10, with length 5 (one more than the last index, 4).</aside>
+    </section>
+
+    <!-- SLIDE 23 · ROUND 2B -->
+    <section data-trace-board="bList" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Your Turn &middot; TraceLift Round 2B</span>
+          <h2>Expressions Inside Commands</h2>
+          <p class="board-prompt before-check">Evaluate each argument before the command runs. Trace this program and compare with another group. What is the length at the end?</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. Evaluate the arguments first, then change the list.</p>
+        </div>
+      </div>
+      <aside class="notes">Line 2 builds "potato" from list accesses before it appends. Line 4 is the trap: after the insert on line 3, the 5 has shifted to index 2, so that is what gets removed. The final list is "to", "go", "po", "potato", with length 4.</aside>
+    </section>
+
+    <!-- SLIDE 24 · VIDEO 1 -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:24:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=n1exiRH00x0"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Lists, Part 1</h2>
+        <p style="font-size:var(--small);color:var(--text-soft);margin-bottom:var(--gap);">A short Code.org video about lists.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+    </section>
+
+    <!-- SLIDE 25 · VIDEO 2 -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:25:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=TL0Y_GI4NZg"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Lists, Part 2</h2>
+        <p style="font-size:var(--small);color:var(--text-soft);margin-bottom:var(--gap);">A second short Code.org video about lists.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+    </section>
+
+    <!-- SLIDE 26 · VOCABULARY -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+        <span class="slide-tag">Wrap-Up</span>
+        <h2 style="margin-bottom:16px;">Key Vocabulary</h2>
+        <div style="display:flex;gap:40px;align-items:center;margin-bottom:var(--gap);">
+          <div data-magnet="favNums" data-values='[74,53,22]' data-small></div>
+          <div class="code-card" style="flex:0 0 auto;"><div class="code-body"><pre><code data-hl>var favNums = [74, 53, 22];</code></pre></div></div>
+        </div>
+        <div class="vocab">
+          <div class="rule-card"><div class="rule-when">List</div><p>An ordered collection of elements.</p></div>
+          <div class="rule-card"><div class="rule-when">Element</div><p>One value in a list, with its own unique index.</p></div>
+          <div class="rule-card"><div class="rule-when">Index</div><p>A number used to refer to an element in a list or a string.</p></div>
+          <div class="rule-card"><div class="rule-when">Length</div><p>How many elements a list has. It changes as elements are added or removed.</p></div>
+        </div>
+      </div>
+      <aside class="notes">These are the AP CSP definitions. The length of favNums is 3, and its indexes run from 0 to 2.</aside>
+    </section>
+
+    <!-- SLIDE 27 · DATA ABSTRACTION -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Wrap-Up</span>
+        <h2>Lists Are a Data Abstraction</h2>
+        <p style="max-width:1350px;">A list lets us <i class="a">name and program with</i> a large collection of information while ignoring the low-level details of how that data is stored and organized in the computer.</p>
+        <p class="fragment fade-up" style="max-width:1350px;margin-top:var(--gap);">That makes programs <i class="a">easier to develop and maintain</i>. Instead of seven temperature variables, an app can keep one list named <i class="n">temps</i>, and the same code works whether the list holds seven values or seven thousand.</p>
+        <div class="fragment fade-up" style="margin-top:var(--gap-lg);" data-magnet="temps" data-values='[81,86,88,92,76,95,74]' data-small></div>
+      </div>
+      <aside class="notes">Data abstraction is an AP exam term. Connect back to the temperature problem from the start of class.</aside>
+    </section>
+
+    <!-- SLIDE 28 · AP EXAM LISTS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:52px;">
+        <span class="slide-tag">AP Exam Connection</span>
+        <h2>Lists on the AP Exam</h2>
+        <p style="max-width:1400px;">The AP exam reference sheet writes list code differently. The biggest difference is that its indexes <i class="a">start at 1</i>, not <i class="x">0</i>.</p>
+        <div class="ap-table" style="margin-top:var(--gap);">
+          <div class="hd">App Lab</div><div class="hd">AP Exam</div>
+          <div><span data-hl>var aList = [20, "hat"];</span></div><div>aList &larr; [20, "hat"]</div>
+          <div><span data-hl>aList[0]</span> <span style="color:var(--text-soft);">(first)</span></div><div>aList[1] <span style="color:var(--text-soft);">(first)</span></div>
+          <div><span data-hl>appendItem(aList, 5)</span></div><div>APPEND(aList, 5)</div>
+          <div><span data-hl>insertItem(aList, 1, 7)</span></div><div>INSERT(aList, 2, 7)</div>
+          <div><span data-hl>removeItem(aList, 0)</span></div><div>REMOVE(aList, 1)</div>
+        </div>
+      </div>
+      <aside class="notes">Optional; skip if short on time and come back to it before the first AP-style practice. Our magnets are numbered 0 to 6 to match App Lab. On the exam, a list of length n has indexes 1 through n, and LENGTH(aList) gives its length.</aside>
+    </section>
+
+    <!-- SLIDE 29 · EXIT TICKET -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:29:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"What does this expression evaluate to?\n\n```javascript\nvar favNums = [74, 53, 22];\nfavNums[1] + favNums[2]\n```","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"`127`","isCorrect":false},{"id":"q1b","text":"`75`","isCorrect":true},{"id":"q1c","text":"`96`","isCorrect":false},{"id":"q1d","text":"`3`","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"What does `nums` contain at the end?\n\n```javascript\nvar nums = [4, 8];\ninsertItem(nums, 0, 1);\nappendItem(nums, 6);\nremoveItem(nums, 2);\n```","order":1,"responseTimeLimitMs":90000,"options":[{"id":"q2a","text":"`[1, 8, 6]`","isCorrect":false},{"id":"q2b","text":"`[4, 8, 6]`","isCorrect":false},{"id":"q2c","text":"`[1, 4, 8]`","isCorrect":false},{"id":"q2d","text":"`[1, 4, 6]`","isCorrect":true}]},{"id":"q3","type":"multiple-choice","text":"What is the length of `letters` at the end?\n\n```javascript\nvar letters = [\"a\", \"b\", \"c\"];\nappendItem(letters, \"d\");\nremoveItem(letters, 0);\n```","order":2,"responseTimeLimitMs":60000,"options":[{"id":"q3a","text":"`3`","isCorrect":true},{"id":"q3b","text":"`4`","isCorrect":false},{"id":"q3c","text":"`2`","isCorrect":false},{"id":"q3d","text":"`5`","isCorrect":false}]},{"id":"q4","type":"free-response","text":"Why is the last index of a list always one less than its length?","order":3,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+        <span class="slide-tag">Exit Ticket</span>
+        <h2 style="font-size:46px;margin-bottom:16px;">Show What You Know</h2>
+        <div class="exit-grid">
+          <div>
+            <p class="exit-q">1. What does the expression on line 2 evaluate to?</p>
+            <div class="code-card" style="flex:0 0 auto;"><div class="code-body"><pre><code data-hl>var favNums = [74, 53, 22];
+favNums[1] + favNums[2]</code></pre></div></div>
+          </div>
+          <div>
+            <p class="exit-q">2. What does <i class="n">nums</i> contain at the end?</p>
+            <div class="code-card"><div class="code-body"><pre><code data-hl>var nums = [4, 8];
+insertItem(nums, 0, 1);
+appendItem(nums, 6);
+removeItem(nums, 2);</code></pre></div></div>
+          </div>
+          <div>
+            <p class="exit-q">3. What is the length of <i class="n">letters</i> at the end?</p>
+            <div class="code-card"><div class="code-body"><pre><code data-hl>var letters = ["a", "b", "c"];
+appendItem(letters, "d");
+removeItem(letters, 0);</code></pre></div></div>
+          </div>
+          <div>
+            <p class="exit-q">4. Why is the last index of a list always one less than its length?</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Expected: 1) 75 (53 + 22). 2) The list goes 1, 4, 8, then 1, 4, 8, 6, then removing index 2 takes out the 8, leaving 1, 4, 6. 3) 3: the list grows to 4 and then shrinks back to 3. 4) Indexes start at 0, so a list with n elements uses indexes 0 through n minus 1.</aside>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+/* ================================================================
+   LIST MAGNET TRACE BOARDS
+   Adapted from the 4.1 Variables Explore trace boards. Each
+   section[data-trace-board="key"] is rendered from TRACES[key]: a
+   numbered Program, a Console (only if the trace prints), a narration
+   panel, and a Memory Trace where each list is drawn as the 7-cell
+   dry-erase magnet the pairs use on their whiteboards.
+
+   Every step becomes one hidden Reveal fragment. The board state is
+   recomputed by folding steps 0..k, so back-navigation and host sync
+   work without bookkeeping.
+
+   Code tracing convention: `line` is the NEXT line to execute. A line's
+   effects are applied on the step that moves the caret past it. A step
+   that keeps the caret on the same line is the look-up / evaluate work
+   before the line completes.
+
+   Step fields (all optional):
+     line   next line to run (persists until changed)
+     list   {name: [values]}  the list's full contents after this step;
+            cells that differ from the previous step are highlighted
+     read   {name: [indexes]}  cells being looked up on this step
+     decl   ['name', ...]      add empty variable columns
+     set    {name: value}      append a value to a variable column
+     out    console line
+     lift   {lineNo: [values per flap]}  [[name]] flaps (plain variables only)
+     work   narration HTML for this step only
+   Values: numbers, or strings (shown with quotes).
+   Static magnets: <div data-magnet="name" data-values='[...]'>, with
+   optional data-small and data-noname.
+   ================================================================ */
+
+var MAGNET_CELLS = 7;
+
+var TRACES = {
+  mkList: {
+    code: [
+      'var myList = ["pizza", 4];'
+    ],
+    start: 1,
+    steps: [
+      { work: 'Evaluate the right side first. The square brackets build a list with <i class=s>"pizza"</i> at index <i class=x>0</i> and <i class=v>4</i> at index <i class=x>1</i>.' },
+      { line: 2, list: { myList: ['pizza', 4] },
+        work: '<i class=n>myList</i> <i class=a>gets</i> the whole list. Write the name above a magnet and fill in cells <i class=x>0</i> and <i class=x>1</i>. The length is <i class=v>2</i>.' }
+    ]
+  },
+
+  access: {
+    sideW: 520,
+    code: [
+      'var lunchFood = ["pizza", "soup", "nachos"];',
+      'console.log(lunchFood[1]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { lunchFood: ['pizza', 'soup', 'nachos'] },
+        work: '<i class=n>lunchFood</i> <i class=a>gets</i> a list of three strings.' },
+      { read: { lunchFood: [1] },
+        work: '<i class=a>Look up</i> <i class=n>lunchFood[1]</i>: find the <i class=n>lunchFood</i> magnet and read the cell at index <i class=x>1</i>. It holds <i class=s>"soup"</i>.' },
+      { line: 3, out: 'soup',
+        work: 'The console shows <i class=s>soup</i>. Reading an element does not remove it or change it.' }
+    ]
+  },
+
+  expr: {
+    sideW: 540,
+    code: [
+      'var myNumbers = [10, 20, 25];',
+      'console.log(myNumbers[1]);',
+      'console.log(myNumbers[0] + myNumbers[2]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { myNumbers: [10, 20, 25] }, work: '<i class=n>myNumbers</i> <i class=a>gets</i> a list of three numbers.' },
+      { read: { myNumbers: [1] }, work: '<i class=a>Look up</i> <i class=n>myNumbers[1]</i>: it is <i class=v>20</i>.' },
+      { line: 3, out: '20', work: 'The console shows <i class=v>20</i>.' },
+      { read: { myNumbers: [0, 2] },
+        work: '<i class=a>Look up</i> both accesses: <i class=n>myNumbers[0]</i> is <i class=v>10</i> and <i class=n>myNumbers[2]</i> is <i class=v>25</i>. <i class=a>Substitute</i>: <i class=v>10 + 25</i>.' },
+      { read: { myNumbers: [0, 2] }, work: '<i class=a>Evaluate</i>: <i class=v>10 + 25</i> is <i class=v>35</i>.' },
+      { line: 4, out: '35', work: 'The console shows <i class=v>35</i>. The list itself never changed.' }
+    ]
+  },
+
+  setIdx: {
+    code: [
+      'var myNumbers = [10, 20, 25];',
+      'myNumbers[0] = 5;',
+      'myNumbers[2] = 30;'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { myNumbers: [10, 20, 25] }, work: '<i class=n>myNumbers</i> <i class=a>gets</i> a list of three numbers.' },
+      { line: 3, list: { myNumbers: [5, 20, 25] },
+        work: '<i class=n>myNumbers[0]</i> <i class=a>gets</i> <i class=v>5</i>. Erase the <i class=v>10</i> in cell <i class=x>0</i> and write <i class=v>5</i>. Like a variable, the old value is thrown away.' },
+      { line: 4, list: { myNumbers: [5, 20, 30] },
+        work: '<i class=n>myNumbers[2]</i> <i class=a>gets</i> <i class=v>30</i>. Only that one cell changes, and the length is still <i class=v>3</i>.' }
+    ]
+  },
+
+  stuff: {
+    code: [
+      'var myStuff = [20, "hat", "pow", 5];',
+      'myStuff[1] = "cat";',
+      'myStuff[2] = myStuff[1];',
+      'myStuff[0] = myStuff[3] + 10;',
+      'myStuff[3] = myStuff[0] + myStuff[0];'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { myStuff: [20, 'hat', 'pow', 5] }, work: '<i class=n>myStuff</i> <i class=a>gets</i> a list of four elements.' },
+      { line: 3, list: { myStuff: [20, 'cat', 'pow', 5] }, work: '<i class=n>myStuff[1]</i> <i class=a>gets</i> <i class=s>"cat"</i>, replacing <i class=s>"hat"</i>.' },
+      { read: { myStuff: [1] }, work: 'Evaluate the right side first: <i class=n>myStuff[1]</i> is <i class=s>"cat"</i>.' },
+      { line: 4, list: { myStuff: [20, 'cat', 'cat', 5] },
+        work: '<i class=n>myStuff[2]</i> <i class=a>gets</i> <i class=s>"cat"</i>. Cell <i class=x>2</i> gets a copy, and cell <i class=x>1</i> still holds <i class=s>"cat"</i> too.' },
+      { read: { myStuff: [3] }, work: '<i class=n>myStuff[3]</i> is <i class=v>5</i>, so the right side is <i class=v>5 + 10</i>, which is <i class=v>15</i>.' },
+      { line: 5, list: { myStuff: [15, 'cat', 'cat', 5] }, work: '<i class=n>myStuff[0]</i> <i class=a>gets</i> <i class=v>15</i>.' },
+      { read: { myStuff: [0] }, work: '<i class=n>myStuff[0]</i> is now <i class=v>15</i>, so the right side is <i class=v>15 + 15</i>, which is <i class=v>30</i>.' },
+      { line: 6, list: { myStuff: [15, 'cat', 'cat', 30] }, work: '<i class=n>myStuff[3]</i> <i class=a>gets</i> <i class=v>30</i>. That is the final list.' }
+    ]
+  },
+
+  idxExpr: {
+    code: [
+      'var myStuff = ["dog", "cat", 3, 10];',
+      'myStuff[2 - 1] = "tree";',
+      'myStuff[myStuff[2]] = myStuff[0];'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { myStuff: ['dog', 'cat', 3, 10] }, work: '<i class=n>myStuff</i> <i class=a>gets</i> a list of four elements.' },
+      { work: 'Evaluate the index first: <i class=v>2 - 1</i> is <i class=x>1</i>, so this line assigns to <i class=n>myStuff[1]</i>.' },
+      { line: 3, list: { myStuff: ['dog', 'tree', 3, 10] }, work: '<i class=n>myStuff[1]</i> <i class=a>gets</i> <i class=s>"tree"</i>, replacing <i class=s>"cat"</i>.' },
+      { read: { myStuff: [2] }, work: 'Evaluate the index first: <i class=n>myStuff[2]</i> is <i class=v>3</i>, so this line assigns to <i class=n>myStuff[3]</i>.' },
+      { read: { myStuff: [0] }, work: 'Evaluate the right side: <i class=n>myStuff[0]</i> is <i class=s>"dog"</i>.' },
+      { line: 4, list: { myStuff: ['dog', 'tree', 3, 'dog'] }, work: '<i class=n>myStuff[3]</i> <i class=a>gets</i> <i class=s>"dog"</i>, and the <i class=v>10</i> is gone.' }
+    ]
+  },
+
+  remove: {
+    code: [
+      'var myNumbers = [10, 20, 25];',
+      'removeItem(myNumbers, 1);',
+      'removeItem(myNumbers, 0);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { myNumbers: [10, 20, 25] }, work: '<i class=n>myNumbers</i> <i class=a>gets</i> a list of three numbers.' },
+      { line: 3, list: { myNumbers: [10, 25] },
+        work: 'Remove the element at index <i class=x>1</i>, the <i class=v>20</i>. Everything to its right <i class=a>shifts left</i> one cell, so the last cell is now empty. The length drops to <i class=v>2</i>.' },
+      { line: 4, list: { myNumbers: [25] },
+        work: 'Remove index <i class=x>0</i>, the <i class=v>10</i>. The <i class=v>25</i> shifts to index <i class=x>0</i>, and the length is <i class=v>1</i>.' }
+    ]
+  },
+
+  append: {
+    code: [
+      'var myNumbers = [10];',
+      'appendItem(myNumbers, 50);',
+      'appendItem(myNumbers, 100);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { myNumbers: [10] }, work: '<i class=n>myNumbers</i> <i class=a>gets</i> a list with one element.' },
+      { line: 3, list: { myNumbers: [10, 50] },
+        work: '<i class=n>appendItem</i> adds a new index at the <i class=a>end</i> of the list and puts <i class=v>50</i> there. Nothing else moves. The length is <i class=v>2</i>.' },
+      { line: 4, list: { myNumbers: [10, 50, 100] }, work: '<i class=v>100</i> goes in the next new index, <i class=x>2</i>. The length is <i class=v>3</i>.' }
+    ]
+  },
+
+  insert: {
+    code: [
+      'var nums = [10, 50];',
+      'insertItem(nums, 1, 20);',
+      'insertItem(nums, 1, 100);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { nums: [10, 50] }, work: '<i class=n>nums</i> <i class=a>gets</i> a list of two numbers.' },
+      { line: 3, list: { nums: [10, 20, 50] },
+        work: 'Make room at index <i class=x>1</i>: the <i class=v>50</i> <i class=a>shifts right</i> to index <i class=x>2</i>. Then <i class=v>20</i> goes in cell <i class=x>1</i>. The length is <i class=v>3</i>.' },
+      { line: 4, list: { nums: [10, 100, 20, 50] },
+        work: 'Starting from the end, <i class=v>50</i> and then <i class=v>20</i> each shift right one cell. Then <i class=v>100</i> goes in cell <i class=x>1</i>.' }
+    ]
+  },
+
+  aList: {
+    code: [
+      'var aList = [20, "hat", "pow"];',
+      'appendItem(aList, 5);',
+      'appendItem(aList, 10);',
+      'removeItem(aList, 1);',
+      'insertItem(aList, 2, "bang");'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { aList: [20, 'hat', 'pow'] }, work: '<i class=n>aList</i> <i class=a>gets</i> a list of three elements.' },
+      { line: 3, list: { aList: [20, 'hat', 'pow', 5] }, work: 'Append <i class=v>5</i> at the end, index <i class=x>3</i>.' },
+      { line: 4, list: { aList: [20, 'hat', 'pow', 5, 10] }, work: 'Append <i class=v>10</i> at the end, index <i class=x>4</i>.' },
+      { line: 5, list: { aList: [20, 'pow', 5, 10] }, work: 'Remove index <i class=x>1</i>, the <i class=s>"hat"</i>. Everything after it shifts left.' },
+      { line: 6, list: { aList: [20, 'pow', 'bang', 5, 10] },
+        work: 'Insert <i class=s>"bang"</i> at index <i class=x>2</i>. The <i class=v>5</i> and <i class=v>10</i> shift right. The final length is <i class=v>5</i>, one more than the last index.' }
+    ]
+  },
+
+  bList: {
+    sideW: 500,
+    code: [
+      'var bList = ["to", 5, "po"];',
+      'appendItem(bList, bList[2] + "ta" + bList[0]);',
+      'insertItem(bList, 2 - 1, "go");',
+      'removeItem(bList, 2);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { bList: ['to', 5, 'po'] }, work: '<i class=n>bList</i> <i class=a>gets</i> a list of three elements.' },
+      { read: { bList: [2, 0] },
+        work: 'Evaluate the item first. <i class=n>bList[2]</i> is <i class=s>"po"</i> and <i class=n>bList[0]</i> is <i class=s>"to"</i>, so the item is <i class=s>"po"</i> + <i class=s>"ta"</i> + <i class=s>"to"</i>, which is <i class=s>"potato"</i>.' },
+      { line: 3, list: { bList: ['to', 5, 'po', 'potato'] }, work: 'Append <i class=s>"potato"</i> at index <i class=x>3</i>.' },
+      { work: 'Evaluate the index first: <i class=v>2 - 1</i> is <i class=x>1</i>.' },
+      { line: 4, list: { bList: ['to', 'go', 5, 'po', 'potato'] }, work: 'Insert <i class=s>"go"</i> at index <i class=x>1</i>. Everything from index <i class=x>1</i> on shifts right.' },
+      { line: 5, list: { bList: ['to', 'go', 'po', 'potato'] },
+        work: 'Remove index <i class=x>2</i>, which now holds <i class=v>5</i> because of the insert. The final length is <i class=v>4</i>.' }
+    ]
+  }
+};
+
+(function () {
+  var KEYWORDS = { 'function': 1, 'var': 1 };
+  var TOKEN_RE = /\[\[(\w+)\]\]|"[^"]*"|\b\d+(?:\.\d+)?\b|[A-Za-z_$À-ɏ][\w$À-ɏ]*|\s+|./g;
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function fmtValue(v) {
+    if (typeof v === 'string') return { cls: 'mv-str', text: '"' + v + '"' };
+    return { cls: 'mv-num', text: String(v) };
+  }
+
+  // Highlight one line of the JavaScript subset used in this lesson.
+  // [[name]] becomes a TraceLift flap (numbered per line).
+  function highlight(src) {
+    var out = '';
+    var flapIdx = 0;
+    var m;
+    TOKEN_RE.lastIndex = 0;
+    while ((m = TOKEN_RE.exec(src)) !== null) {
+      var tok = m[0];
+      if (m[1]) {
+        out += '<span class="flap" data-flap="' + (flapIdx++) + '"><span class="flap-name">' +
+          esc(m[1]) + '</span><span class="flap-val"></span></span>';
+      } else if (tok.charAt(0) === '"') {
+        out += '<span class="tk-str">' + esc(tok) + '</span>';
+      } else if (/^\d/.test(tok)) {
+        out += '<span class="tk-num">' + tok + '</span>';
+      } else if (/^[A-Za-z_$]/.test(tok)) {
+        var rest = src.slice(TOKEN_RE.lastIndex);
+        if (KEYWORDS[tok]) out += '<span class="tk-kw">' + tok + '</span>';
+        else if (/^\s*\(/.test(rest) || tok === 'console') out += '<span class="tk-fn">' + tok + '</span>';
+        else out += '<span class="tk-nm">' + tok + '</span>';
+      } else if (/^\s+$/.test(tok)) {
+        out += tok;
+      } else {
+        out += '<span class="tk-p">' + esc(tok) + '</span>';
+      }
+    }
+    return out;
+  }
+
+  // One list magnet: name, length, and 7 cells over an index row.
+  function magnetHTML(name, vals, opts) {
+    opts = opts || {};
+    var changed = opts.changed || {};
+    var read = opts.read || {};
+    var html = '<div class="list-block' + (opts.small ? ' mag-sm' : '') + '">';
+    if (!opts.noname) {
+      html += '<div class="list-head"><span class="list-name">' + esc(name) + '</span>' +
+        '<span class="list-len">length <b>' + vals.length + '</b></span></div>';
+    }
+    html += '<div class="magnet">';
+    for (var i = 0; i < MAGNET_CELLS; i++) {
+      var inList = i < vals.length;
+      var cls = 'mag-cell';
+      var text = '';
+      if (inList) {
+        var fv = fmtValue(vals[i]);
+        cls += ' ' + fv.cls;
+        text = fv.text;
+      } else {
+        cls += ' out';
+      }
+      if (changed[i]) cls += ' changed';
+      if (read[i]) cls += ' read';
+      html += '<div class="' + cls + '">' + esc(text) + '</div>' +
+        '<div class="mag-idx' + (inList ? '' : ' out') + '">' + i + '</div>';
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  function el(tag, cls, html) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html != null) e.innerHTML = html;
+    return e;
+  }
+
+  function buildBoard(section) {
+    var data = TRACES[section.getAttribute('data-trace-board')];
+    if (!data) return;
+    var inner = section.querySelector('.slide-inner');
+
+    var board = el('div', 'board');
+    if (data.sideW) board.style.setProperty('--side-w', data.sideW + 'px');
+    var main = el('div', 'board-main');
+    var codeCard = el('div', 'trace-code');
+    codeCard.appendChild(el('div', 'panel-hdr', 'Program'));
+    var body = el('div', 'code-body');
+    data.code.forEach(function (src, i) {
+      var row = el('div', 'code-line');
+      row.setAttribute('data-ln', String(i + 1));
+      row.innerHTML = '<span class="car"></span><span class="ln">' + (i + 1) + '</span><span class="src">' + highlight(src) + '</span>';
+      body.appendChild(row);
+    });
+    codeCard.appendChild(body);
+    main.appendChild(codeCard);
+    board.appendChild(main);
+
+    var side = el('div', 'board-side');
+    data.hasConsole = data.steps.some(function (s) { return s.out != null; });
+    if (data.hasConsole) {
+      var con = el('div', 'panel con-panel');
+      con.appendChild(el('div', 'panel-hdr', 'Console'));
+      con.appendChild(el('div', 'con-body'));
+      side.appendChild(con);
+    }
+    side.appendChild(el('div', 'work-panel'));
+    board.appendChild(side);
+
+    var mem = el('div', 'panel mem-panel');
+    mem.appendChild(el('div', 'panel-hdr', 'Memory Trace'));
+    mem.appendChild(el('div', 'mem-body'));
+    board.appendChild(mem);
+    inner.appendChild(board);
+
+    data.steps.forEach(function () {
+      var frag = el('span', 'fragment trace-step');
+      frag.setAttribute('aria-hidden', 'true');
+      inner.appendChild(frag);
+    });
+
+    data.named = {};
+    data.named[data.start] = true;
+    data.steps.forEach(function (s) { if (s.line) data.named[s.line] = true; });
+  }
+
+  function computeState(data, k) {
+    var st = {
+      line: data.start, work: '', vars: [], lists: [], listVals: {},
+      changed: {}, read: {}, out: [], lifts: {}, visited: {}
+    };
+    st.visited[data.start] = true;
+
+    function column(name) {
+      for (var i = 0; i < st.vars.length; i++) if (st.vars[i].name === name) return st.vars[i];
+      var col = { name: name, vals: [] };
+      st.vars.push(col);
+      return col;
+    }
+
+    for (var i = 0; i < k && i < data.steps.length; i++) {
+      var s = data.steps[i];
+      st.changed = {};
+      st.read = s.read || {};
+      (s.decl || []).forEach(function (n) { column(n); });
+      if (s.set) Object.keys(s.set).forEach(function (n) { column(n).vals.push(s.set[n]); });
+      if (s.list) Object.keys(s.list).forEach(function (n) {
+        var prev = st.listVals[n];
+        var next = s.list[n];
+        if (!prev) st.lists.push(n);
+        var ch = {};
+        for (var c = 0; c < MAGNET_CELLS; c++) {
+          var a = prev && c < prev.length ? prev[c] : undefined;
+          var b = c < next.length ? next[c] : undefined;
+          if (a !== b) ch[c] = true;
+        }
+        st.changed[n] = ch;
+        st.listVals[n] = next.slice();
+      });
+      if (s.out != null) st.out.push(s.out);
+      if (s.lift) Object.keys(s.lift).forEach(function (ln) { st.lifts[ln] = s.lift[ln]; });
+      if (s.line) { st.line = s.line; st.visited[s.line] = true; }
+      st.work = s.work || '';
+    }
+    return st;
+  }
+
+  function toSet(arr) {
+    var o = {};
+    (arr || []).forEach(function (i) { o[i] = true; });
+    return o;
+  }
+
+  function render(section) {
+    var data = TRACES[section.getAttribute('data-trace-board')];
+    if (!data || !data.named) return;
+    var k = section.querySelectorAll('.trace-step.visible').length;
+    var st = computeState(data, k);
+
+    section.classList.toggle('is-checking', k > 0);
+
+    Array.prototype.forEach.call(section.querySelectorAll('.code-line[data-ln]'), function (row) {
+      var ln = Number(row.getAttribute('data-ln'));
+      row.classList.remove('current', 'done', 'pending', 'context');
+      if (ln === st.line) row.classList.add('current');
+      else if (st.visited[ln]) row.classList.add('done');
+      else if (data.named[ln]) row.classList.add('pending');
+      else row.classList.add('context');
+
+      var vals = st.lifts[ln] || [];
+      Array.prototype.forEach.call(row.querySelectorAll('.flap'), function (flap) {
+        var idx = Number(flap.getAttribute('data-flap'));
+        var valEl = flap.querySelector('.flap-val');
+        if (idx < vals.length) {
+          var f = fmtValue(vals[idx]);
+          valEl.className = 'flap-val ' + f.cls;
+          valEl.textContent = f.text;
+          flap.classList.add('lifted');
+        } else {
+          valEl.textContent = '';
+          flap.classList.remove('lifted');
+        }
+      });
+    });
+
+    var html = '';
+    st.lists.forEach(function (n) {
+      html += magnetHTML(n, st.listVals[n], { changed: st.changed[n], read: toSet(st.read[n]) });
+    });
+    st.vars.forEach(function (col) {
+      html += '<div class="mem-col"><div class="mem-col-name">' + esc(col.name) + '</div>';
+      if (!col.vals.length) html += '<div class="mem-val blank"></div>';
+      col.vals.forEach(function (v, i) {
+        var fv = fmtValue(v);
+        html += '<div class="mem-val ' + fv.cls + (i < col.vals.length - 1 ? ' struck' : '') + '">' + esc(fv.text) + '</div>';
+      });
+      html += '</div>';
+    });
+    section.querySelector('.mem-body').innerHTML = html || '<div class="mem-empty">Nothing in memory yet.</div>';
+
+    var conBody = section.querySelector('.con-body');
+    if (conBody) {
+      conBody.innerHTML = st.out.length
+        ? st.out.map(function (line) { return '<div>' + esc(line) + '</div>'; }).join('')
+        : '<div class="con-empty">No output yet.</div>';
+    }
+
+    section.querySelector('.work-panel').innerHTML = st.work;
+  }
+
+  function liveBoards() {
+    return Array.prototype.filter.call(
+      document.querySelectorAll('section[data-trace-board]'),
+      function (s) { return !s.closest('#storyboard'); }
+    );
+  }
+
+  // Build boards, static magnets, and highlighted code before Reveal scans fragments.
+  liveBoards().forEach(buildBoard);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-magnet]'), function (node) {
+    node.innerHTML = magnetHTML(node.getAttribute('data-magnet'), JSON.parse(node.getAttribute('data-values')), {
+      small: node.hasAttribute('data-small'),
+      noname: node.hasAttribute('data-noname')
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-hl]'), function (node) {
+    node.innerHTML = node.textContent.split('\n').map(highlight).join('\n');
+  });
+  liveBoards().forEach(render);
+
+  window.renderTraceBoards = function () { liveBoards().forEach(render); };
+})();
+
+initSyncDeckReveal({
+  deckId: 'csp-6-1-lists-explore',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function (Reveal) {
+    ['fragmentshown', 'fragmenthidden', 'slidechanged', 'ready'].forEach(function (evt) {
+      Reveal.on(evt, window.renderTraceBoards);
+    });
+    window.renderTraceBoards();
+  },
+});
+</script>
+</body>
+</html>
