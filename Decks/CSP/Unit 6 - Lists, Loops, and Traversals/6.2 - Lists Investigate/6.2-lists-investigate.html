@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="10whv93">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6.2 Lists Investigate</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+<link rel="stylesheet" href="../lists-magnet.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: 6.2 Lists Investigate
+   (shared list magnet styles live in ../lists-magnet.css)
+   ============================================================ */
+
+.app-shot {
+  height: 540px;
+  width: auto;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+}
+.app-shot.sm { height: 420px; }
+.app-pair { display: flex; gap: 40px; align-items: flex-start; flex: 0 0 auto; }
+.app-cap {
+  font-size: 22px;
+  color: var(--text-soft);
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* .suspects / .symptom: used by the saved bug hunt slides
+   (.agent/plans/csp-6.2-bug-hunt.md); keep them for a restore. */
+.suspects {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.suspect h3 {
+  font-size: 30px;
+  color: var(--amber);
+  margin-bottom: 10px;
+}
+.suspect .code-card pre code { font-size: 24px; line-height: 1.55; }
+.suspect .code-card .code-body { padding: 12px 14px; }
+
+.symptom {
+  border-left: 4px solid var(--red);
+  background: rgba(255,107,107,0.06);
+  padding: 14px 24px;
+  border-radius: 3px;
+}
+.symptom p { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 6 &middot; Lesson 6.2</span>
+        <h1 class="title-h1">Lists Investigate</h1>
+        <p style="max-width:1150px;line-height:1.55;margin-top:var(--gap);">Today we will read real apps that use lists, and find the <i class="a">patterns</i> they share.</p>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(216,56,47,0.10),transparent 70%);"></div>
+      <aside class="notes">This is a computer lesson: pairs work in the Code.org levels, with no whiteboards or TraceLift sheets. The projected trace boards draw each list at its real length.</aside>
+    </section>
+
+    <!-- SLIDE 2 · WARM-UP -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:2:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"What are some similarities and differences between lists and variables?","order":0,"responseTimeLimitMs":120000},{"id":"q2","type":"free-response","text":"How does a list help manage complexity in a program?","order":1,"responseTimeLimitMs":120000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Warm-Up</span>
+        <h2>Lists and Variables</h2>
+        <p style="max-width:1300px;">What are some <i class="a">similarities</i> and <i class="a">differences</i> between lists and variables?</p>
+        <p style="max-width:1300px;margin-top:var(--gap);">How does a list help <i class="c">manage complexity</i> in a program?</p>
+      </div>
+      <aside class="notes">Similarities: both have a name, follow the same naming rules, are created with var, and can be assigned. Differences: a list holds many values in order and is accessed by index, and its length can change. Managing complexity: one name and one piece of code can handle any number of values, so the program does not need a separate variable for each one.</aside>
+    </section>
+
+    <!-- SLIDE 3 · VIDEO: LIST LENGTH -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:3:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=H__zi1BiXJM"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">List Length</h2>
+        <p style="font-size:var(--small);color:var(--text-soft);margin-bottom:var(--gap);">A short Code.org video about finding the length of a list.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4 · THE LENGTH OF A LIST -->
+    <section data-trace-board="len">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">List Length</span>
+          <h2>The Length of a List</h2>
+          <p class="board-prompt"><i class="n">tops.length</i> evaluates to the number of elements in <i class="n">tops</i>.</p>
+        </div>
+      </div>
+      <aside class="notes">Make the connection explicit: because indexes start at 0, the last index is always length - 1. The expression tops[tops.length - 1] reads the last element no matter how long the list is. Evaluate the index first, then read that cell.</aside>
+    </section>
+
+    <!-- SLIDE 5 · CHECK: LENGTH -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:5:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A list has 5 elements. What is the index of its last element?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"`5`","isCorrect":false},{"id":"q1b","text":"`6`","isCorrect":false},{"id":"q1c","text":"`1`","isCorrect":false},{"id":"q1d","text":"`4`","isCorrect":true}]},{"id":"q2","type":"multiple-choice","text":"`tops` is `[\"hoodie\", \"tee\", \"jacket\"]`. What does `tops[tops.length]` access?","order":1,"responseTimeLimitMs":60000,"options":[{"id":"q2a","text":"`undefined`, because index 3 is past the end of the list","isCorrect":true},{"id":"q2b","text":"`\"jacket\"`, the last element","isCorrect":false},{"id":"q2c","text":"`\"hoodie\"`, because the index wraps around to the start","isCorrect":false},{"id":"q2d","text":"`3`, the length of the list","isCorrect":false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Check</span>
+        <h2>Length and the Last Index</h2>
+        <p style="max-width:1350px;">A list has <i class="v">5</i> elements. What is the index of its last element?</p>
+        <p style="max-width:1350px;margin-top:var(--gap);">The list <i class="n">tops</i> holds <i class="s">"hoodie"</i>, <i class="s">"tee"</i>, and <i class="s">"jacket"</i>. What does <i class="n">tops[tops.length]</i> access?</p>
+      </div>
+      <aside class="notes">Answers: 4, and undefined. tops.length is 3, and index 3 is one past the last index. Off-by-one mistakes like this are among the most common list bugs.</aside>
+    </section>
+
+    <!-- SLIDE 6 · OUTFIT PICKER OR BAND NAMER -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Activity &middot; Code.org</span>
+        <h2>Outfit Picker or Band Namer</h2>
+        <div style="display:flex;gap:var(--gap-lg);align-items:flex-start;">
+          <div style="flex:1;">
+            <div class="callout accent-amber">
+              <h3>Do This</h3>
+              <p>Find a partner and choose <i class="a">one</i> app: the Outfit Picker or the Band Namer. Read the program together, run it, and answer all the questions for your app.</p>
+            </div>
+            <p style="margin-top:var(--gap);">Be ready to explain to another group how your app <i class="a">uses a list</i> and what you learned from its code.</p>
+          </div>
+          <div class="app-pair">
+            <div><img class="app-shot" src="media/outfit-picker.png" alt="The Outfit Picker app showing a hoodie and pants with arrow buttons on each side"><div class="app-cap">Outfit Picker</div></div>
+            <div><img class="app-shot" src="media/band-namer.png" alt="The Band Namer app showing the band name Disaster Collective and a Name My Band button"><div class="app-cap">Band Namer</div></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Split the room roughly in half between the two apps so every pair can find a partner group with the other app on the next slide.</aside>
+    </section>
+
+    <!-- SLIDE 7 · DISCUSS -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Discuss</span>
+        <h2>Explain Your App</h2>
+        <div style="display:flex;gap:var(--gap-lg);align-items:flex-start;">
+          <div style="flex:1;">
+            <p>Find a group that read the <i class="a">other</i> app. Spend 3 to 4 minutes explaining your app to them, then switch.</p>
+            <p style="margin-top:var(--gap);">As you listen, look for what the two apps have in common. How does each one <i class="a">choose</i> which element of a list to show?</p>
+          </div>
+          <div class="app-pair">
+            <div><img class="app-shot sm" src="media/outfit-picker.png" alt="The Outfit Picker app"><div class="app-cap">Outfit Picker</div></div>
+            <div><img class="app-shot sm" src="media/band-namer.png" alt="The Band Namer app"><div class="app-cap">Band Namer</div></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Steer the share toward the two patterns on the next slides: the Band Namer picks a random index from 0 to length - 1, and the Outfit Picker keeps an index variable that moves by one and wraps back to the start.</aside>
+    </section>
+
+    <!-- SLIDE 8 · PATTERN: RANDOM ELEMENT -->
+    <section data-trace-board="random">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Pattern &middot; Random Element</span>
+          <h2>Picking a Random Element</h2>
+          <p class="board-prompt">To pick any element at random, choose a random index from <i class="x">0</i> to <i class="n">length - 1</i>.</p>
+        </div>
+      </div>
+      <aside class="notes">randomNumber(0, 3) can return 0, 1, 2, or 3; both ends are included. On the board, we pretend the random pick came out as 2. Ask: what would go wrong with randomNumber(0, nouns.length)? Sometimes it would pick index 4, which is past the end.</aside>
+    </section>
+
+    <!-- SLIDE 9 · PATTERN: NEXT ELEMENT -->
+    <section data-trace-board="nextDemo">
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Pattern &middot; Next Element</span>
+          <h2>Moving to the Next Element</h2>
+          <p class="board-prompt">These lines run each time the user clicks <i class="a">next</i>. The <i class="n">if</i> sends <i class="n">index</i> back to <i class="x">0</i> when it goes past the last index.</p>
+        </div>
+      </div>
+      <aside class="notes">This version starts with index 0, so the condition is false and the program shows "tee". A second click runs lines 3 to 7 again, starting from the index the first click left behind. The next slide starts from the last element so students predict the wrap-around themselves.</aside>
+    </section>
+
+    <!-- SLIDE 10 · PREDICT: WRAPPING AROUND -->
+    <section data-trace-board="r3a" data-trace-exercise>
+      <div class="slide-inner board-inner">
+        <div class="board-head">
+          <span class="slide-tag">Predict</span>
+          <h2>Wrapping Around</h2>
+          <p class="board-prompt before-check">This time <i class="n">index</i> starts at the last element. With your partner, predict which top the app shows after one click.</p>
+          <p class="board-prompt during-check">Let&rsquo;s check. When does the condition become true?</p>
+        </div>
+      </div>
+      <aside class="notes">Index goes from 2 to 3, the condition 3 > 2 is true, so index gets 0 and the app shows "hoodie". If time allows, ask what a second click would show (the tee).</aside>
+    </section>
+
+    <!-- SLIDE 11 · VIDEO -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:11:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=rWSsVSMGXXY"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Lists Video</h2>
+        <p style="font-size:var(--small);color:var(--text-soft);margin-bottom:var(--gap);">A short Code.org video to watch before the Pair Maker.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+    </section>
+
+    <!-- SLIDE 12 · PAIR MAKER -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+        <span class="slide-tag">Activity &middot; Code.org</span>
+        <h2>The Pair Maker</h2>
+        <div style="display:flex;gap:var(--gap-lg);align-items:flex-start;">
+          <div style="flex:1;">
+            <div class="callout accent-amber">
+              <h3>Do This</h3>
+              <p>Every group reads the <i class="a">Pair Maker</i> app and answers its questions. Be ready to discuss your responses with another group.</p>
+            </div>
+            <p style="margin-top:var(--gap);">This app <i class="a">changes</i> its list while it runs. Look for where it adds and removes people, and how it picks a random pair.</p>
+          </div>
+          <div class="app-pair">
+            <div><img class="app-shot" src="media/pair-maker.png" alt="The Pair Maker app with a list of people, Add and Remove buttons, and an Assign a Random Pair button"></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Connect to 6.1: the Add button uses appendItem and the Remove button uses removeItem. The random pair uses the same random index pattern from earlier, applied to a list whose length changes.</aside>
+    </section>
+
+    <!-- SLIDE 13 · DATA TAB -->
+    <section>
+      <div class="slide-inner">
+        <span class="slide-tag">Activity &middot; Code.org</span>
+        <h2>Lists From Data</h2>
+        <div class="callout accent-amber" style="max-width:1400px;">
+          <h3>Do This</h3>
+          <p>With a partner, go to <i class="a">Level 4</i>. Read through the code and run the app. What looks new? Then open the <i class="a">Data</i> tab and investigate for about 5 minutes.</p>
+        </div>
+        <ul class="bullets" style="margin-top:var(--gap);gap:10px;">
+          <li>How does the Data tab work, and what information is available?</li>
+          <li>What can you change, and what can&rsquo;t you change?</li>
+          <li>Look at a few different datasets.</li>
+        </ul>
+      </div>
+      <aside class="notes">The Code.org slide used a 5-minute YouTube timer here; use any classroom timer.</aside>
+    </section>
+
+    <!-- SLIDE 14 · VIDEO: DATA TAB -->
+    <section
+      data-activity-id="video-sync"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="video-sync:14:0"
+      data-activity-options='{"sourceUrl":"https://www.youtube.com/watch?v=PNe3MSreQAA"}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Video</span>
+        <h2 style="margin-bottom:var(--gap-sm);">The Data Tab in App Lab</h2>
+        <p style="font-size:var(--small);color:var(--text-soft);margin-bottom:var(--gap);">A Code.org video on importing and using datasets.</p>
+        <div class="youtube-player-slot" style="width:100%;max-width:960px;aspect-ratio:16/9;"></div>
+      </div>
+    </section>
+
+    <!-- SLIDE 15 · GETCOLUMN -->
+    <section>
+      <div class="slide-inner" style="justify-content:flex-start;padding-top:52px;">
+        <span class="slide-tag">Lists From Data</span>
+        <h2>getColumn Makes a List</h2>
+        <div style="display:grid;grid-template-columns:1fr 420px;gap:var(--gap-lg);align-items:start;">
+          <div>
+            <p><i class="n">getColumn(table, column)</i> returns a <i class="c">list</i> that holds every value in one column of a dataset. You will find it in the <i class="a">Data</i> drawer of the toolbox.</p>
+            <p style="margin-top:var(--gap);">Because the result is an ordinary list, everything from 6.1 works on it: accesses, <i class="n">.length</i>, and the random index pattern.</p>
+            <div class="callout accent-amber" style="margin-top:var(--gap);">
+              <h3>Do This</h3>
+              <p>Choose a dataset and import it into your project. Then modify the code to print out one column from your dataset.</p>
+            </div>
+          </div>
+          <img src="media/getcolumn-toolbox.png" alt="The App Lab toolbox with the Data drawer open, showing the getColumn(table, column) block" style="width:420px;height:auto;border-radius:8px;">
+        </div>
+      </div>
+      <aside class="notes">A dataset column can have hundreds of values, which is exactly why lists matter: one name and one line of code handle all of them. Challenge pairs who finish to show a random value from their column.</aside>
+    </section>
+
+    <!-- SLIDE 16 · EXIT TICKET -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:16:0"
+      data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"`nouns` has 5 elements. Which indexes can this line produce?\n\n```javascript\nvar index = randomNumber(0, nouns.length - 1);\n```","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"0 to 5","isCorrect":false},{"id":"q1b","text":"1 to 5","isCorrect":false},{"id":"q1c","text":"0 to 4","isCorrect":true},{"id":"q1d","text":"1 to 4","isCorrect":false}]},{"id":"q2","type":"free-response","text":"What parts of using lists do you feel you already understand? What questions do you want to dig into more during tomorrow&#39;s practice lesson?","order":1,"responseTimeLimitMs":150000}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Exit Ticket</span>
+        <h2>Reflect</h2>
+        <p style="max-width:1350px;">If <i class="n">nouns</i> has <i class="v">5</i> elements, which indexes can <i class="n">randomNumber(0, nouns.length - 1)</i> produce?</p>
+        <p style="max-width:1350px;margin-top:var(--gap);">What parts of using lists do you feel you <i class="a">already understand</i>? What questions do you want to dig into more during tomorrow&rsquo;s practice lesson?</p>
+      </div>
+      <aside class="notes">Answer to the first question: 0 to 4, every real index. Use the reflections to plan the start of 6.3.</aside>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script src="../lists-magnet.js"></script>
+<script>
+/* Trace data for the list boards (engine: ../lists-magnet.js).
+   6.2 is a computer lesson with no magnets or TraceLift sheets, so lists
+   are drawn plain at their real length and the boards have no flaps. */
+var TRACES = {
+  len: {
+    code: [
+      'var tops = ["hoodie", "tee", "jacket"];',
+      'console.log(tops.length);',
+      'console.log(tops[tops.length - 1]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { tops: ['hoodie', 'tee', 'jacket'] }, work: '<i class=n>tops</i> <i class=a>gets</i> a list of three strings.' },
+      { work: '<i class=a>Look up</i> <i class=n>tops.length</i>: the list has <i class=v>3</i> elements.' },
+      { line: 3, out: '3', work: 'The console shows <i class=v>3</i>.' },
+      { work: 'Evaluate the index first: <i class=n>tops.length - 1</i> is <i class=v>3 - 1</i>, which is <i class=x>2</i>.' },
+      { read: { tops: [2] }, work: '<i class=n>tops[2]</i> is <i class=s>"jacket"</i>, the last element.' },
+      { line: 4, out: 'jacket',
+        work: 'The console shows <i class=s>jacket</i>. Because indexes start at <i class=x>0</i>, the last index is always <i class=n>length - 1</i>.' }
+    ]
+  },
+
+  random: {
+    sideW: 450,
+    code: [
+      'var nouns = ["Robots", "Llamas", "Echo", "Static"];',
+      'var index = randomNumber(0, nouns.length - 1);',
+      'console.log(nouns[index]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { nouns: ['Robots', 'Llamas', 'Echo', 'Static'] }, work: '<i class=n>nouns</i> <i class=a>gets</i> a list of four strings.' },
+      { work: 'Evaluate the arguments first: <i class=n>nouns.length - 1</i> is <i class=v>3</i>, so <i class=n>randomNumber(0, 3)</i> picks <i class=v>0</i>, <i class=v>1</i>, <i class=v>2</i>, or <i class=v>3</i>. Suppose it picks <i class=v>2</i>.' },
+      { line: 3, decl: ['index'], set: { index: 2 }, work: '<i class=n>index</i> <i class=a>gets</i> <i class=v>2</i>. It is a plain variable, so it gets its own column next to the list.' },
+      { read: { nouns: [2] }, work: '<i class=a>Look up</i> <i class=n>index</i>: <i class=v>2</i>. Then <i class=n>nouns[2]</i> is <i class=s>"Echo"</i>.' },
+      { line: 4, out: 'Echo',
+        work: 'The console shows <i class=s>Echo</i>. Every pick from <i class=x>0</i> to <i class=n>length - 1</i> is a real index, even if we add more nouns later.' }
+    ]
+  },
+
+  nextDemo: {
+    code: [
+      'var tops = ["hoodie", "tee", "jacket"];',
+      'var index = 0;',
+      'index = index + 1;',
+      'if (index > tops.length - 1) {',
+      '  index = 0;',
+      '}',
+      'console.log(tops[index]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { tops: ['hoodie', 'tee', 'jacket'] }, work: '<i class=n>tops</i> <i class=a>gets</i> a list of three strings.' },
+      { line: 3, decl: ['index'], set: { index: 0 }, work: '<i class=n>index</i> <i class=a>gets</i> <i class=v>0</i>, so the app starts on the hoodie. Now the user clicks next.' },
+      { work: '<i class=a>Look up</i> <i class=n>index</i> and evaluate: <i class=v>0 + 1</i> is <i class=v>1</i>.' },
+      { line: 4, set: { index: 1 }, work: '<i class=n>index</i> <i class=a>gets</i> <i class=v>1</i>.' },
+      { work: '<i class=n>tops.length - 1</i> is <i class=x>2</i>, the last index. Is <i class=v>1 &gt; 2</i>? No, the condition is false.' },
+      { line: 7, work: 'The condition is false, so skip the body and go to line <i class=v>7</i>.' },
+      { read: { tops: [1] }, work: '<i class=a>Look up</i> <i class=n>index</i>: <i class=v>1</i>. <i class=n>tops[1]</i> is <i class=s>"tee"</i>.' },
+      { line: 8, out: 'tee', work: 'The app shows the <i class=s>tee</i>. Each click adds <i class=v>1</i> to <i class=n>index</i> until it passes the last index.' }
+    ]
+  },
+
+  r3a: {
+    code: [
+      'var tops = ["hoodie", "tee", "jacket"];',
+      'var index = 2;',
+      'index = index + 1;',
+      'if (index > tops.length - 1) {',
+      '  index = 0;',
+      '}',
+      'console.log(tops[index]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { tops: ['hoodie', 'tee', 'jacket'] }, work: '<i class=n>tops</i> <i class=a>gets</i> a list of three strings.' },
+      { line: 3, decl: ['index'], set: { index: 2 }, work: '<i class=n>index</i> <i class=a>gets</i> <i class=v>2</i>, the jacket. Now the user clicks next.' },
+      { work: '<i class=a>Look up</i> <i class=n>index</i> and evaluate: <i class=v>2 + 1</i> is <i class=v>3</i>.' },
+      { line: 4, set: { index: 3 }, work: '<i class=n>index</i> <i class=a>gets</i> <i class=v>3</i>, which is past the last index.' },
+      { work: 'Is <i class=v>3 &gt; 2</i>? Yes, the condition is true.' },
+      { line: 5, work: 'The condition is true, so run the body.' },
+      { line: 7, set: { index: 0 }, work: '<i class=n>index</i> <i class=a>gets</i> <i class=v>0</i>. The index wraps around to the start.' },
+      { read: { tops: [0] }, work: '<i class=a>Look up</i> <i class=n>index</i>: <i class=v>0</i>. <i class=n>tops[0]</i> is <i class=s>"hoodie"</i>.' },
+      { line: 8, out: 'hoodie', work: 'The app shows the <i class=s>hoodie</i>. After the last top, it starts over.' }
+    ]
+  }
+
+};
+
+ListMagnet.prepare(TRACES, { plain: true });
+
+initSyncDeckReveal({
+  deckId: 'csp-6-2-lists-investigate',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function (Reveal) {
+    ListMagnet.attach(Reveal);
+  },
+});
+</script>
+</body>
+</html>
