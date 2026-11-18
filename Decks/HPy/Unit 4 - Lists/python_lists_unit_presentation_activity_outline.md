@@ -537,11 +537,13 @@ print(L)
 
 ### Lesson 4.6: Remove All the Reds (slides 6 and 7, tables)
 
-Groups load the tray as the slide shows: green, red, red, purple, red, orange, red, yellow. The tray is `items`, and one student's finger is `i`; the space for `i` lets the group write each new value. Line 5 on the slide is line 5 on the sheet.
+Groups load the tray from lines 1 and 2 of the code: green, red, red, purple, red, orange, red, yellow. The tray is `items`, and one student's finger is `i`; the space for `i` lets the group write each new value. Line 7 on the slide is line 7 on the sheet.
 
 ```text
 Title: Lesson 4.6 - Remove All the Reds
 # [[i]]
+items = ["green", "red", "red", "purple",
+         "red", "orange", "red", "yellow"]
 i = 0
 while i < len(items):
     if items[i] == "red":

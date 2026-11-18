@@ -339,13 +339,17 @@
       // A .code-card[data-tutor] gets a Python Tutor icon link in its header,
       // built from its own code so the link can never drift from what the
       // slide shows. data-tutor-setup holds lines to run first (e.g. a
-      // variable the snippet uses but does not define), joined with "|".
+      // variable the snippet uses but does not define), and data-tutor-after
+      // holds lines to run after it (e.g. a call to a function the card only
+      // defines). Both are joined with "|".
       document.querySelectorAll('.code-card[data-tutor]').forEach(function (card) {
         var el = card.querySelector('code.py');
         var hdr = card.querySelector('.code-hdr');
         if (!el || !hdr) return;
         var setup = card.getAttribute('data-tutor-setup');
-        var code = (setup ? setup.split('|').join('\n') + '\n' : '') + el.textContent.replace(/^\n/, '');
+        var after = card.getAttribute('data-tutor-after');
+        var code = (setup ? setup.split('|').join('\n') + '\n' : '') + el.textContent.replace(/^\n/, '') +
+          (after ? '\n\n' + after.split('|').join('\n') : '');
         var a = document.createElement('a');
         a.className = 'tutor-link';
         a.href = 'https://pythontutor.com/visualize.html#code=' + encodeURIComponent(code) +

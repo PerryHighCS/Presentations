@@ -116,22 +116,24 @@ print(L)</code></pre></div>
           <span class="slide-tag">Hands On &middot; Remove All the Reds</span>
           <h2>Follow the code exactly</h2>
           <p style="margin-top:var(--gap-sm);">
-            Load your tray: green, red, red, purple, red, orange, red, yellow. One person's finger is <code>i</code>, starting at slot 0. Another person runs the code, line by line.
+            Load your tray as lines 1 and 2 show, starting at slot 0. One person's finger is <code>i</code>. Another person runs the code, line by line.
           </p>
           <p style="margin-top:var(--gap);">
-            Follow the code <span style="color:var(--warn);">literally</span>, even if you can see it is about to go wrong. When you pop an item, slide every later item left to close the gap. Then move the finger exactly as line 5 says, and write the new value of <code>i</code> on your code sheet.
+            Follow the code <span style="color:var(--warn);">literally</span>, even if you can see it is about to go wrong. When you pop an item, slide every later item left to close the gap. Then move the finger exactly as line 7 says, and write the new value of <code>i</code> on your code sheet.
           </p>
         </div>
         <div class="code-card">
           <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">reds.py</span></div>
-          <div class="code-body"><pre><code class="py">i = 0
+          <div class="code-body"><pre><code class="py">items = ["green", "red", "red", "purple",
+         "red", "orange", "red", "yellow"]
+i = 0
 while i &lt; len(items):
     if items[i] == "red":
         items.pop(i)
     i += 1</code></pre></div>
         </div>
       </div>
-      <aside class="notes">The final tray should be green, red, purple, orange, yellow: one red survives. If a group ends with no reds, they cheated the finger forward correctly instead of following line 5. Ask groups to find which red survived and why. Then have them repair the code before the next slide.</aside>
+      <aside class="notes">The final tray should be green, red, purple, orange, yellow: one red survives. If a group ends with no reds, they cheated the finger forward correctly instead of following line 7. Ask groups to find which red survived and why. Then have them repair the code before the next slide.</aside>
     </section>
 
     <!-- SLIDE 08 · TRACE: WHILE SKIP -->
@@ -152,11 +154,14 @@ while i &lt; len(items):
           When <code>pop(i)</code> removes a value, the value that was at <code>i + 1</code> shifts left into index <code>i</code>. That value has <span style="color:var(--warn);">not been checked yet</span>, but then <code>i += 1</code> moves past it.
         </p>
         <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
-          So the bug only shows up when two matches are <span style="color:var(--accent);">next to each other</span>. A test with <code>[1, 2, 3]</code> passes. A test with <code>[2, 2]</code> fails. Good tests include adjacent matches on purpose.
+          So the bug only shows up when two matches are <span style="color:var(--accent);">next to each other</span>. Removing the reds from <code>["green", "red", "purple"]</code> works. Removing them from <code>["red", "red"]</code> leaves one behind. Good tests include matches next to each other on purpose.
         </p>
         <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
           The fix: after a pop, <span style="color:var(--result);">stay where you are</span>. Only move <code>i</code> forward when nothing was removed.
         </p>
+        <div class="callout-result fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
+          <strong>Back to your computers.</strong> Put the list items back in the cup and return your tray and code sheet on the way. Next, you will fix this bug in code.
+        </div>
       </div>
     </section>
 
@@ -165,7 +170,7 @@ while i &lt; len(items):
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:skip-result:0"
-      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "This `removeAll` adds 1 to `i` even after it pops. What happens?\n\n```python\ndef removeAll(L, v):\n    i = 0\n    while i < len(L):\n        if L[i] == v:\n            L.pop(i)\n        i += 1\n\nL = [1, 3, 2, 2, 3, 2, 4]\nremoveAll(L, 2)\nprint(L)\n```", "order": 0, "responseTimeLimitMs": 75000, "options": [{"id": "q1a", "text": "It crashes and never prints anything", "isCorrect": false}, {"id": "q1b", "text": "It correctly prints `[1, 3, 3, 4]`", "isCorrect": false}, {"id": "q1c", "text": "It incorrectly prints `[1, 3, 2, 3, 4]`", "isCorrect": true}, {"id": "q1d", "text": "It incorrectly prints `[1, 3, 3]`", "isCorrect": false}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "What happens when this program runs?\n\n```python\ndef removeAll(L, v):\n    i = 0\n    while i < len(L):\n        if L[i] == v:\n            L.pop(i)\n        i += 1\n\nL = [1, 3, 2, 2, 3, 2, 4]\nremoveAll(L, 2)\nprint(L)\n```", "order": 0, "responseTimeLimitMs": 75000, "options": [{"id": "q1a", "text": "It crashes and never prints anything", "isCorrect": false}, {"id": "q1b", "text": "It correctly prints `[1, 3, 3, 4]`", "isCorrect": false}, {"id": "q1c", "text": "It incorrectly prints `[1, 3, 2, 3, 4]`", "isCorrect": true}, {"id": "q1d", "text": "It incorrectly prints `[1, 3, 3]`", "isCorrect": false}]}]}'>
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Checkpoint &middot; Index Shifting</span>
@@ -194,7 +199,24 @@ print(L)</code></pre></div>
       <aside class="notes">The 2s at indexes 2 and 3 are adjacent. Popping index 2 shifts the second 2 into index 2, and i moves on to 3, so that 2 survives. The last 2 is not adjacent to another match, so it is removed.</aside>
     </section>
 
-    <!-- SLIDE 11 · TRACE: FIXED -->
+    <!-- SLIDE 11 · MOBCODE: FIX REMOVEALL -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="mobcode:fix-removeall:0"
+      data-activity-options='{"files": {"main.py": "# This removeAll should remove every v from L, but it leaves\n# one behind when two matches are next to each other.\n# 1. Run it and compare the output with the question you\n#    just answered.\n# 2. Fix removeAll so the program prints [1, 3, 3, 4].\n#    Hint: after a pop, stay where you are.\n# 3. Test it again with L = [2, 2, 2] and L = [].\n\ndef removeAll(L, v):\n    i = 0\n    while i &lt; len(L):\n        if L[i] == v:\n            L.pop(i)\n        i += 1\n\nL = [1, 3, 2, 2, 3, 2, 4]\nremoveAll(L, 2)\nprint(L)\n"}, "activeFile": "main.py", "runnerId": "brython-terminal", "startTryItMode": true}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Fix It &middot; MobCode</span>
+        <h2>Fix <code>removeAll</code></h2>
+        <p style="margin-top:var(--gap-sm);max-width:1200px;">
+          Run the <code>removeAll</code> from the last question and see the 2 it leaves behind. Then fix it so the program prints <code>[1, 3, 3, 4]</code>, and test it again with <code>[2, 2, 2]</code> and an empty list. The steps are in the comments.
+        </p>
+      </div>
+      <aside class="notes">The fix moves i += 1 into an else, so i only advances when nothing was popped. [2, 2, 2] is the strongest test: every match is next to another. The next slide traces the fixed version.</aside>
+    </section>
+
+    <!-- SLIDE 12 · TRACE: FIXED -->
     <section>
       <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
         <span class="slide-tag">The Fix</span>
@@ -203,7 +225,7 @@ print(L)</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 12 · TWO KEYS -->
+    <!-- SLIDE 13 · TWO KEYS -->
     <section>
       <div class="slide-inner split split-50">
         <div>
@@ -219,7 +241,7 @@ print(L)</code></pre></div>
             This version is <span style="color:var(--warn);">mutating</span>: it changes the caller's list and returns <code>None</code>. That is its job.
           </p>
         </div>
-        <div class="code-card">
+        <div class="code-card" data-tutor>
           <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
           <div class="code-body"><pre><code class="py">def removeAll(L, v):
     i = 0
@@ -236,14 +258,53 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 13 · OTHER APPROACHES -->
+    <!-- SLIDE 14 · CHECKPOINT: WHICH TEST -->
+    <section
+      data-activity-id="resonance"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="resonance:which-test:0"
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "A teammate wrote `removeAll` and says it passes all their tests. Which test would catch the skipping bug if it is there?", "order": 0, "responseTimeLimitMs": 45000, "options": [{"id": "q1a", "text": "`removeAll([2, 1, 2], 2)` leaves `[1]`", "isCorrect": false}, {"id": "q1b", "text": "`removeAll([1, 2, 2], 2)` leaves `[1]`", "isCorrect": true}, {"id": "q1c", "text": "`removeAll([], 2)` leaves `[]`", "isCorrect": false}, {"id": "q1d", "text": "`removeAll([1, 2, 3, 2], 2)` leaves `[1, 3]`", "isCorrect": false}]}]}'>
+      <div class="slide-inner">
+        <span class="slide-tag">Checkpoint &middot; Testing</span>
+        <h2>Which test catches the skipping bug?</h2>
+        <ul class="mcq-opts" style="margin-top:var(--gap);max-width:800px;">
+          <li><span class="opt-key">A</span><code>removeAll([2, 1, 2], 2)</code> leaves <code>[1]</code></li>
+          <li><span class="opt-key">B</span><code>removeAll([1, 2, 2], 2)</code> leaves <code>[1]</code></li>
+          <li><span class="opt-key">C</span><code>removeAll([], 2)</code> leaves <code>[]</code></li>
+          <li><span class="opt-key">D</span><code>removeAll([1, 2, 3, 2], 2)</code> leaves <code>[1, 3]</code></li>
+        </ul>
+      </div>
+      <aside class="notes">Only [1, 2, 2] has two 2s next to each other. The buggy version pops the first 2, the second slides under i, and i += 1 moves past it, leaving [1, 2]. In [2, 1, 2] and [1, 2, 3, 2] the matches are separated, so the buggy version still gets them right; a test needs adjacent matches to catch this bug.</aside>
+    </section>
+
+    <!-- SLIDE 15 · MOBCODE: FOUR SUSPECTS -->
+    <section
+      data-activity-id="mobcode"
+      data-activity-trigger="slide-enter"
+      data-activity-instance-key="mobcode:four-suspects:0"
+      data-activity-options='{"files": {"main.py": "# Four teammates each wrote removeAll(L, v).\n# Read all four and predict which ones are broken\n# and how, before you run anything.\n#\n# Then test them one at a time. The test cases include an\n# empty list and matches that sit next to each other.\n# For each broken version, write a one-sentence comment that\n# names the bug, and fix it with the smallest change you can.\n\ndef removeAllA(L, v):\n    for i in range(len(L)):\n        if L[i] == v:\n            L.pop(i)\n\ndef removeAllB(L, v):\n    i = 0\n    while i &lt; len(L):\n        if L[i] == v:\n            L.pop(i)\n        i += 1\n\ndef removeAllC(L, v):\n    i = len(L) - 1\n    while i &gt;= 0:\n        if L[i] == v:\n            L.pop(i)\n        i -= 1\n\ndef removeAllD(L, v):\n    for i in range(len(L) - 1, 0, -1):\n        if L[i] == v:\n            L.pop(i)\n\ndef test(removeAll):\n    for start in [[], [1, 3], [2, 2], [2, 1, 2], [1, 2, 2, 3]]:\n        L = list(start)\n        removeAll(L, 2)\n        print(start, \"-&gt;\", L)\n\n# Test one at a time:\ntest(removeAllA)\n"}, "activeFile": "main.py", "runnerId": "brython-terminal", "startTryItMode": true}'>
+      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
+      <div class="slide-inner">
+        <span class="slide-tag">Find the Bug &middot; Four Suspects</span>
+        <h2>Which <code>removeAll</code> can you trust?</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          Four teammates each wrote a version, and two of them loop backward. Before running anything, read all four and predict which are broken and how. Then test them one at a time with the provided cases, which include an empty list and adjacent matches.
+        </p>
+        <p style="margin-top:var(--gap);max-width:1250px;">
+          For each broken version, name the bug in one sentence and repair it with the smallest change you can.
+        </p>
+      </div>
+      <aside class="notes">A crashes on any list where a pop happens before the end (IndexError). B skips adjacent matches: [2, 2] becomes [2]. C is correct: walking backward means a pop only shifts values that were already checked. D also walks backward but stops before index 0, so [2, 1, 2] becomes [2, 1]; the fix is a stop of -1. Ask why C works; the next slides answer it.</aside>
+    </section>
+
+    <!-- SLIDE 16 · OTHER APPROACHES -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">Safer Alternatives</span>
         <h2>Two other ways to remove them all</h2>
         <div class="split split-50" style="margin-top:var(--gap-sm);flex:0 0 auto;align-items:start;">
           <div>
-            <div class="code-card">
+            <div class="code-card" data-tutor data-tutor-after="L = [1, 3, 2, 2, 3, 2, 4]|removeAll(L, 2)|print(L)">
               <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">simple, but slow</span></div>
               <div class="code-body"><pre><code class="py">def removeAll(L, v):
     while v in L:
@@ -254,7 +315,7 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
             </p>
           </div>
           <div>
-            <div class="code-card">
+            <div class="code-card" data-tutor data-tutor-after="L = [1, 3, 2, 2, 3, 2, 4]|M = filterOut(L, 2)|print(L)|print(M)">
               <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">build a new list instead</span></div>
               <div class="code-body"><pre><code class="py">def filterOut(L, v):
     result = []
@@ -271,45 +332,42 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 14 · CHECKPOINT: WHICH TEST -->
-    <section
-      data-activity-id="resonance"
-      data-activity-trigger="slide-enter"
-      data-activity-instance-key="resonance:which-test:0"
-      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "A teammate wrote `removeAll` and says it passes all their tests. Which test would catch the skipping bug if it is there?", "order": 0, "responseTimeLimitMs": 45000, "options": [{"id": "q1a", "text": "`removeAll([1, 2, 3], 2)` leaves `[1, 3]`", "isCorrect": false}, {"id": "q1b", "text": "`removeAll([], 2)` leaves `[]`", "isCorrect": false}, {"id": "q1c", "text": "`removeAll([1, 3], 2)` leaves `[1, 3]`", "isCorrect": false}, {"id": "q1d", "text": "`removeAll([2, 2], 2)` leaves `[]`", "isCorrect": true}]}]}'>
-      <div class="slide-inner">
-        <span class="slide-tag">Checkpoint &middot; Testing</span>
-        <h2>Which test catches the skipping bug?</h2>
-        <ul class="mcq-opts" style="margin-top:var(--gap);max-width:800px;">
-          <li><span class="opt-key">A</span><code>removeAll([1, 2, 3], 2)</code> leaves <code>[1, 3]</code></li>
-          <li><span class="opt-key">B</span><code>removeAll([], 2)</code> leaves <code>[]</code></li>
-          <li><span class="opt-key">C</span><code>removeAll([1, 3], 2)</code> leaves <code>[1, 3]</code></li>
-          <li><span class="opt-key">D</span><code>removeAll([2, 2], 2)</code> leaves <code>[]</code></li>
-        </ul>
+    <!-- SLIDE 17 · LOOP BACKWARD -->
+    <section>
+      <div class="slide-inner split split-50">
+        <div>
+          <span class="slide-tag">Safer Alternatives</span>
+          <h2>Loop backward</h2>
+          <p style="margin-top:var(--gap-sm);">
+            Start at the last index and count down to 0, like version C from the four suspects. When <code>pop(i)</code> removes a value, only the values to its <span style="color:var(--accent);">right</span> shift, and the loop has already checked them. The values still to check never move.
+          </p>
+          <p class="fragment fade-up" data-fragment-index="1" style="margin-top:var(--gap);">
+            A <code>for</code> loop works too. <code>range(len(L) - 1, -1, -1)</code> starts at the last index, steps by <code>-1</code>, and stops before <code>-1</code>, so 0 is the last index checked. Every index it reaches still exists.
+          </p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);min-width:0;">
+          <div class="code-card" data-tutor data-tutor-after="L = [1, 3, 2, 2, 3, 2, 4]|removeAll(L, 2)|print(L)">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">counting down with while</span></div>
+            <div class="code-body"><pre><code class="py">def removeAll(L, v):
+    i = len(L) - 1
+    while i &gt;= 0:
+        if L[i] == v:
+            L.pop(i)
+        i -= 1</code></pre></div>
+          </div>
+          <div class="code-card fragment fade-up" data-fragment-index="1" data-tutor data-tutor-after="L = [1, 3, 2, 2, 3, 2, 4]|removeAll(L, 2)|print(L)">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">counting down with for</span></div>
+            <div class="code-body"><pre><code class="py">def removeAll(L, v):
+    for i in range(len(L) - 1, -1, -1):
+        if L[i] == v:
+            L.pop(i)</code></pre></div>
+          </div>
+        </div>
       </div>
+      <aside class="notes">Ask why the forward for loop crashed but this one does not: going forward, range was decided at the start and ran past the shrinking list; going backward, the list only shrinks behind i. The Python Tutor links run each version on [1, 3, 2, 2, 3, 2, 4]: watch index 3 get popped before index 2, so nothing slides into a spot the loop still needs.</aside>
     </section>
 
-    <!-- SLIDE 15 · MOBCODE: THREE SUSPECTS -->
-    <section
-      data-activity-id="mobcode"
-      data-activity-trigger="slide-enter"
-      data-activity-instance-key="mobcode:three-suspects:0"
-      data-activity-options='{"files": {"main.py": "# Three teammates each wrote removeAll(L, v).\n# Read all three and predict which ones are broken\n# and how, before you run anything.\n#\n# Then test them one at a time. The test cases include an\n# empty list and matches that sit next to each other.\n# For each broken version, write a one-sentence comment that\n# names the bug, and fix it with the smallest change you can.\n\ndef removeAllA(L, v):\n    for i in range(len(L)):\n        if L[i] == v:\n            L.pop(i)\n\ndef removeAllB(L, v):\n    i = 0\n    while i < len(L):\n        if L[i] == v:\n            L.pop(i)\n        i += 1\n\ndef removeAllC(L, v):\n    i = len(L) - 1\n    while i >= 0:\n        if L[i] == v:\n            L.pop(i)\n        i -= 1\n\ndef test(removeAll):\n    for start in [[], [1, 3], [2, 2], [2, 1, 2], [1, 2, 2, 3]]:\n        L = list(start)\n        removeAll(L, 2)\n        print(start, \"->\", L)\n\n# Test one at a time:\ntest(removeAllC)\n"}, "activeFile": "main.py", "runnerId": "brython-terminal", "startTryItMode": true}'>
-      <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
-      <div class="slide-inner">
-        <span class="slide-tag">Find the Bug &middot; Three Suspects</span>
-        <h2>Which <code>removeAll</code> can you trust?</h2>
-        <p style="margin-top:var(--gap-sm);max-width:1250px;">
-          Three teammates each wrote a version. Before running anything, read all three and predict which are broken and how. Then test them one at a time with the provided cases, which include an empty list and adjacent matches.
-        </p>
-        <p style="margin-top:var(--gap);max-width:1250px;">
-          For each broken version, name the bug in one sentence and repair it with the smallest change you can.
-        </p>
-      </div>
-      <aside class="notes">A crashes on any list where a pop happens before the end (IndexError). B skips adjacent matches: [2, 2] becomes [2]. C is correct: walking backward means a pop only shifts values that were already checked. Ask students why going backward avoids the problem; it is a good extension but not required.</aside>
-    </section>
-
-    <!-- SLIDE 16 · VS CODE EXERCISE -->
+    <!-- SLIDE 18 · VS CODE EXERCISE -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">VS Code &middot; remove_and_filter.py</span>
@@ -326,7 +384,7 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 17 · REFERENCE -->
+    <!-- SLIDE 19 · REFERENCE -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">List Programmer's Reference</span>
@@ -424,33 +482,40 @@ print(L)   # [1, 3, 3, 4]</code></pre></div>
       ],
     },
     fixed: {
-      cols: '540px minmax(0,1fr)',
+      cols: '560px minmax(0,1fr)',
       code: [
-        'items = ["red", "red", "green"]',
-        'i = 0',
-        'while i < len(items):',
-        '    if items[i] == "red":',
-        '        items.pop(i)',
-        '    else:',
-        '        i += 1',
+        'def removeAll(L, v):',
+        '    i = 0',
+        '    while i < len(L):',
+        '        if L[i] == v:',
+        '            L.pop(i)',
+        '        else:',
+        '            i += 1',
+        '',
+        'L = [2, 2, 3]',
+        'removeAll(L, 2)',
+        'print(L)',
       ].join('\n'),
-      consoleLines: 0,
-      sayLines: 4,
+      consoleLines: 1,
+      sayLines: 3,
       steps: [
-        { line: 1, say: 'Two adjacent reds, the case that broke the last version.' },
-        { line: 2, frames: [['global', { items: '@c' }]], candy: { c: true }, objs: { c: ['red', 'red', 'green'] }, say: 'Three items.' },
-        { line: 3, frames: [['global', { items: '@c', i: '0' }]], ptr: [{ obj: 'c', idx: 0, name: 'i' }], say: 'Start at index 0.' },
+        { line: 9, say: 'The definition is skipped until the call.' },
+        { line: 10, frames: [['global', { L: '@x' }]], objs: { x: ['2', '2', '3'] }, say: 'Two 2s next to each other: the case that broke the last version.' },
+        { line: 2, frames: [['global', { L: '@x' }], ['removeAll', { L: '@x', v: '2' }]],
+          say: 'The call makes a new frame. Its <code>L</code> is an alias of the caller&#39;s list.' },
+        { line: 3, frames: [['global', { L: '@x' }], ['removeAll', { L: '@x', v: '2', i: '0' }]], ptr: [{ obj: 'x', idx: 0, name: 'i' }], say: 'Start at index 0.' },
         { line: 4, say: '0 &lt; 3, so the loop runs.' },
-        { line: 5, hl: { c: { bad: [0] } }, say: 'Red. Pop it.' },
-        { line: 3, objs: { c: ['red', 'green'] }, hl: { c: { hl: [0, 1] } },
-          say: 'The <code>else</code> is skipped, so <code>i</code> stays 0, right where the next red just slid in.' },
-        { line: 4, say: '0 &lt; 2, and the condition is checked against the new length.' },
-        { line: 5, hl: { c: { bad: [0] } }, say: 'Red again. Pop it.' },
-        { line: 3, objs: { c: ['green'] }, hl: { c: { hl: [0] } }, say: 'Green slid into index 0. Still no move.' },
+        { line: 5, hl: { x: { bad: [0] } }, say: '<code>L[0]</code> is 2. Pop it.' },
+        { line: 3, objs: { x: ['2', '3'] }, hl: { x: { hl: [0, 1] } },
+          say: 'The <code>else</code> is skipped, so <code>i</code> stays 0, right where the next 2 just slid in.' },
+        { line: 4, say: '0 &lt; 2, checked against the new length.' },
+        { line: 5, hl: { x: { bad: [0] } }, say: '2 again. Pop it.' },
+        { line: 3, objs: { x: ['3'] }, hl: { x: { hl: [0] } }, say: '3 slid into index 0. Still no move.' },
         { line: 4, say: '0 &lt; 1.' },
-        { line: 7, say: 'Not red, so this time the <code>else</code> runs.' },
-        { line: 3, frames: [['global', { items: '@c', i: '1' }]], ptr: [{ obj: 'c', idx: 1, name: 'i' }], say: 'The finger moves to index 1.' },
-        { line: 8, ptr: [], say: '1 &lt; 1 is False, so the loop ends. Every red is gone.' },
+        { line: 7, say: 'Not 2, so this time the <code>else</code> runs.' },
+        { line: 3, frames: [['global', { L: '@x' }], ['removeAll', { L: '@x', v: '2', i: '1' }]], ptr: [{ obj: 'x', idx: 1, name: 'i' }], say: 'The finger moves to index 1.' },
+        { line: 11, frames: [['global', { L: '@x' }]], ptr: [], say: '1 &lt; 1 is False, so the loop ends and the function returns. Every 2 is gone.' },
+        { line: 12, print: '[3]', say: 'The caller&#39;s list changed through the alias.' },
       ],
     },
   };
