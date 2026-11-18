@@ -65,8 +65,46 @@
     return out;
   }
 
+  // Highlights each line, carrying triple-quoted strings (docstrings) across
+  // line breaks. A triple quote inside an ordinary string is rare enough in
+  // slide code to ignore; one after a # is treated as part of the comment.
+  function highlightLines(lines) {
+    var open = null;   // the triple quote that opened the current string, if any
+    return lines.map(function (line) {
+      var out = '';
+      var rest = line;
+      while (rest.length) {
+        if (open) {
+          var end = rest.indexOf(open);
+          if (end < 0) { out += '<span class="tok-str">' + esc(rest) + '</span>'; break; }
+          out += '<span class="tok-str">' + esc(rest.slice(0, end + 3)) + '</span>';
+          rest = rest.slice(end + 3);
+          open = null;
+        } else {
+          var m = /"""|'''/.exec(rest);
+          var hash = rest.indexOf('#');
+          if (!m || (hash >= 0 && hash < m.index)) { out += highlightLine(rest); break; }
+          out += highlightLine(rest.slice(0, m.index));
+          open = m[0];
+          out += '<span class="tok-str">' + esc(open);
+          rest = rest.slice(m.index + 3);
+          var close = rest.indexOf(open);
+          if (close >= 0) {
+            out += esc(rest.slice(0, close + 3)) + '</span>';
+            rest = rest.slice(close + 3);
+            open = null;
+          } else {
+            out += esc(rest) + '</span>';
+            rest = '';
+          }
+        }
+      }
+      return out;
+    });
+  }
+
   function highlight(code) {
-    return code.split('\n').map(highlightLine).join('\n');
+    return highlightLines(code.split('\n')).join('\n');
   }
 
   // Python Tutor link icon: an upright snake in a mortarboard, and an outward arrow.
@@ -271,9 +309,10 @@
     var uid = ++uidCounter;
     var L = layout(trace);
     var lines = trace.code.replace(/^\n|\n\s*$/g, '').split('\n');
+    var lit = highlightLines(lines);
     var codeRows = lines.map(function (ln, i) {
       return '<div class="code-line pending" data-ln="' + (i + 1) + '"><span class="car">&rsaquo;</span><span class="ln">' +
-        (i + 1) + '</span><span>' + (highlightLine(ln) || ' ') + '</span></div>';
+        (i + 1) + '</span><span>' + (lit[i] || ' ') + '</span></div>';
     }).join('');
     var consoleLines = trace.consoleLines === undefined ? 3 : trace.consoleLines;
     var code = '<div class="code-card lt-code"><div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span>' +
@@ -333,6 +372,100 @@
     });
   }
 
+  // ── Docstring hovers ────────────────────────────────────────
+  // Emulates VS Code: hovering over a call to a function whose def (with a
+  // docstring) appears on the same slide shows its signature and docstring.
+  // A def in the same code card wins over one elsewhere on the slide, so two
+  // cards can each define their own removeAll.
+
+  var DEF_RE = /^([ \t]*)def\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*:[^\n]*\n[ \t]*("""|''')([\s\S]*?)\4/gm;
+
+  function findDocDefs(text) {
+    var defs = {};
+    var m;
+    DEF_RE.lastIndex = 0;
+    while ((m = DEF_RE.exec(text)) !== null) {
+      var lines = m[5].split('\n');
+      var rest = lines.slice(1).filter(function (l) { return l.trim(); });
+      var pad = rest.length ? Math.min.apply(null, rest.map(function (l) { return l.match(/^\s*/)[0].length; })) : 0;
+      var doc = [lines[0].trim()].concat(lines.slice(1).map(function (l) { return l.slice(pad); }))
+        .join('\n').trim();
+      defs[m[2]] = { sig: 'def ' + m[2] + '(' + m[3].trim() + ')', doc: doc };
+    }
+    return defs;
+  }
+
+  function addDocHovers() {
+    document.querySelectorAll('.reveal .slides section').forEach(function (section) {
+      if (section.querySelector('section')) return;   // a vertical stack's wrapper
+      var codes = Array.prototype.slice.call(section.querySelectorAll('code.py'));
+      if (!codes.length) return;
+      var slideDefs = {};
+      codes.forEach(function (el) {
+        var d = findDocDefs(el.textContent);
+        for (var k in d) slideDefs[k] = d[k];
+      });
+      if (!Object.keys(slideDefs).length) return;
+      codes.forEach(function (el) {
+        var own = findDocDefs(el.textContent);
+        el.querySelectorAll('.tok-nm').forEach(function (tok) {
+          var name = tok.textContent;
+          var def = own[name] || slideDefs[name];
+          var next = tok.nextSibling;
+          if (!def || !next || next.textContent.charAt(0) !== '(') return;
+          tok.classList.add('doc-hover');
+          tok.setAttribute('data-doc-sig', def.sig);
+          tok.setAttribute('data-doc', def.doc);
+        });
+      });
+    });
+  }
+
+  function showDocTip(tok) {
+    var section = tok.closest('section');
+    if (!section) return;
+    var tip = section.querySelector(':scope > .doc-tip');
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.className = 'doc-tip';
+      tip.setAttribute('role', 'tooltip');
+      section.appendChild(tip);
+    }
+    tip.innerHTML = '<div class="doc-tip-sig"><span class="doc-tip-kind">(function)</span> ' +
+      highlightLine(tok.getAttribute('data-doc-sig')) + '</div><div class="doc-tip-doc">' +
+      esc(tok.getAttribute('data-doc')) + '</div>';
+    // Reveal scales the slide with a transform, so convert screen pixels
+    // back to slide pixels before placing the tip.
+    var sr = section.getBoundingClientRect();
+    var scale = sr.width / section.offsetWidth || 1;
+    var r = tok.getBoundingClientRect();
+    tip.style.left = Math.max(0, (r.left - sr.left) / scale - 12) + 'px';
+    tip.style.top = ((r.bottom - sr.top) / scale + 8) + 'px';
+    tip.classList.add('show');
+    var over = tip.offsetLeft + tip.offsetWidth - section.offsetWidth;
+    if (over > 0) tip.style.left = Math.max(0, tip.offsetLeft - over - 16) + 'px';
+    if (tip.offsetTop + tip.offsetHeight > section.offsetHeight) {
+      tip.style.top = Math.max(0, (r.top - sr.top) / scale - tip.offsetHeight - 8) + 'px';
+    }
+  }
+
+  function hideDocTips() {
+    document.querySelectorAll('.doc-tip.show').forEach(function (t) { t.classList.remove('show'); });
+  }
+
+  var docHoverWired = false;
+  function wireDocHovers() {
+    if (docHoverWired) return;
+    docHoverWired = true;
+    document.addEventListener('mouseover', function (e) {
+      var tok = e.target.closest && e.target.closest('.doc-hover');
+      if (tok) showDocTip(tok);
+    });
+    document.addEventListener('mouseout', function (e) {
+      if (e.target.closest && e.target.closest('.doc-hover')) hideDocTips();
+    });
+  }
+
   window.ListsUnit = {
     highlight: highlight,
     prepare: function (traces) {
@@ -364,6 +497,8 @@
       document.querySelectorAll('code.py').forEach(function (el) {
         el.innerHTML = highlight(el.textContent.replace(/^\n/, ''));
       });
+      addDocHovers();
+      wireDocHovers();
       document.querySelectorAll('.lt-board[data-trace]').forEach(function (board) {
         var t = traces && traces[board.getAttribute('data-trace')];
         if (t) buildBoard(board, t);

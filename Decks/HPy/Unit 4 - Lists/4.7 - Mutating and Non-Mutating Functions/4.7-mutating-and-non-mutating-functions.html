@@ -132,7 +132,7 @@
           <span class="slide-tag">The Question</span>
           <h2>The answer was right. So what went wrong?</h2>
           <p style="margin-top:var(--gap-sm);">
-            A teammate's <code>median</code> function returns the correct median. But after you call it, your list of star ratings is in a different order than before.
+            The <span style="color:var(--accent);">median</span> is the middle of an ordered list. The median of <code>[1, 4, 5]</code> is <span style="color:var(--accent);">4</span>. A teammate&#39;s <code>median</code> function returns the correct median. But after you call it, your list of star ratings is in a different order than before.
           </p>
           <p class="fragment fade-up" style="margin-top:var(--gap);">
             Nothing in the call <code>median(stars)</code> says "and also rearrange my list." The function broke a <span style="color:var(--accent);">promise</span> its caller assumed it would keep.
@@ -149,45 +149,19 @@ print(median(stars))   # 4
 print(stars)           # [1, 4, 5] ?!</code></pre></div>
         </div>
       </div>
+      <aside class="notes">This median only handles a list with an odd number of values. For an even count, the median is the average of the two middle values; that is not needed here. The point of the slide is the side effect, not the statistics.</aside>
     </section>
 
-    <!-- SLIDE 03 · FUNCTION FRAMES ACTIVITY -->
-    <section>
-      <div class="glow" style="width:480px;height:480px;background:radial-gradient(circle,rgba(124,217,146,0.10) 0%,transparent 70%);bottom:-120px;right:-80px;"></div>
-      <div class="slide-inner split split-50">
-        <div>
-          <span class="slide-tag">Hands On &middot; Function Frames</span>
-          <h2>Draw both frames</h2>
-          <p style="margin-top:var(--gap-sm);">
-            On paper, draw a box for the <span style="color:var(--accent);">global</span> frame and, when the call happens, a second box for the <span style="color:var(--accent);">removeFirst</span> frame. Draw one list object outside both frames.
-          </p>
-          <p style="margin-top:var(--gap);">
-            Trace the program line by line. Every variable that refers to the list gets its own arrow. When the call ends, cross out the function's frame. What is left?
-          </p>
-        </div>
-        <div class="code-card">
-          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">frames.py</span></div>
-          <div class="code-body"><pre><code class="py">def removeFirst(items):
-    items.pop(0)
-
-numbers = [10, 20, 30]
-removeFirst(numbers)
-print(numbers)</code></pre></div>
-        </div>
-      </div>
-      <aside class="notes">Use the magnetic arrows again on the board: one arrow for numbers, a second for items during the call. After the call, remove the items card and its arrow; the list stays changed.</aside>
-    </section>
-
-    <!-- SLIDE 04 · TRACE: REMOVEFIRST -->
+    <!-- SLIDE 03 · TRACE: REMOVEFIRST -->
     <section>
       <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
-        <span class="slide-tag">Check Your Frames</span>
+        <span class="slide-tag">Function Frames</span>
         <h2>Mutating through a parameter</h2>
         <div class="lt-board" data-trace="removeFirst" style="margin-top:var(--gap-sm);"></div>
       </div>
     </section>
 
-    <!-- SLIDE 05 · PREDICT: RESET -->
+    <!-- SLIDE 04 · PREDICT: RESET -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
@@ -217,7 +191,7 @@ print(numbers)</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 06 · TRACE: RESET -->
+    <!-- SLIDE 05 · TRACE: RESET -->
     <section>
       <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
         <span class="slide-tag">Trace It</span>
@@ -226,7 +200,7 @@ print(numbers)</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 07 · THE DEFAULT -->
+    <!-- SLIDE 06 · THE DEFAULT -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">4.2.12 Writing Functions</span>
@@ -243,17 +217,17 @@ print(numbers)</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 08 · TWO REMOVEALLS -->
+    <!-- SLIDE 07 · TWO REMOVEALLS -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">Mutating and Non-Mutating removeAll</span>
-        <h2>Same job, two promises, two ways to call</h2>
+        <h2>Two versions of <code>removeAll</code></h2>
         <div class="split split-50" style="margin-top:var(--gap-sm);flex:0 0 auto;align-items:start;">
           <div class="code-card">
             <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">mutating</span></div>
-            <div class="code-body"><pre><code class="py"># Mutates L: removes every v.
-# Returns None.
-def removeAll(L, v):
+            <div class="code-body"><pre><code class="py">def removeAll(L, v):
+    """Removes every v from L.
+    Mutates L and returns None."""
     i = 0
     while i &lt; len(L):
         if L[i] == v:
@@ -265,9 +239,9 @@ removeAll(L, 2)</code></pre></div>
           </div>
           <div class="code-card">
             <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">non-mutating</span></div>
-            <div class="code-body"><pre><code class="py"># Returns a new list without v.
-# Does not change L.
-def removeAll(L, v):
+            <div class="code-body"><pre><code class="py">def removeAll(L, v):
+    """Returns a new list without v.
+    Does not change L."""
     result = []
     for value in L:
         if value != v:
@@ -283,7 +257,7 @@ M = removeAll(L, 2)</code></pre></div>
       </div>
     </section>
 
-    <!-- SLIDE 09 · LOCAL MUTATION -->
+    <!-- SLIDE 08 · LOCAL MUTATION -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">A Common Question</span>
@@ -292,19 +266,18 @@ M = removeAll(L, 2)</code></pre></div>
           Yes. The non-mutating <code>removeAll</code> calls <code>result.append(value)</code>, a mutating method. That is fine, because <code>result</code> is a <span style="color:var(--accent);">local</span> list the function created. Nobody outside the function has an arrow to it until it is returned.
         </p>
         <p style="margin-top:var(--gap);max-width:1250px;">
-          Non-mutating means one thing: the function does not change its <span style="color:var(--result);">parameters</span>. It may build, change, sort, and pop its own local lists as much as it likes. A safe way to fix <code>median</code> is to sort a local copy:
+          Non-mutating means one thing: the function does not change its <span style="color:var(--result);">parameters</span>. It may build, change, sort, and pop its own local lists as much as it likes. A safe way to fix <code>median</code> is to sort a new list instead. <code>sorted(L)</code> returns a new, sorted list and leaves <code>L</code> alone:
         </p>
-        <div class="code-card fragment fade-up" style="margin-top:var(--gap);max-width:760px;">
+        <div class="code-card fragment fade-up" style="margin-top:var(--gap);max-width:960px;">
           <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
           <div class="code-body"><pre><code class="py">def median(L):
-    M = copy.copy(L)
-    M.sort()            # changes M, not L
+    M = sorted(L)   # a new list; L is unchanged
     return M[len(M) // 2]</code></pre></div>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 10 · CHECKPOINT -->
+    <!-- SLIDE 09 · CHECKPOINT -->
     <section
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
@@ -323,40 +296,46 @@ M = removeAll(L, 2)</code></pre></div>
       <aside class="notes">B is false: mutating functions generally return None, but L.pop() is mutating and returns the removed value. A function can both mutate and return something useful, as long as its contract says so.</aside>
     </section>
 
-    <!-- SLIDE 11 · CONTRACTS AND TESTS -->
+    <!-- SLIDE 10 · CONTRACTS AND TESTS -->
     <section>
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Contracts</span>
           <h2>Say it, then test it</h2>
           <p style="margin-top:var(--gap-sm);">
-            Start every list function with a comment that states its <span style="color:var(--accent);">contract</span>: what it returns, and whether it changes its arguments.
+            Start every function with a <span style="color:var(--accent);">docstring</span>: a string in triple quotes on the first line of the body. Use it to state the function&#39;s <span style="color:var(--accent);">contract</span>: what it returns and, when it takes a list, whether it changes that list. In VS Code, hovering over a call to the function shows its docstring, so the caller sees the promise.
           </p>
           <p style="margin-top:var(--gap);">
-            Then test both halves of the promise. Check the return value, and check the argument <span style="color:var(--accent);">after the call</span>: unchanged for a non-mutating function, changed in exactly the promised way for a mutating one.
+            Then test both halves of the promise. Check the return value, and check the argument <span style="color:var(--accent);">after the call</span>.
           </p>
         </div>
-        <div class="code-card">
-          <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
-          <div class="code-body"><pre><code class="py">def testMedian():
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm);min-width:0;">
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">the contract</span></div>
+            <div class="code-body"><pre><code class="py">def median(L):
+    """Returns the middle value of L.
+    Does not change L."""
+    M = sorted(L)
+    return M[len(M) // 2]</code></pre></div>
+          </div>
+          <div class="code-card">
+            <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">the test</span></div>
+            <div class="code-body"><pre><code class="py">def testMedian():
     stars = [5, 1, 4]
     assert(median(stars) == 4)
-    assert(stars == [5, 1, 4])
-
-def testRemoveAll():
-    L = [2, 1, 2, 2]
-    assert(removeAll(L, 2) == None)
-    assert(L == [1])</code></pre></div>
+    assert(stars == [5, 1, 4])</code></pre></div>
+          </div>
         </div>
       </div>
+      <aside class="notes">A docstring is an ordinary string that Python stores with the function; help(median) prints it too. Students wrote contract comments in 4.5 and 4.6; the exercise has them turn those into docstrings. For a mutating function, the test checks that the argument changed in exactly the promised way.</aside>
     </section>
 
-    <!-- SLIDE 12 · MOBCODE: BROKEN PROMISES -->
+    <!-- SLIDE 11 · MOBCODE: BROKEN PROMISES -->
     <section
       data-activity-id="mobcode"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="mobcode:broken-promises:0"
-      data-activity-options='{"files": {"main.py": "# Each function promises NOT to change its argument.\n# The tests check the return value AND the argument.\n# Two functions break their promise. Find them and fix them\n# without changing what they return.\n#\n# Run the tests. The first assert that fails points at the\n# first broken promise. Fix it, run again, and repeat.\n\ndef median(L):\n    L.sort()\n    return L[len(L) // 2]\n\ndef lastWord(words):\n    return words.pop()\n\ndef countLong(words, n):\n    count = 0\n    for word in words:\n        if len(word) >= n:\n            count += 1\n    return count\n\ndef test():\n    stars = [5, 1, 4]\n    assert(median(stars) == 4)\n    assert(stars == [5, 1, 4])\n    words = [\"so\", \"very\", \"loud\"]\n    assert(lastWord(words) == \"loud\")\n    assert(words == [\"so\", \"very\", \"loud\"])\n    assert(countLong(words, 4) == 2)\n    assert(words == [\"so\", \"very\", \"loud\"])\n    print(\"All tests passed!\")\n\ntest()\n"}, "activeFile": "main.py", "runnerId": "brython-terminal", "startTryItMode": true}'>
+      data-activity-options='{"files": {"main.py": "# Each docstring promises NOT to change the argument.\n# The tests check the return value AND the argument.\n# Two functions break their promise. Find them and fix them\n# without changing what they return.\n#\n# Run the tests. The first assert that fails points at the\n# first broken promise. Fix it, run again, and repeat.\n\ndef median(L):\n    \"\"\"Returns the middle value of L. Does not change L.\"\"\"\n    L.sort()\n    return L[len(L) // 2]\n\ndef lastWord(words):\n    \"\"\"Returns the last word. Does not change words.\"\"\"\n    return words.pop()\n\ndef countLong(words, n):\n    \"\"\"Returns how many words have at least n letters.\n    Does not change words.\"\"\"\n    count = 0\n    for word in words:\n        if len(word) &gt;= n:\n            count += 1\n    return count\n\ndef test():\n    stars = [5, 1, 4]\n    assert(median(stars) == 4)\n    assert(stars == [5, 1, 4])\n    words = [\"so\", \"very\", \"loud\"]\n    assert(lastWord(words) == \"loud\")\n    assert(words == [\"so\", \"very\", \"loud\"])\n    assert(countLong(words, 4) == 2)\n    assert(words == [\"so\", \"very\", \"loud\"])\n    print(\"All tests passed!\")\n\ntest()\n"}, "activeFile": "main.py", "runnerId": "brython-terminal", "startTryItMode": true}'>
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(255,107,91,0.1) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Find the Broken Promises</span>
@@ -365,16 +344,16 @@ def testRemoveAll():
           Each function promises not to change its argument, and the tests check both the return value and the argument afterward. Run the tests, use the failing <code>assert</code> to find the first broken promise, fix it, and repeat. Your fixes must not change what any function returns.
         </p>
       </div>
-      <aside class="notes">median sorts its argument; lastWord pops it. Fixes: sort a copy in median, and use words[-1] in lastWord. countLong is fine. Point out that the first failing assert is on the line after the call, not inside the function.</aside>
+      <aside class="notes">median sorts its argument; lastWord pops it. Fixes: use sorted(L) in median, and use words[-1] in lastWord. countLong is fine. Point out that the first failing assert is on the line after the call, not inside the function.</aside>
     </section>
 
-    <!-- SLIDE 13 · CASE BRIEFING -->
+    <!-- SLIDE 12 · CASE BRIEFING -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">Investigation &middot; Briefing</span>
         <h2>Who changed the list?</h2>
         <p style="margin-top:var(--gap-sm);max-width:1250px;">
-          A team of programmers runs four analysis functions on one shared list of words from a review. Someone's function quietly changes that list, so the report at the end is wrong. Your job is to find out <span style="color:var(--accent);">whose</span>, using as little time as you can.
+          A team of programmers runs four analysis functions on one shared list of words from a sentence. Someone's function quietly changes that list, so the report at the end is wrong. Your job is to find out <span style="color:var(--accent);">whose</span>, using as little time as you can.
         </p>
         <ul class="bullets" style="margin-top:var(--gap);max-width:1250px;">
           <li>Read the <strong>case file</strong>: the bug report, the expected output, and the team's commit log.</li>
@@ -387,7 +366,7 @@ def testRemoveAll():
       </div>
     </section>
 
-    <!-- SLIDE 14 · INVESTIGATION WIDGET -->
+    <!-- SLIDE 13 · INVESTIGATION WIDGET -->
     <section>
       <div class="slide-inner" style="justify-content:flex-start;padding-top:36px;">
         <span class="slide-tag">Investigation &middot; Who Changed the List?</span>
@@ -396,24 +375,24 @@ def testRemoveAll():
       <aside class="notes">Four hidden causes, dealt in shuffled order so New case shows each once before repeats. A careful path is: read the case file, run main.py (2 min), compare against the expected output, then run the alias test on one or two suspects (3 min each). Running every test does not fit in 12 minutes. The two red tests are bad practice and are never carried out.</aside>
     </section>
 
-    <!-- SLIDE 15 · VS CODE EXERCISE -->
+    <!-- SLIDE 14 · VS CODE EXERCISE -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">VS Code &middot; function_design.py</span>
         <h2>Function Design Challenge</h2>
         <div class="ex-card" style="margin-top:var(--gap-sm);max-width:1300px;">
-          <p>In VS Code, create <code>function_design.py</code> in your Unit 4 folder. Write each pair: a mutating version with a command-verb name, and a non-mutating version that returns a new list. Each function gets a contract comment, and each test checks the return value and the argument after the call.</p>
+          <p>In VS Code, create <code>function_design.py</code> in your Unit 4 folder. Write each pair: a mutating version with a command-verb name, and a non-mutating version that returns a new list. Each function gets a docstring that states its contract, and each test checks the return value and the argument after the call.</p>
           <ol class="bullets" style="margin-top:var(--gap-sm);">
             <li><code>lowercaseAll(words)</code> and <code>lowercased(words)</code></li>
             <li><code>removeShort(words, n)</code> and <code>withoutShort(words, n)</code></li>
             <li><code>replaceAll(words, old, new)</code> and <code>replaced(words, old, new)</code></li>
           </ol>
-          <p style="margin-top:var(--gap-sm);">Then go back to your 4.5 and 4.6 files and add a contract comment to every list function you have written.</p>
+          <p style="margin-top:var(--gap-sm);">Then go back to your 4.5 and 4.6 files and turn each contract comment into a docstring.</p>
         </div>
       </div>
     </section>
 
-    <!-- SLIDE 16 · REFERENCE -->
+    <!-- SLIDE 15 · REFERENCE -->
     <section>
       <div class="slide-inner">
         <span class="slide-tag">List Programmer's Reference</span>
@@ -424,7 +403,7 @@ def testRemoveAll():
           <tr><td>Reassigning a parameter only moves the local arrow</td><td><code>items = []</code> never reaches the caller</td></tr>
           <tr><td>Default to non-mutating</td><td></td></tr>
           <tr><td>Local lists may be mutated freely</td><td></td></tr>
-          <tr><td>Mutating functions say so in the name and comment</td><td>call them on their own line; they usually return <code>None</code></td></tr>
+          <tr><td>Mutating functions say so in the name and docstring</td><td>call them on their own line; they usually return <code>None</code></td></tr>
           <tr><td>Test the argument after the call</td><td></td></tr>
         </table>
         <p style="margin-top:var(--gap-sm);max-width:1250px;">The first row is done for you. Test each entry and fill in the blank cells.</p>
@@ -502,8 +481,7 @@ def testRemoveAll():
      the evidence is always consistent with the hidden cause. */
   function initWhoChanged(root) {
     if (!root) return;
-    var REVIEW = 'the fan is great but the fan is loud !';
-    var POSITIVE = ['great', 'good', 'love'];
+    var TEXT = 'the dog is happy but the dog is muddy !';
     var STOP = ['the', 'is', 'but', 'a', 'and'];
     var BUDGET = 12;
     var hasLetter = function (w) { return /[a-z]/i.test(w); };
@@ -518,29 +496,29 @@ def testRemoveAll():
           return (Math.round(t / use.length * 100) / 100).toFixed(2);
         },
         explain: '<strong>averageLength</strong> popped every token with no letters, like <code>"!"</code>, out of the caller\'s list before averaging. Its own answer was right, so return-value tests passed. The fix: skip those tokens while summing, or filter them into a local list, instead of removing them from <code>words</code>.' },
-      { id: 'pos', call: 'countPositive(words, POSITIVE)', run: function (W, bug) {
+      { id: 'pos', call: 'countLong(words, 4)', run: function (W, bug) {
           if (bug) { STOP.forEach(function (s) { while (W.indexOf(s) >= 0) W.splice(W.indexOf(s), 1); }); }
-          return String(W.filter(function (w) { return POSITIVE.indexOf(w) >= 0; }).length);
+          return String(W.filter(function (w) { return w.length >= 4; }).length);
         },
-        explain: '<strong>countPositive</strong> removed filler words like <code>"the"</code> and <code>"is"</code> from the caller\'s list before counting. Filler words are never positive, so its count was still right. The fix: skip filler words inside the loop, or build a local filtered list.' },
+        explain: '<strong>countLong</strong> removed filler words like <code>"the"</code> and <code>"is"</code> from the caller\'s list before counting. Filler words are all short, so its count was still right. The fix: skip filler words inside the loop, or build a local filtered list.' },
       { id: 'uni', call: 'uniqueCount(words)', run: function (W, bug) {
           if (bug) { var i = 0; while (i < W.length) { if (W.slice(0, i).indexOf(W[i]) >= 0) W.splice(i, 1); else i++; } return String(W.length); }
           var seen = []; W.forEach(function (w) { if (seen.indexOf(w) < 0) seen.push(w); }); return String(seen.length);
         },
-        explain: '<strong>uniqueCount</strong> popped repeated words out of the caller\'s list and then returned its length. The count was right, but the review lost its repeats. The fix: build a local <code>seen</code> list with <code>not in</code> and return its length.' },
+        explain: '<strong>uniqueCount</strong> popped repeated words out of the caller\'s list and then returned its length. The count was right, but the list lost its repeats. The fix: build a local <code>seen</code> list with <code>not in</code> and return its length.' },
       { id: 'lng', call: 'longestWords(words, 2)', run: function (W, bug) {
           var M = bug ? W : W.slice(); var out = [];
           for (var k = 0; k < 2; k++) { var b = 0; for (var i = 1; i < M.length; i++) if (M[i].length > M[b].length) b = i; out.push(M.splice(b, 1)[0]); }
           return rep(out);
         },
-        explain: '<strong>longestWords</strong> found each longest word and popped it out of the caller\'s list. It returned the right words, and the review lost them. The fix: pop from <code>copy.copy(words)</code>, a local copy, instead of from <code>words</code>.' },
+        explain: '<strong>longestWords</strong> found each longest word and popped it out of the caller\'s list. It returned the right words, and the list lost them. The fix: pop from <code>copy.copy(words)</code>, a local copy, instead of from <code>words</code>.' },
     ];
-    var LABELS = ['Average length', 'Positive words', 'Unique words', 'Longest'];
+    var LABELS = ['Average length', 'Long words', 'Unique words', 'Longest'];
     var SUSPECTS = FUNCS.map(function (f) { return { id: f.id, nm: f.call }; })
-      .concat([{ id: 'split', nm: 'review.split(" ")' }]);
+      .concat([{ id: 'split', nm: 'text.split(" ")' }]);
 
     function runMain(bugId) {
-      var W = REVIEW.split(' ');
+      var W = TEXT.split(' ');
       var out = ['Words: ' + W.length];
       var vals = FUNCS.map(function (f, k) { var v = f.run(W, f.id === bugId); out.push(LABELS[k] + ': ' + v); return v; });
       out.push('Words: ' + W.length);
@@ -551,7 +529,7 @@ def testRemoveAll():
 
     function aliasTest(fid, bugId) {
       var f = FUNCS.filter(function (x) { return x.id === fid; })[0];
-      var W = REVIEW.split(' ');
+      var W = TEXT.split(' ');
       var before = W.slice();
       var r = f.run(W, fid === bugId);
       var same = W.join('\u0000') === before.join('\u0000');
@@ -562,7 +540,7 @@ def testRemoveAll():
     var TESTS = [
       { id: 'main', label: 'Run <code>main.py</code> and read the output', cost: 2 },
       { id: 'alias-avg', label: 'Alias test: <code>averageLength</code>', cost: 3 },
-      { id: 'alias-pos', label: 'Alias test: <code>countPositive</code>', cost: 3 },
+      { id: 'alias-pos', label: 'Alias test: <code>countLong</code>', cost: 3 },
       { id: 'alias-uni', label: 'Alias test: <code>uniqueCount</code>', cost: 3 },
       { id: 'alias-lng', label: 'Alias test: <code>longestWords</code>', cost: 3 },
       { id: 'asserts', label: 'Run the return-value tests', cost: 2 },
@@ -573,7 +551,7 @@ def testRemoveAll():
     var FIXES = [
       { id: 'local', txt: 'Change the guilty function so it works on a local list it builds or copies, and leaves words alone.' },
       { id: 'copyall', txt: 'In main.py, pass copy.copy(words) to every function.' },
-      { id: 'resplit', txt: 'In main.py, split the review again just before the last two prints.' },
+      { id: 'resplit', txt: 'In main.py, split the text again just before the last two prints.' },
       { id: 'sort', txt: 'Sort words at the end so it is in a predictable order.' },
     ];
 
@@ -679,16 +657,16 @@ def testRemoveAll():
       h += '<span class="wc-spacer"></span><span class="wc-clock' + (left <= 3 ? ' low' : '') + '">time left: <b>' + left + '</b> of ' + BUDGET + ' min</span></div>';
 
       h += '<div class="wc-panel wc-case' + (S.tab === 'case' ? ' is-on' : '') + '"><div>' +
-        '<h3>Bug report</h3><p class="wc-txt">"The word count at the end of the report does not match the count at the start, and the review printed on the last line is <strong>not the review we typed</strong>. Every function\'s own tests pass."</p>' +
+        '<h3>Bug report</h3><p class="wc-txt">"The word count at the end of the report does not match the count at the start, and the sentence printed on the last line is <strong>not the sentence we typed</strong>. Every function\'s own tests pass."</p>' +
         '<h3 style="margin-top:14px;">Expected output</h3><pre class="wc-out">' + esc(EXPECTED.text) + '</pre></div>' +
         '<div><h3>Commit log, oldest first</h3><ul class="wc-log">' +
         '<li><b>Ari</b> averageLength now skips tokens like "!" that have no letters</li>' +
         '<li><b>Sam</b> fixed a typo in README.md</li>' +
-        '<li><b>Jordan</b> countPositive ignores filler words like "the" and "is"</li>' +
+        '<li><b>Jordan</b> countLong skips filler words like "the" and "is"</li>' +
         '<li><b>Maya</b> uniqueCount handles repeated words</li>' +
         '<li><b>Lee</b> longestWords pulls out the n longest words</li>' +
-        '<li><b>Sam</b> added sample_reviews.txt</li></ul>' +
-        '<h3 style="margin-top:14px;">main.py runs, in order</h3><p class="wc-txt"><code>words = review.split(" ")</code>, then ' +
+        '<li><b>Sam</b> added sample_sentences.txt</li></ul>' +
+        '<h3 style="margin-top:14px;">main.py runs, in order</h3><p class="wc-txt"><code>words = text.split(" ")</code>, then ' +
         FUNCS.map(function (f) { return '<code>' + f.call + '</code>'; }).join(', ') + ', then prints the count and the joined words.</p></div></div>';
 
       h += '<div class="wc-panel wc-inv' + (S.tab === 'inv' ? ' is-on' : '') + '"><div class="wc-tests">';
