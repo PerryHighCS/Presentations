@@ -162,24 +162,24 @@ The final tray is `["green", "yellow", "orange", "purple", "green"]`, and `x` ho
 
 **Central question:** Why can changing one variable seem to change another?
 
-**Room flow.** Students open with a Resonance prediction at their computers. On slide 3 groups move to the whiteboards with their code sheets and magnetic arrows, and they stay there for the traces and checkpoints. Slide 19 sends them back to their computers for the MobCode and VS Code work.
+**Room flow.** Students stay at their computers for the hook prediction, the instructor's front-board demonstration, and the first checkpoints. Slide 10 sends groups to the whiteboards with their code sheets and magnetic arrows, just before their first trace, and they stay there through slide 16, so all the whiteboard tracing happens together. Slide 17 sends them back to their computers for the remaining explanations, the Resonance checkpoints, and the MobCode and VS Code work.
 
 **Presentation outline**
 1. Hook prediction (Resonance): `b = a`, then `a.append(4)`, then `print(b)`.
-2. Boxes and arrows: frames, objects, and references, with a Python Tutor link to the hook program. Groups move to the whiteboards.
-3. **Instructor demonstration** at the front board with magnetic arrows: two variables can refer to the same list, and a third holds an equal but separate list. Students build the same picture at their whiteboards.
+2. Boxes and arrows: frames, objects, and references, with a Python Tutor link to the hook program.
+3. **Instructor demonstration** at the front board with magnetic arrows: two variables can refer to the same list, and a third holds an equal but separate list. Students watch from their seats.
 4. Aliases versus copies, and `==` versus `is` and `is not`.
 5. `copy.copy()`, with a Python Tutor link for each example. Recognize alternate copying forms such as slicing, `list(L)`, `L.copy()`, `L + []`, and `L * 1` without using them, consistent with CMU's preference for `copy.copy()`.
 6. Reassigning moves an arrow (trace board), then mutation versus reassignment.
-7. **Whiteboard trace:** groups trace `M[2] = 5` through an alias, then check with the revealed answer and Python Tutor.
+7. **Move to the whiteboards:** groups pick up their code sheets and magnetic arrows. Then the **whiteboard trace:** groups trace `M[2] = 5` through an alias, then check with the revealed answer and Python Tutor.
 8. **Hands on: Move the arrows (`arrows.py`):** before each line, groups mark it on their code sheet: **M** if it mutates a list, **A** if it points an arrow at a list that already exists (an alias), or **N** if it makes a new list and points an arrow at it (`copy.copy(a)` and `a + [5]`). `a[0] = 9` is the trap, since it has an equals sign but is M. A trace board checks the result.
-9. `L = L + M` versus `L += M`, and `L = L * n` versus `L *= n`.
-10. Four patterns that help you remember: assignment operators (`+=`, `*=`) mutate while plain operators do not; methods mutate while past-tense functions (`sorted`, `reversed`) do not; non-mutating operations return a new list that must be stored; and mutating methods return `None` except `pop`, so `L = L.sort()` turns `L` into `None`. When the patterns are not enough, run the alias test.
-11. A parameter refers to the caller's list (trace board).
-12. **Whiteboard trace:** a function call. `addItems(M)` mutates the caller's list through the parameter, then reassigns the parameter to a new list, so only the first change reaches the caller.
-13. Back to computers.
-14. **Trace on paper:** students trace the MobCode program on paper and predict every `print` before it opens.
-15. MobCode: students type their predictions as comments, run the program, and find where any wrong prediction went wrong. A slide below the MobCode slide shows the program with a Python Tutor link, so students can step through it and find the first step where their drawing disagrees.
+9. Each function call gets its own frame: a parameter gets a copy of the caller's arrow, and the frame disappears when the function returns.
+10. **Instructor demonstration** at the front board: a parameter refers to the caller's list (trace board), while groups follow along.
+11. **Whiteboard trace:** a function call. `addItems(M)` mutates the caller's list through the parameter, then reassigns the parameter to a new list, so only the first change reaches the caller.
+12. Back to computers.
+13. `L = L + M` versus `L += M`, and `L = L * n` versus `L *= n`.
+14. Four patterns that help you remember: assignment operators (`+=`, `*=`) mutate while plain operators do not; methods mutate while past-tense functions (`sorted`, `reversed`) do not; non-mutating operations return a new list that must be stored; and mutating methods return `None` except `pop`, so `L = L.sort()` turns `L` into `None`. When the patterns are not enough, run the alias test.
+15. MobCode: students trace the program on paper first, type their predictions as comments, run the program, and find where any wrong prediction went wrong. A slide below the MobCode slide shows the program with a Python Tutor link, so students can step through it and find the first step where their drawing disagrees.
 
 **Physical tracing: Magnetic arrows.** Each group draws list objects beside its code sheet and uses magnetic arrows for variable references, moving an arrow on reassignment and editing the drawn list on mutation. Contrast:
 
@@ -197,7 +197,7 @@ b = a
 a = a + [4]
 ```
 
-**MobCode: Identity predictions.** Predict object identity, value equality, and contents after sequences of assignment and mutation. A slide before the MobCode slide shows the program so students trace it on paper and write their predictions before they can run it. The steps are repeated in the starter comments, since MobCode covers the slide.
+**MobCode: Identity predictions.** Predict object identity, value equality, and contents after sequences of assignment and mutation. The starter comments, which stay visible while MobCode covers the slide, have students trace the program on paper and type their predictions before they run it.
 
 **VS Code: Alias Experiments (`alias_experiments.py`).** Each experiment has a prediction comment above it and an explanation in terms of arrows below it. Students show two lists that are `==` but not `is` and two that are both; use the alias test to decide whether `L += [1]`, `L = L + [1]`, and `L.extend([1])` mutate `L`; and write `shout(words)`, which uppercases every word by index, then protect the caller with `copy.copy`.
 
@@ -424,14 +424,14 @@ Each student retains a VS Code lab collection and contributes a separately testa
 
 ## Code Sheet Exercise Set
 
-Make the code sheets with TraceLift (https://print.mycode.run/tracelift), which prints each program as a numbered code sheet. Copy each block below into TraceLift as it is. The code itself has no `[[name]]` flaps. Where a sheet needs space to record a variable, a comment line under the title uses flaps such as `# [[x]]` as blank spaces for students to fill in. Because it is a comment, the code's line numbers still match the slides. Print one sheet per group for each group trace, and one large sheet for the front board demonstration.
+Make the code sheets with TraceLift (https://print.mycode.run/tracelift), which prints each program as a numbered code sheet. Copy each block below into TraceLift as it is. The code itself has no `[[name]]` flaps. Each sheet's title is its lesson and number, such as 4.4.3; a longer name goes in a comment line under the title. Where a sheet needs space to record a variable, a comment line uses flaps such as `# [[x]]` as blank spaces for students to fill in. Because these are comments, the code's line numbers still match the slides. Print one sheet per group for each group trace, and one large sheet for the front board demonstration.
 
-### Lesson 4.3: Be the List (slides 6 and 7, tables)
+### 4.3.1: Be the List (slides 6 and 7, tables)
 
 The tray is the list, so the sheet only needs a space for `x`, the value `pop` hands back. Groups record the tray beside each line.
 
 ```text
-Title: Lesson 4.3 - Be the List
+Title: 4.3.1 Be the List
 # [[x]]
 tray = ["green", "red", "yellow", "red", "purple"]
 tray[2] = "orange"
@@ -441,24 +441,25 @@ x = tray.pop(3)
 tray.append("green")
 ```
 
-### Lesson 4.4 Round 1: The Hook (slide 2, optional)
+### 4.4.1: The Hook (slide 2, optional)
 
-Students first answer this as a Resonance question. A sheet lets groups redraw it at the board after slide 3.
+Students first answer this as a Resonance question. A sheet lets groups redraw it at the board once they move there on slide 10.
 
 ```text
-Title: Lesson 4.4 Round 1 - The Hook
+Title: 4.4.1 The Hook
 a = [1, 2, 3]
 b = a
 a.append(4)
 print(b)
 ```
 
-### Lesson 4.4 Demo: Two Names, One List (slide 4, front board)
+### 4.4 Demo: Two Variables Can Refer to the Same List (slide 4, front board)
 
-The instructor traces this at the front board while groups copy the picture.
+The instructor traces this at the front board while students watch from their seats.
 
 ```text
-Title: Lesson 4.4 Demo - Two Variables Can Refer to the Same List
+Title: 4.4 Demo
+# Two Variables Can Refer to the Same List
 L = [1, 3]
 M = L
 N = [1, 3]
@@ -467,12 +468,13 @@ print(L, M, N)
 print(L is M, L is N, L == N)
 ```
 
-### Lesson 4.4 Round 2: Reassigning Moves an Arrow (slide 8, optional)
+### 4.4.2: Reassigning Moves an Arrow (slide 8, optional)
 
-The deck steps through this on a trace board. Groups can trace it first.
+The deck steps through this on a trace board before groups move to the whiteboards. Groups can trace it at the board afterward for extra practice.
 
 ```text
-Title: Lesson 4.4 Round 2 - Reassigning Moves an Arrow
+Title: 4.4.2
+# Reassigning Moves an Arrow
 L = [1, 3]
 M = L
 M = [1, 3]
@@ -481,20 +483,20 @@ M[0] = 99
 print(L, M)
 ```
 
-### Lesson 4.4 Round 3: Trace It (slide 10)
+### 4.4.3: Trace It (slide 11)
 
 ```text
-Title: Lesson 4.4 Round 3 - Trace It
+Title: 4.4.3 Trace It
 L = [1, 2, 3]
 M = L
 M[2] = 5
 print(L, M)
 ```
 
-### Lesson 4.4 Round 4: Move the Arrows (slide 11)
+### 4.4.4: Move the Arrows (slide 12)
 
 ```text
-Title: Lesson 4.4 Round 4 - Move the Arrows
+Title: 4.4.4 Move the Arrows
 import copy
 a = [1, 2, 3]
 b = a
@@ -505,12 +507,13 @@ a = a + [5]
 print(a, b, c)
 ```
 
-### Lesson 4.4 Round 5: A Parameter Refers to the Caller's List (slide 16, optional)
+### 4.4.5: A Parameter Refers to the Caller's List (slide 15, front board)
 
-The deck steps through this on a trace board. Groups draw a second frame for the call to `f`.
+The instructor demonstrates this at the front board alongside the slide's trace, drawing a second frame for the call to `f`. Print one large sheet for the front board.
 
 ```text
-Title: Lesson 4.4 Round 5 - A Parameter Refers to the Caller's List
+Title: 4.4.5
+# A Parameter Refers to the Caller's List
 def f(M):
     M[0] = 42
 
@@ -519,12 +522,13 @@ f(L)
 print(L)
 ```
 
-### Lesson 4.4 Round 6: Trace a Function Call (slide 18)
+### 4.4.6: Trace a Function Call (slide 16)
 
 Groups draw a second frame for the call to `addItems` and mark each line M, A, or N.
 
 ```text
-Title: Lesson 4.4 Round 6 - Trace a Function Call
+Title: 4.4.6
+# Trace a Function Call
 def addItems(M):
     M.append(4)
     M = M + [5]
@@ -535,12 +539,13 @@ addItems(L)
 print(L)
 ```
 
-### Lesson 4.6: Remove All the Reds (slides 6 and 7, tables)
+### 4.6.1: Remove All the Reds (slides 6 and 7, tables)
 
 Groups load the tray from lines 1 and 2 of the code: green, red, red, purple, red, orange, red, yellow. The tray is `items`, and one student's finger is `i`; the space for `i` lets the group write each new value. Line 7 on the slide is line 7 on the sheet.
 
 ```text
-Title: Lesson 4.6 - Remove All the Reds
+Title: 4.6.1
+# Remove All the Reds
 # [[i]]
 items = ["green", "red", "red", "purple",
          "red", "orange", "red", "yellow"]
