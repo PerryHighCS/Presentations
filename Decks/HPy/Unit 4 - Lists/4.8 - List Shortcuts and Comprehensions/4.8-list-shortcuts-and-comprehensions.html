@@ -48,7 +48,7 @@
             <code>sorted(L)</code> is a function that returns a <span style="color:var(--result);">new</span> sorted list and leaves <code>L</code> alone. <code>L.sort()</code> is a method that <span style="color:var(--warn);">mutates</span> <code>L</code> and returns <code>None</code>.
           </p>
           <p style="margin-top:var(--gap);">
-            Both accept <code>reverse=True</code> to sort from largest to smallest. This is the clean fix for last lesson's <code>median</code>.
+            Both accept <code>reverse=True</code> to sort from largest to smallest.
           </p>
         </div>
         <div class="code-card">
@@ -72,7 +72,7 @@ def median(L):
     <section>
       <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
         <span class="slide-tag">Trace It</span>
-        <h2>One builds, one mutates</h2>
+        <h2>Tracing <code>sorted</code> and <code>sort</code></h2>
         <div class="lt-board" data-trace="sorts" style="margin-top:var(--gap-sm);"></div>
       </div>
     </section>
@@ -113,26 +113,29 @@ print(L)                   # [2, 3, 8]</code></pre></div>
       data-activity-id="resonance"
       data-activity-trigger="slide-enter"
       data-activity-instance-key="resonance:sorted-reversed:0"
-      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "For which `L` does this NOT print `yes`?\n\n```python\nM = sorted(L, reverse=True)\nN = list(reversed(M))\nprint(\"yes\" if L == N else \"no\")\n```", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "`L = [3, 2, 1]`", "isCorrect": true}, {"id": "q1b", "text": "`L = list(range(32))`", "isCorrect": false}, {"id": "q1c", "text": "`L = [5]`", "isCorrect": false}, {"id": "q1d", "text": "`L = [1, 2, 3]`", "isCorrect": false}]}]}'>
+      data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "When does this program print `yes`?\n\n```python\nM = sorted(L, reverse=True)\nN = list(reversed(M))\nif L == N:\n    print(\"yes\")\nelse:\n    print(\"no\")\n```", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "Always, for any list", "isCorrect": false}, {"id": "q1b", "text": "Only when `L` is empty", "isCorrect": false}, {"id": "q1c", "text": "Only when `L` is already sorted from largest to smallest", "isCorrect": false}, {"id": "q1d", "text": "Only when `L` is already sorted from smallest to largest", "isCorrect": true}]}]}'>
       <div class="slide-inner split split-50">
         <div>
           <span class="slide-tag">Checkpoint &middot; sorted and reversed</span>
-          <h2>For which list does this <span style="color:var(--warn);">not</span> print yes?</h2>
+          <h2>When does this program print <code>yes</code>?</h2>
           <ul class="mcq-opts" style="margin-top:var(--gap);">
-            <li><span class="opt-key">A</span><code>L = [3, 2, 1]</code></li>
-            <li><span class="opt-key">B</span><code>L = list(range(32))</code></li>
-            <li><span class="opt-key">C</span><code>L = [5]</code></li>
-            <li><span class="opt-key">D</span><code>L = [1, 2, 3]</code></li>
+            <li><span class="opt-key">A</span>Always, for any list</li>
+            <li><span class="opt-key">B</span>Only when <code>L</code> is empty</li>
+            <li><span class="opt-key">C</span>Only when <code>L</code> is already sorted from largest to smallest</li>
+            <li><span class="opt-key">D</span>Only when <code>L</code> is already sorted from smallest to largest</li>
           </ul>
         </div>
         <div class="code-card">
           <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
           <div class="code-body"><pre><code class="py">M = sorted(L, reverse=True)
 N = list(reversed(M))
-print("yes" if L == N else "no")</code></pre></div>
+if L == N:
+    print("yes")
+else:
+    print("no")</code></pre></div>
         </div>
       </div>
-      <aside class="notes">N is L sorted smallest to largest, so this prints yes exactly when L was already in ascending order. [3, 2, 1] is not.</aside>
+      <aside class="notes">M is L sorted largest to smallest, and reversing it gives L sorted smallest to largest. So N == L only when L was already in ascending order. Students who pick C think reversed undoes reverse=True. An empty list does print yes, but so do many others, so B is too narrow.</aside>
     </section>
 
     <!-- SLIDE 07 · SPLIT SPLITLINES JOIN -->
@@ -142,7 +145,7 @@ print("yes" if L == N else "no")</code></pre></div>
           <span class="slide-tag">4.2.9 List-Related String Methods</span>
           <h2>Text to lists and back</h2>
           <p style="margin-top:var(--gap-sm);">
-            <code>s.split(c)</code> breaks a string at each <code>c</code>. <code>s.splitlines()</code> breaks it at each line ending, which is how you turn a file of reviews, one per line, into a list of reviews.
+            <code>s.split(c)</code> breaks a string at each <code>c</code>. <code>s.splitlines()</code> breaks it at each line ending, which is how you turn text with one item per line, like a shopping list, into a list of items.
           </p>
           <p style="margin-top:var(--gap);">
             <code>c.join(L)</code> goes back, putting <code>c</code> between each pair. Use <code>"\n"</code> to make lines, or <code>""</code> to glue strings together with nothing between.
@@ -150,15 +153,15 @@ print("yes" if L == N else "no")</code></pre></div>
         </div>
         <div class="code-card">
           <div class="code-hdr"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:6px;">main.py</span></div>
-          <div class="code-body"><pre><code class="py">text = """Great fan!
-Too loud.
-Works fine."""
-reviews = text.splitlines()
-print(reviews)
-# ['Great fan!', 'Too loud.', 'Works fine.']
+          <div class="code-body"><pre><code class="py">text = """milk
+eggs
+bread"""
+items = text.splitlines()
+print(items)
+# ['milk', 'eggs', 'bread']
 
-print(" | ".join(reviews))
-# Great fan! | Too loud. | Works fine.
+print(" | ".join(items))
+# milk | eggs | bread
 print("".join(["H", "i", "!"]))   # Hi!</code></pre></div>
         </div>
       </div>
@@ -235,10 +238,9 @@ print([v ** 2 for v in range(5)])
 print([v ** 2 for v in L if v % 2 == 0])
 # [4, 16]
 
-words = ["Great", "fan", "but", "LOUD"]
-print([w.lower() for w in words
-       if len(w) > 3])
-# ['great', 'loud']</code></pre></div>
+words = ["Red", "APPLE", "on", "Table"]
+print([w.lower() for w in words if len(w) > 3])
+# ['apple', 'table']</code></pre></div>
         </div>
       </div>
     </section>
@@ -273,20 +275,24 @@ for v in L:
     <!-- SLIDE 12 · OPERATORS RECAP -->
     <section>
       <div class="slide-inner">
-        <span class="slide-tag">The Shortcut Pairs</span>
-        <h2>New list, or same list changed?</h2>
+        <span class="slide-tag">Before the Makeover</span>
+        <h2>Shortcuts come in pairs</h2>
+        <p style="margin-top:var(--gap-sm);max-width:1250px;">
+          When you replace a loop with a shortcut, how do you know the program still does the same thing? Most shortcuts have a look-alike partner: one <span style="color:var(--result);">builds a new list</span>, and the other <span style="color:var(--warn);">changes the existing one</span>.
+        </p>
+        <p style="margin-top:var(--gap);">
+            First decide whether the loop builds a new list or changes the one it was given. Then pick a shortcut from that column.
+        </p>
         <table class="ref-table" style="margin-top:var(--gap-sm);font-size:var(--code);">
           <tr><th>Builds a new list</th><th>Mutates the existing list</th></tr>
           <tr><td><code>sorted(L)</code></td><td><code>L.sort()</code></td></tr>
           <tr><td><code>list(reversed(L))</code>, <code>L[::-1]</code></td><td><code>L.reverse()</code></td></tr>
           <tr><td><code>L = L + M</code></td><td><code>L += M</code>, <code>L.extend(M)</code></td></tr>
           <tr><td><code>L = L * n</code></td><td><code>L *= n</code></td></tr>
-          <tr><td><code>[f(v) for v in L if test(v)]</code></td><td>a <code>while</code> loop with <code>pop</code></td></tr>
+          <tr><td><code>[v for v in L if test(v)]</code></td><td>a <code>while</code> loop with <code>pop</code>, like 4.6&#39;s <code>removeAll</code></td></tr>
         </table>
-        <p class="fragment fade-up" style="margin-top:var(--gap);max-width:1250px;">
-          Swapping a shortcut from one column for one in the other column changes what the code <span style="color:var(--warn);">does</span>, even if the printed output looks the same.
-        </p>
       </div>
+      <aside class="notes">Swapping a shortcut from one column for one in the other changes what the code does, even if the printed output looks the same. The next question tests exactly that.</aside>
     </section>
 
     <!-- SLIDE 13 · PREDICT: MAKEOVER -->
@@ -332,7 +338,7 @@ for word in words:
       <div class="glow" style="width:420px;height:420px;background:radial-gradient(circle,rgba(124,217,146,0.09) 0%,transparent 70%);bottom:-80px;left:-40px;"></div>
       <div class="slide-inner">
         <span class="slide-tag">Code Makeover</span>
-        <h2>Shorter, and still the same program</h2>
+        <h2>Make each function shorter</h2>
         <p style="margin-top:var(--gap-sm);max-width:1250px;">
           Run the tests first to see them pass. Then rewrite each function body to be shorter and clearer, using <code>sorted</code>, <code>join</code>, or a comprehension. Run the tests after <span style="color:var(--accent);">every</span> change. These are <span style="color:var(--accent);">regression tests</span>: they prove the makeover did not change behavior, including leaving <code>words</code> alone.
         </p>
