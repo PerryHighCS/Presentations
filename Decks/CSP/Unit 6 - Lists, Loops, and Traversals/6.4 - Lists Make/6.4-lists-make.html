@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1r2l33g">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6.4 Lists Make</title>
+
+<link rel="stylesheet" href="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../theme.css">
+<link rel="stylesheet" href="../lists-magnet.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: 6.4 Lists Make
+   (shared list magnet styles live in ../lists-magnet.css)
+   ============================================================ */
+
+.reveal p,
+.reveal li { color: var(--text-body); }
+
+/* i.f  a command or function name, in code font, white */
+.reveal i.f {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: max(0.92em, var(--code));
+  font-weight: 700;
+  color: var(--text);
+  font-variant-ligatures: none;
+}
+
+/* ─── Layout helpers ─────────────────────────────────────────────── */
+.top-inner { justify-content: flex-start !important; padding-top: 52px !important; }
+.media-split {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--gap-lg);
+  align-items: start;
+  margin-top: var(--gap-sm);
+}
+.shot {
+  display: block;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+  max-width: 100%;
+  margin: 0;
+}
+.shot.paper { background: #fff; border: 1px solid rgba(0,201,177,0.4); border-radius: 6px; }
+.prose p { font-size: var(--body); line-height: 1.5; }
+.prose p + p { margin-top: var(--gap); }
+.reveal .prose .bullets li { font-size: var(--body); }
+
+/* ─── Numbered steps (Get Started) ───────────────────────────────── */
+.step-list p { font-size: var(--body); line-height: 1.5; }
+.step-list p + p { margin-top: var(--gap); }
+.step-list p:has(> .step-label) {
+  padding-left: 150px;
+  text-indent: -150px;
+}
+.step-list p > * { text-indent: 0; }
+.step-label {
+  display: inline-block;
+  min-width: 150px;
+  text-indent: 0;
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+/* ─── Element ID map: numbered badges on the app screenshot ─────── */
+.id-map {
+  position: relative;
+  width: 420px;
+  flex-shrink: 0;
+}
+.id-map .shot { width: 100%; }
+.id-dot,
+.id-legend .id-num {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--amber);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.id-dot {
+  position: absolute;
+  margin: -20px 0 0 -20px;
+  box-shadow: 0 0 0 3px rgba(9,20,18,0.75);
+}
+.id-legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+.id-legend .id-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.id-legend .id-num { flex-shrink: 0; margin-top: 2px; }
+.reveal .id-legend code {
+  border: 0;
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  color: var(--teal);
+  background: none;
+  padding: 0;
+}
+.reveal .id-legend p { font-size: var(--body); line-height: 1.35; margin: 4px 0 0; }
+
+/* ─── Storage plan cards ─────────────────────────────────────────── */
+.store-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-lg);
+  margin-top: var(--gap);
+}
+.store-card {
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 10px;
+  padding: 22px 28px;
+}
+.store-card .store-kind {
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.store-card .store-name {
+  font-family: var(--font-mono);
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--teal);
+  margin: 6px 0 12px;
+}
+.reveal .store-card p { font-size: var(--body); line-height: 1.45; }
+
+/* ─── Pattern code card ──────────────────────────────────────────── */
+.reveal .pattern-card pre,
+.reveal .pattern-card pre code { line-height: 1.25 !important; }
+.pattern-card .code-body { padding: 12px 24px; }
+
+/* Reminder strings are longer than the 6.2 list values */
+section[data-trace-board="add"] { --cell-w: 240px; }
+
+/* ─── Submission checklist ──────────────────────────────────────── */
+.checklist {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px var(--gap);
+  margin-top: var(--gap-sm);
+}
+.check-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: var(--bg-card);
+  border: 1px solid var(--teal-border);
+  border-radius: 8px;
+  padding: 10px 18px;
+}
+.check-box {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  margin-top: 4px;
+  border: 2px solid var(--teal);
+  border-radius: 4px;
+}
+.check-item h3 {
+  font-family: var(--font-mono);
+  font-size: var(--code);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin: 0 0 2px;
+}
+.reveal .check-item p { font-size: var(--body); line-height: 1.35; margin: 0; }
+.submit-chip {
+  display: inline-block;
+  padding: 2px 14px;
+  border-radius: 6px;
+  background: #f9a12a;
+  color: #091412;
+  font-weight: 700;
+}
+
+/* ─── "Press down for hints" callout ───────────────────────────── */
+.hint-callout {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  margin-top: var(--gap);
+  padding: 14px 24px;
+}
+.hint-arrow {
+  font-size: 48px;
+  line-height: 1;
+  color: var(--amber);
+  font-weight: 700;
+}
+
+/* ─── Debugging symptom cards ────────────────────────────────────── */
+.symptoms {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gap);
+  margin-top: var(--gap);
+}
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- SLIDE 1 · TITLE -->
+    <section>
+      <div class="slide-inner slide-center">
+        <span class="slide-tag">Unit 6 &middot; Lesson 6.4</span>
+        <h1 class="title-h1">Lists Make</h1>
+        <p style="max-width:1150px;line-height:1.55;margin-top:var(--gap);">Today you will <i class="a">build an app</i> on your own that stores reminders in a <i class="c">list</i> and lets the user scroll through them.</p>
+      </div>
+      <div class="glow" style="width:800px;height:800px;right:-220px;top:-200px;background:radial-gradient(circle,rgba(0,201,177,0.09),transparent 68%);"></div>
+      <div class="glow" style="width:400px;height:400px;left:-100px;bottom:-100px;background:radial-gradient(circle,rgba(216,56,47,0.10),transparent 70%);"></div>
+      <aside class="notes">This is the Make lesson for lists, and it happens at the computers with no whiteboards or TraceLift sheets. Students can try the app and plan with a partner, but each student builds and submits their own Reminder App.</aside>
+    </section>
+
+    <!-- SLIDE 2 · THE REMINDER APP -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Lists Make</span>
+        <h2 style="margin-bottom:var(--gap);">The Reminder App</h2>
+        <div class="media-split">
+          <img class="shot" src="media/reminder-app.png" alt="The RemindME app showing the reminder Swim practice at 8:00, with left and right arrow buttons, a New reminder text box, and an Add button" style="height:620px;">
+          <div class="prose" style="margin-top:var(--gap);">
+            <p>Today you will write the code for <i class="c">RemindME</i>, a reminder app. The screen is already designed for you.</p>
+            <p>The user types a reminder and clicks <i class="a">Add</i> to save it. The arrow buttons <i class="a">scroll</i> left and right through the saved reminders, one at a time.</p>
+            <p>Your code will store every reminder in a <i class="c">list</i>, so the app works for two reminders or two hundred.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">This lesson has one main level plus the submission. The app combines three things students have already seen: appendItem from 6.1, an index variable that moves through a list from 6.2, and the updateScreen function from Unit 4.</aside>
+    </section>
+
+    <!-- SLIDE 3 · TRY THE APP -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 1</span>
+        <h2 style="margin-bottom:var(--gap);">Try the App</h2>
+        <div class="media-split">
+          <img class="shot" src="media/reminder-app.png" alt="The RemindME app" style="height:560px;">
+          <div class="prose">
+            <p><a href="https://learn.mycode.run/link/xnycx" target="_blank" rel="noopener"><i class="a">Open Lesson 4, Level 1</i> on Code.org</a> and try the finished app.</p>
+            <ul class="bullets" style="margin-top:var(--gap-sm);">
+              <li>Add several reminders to the app.</li>
+              <li>Scroll through your reminders in both directions.</li>
+              <li>What happens when you reach the first or the last reminder and keep clicking?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">The arrows stop at the ends: clicking left on the first reminder or right on the last one does nothing. That is the boundary in the List Scrolling Pattern (shown in the hints under the debugging slide), and it differs from the Outfit Picker in 6.2, which wrapped around.</aside>
+    </section>
+
+    <!-- SLIDE 4 · SCREEN ELEMENT IDS -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:40px !important;">
+        <span class="slide-tag">Step 2 &middot; Plan</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Screen Element IDs</h2>
+        <div style="display:flex;gap:var(--gap-lg);align-items:flex-start;">
+          <div class="id-map" style="margin-left:24px;">
+            <img class="shot" src="media/reminder-app.png" alt="The RemindME app with numbered markers on each element the code uses">
+            <span class="id-dot" style="left:96%;top:22%;">1</span>
+            <span class="id-dot" style="left:-5%;top:71%;">2</span>
+            <span class="id-dot" style="left:104%;top:71%;">3</span>
+            <span class="id-dot" style="left:-5%;top:82%;">4</span>
+            <span class="id-dot" style="left:104%;top:82%;">5</span>
+          </div>
+          <div class="prose" style="flex:1;margin-left:40px;">
+            <p>Every element on the screen already has an <i class="c">id</i>. Your code will use these names.</p>
+            <div class="id-legend" style="margin-top:var(--gap);">
+              <div class="id-item"><span class="id-num">1</span><div><code>reminderOutput</code><p>The box that shows the current reminder</p></div></div>
+              <div class="id-item"><span class="id-num">2</span><div><code>leftButton</code><p>Scrolls to the previous reminder</p></div></div>
+              <div class="id-item"><span class="id-num">3</span><div><code>rightButton</code><p>Scrolls to the next reminder</p></div></div>
+              <div class="id-item"><span class="id-num">4</span><div><code>reminderInput</code><p>The text box where the user types a new reminder</p></div></div>
+              <div class="id-item"><span class="id-num">5</span><div><code>addButton</code><p>Adds the typed reminder to the list</p></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">These are the ids labeled on the activity guide. Three elements need an onEvent: the two arrow buttons and the Add button. The output box is updated by updateScreen.</aside>
+    </section>
+
+    <!-- SLIDE 5 · PLAN YOUR STORAGE -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Step 2 &middot; Plan</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Plan Your Storage</h2>
+        <p style="max-width:1400px;">This app uses <i class="c">one list</i> and <i class="c">one extra variable</i>. Fill in both tables on your activity guide before you start coding.</p>
+        <div class="store-grid">
+          <div class="store-card">
+            <div class="store-kind">List</div>
+            <div class="store-name">reminders</div>
+            <p>Stores <i class="a">every reminder</i> the user has added, in order. It starts as an empty list, <i class="n">[]</i>, and grows by one each time the user clicks Add.</p>
+          </div>
+          <div class="store-card">
+            <div class="store-kind">Variable</div>
+            <div class="store-name">index</div>
+            <p>Stores the <i class="x">index</i> of the reminder that is on the screen right now. The arrow buttons change it, and the list itself stays the same.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Students may choose a different list name; any clear name is fine. Emphasize that index is a plain number variable, the same idea as the Outfit Picker in 6.2. Scrolling changes index, not the list.</aside>
+    </section>
+
+    <!-- SLIDE 6 · MAKE THE REMINDER APP -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:40px !important;">
+        <span class="slide-tag">Do This</span>
+        <h2 style="margin-bottom:var(--gap-sm);">Make the Reminder App</h2>
+        <div class="media-split">
+          <img class="shot paper" src="media/activity-guide-plan.png" alt="Activity Guide page 1: Step 1, try the app, with the screen element ids labeled; Step 2, plan, with tables for the list and the index variable; and the List Scrolling Pattern with its explanation" style="height:700px;">
+          <div class="prose">
+            <p><i class="a">Use the activity guide to plan</i> your code before you start building. Fill in the <i class="c">list</i> and the <i class="c">variable</i> tables, and read the List Scrolling Pattern.</p>
+            <p>Step 3 of the activity guide has steps you can follow to <i class="a">build the app</i>, or you can use your own process.</p>
+            <p>Test as you go: add a few reminders, then scroll to <i class="a">both ends</i> of the list and keep clicking.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">Check plans before students start coding. A good plan has one list for the reminders, one index variable, three onEvents (left, right, and Add), and one updateScreen function.</aside>
+    </section>
+
+    <!-- SLIDE 7 · GET STARTED -->
+    <section>
+      <div class="slide-inner top-inner">
+        <span class="slide-tag">Do This</span>
+        <h2 style="margin-bottom:var(--gap);">Get Started</h2>
+        <div class="step-list">
+          <p><span class="step-label">Step 1</span><a href="https://learn.mycode.run/link/xnycx" target="_blank" rel="noopener"><i class="a">Open Lesson 4, Level 1</i> on Code.org</a>, then <i class="a">try the app</i> and discuss it with a partner.</p>
+          <p><span class="step-label">Step 2</span><i class="a">Plan</i> your list and your <i class="n">index</i> variable in the activity guide.</p>
+          <p><span class="step-label">Step 3</span><i class="a">Build</i> the Reminder App with the List Scrolling Pattern and an <i class="f">updateScreen</i> function. If you get stuck, the debugging slide has <i class="a">hints</i> below it.</p>
+          <p><span class="step-label">Step 4</span>Test adding and scrolling, then check the rubric before you <i class="a">submit</i>.</p>
+        </div>
+      </div>
+      <aside class="notes">This slide stays up while students work so they can see the order of the steps. The step numbers match the activity guide.</aside>
+    </section>
+
+    <!-- VERTICAL STACK · DEBUGGING AND HINTS -->
+    <section>
+
+      <!-- SLIDE 8 · DEBUGGING YOUR APP -->
+      <section>
+        <div class="slide-inner top-inner">
+          <span class="slide-tag">While You Build</span>
+          <h2 style="margin-bottom:var(--gap-sm);">Debugging Your App</h2>
+          <p style="max-width:1400px;">When the app misbehaves, start from what you <i class="a">see</i> and go to the part of the code that controls it.</p>
+          <div class="symptoms">
+            <div class="rule-card"><div class="rule-when">The screen shows undefined</div><p><i class="n">index</i> went past the end of the list. Check that the right button&rsquo;s condition uses <i class="n">length - 1</i>.</p></div>
+            <div class="rule-card"><div class="rule-when">A new reminder does not appear</div><p>Check that the Add button sets <i class="n">index</i> and then calls <i class="f">updateScreen</i>.</p></div>
+            <div class="rule-card"><div class="rule-when">Nothing happens on a click</div><p>Check that the id in <i class="f">onEvent</i> matches the element exactly, and read any error in the console.</p></div>
+          </div>
+          <div class="callout accent-amber hint-callout">
+            <span class="hint-arrow" aria-hidden="true">&darr;</span>
+            <p><i class="a">Stuck?</i> Press the <i class="a">down arrow</i> for hints: the List Scrolling Pattern, then step-by-step examples of the right button and the Add button.</p>
+          </div>
+        </div>
+        <aside class="notes">Keep this slide up during build time and point students to it before answering a "my app is broken" question. Ask them which card matches what they see, and send students who are stuck on the code to the hints below this slide.</aside>
+      </section>
+
+      <!-- SLIDE 9 · THE LIST SCROLLING PATTERN -->
+      <section>
+        <div class="slide-inner top-inner" style="padding-top:36px !important;">
+          <span class="slide-tag">Hint 1 of 4</span>
+          <h2 style="margin-bottom:var(--gap-sm);">The List Scrolling Pattern</h2>
+          <div style="display:grid;grid-template-columns:1fr 860px;gap:var(--gap-lg);align-items:start;">
+            <div class="prose">
+              <p>This pattern lets a user <i class="a">scroll</i> through a list one element at a time. It needs a <i class="c">list</i> and an <i class="n">index</i> variable.</p>
+              <p>Each button uses the <i class="c">counter pattern with a boundary</i>. The <i class="n">if</i> stops <i class="n">index</i> at <i class="x">0</i> on the left and at <i class="n">length - 1</i> on the right.</p>
+              <p>Both buttons then call <i class="f">updateScreen</i>, which shows <i class="n">myList[index]</i>.</p>
+            </div>
+            <div class="code-card pattern-card"><div class="code-hdr"><span class="clang">List Scrolling Pattern</span></div><div class="code-body"><pre><code data-hl>var index = 0;
+var myList = ["banana", "apple", "pear"];
+
+onEvent("leftButton", "click", function() {
+  if (index > 0) {
+    index--;
+  }
+  updateScreen();
+});
+
+onEvent("rightButton", "click", function() {
+  if (index < myList.length - 1) {
+    index++;
+  }
+  updateScreen();
+});
+
+function updateScreen() {
+  setProperty("fruitLabel", "text", myList[index]);
+}</code></pre></div></div>
+          </div>
+        </div>
+        <aside class="notes">This is the pattern from the activity guide. index-- subtracts one and index++ adds one. In the Reminder App, myList becomes the list of reminders and fruitLabel becomes reminderOutput. The pattern pairs well with updateScreen because two buttons share the same code to update the screen.</aside>
+      </section>
+
+      <!-- SLIDE 10 · SCROLLING RIGHT -->
+      <section data-trace-board="scrollRight">
+        <div class="slide-inner board-inner">
+          <div class="board-head">
+            <span class="slide-tag">Hint 2 of 4 &middot; Scrolling</span>
+            <h2>Clicking the Right Button</h2>
+            <p class="board-prompt">Lines 3 to 6 are the right button&rsquo;s click code. Here, <i class="f">console.log</i> stands in for <i class="f">updateScreen</i>.</p>
+          </div>
+        </div>
+        <aside class="notes">Index starts at 1, the apple. The condition 1 &lt; 2 is true, so index++ moves to 2 and the screen shows the pear.</aside>
+      </section>
+
+      <!-- SLIDE 11 · HINT: THE LAST ELEMENT -->
+      <section data-trace-board="atEnd">
+        <div class="slide-inner board-inner">
+          <div class="board-head">
+            <span class="slide-tag">Hint 3 of 4 &middot; Scrolling</span>
+            <h2>At the Last Element</h2>
+            <p class="board-prompt">What happens when <i class="n">index</i> is already at the last element and the user clicks the right button again?</p>
+          </div>
+        </div>
+        <aside class="notes">The condition 2 &lt; 2 is false, so index stays 2 and the screen still shows the pear. The right button does nothing at the end. Compare with the Outfit Picker in 6.2, which wrapped back to the first element.</aside>
+      </section>
+
+      <!-- SLIDE 12 · ADDING A REMINDER -->
+      <section data-trace-board="add">
+        <div class="slide-inner board-inner">
+          <div class="board-head">
+            <span class="slide-tag">Hint 4 of 4 &middot; Adding</span>
+            <h2>Clicking the Add Button</h2>
+            <p class="board-prompt">Lines 3 to 5 are one way to write the Add button&rsquo;s click code. The user typed <i class="s">Call Grandma</i> in the text box.</p>
+          </div>
+        </div>
+        <aside class="notes">Setting index to reminders.length - 1 after appending always lands on the newest reminder, no matter how many there are or which reminder was showing. In the real app, the last line is a call to updateScreen.</aside>
+      </section>
+
+    </section>
+
+    <!-- SLIDE 13 · CHECK YOUR WORK -->
+    <section>
+      <div class="slide-inner top-inner" style="padding-top:36px !important;">
+        <span class="slide-tag">Before You Submit</span>
+        <h2 style="margin-bottom:8px;">Check Your Work</h2>
+        <p style="max-width:1400px;">Check your app against the rubric <i class="a">before</i> you click <span class="submit-chip">Submit</span> on Code.org.</p>
+        <div class="checklist">
+          <div class="check-item"><span class="check-box"></span><div><h3>Input</h3><p>An <i class="f">onEvent</i> is created for every required input.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Variables and Lists</h3><p>A list and variables store every piece of information the app uses.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Processing: Lists</h3><p>The program processes the list correctly for every button.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Functions</h3><p>A function updates every output, and each <i class="f">onEvent</i> calls it.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Output</h3><p>The screen always shows the current reminder.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Runs Without Errors</h3><p>No errors are present in the code.</p></div></div>
+          <div class="check-item"><span class="check-box"></span><div><h3>Coding Comments</h3><p>Comments explain every <i class="f">onEvent</i> and function.</p></div></div>
+        </div>
+      </div>
+      <aside class="notes">This is the Extensive Evidence column of the rubric. The new row in this lesson is Processing: Lists, which means the list is appended to and read correctly for every element of the user interface.</aside>
+    </section>
+
+  </div>
+</div>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script src="../lists-magnet.js"></script>
+<script>
+/* Trace data for the list boards (engine: ../lists-magnet.js).
+   6.4 is a computer lesson with no magnets or TraceLift sheets, so lists
+   are drawn plain at their real length and the boards have no flaps. */
+var TRACES = {
+  scrollRight: {
+    code: [
+      'var myList = ["banana", "apple", "pear"];',
+      'var index = 1;',
+      'if (index < myList.length - 1) {',
+      '  index++;',
+      '}',
+      'console.log(myList[index]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { myList: ['banana', 'apple', 'pear'] }, work: '<i class=n>myList</i> <i class=a>gets</i> a list of three strings.' },
+      { line: 3, decl: ['index'], set: { index: 1 }, work: '<i class=n>index</i> <i class=a>gets</i> <i class=v>1</i>, so the screen shows the apple. Now the user clicks the right button.' },
+      { work: '<i class=n>myList.length - 1</i> is <i class=x>2</i>, the last index. Is <i class=v>1 &lt; 2</i>? Yes, the condition is true.' },
+      { line: 4, work: 'The condition is true, so run the body.' },
+      { line: 6, set: { index: 2 }, work: '<i class=n>index++</i> adds one, so <i class=n>index</i> <i class=a>gets</i> <i class=v>2</i>.' },
+      { read: { myList: [2] }, work: '<i class=a>Look up</i> <i class=n>index</i>: <i class=v>2</i>. <i class=n>myList[2]</i> is <i class=s>"pear"</i>.' },
+      { line: 7, out: 'pear', work: 'The screen shows the <i class=s>pear</i>. Each click moves one element to the right.' }
+    ]
+  },
+
+  atEnd: {
+    code: [
+      'var myList = ["banana", "apple", "pear"];',
+      'var index = 2;',
+      'if (index < myList.length - 1) {',
+      '  index++;',
+      '}',
+      'console.log(myList[index]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { myList: ['banana', 'apple', 'pear'] }, work: '<i class=n>myList</i> <i class=a>gets</i> a list of three strings.' },
+      { line: 3, decl: ['index'], set: { index: 2 }, work: '<i class=n>index</i> <i class=a>gets</i> <i class=v>2</i>, the pear, which is the last element. The user clicks the right button.' },
+      { work: '<i class=n>myList.length - 1</i> is <i class=x>2</i>. Is <i class=v>2 &lt; 2</i>? No, the condition is false.' },
+      { line: 6, work: 'The condition is false, so skip the body. <i class=n>index</i> stays <i class=v>2</i>.' },
+      { read: { myList: [2] }, work: '<i class=a>Look up</i> <i class=n>index</i>: <i class=v>2</i>. <i class=n>myList[2]</i> is <i class=s>"pear"</i>.' },
+      { line: 7, out: 'pear', work: 'The screen still shows the <i class=s>pear</i>. This pattern <i class=a>stops</i> at the last element instead of wrapping around to the first.' }
+    ]
+  },
+
+  add: {
+    sideW: 470,
+    code: [
+      'var reminders = ["Swim at 8", "Math quiz"];',
+      'var index = 0;',
+      'appendItem(reminders, getText("reminderInput"));',
+      'index = reminders.length - 1;',
+      'console.log(reminders[index]);'
+    ],
+    start: 1,
+    steps: [
+      { line: 2, list: { reminders: ['Swim at 8', 'Math quiz'] }, work: '<i class=n>reminders</i> <i class=a>gets</i> a list of two reminders.' },
+      { line: 3, decl: ['index'], set: { index: 0 }, work: '<i class=n>index</i> <i class=a>gets</i> <i class=v>0</i>, so the screen shows the first reminder. The user types <i class=s>Call Grandma</i> and clicks Add.' },
+      { work: 'Evaluate the argument first: <i class=n>getText("reminderInput")</i> returns the text in the box, <i class=s>"Call Grandma"</i>.' },
+      { line: 4, list: { reminders: ['Swim at 8', 'Math quiz', 'Call Grandma'] }, work: '<i class=n>appendItem</i> adds <i class=s>"Call Grandma"</i> to the end. The list now has <i class=v>3</i> elements.' },
+      { work: 'Evaluate: <i class=n>reminders.length - 1</i> is <i class=v>3 - 1</i>, which is <i class=x>2</i>, the index of the new reminder.' },
+      { line: 5, set: { index: 2 }, work: '<i class=n>index</i> <i class=a>gets</i> <i class=v>2</i>.' },
+      { read: { reminders: [2] }, work: '<i class=a>Look up</i> <i class=n>index</i>: <i class=v>2</i>. <i class=n>reminders[2]</i> is <i class=s>"Call Grandma"</i>.' },
+      { line: 6, out: 'Call Grandma', work: 'The screen shows the new reminder. After <i class=n>appendItem</i>, <i class=n>length - 1</i> is always the index of the newest element.' }
+    ]
+  }
+
+};
+
+ListMagnet.prepare(TRACES, { plain: true });
+
+initSyncDeckReveal({
+  deckId: 'csp-6-4-lists-make',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function (Reveal) {
+    ListMagnet.attach(Reveal);
+  },
+});
+</script>
+</body>
+</html>

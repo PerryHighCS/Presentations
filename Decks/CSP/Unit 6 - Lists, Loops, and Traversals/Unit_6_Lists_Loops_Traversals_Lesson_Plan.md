@@ -12,6 +12,7 @@ This plan covers the whole unit and grows as each lesson's slides are converted.
 | --- | --- | --- |
 | 6.1 Lists Explore | `6.1-lists-explore.html` (29 slides) | Creating lists, accessing elements, element assignment, `appendItem`, `insertItem`, `removeItem` |
 | 6.2 Lists Investigate | `6.2-lists-investigate.html` (16 slides) | A computer lesson: list length, the random element and next element patterns in real apps, and lists from the Data tab |
+| 6.4 Lists Make | `6.4-lists-make.html` (13 slides) | A computer lesson: each student builds the Reminder App with a list, `appendItem`, the List Scrolling Pattern, and `updateScreen` |
 
 ---
 
@@ -38,7 +39,7 @@ Each pair needs:
 - One or two list magnets (one for their own list and one for copying another group's list or tracing a second list).
 - The TraceLift program sheets for the lesson's tracing rounds (see the last section of this plan).
 
-Investigate lessons such as 6.2 happen at the computers instead, with no whiteboards or TraceLift sheets.
+Investigate and Make lessons such as 6.2 and 6.4 happen at the computers instead, with no whiteboards or TraceLift sheets.
 
 ---
 
@@ -280,6 +281,82 @@ Pairs go to Level 4, run the app, and investigate the Data tab for about 5 minut
 
 1. `randomNumber(0, nouns.length - 1)` for a 5-element list produces indexes 0 to 4.
 2. Free response: what parts of using lists students already understand, and what they want to dig into during the practice lesson. Use these to plan the start of 6.3.
+
+---
+
+## Lesson 6.4: Lists Make
+
+**Suggested Length:** 50 to 60 minutes
+
+**Slides:** `6.4 - Lists Make/6.4-lists-make.html` (13 slides)
+
+**Code.org:** [Lesson 4, Level 1](https://learn.mycode.run/link/xnycx)
+
+**Setting:** the deck is short so students get to work fast. Students work at computers in the Code.org levels. They try the app and plan with a partner, but each student builds and submits their own Reminder App. There are no whiteboards, magnets, or TraceLift sheets in this lesson. The projected trace boards draw each list at its real length.
+
+### Goals
+
+By the end of the lesson, students should be able to:
+
+- Plan an app's storage: one list for the reminders and one `index` variable for the reminder on screen.
+- Use the **List Scrolling Pattern**, where the left and right buttons move `index` by one and stop at `0` and `length - 1`.
+- Add an element with `appendItem` and set `index = list.length - 1` so the screen shows the new element.
+- Use an `updateScreen` function, called from every `onEvent`, to show `list[index]`.
+- Check an app against the rubric before submitting.
+
+### Big Ideas
+
+- **The list holds the data, and `index` says which element is on screen.** Scrolling changes `index`, not the list.
+- **The scrolling pattern stops at the ends.** Unlike the Outfit Picker in 6.2, which wrapped back to the start, the counter pattern with a boundary keeps `index` from going below `0` or past `length - 1`.
+- **After `appendItem`, the newest element is always at `length - 1`.**
+
+### Sequence
+
+| Slides | Part | Student Action |
+| --- | --- | --- |
+| 1 to 3 | The Reminder App | See the app, then try the finished version in Code.org |
+| 4 to 5 | Plan | Learn the screen element ids and plan the list and `index` variable |
+| 6 to 7 | Build | Plan in the activity guide, then follow the Get Started steps |
+| 8 | Debugging | Match what the app does to a likely cause; press down for hints |
+| 9 to 12 | Hints (below slide 8) | The List Scrolling Pattern, then worked examples of the right button, the last element, and the Add button |
+| 13 | Submit | Check the app against the rubric and submit |
+
+### Teaching Plan
+
+#### Slides 2 and 3: Try the App
+
+Students open Lesson 4, Level 1 and try the finished app: they add several reminders and scroll through them in both directions. Ask what happens at the first and last reminder. The arrows stop there and do nothing, which is the boundary in the List Scrolling Pattern. While they try it, ask how many lists the app needs (one, a list of the reminders, plus one plain `index` variable).
+
+#### Slides 4 and 5: Plan
+
+Slide 4 labels the five element ids from the activity guide: `reminderOutput`, `leftButton`, `rightButton`, `reminderInput`, and `addButton`. Three of them need an `onEvent`. Slide 5 matches the activity guide's two tables: a list (`reminders`, which starts as `[]`) and the `index` variable.
+
+#### Slides 6 and 7: Build
+
+Check plans before students start coding. A good plan has one list, one `index` variable, three `onEvent`s (left, right, and Add), and one `updateScreen` function. Step 3 of the activity guide has build steps students can follow. Leave slide 7 (Get Started) or slide 8 (Debugging Your App) up during build time.
+
+#### Slide 8: Debugging Your App
+
+Before answering a "my app is broken" question, ask which card matches what the student sees:
+
+- **The screen shows `undefined`:** `index` went past the end, usually because the right button's condition uses `length` instead of `length - 1`.
+- **A new reminder does not appear:** the Add button does not set `index` or does not call `updateScreen`.
+- **Nothing happens on a click:** the id in `onEvent` does not match the element, or there is an error in the console.
+
+A callout at the bottom tells students to press the down arrow for hints.
+
+#### Slides 9 to 12: Hints (Vertical Stack Under Slide 8)
+
+These are for students who are stuck; they are not taught to the whole class.
+
+- **Hint 1, the List Scrolling Pattern (slide 9):** the pattern from the activity guide. Each button uses the counter pattern with a boundary, and both call `updateScreen`, which shows `myList[index]`.
+- **Hint 2, the right button (slide 10):** `index` starts at 1 (the apple). The condition `1 < 2` is true, so `index++` makes it 2 and the screen shows `"pear"`. `console.log` stands in for `updateScreen` on the boards.
+- **Hint 3, the last element (slide 11):** `index` starts at 2. The condition `2 < 2` is false, so `index` stays 2 and the screen still shows `"pear"`. Unlike the Outfit Picker in 6.2, the pattern stops instead of wrapping around.
+- **Hint 4, the Add button (slide 12):** the user types "Call Grandma". `appendItem` adds it at index 2, `index = reminders.length - 1` makes `index` 2, and the screen shows the new reminder. `index = index + 1` would only work when the user happens to be on the last reminder already.
+
+#### Slide 13: Check Your Work
+
+The checklist is the Extensive Evidence column of the rubric: input, variables and lists, processing lists, functions, output, running without errors, and coding comments. The new row in this lesson is **Processing: Lists**, which means the list is appended to and read correctly for every element of the user interface. Students check every row before they click Submit.
 
 ---
 
