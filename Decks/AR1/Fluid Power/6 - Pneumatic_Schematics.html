@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="w3k48b">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6 - Pneumatic Schematics</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   Deck 6: Pneumatic Schematics (Day 6)
+   Color meaning, as in the rest of the unit: blue = air under
+   pressure, green = key terms, yellow = electrical signals and
+   cautions. Symbols are drawn in a neutral line color.
+   ============================================================ */
+
+.opt-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: var(--gap); }
+.opt-list li { font-size: var(--body); line-height: 1.4; color: var(--text); display: flex; gap: 16px; align-items: baseline; }
+.mcq-letter { font-family: var(--font-mono); font-weight: 700; color: var(--accent); min-width: 28px; }
+.q-head { font-size: var(--body); color: var(--text-muted); margin-top: var(--gap); }
+.warn-color { color: var(--warn); }
+
+/* Symbol cards */
+.sym-row { display: grid; gap: var(--gap); margin-top: var(--gap); }
+.sym-row.c3 { grid-template-columns: repeat(3, 1fr); }
+.sym-row.c4 { grid-template-columns: repeat(4, 1fr); }
+.sym-row.c2 { grid-template-columns: repeat(2, 1fr); }
+.sym-card { background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 12px 16px 16px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.sym-card .sym-svg { width: 100%; max-width: 240px; height: auto; }
+.sym-card b { font-size: var(--body); color: var(--text); margin-top: 4px; }
+.sym-card span { font-size: 24px; line-height: 1.35; color: var(--text-muted); margin-top: 4px; }
+
+/* Valve symbol walkthrough */
+.valve-big { display: block; width: 100%; height: auto; }
+.mini-row { display: flex; gap: 18px; align-items: center; }
+.mini-sym { width: 110px; height: auto; }
+.mini-cap { font-size: 24px; color: var(--text-muted); }
+.v-notes { display: flex; flex-direction: column; gap: 16px; }
+
+/* Circuit drawings */
+.circuit { display: block; width: 100%; height: auto; margin-top: 6px; }
+.circuit text { font-family: 'DM Sans', sans-serif; }
+.c-lbl { font-size: 26px; font-weight: 700; fill: var(--text); }
+.c-sub { font-size: 24px; fill: var(--text-muted); }
+.c-port { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; fill: var(--accent); }
+
+/* Matching activity: cards with a slot under each symbol */
+.m-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 18px; margin-top: 6px; }
+.m-card { background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 6px 10px 10px; display: flex; flex-direction: column; align-items: center; }
+.m-card .sym-svg { width: 190px; height: 140px; }
+/* ─── Match-the-symbols builder (from Deck 4) ───────────────────────────────
+   Adapted from the CSP 4.6 flowchart slot builder (see the
+   activities index). Drag a card onto a slot, or click a card
+   and then a slot. Correct cards fill the slot; wrong ones shake. */
+.fcb-stage { position: relative; width: 1360px; height: 345px; margin-top: 8px; }
+.fcb-stage svg { position: absolute; left: 0; top: 0; }
+.fcb-panel { display: flex; flex-direction: column; gap: 12px; margin-top: var(--gap); }
+.fcb-status { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: var(--small); color: var(--text-muted); }
+.fcb-status .fcb-count { font-family: var(--font-mono); font-weight: 700; color: var(--text); }
+.fcb-complete { color: var(--result); font-weight: 700; }
+.fcb-bank { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 12px; height: 116px; }
+.fcb-chip {
+  all: unset;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 2px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 6px 16px;
+}
+.fcb-chip:hover { border-color: var(--accent); }
+.fcb-chip.selected { border-color: var(--warn); background: rgba(255,209,102,0.12); transform: translateY(-2px); }
+.fcb-chip.used { display: none; }
+.fcb-chip.dragging { opacity: 0.35; }
+.fcb-ghost { position: fixed; z-index: 10000; pointer-events: none; transform-origin: 0 0; margin: 0; border-color: var(--warn); box-shadow: 0 12px 28px rgba(0,0,0,0.5); cursor: grabbing; }
+.fcb-slot {
+  all: unset;
+  position: absolute;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  border: 2px dashed rgba(255,209,102,0.7);
+  border-radius: 8px;
+  background: rgba(6,11,20,0.92);
+}
+.fcb-slot:hover:not(.filled), .fcb-slot.drag-over { border-color: var(--warn); background: rgba(40,34,14,0.95); }
+.fcb-ph { color: var(--warn); font-size: 26px; }
+.fcb-slot.filled { cursor: default; border: 2px solid var(--result); background: rgba(8,40,30,0.95); }
+.fcb-slot.wrong { border-color: var(--bad); background: rgba(60,16,16,0.95); animation: fcb-shake 0.4s ease; }
+.fcb-x { position: absolute; top: -12px; right: -12px; width: 28px; height: 28px; border-radius: 50%; background: var(--bad); color: #1a0505; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; }
+.fcb-perfect {
+  font-size: var(--small);
+  font-weight: 700;
+  color: var(--result);
+  background: rgba(77,255,176,0.14);
+  border: 1px solid rgba(77,255,176,0.6);
+  border-radius: 999px;
+  padding: 4px 14px;
+  cursor: pointer;
+  animation: badge-pulse-glow 1.6s ease-in-out infinite;
+}
+@keyframes badge-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(77,255,176,0.5); }
+  50%      { box-shadow: 0 0 16px 5px rgba(77,255,176,0.45); }
+}
+/* Perfect-score overlay, as in the CSP matching games */
+.match-perfect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6,11,20,0.92);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.match-perfect-overlay.visible { opacity: 1; pointer-events: auto; cursor: pointer; }
+.match-perfect-badge { display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0; }
+.match-perfect-overlay.visible .match-perfect-badge { animation: match-perfect-pop 0.7s ease both; }
+.match-perfect-check { font-size: 220px; line-height: 1; color: var(--result); filter: drop-shadow(0 0 46px rgba(77,255,176,0.55)); }
+.match-perfect-text { font-size: 84px; font-weight: 700; color: var(--text); text-shadow: 0 0 34px rgba(93,170,255,0.45); }
+.match-perfect-hint { font-family: var(--font-mono); font-size: var(--small); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+@keyframes match-perfect-pop {
+  0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  75%  { transform: scale(0.96) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes fcb-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+.m-card .fcb-slot { position: relative; width: 100%; height: 48px; }
+.fcb-bank { height: 118px; }
+.fcb-perfect { font-size: var(--small); font-weight: 700; color: var(--result); background: rgba(77,255,176,0.14); border: 1px solid rgba(77,255,176,0.6); border-radius: 999px; padding: 4px 14px; cursor: pointer; animation: badge-pulse-glow 1.6s ease-in-out infinite; }
+
+/* Simulation C */
+.sc-svg { display: block; width: 1440px; height: 360px; }
+.sc-svg text { font-family: 'DM Sans', sans-serif; }
+.sc-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 4px; }
+.sc-row .ctl-name { font-size: var(--small); color: var(--text-muted); }
+.sc-row .ctl-val { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--text); min-width: 80px; }
+.sc-range { width: 230px; accent-color: var(--accent); }
+.s1-btn { font-size: var(--small); font-weight: 700; color: var(--text); background: var(--bg-card); border: 2px solid var(--warn); border-radius: 999px; padding: 8px 18px; cursor: pointer; }
+.s1-btn[aria-pressed="true"] { background: var(--warn); color: var(--bg); }
+.sc-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 10px; }
+.sc-status { box-sizing: border-box; height: 150px; font-size: 24px; line-height: 1.4; color: var(--text); background: var(--bg-card); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; padding: 10px 16px; }
+.sc-status.stall { border-left-color: var(--bad); }
+.sc-log { box-sizing: border-box; height: 150px; overflow-y: auto; overscroll-behavior: contain; background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 0 12px 6px; }
+.sc-log th { position: sticky; top: 0; background: var(--bg-card); padding-top: 6px; }
+.sc-log { scrollbar-color: rgba(93,170,255,0.6) transparent; }
+.sc-log::-webkit-scrollbar { width: 12px; }
+.sc-log::-webkit-scrollbar-thumb { background: rgba(93,170,255,0.6); border-radius: 6px; }
+.sc-log table { width: 100%; border-collapse: collapse; font-size: 22px; }
+.sc-log th { text-align: left; color: var(--text-muted); font-weight: 700; padding: 2px 6px; }
+.sc-log td { color: var(--text); padding: 2px 6px; font-family: var(--font-mono); }
+.sc-log .empty td { color: var(--text-dim); font-family: var(--font-ui); }
+</style>
+</head>
+<body>
+
+<div class="reveal"><div class="slides">
+
+<!-- SLIDE 01 · Title -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 5 &nbsp;·&nbsp; Pneumatic Schematics</span>
+    <h1 class="title-h1">How Do Engineers <span class="pneu">Describe Pneumatic Circuits?</span></h1>
+    <p class="lead" style="margin-top:var(--gap);text-align:center;">Today we learn a small set of symbols, draw the VEX circuit with them, and run an industrial circuit in a simulator.</p>
+  </div>
+  <div class="glow" style="width:620px;height:620px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(93,170,255,0.07),transparent 70%);"></div>
+  <div class="glow" style="width:560px;height:560px;right:-140px;bottom:-160px;background:radial-gradient(circle,rgba(255,209,102,0.05),transparent 70%);"></div>
+</section>
+
+<!-- SLIDE 02 · Symbols show function -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Symbols</span>
+    <h2>Symbols Show What a Part Does</h2>
+    <p class="prose">Drawing real pictures of every valve in a factory would take forever. Engineers use <span class="term">symbols</span> instead, set by the International Organization for Standardization (ISO), so a schematic reads the same anywhere in the world. A symbol shows a part&rsquo;s <span class="term">function</span>, not what it looks like.</p>
+    <p class="prose" style="margin-top:12px;">Circles are machines that convert energy, and the triangle shows which way the energy flows.</p>
+    <div class="sym-row c3">
+<div class="sym-card"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Compressor symbol"><circle cx="100" cy="85" r="40" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M100 47 L86 69 H114 Z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M100 45 V10" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><b>Compressor</b><span>Drives the system. The hollow triangle points out: air leaves.</span></div>
+<div class="sym-card fragment fade-up"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Air motor symbol"><circle cx="100" cy="85" r="40" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M100 69 L86 47 H114 Z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M100 45 V10" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><b>Air motor</b><span>Driven by air. The triangle points in: air enters.</span></div>
+<div class="sym-card fragment fade-up"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Hydraulic pump symbol"><circle cx="100" cy="85" r="40" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M100 47 L86 69 H114 Z" fill="#c9d6e6" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M100 45 V10" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><b>Hydraulic pump</b><span>A filled triangle means oil, not air.</span></div>
+    </div>
+  </div>
+  <aside class="notes">From the PHS Day 4/5 symbol slides. A few shapes combine like letters into words: circles for compressors, motors and pumps; squares and rectangles for valves and cylinders; lines for paths; arrows for flow. Hollow triangles mean air, filled triangles mean hydraulic oil.</aside>
+</section>
+
+<!-- SLIDE 03 · Supply and air-handling symbols -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Symbols</span>
+    <h2>Storing, Controlling and Releasing Air</h2>
+    <p class="prose">After the compressor, a few more symbols get the air ready to use and let it go when the job is done.</p>
+    <div class="sym-row c4">
+<div class="sym-card"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Receiver tank symbol"><rect x="45" y="50" width="110" height="56" rx="28" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M10 78 H45" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M155 78 H190" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><b>Receiver tank</b><span>Stores compressed air.</span></div>
+<div class="sym-card fragment fade-up"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Pressure regulator symbol"><rect x="65" y="40" width="70" height="70" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M100 140 V110" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M100 40 V10" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M92 100 V56" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M92 50 l-7 12 h14 z" fill="#c9d6e6"/><path d="M135 75 l8 -8 l8 16 l8 -16 l8 16 l8 -8" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M100 25 H48 V75 H65" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" stroke-dasharray="6 5"/></svg><b>Pressure regulator</b><span>Keeps the pressure leaving it steady.</span></div>
+<div class="sym-card fragment fade-up"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Exhaust symbol"><path d="M100 15 V80" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M80 80 H120 L100 112 Z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><b>Exhaust</b><span>Used air leaves here.</span></div>
+<div class="sym-card fragment fade-up"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Flow control symbol"><path d="M100 10 V140" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M82 45 Q100 75 82 105" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M118 45 Q100 75 118 105" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M68 118 L128 34" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M132 28 l-14 6 l9 9 z" fill="#c9d6e6"/></svg><b>Flow control</b><span>Narrows the path to set the speed; the arrow means it can be adjusted.</span></div>
+    </div>
+  </div>
+  <aside class="notes">Regulator: the dashed line is a pilot that senses the outlet pressure, and the spring sets the target. Flow control: the two arcs squeeze the path and the diagonal arrow means it is adjustable; on Day 8 the VEX air flow fittings do this job. Exhaust: a hollow triangle pointing out of the system.</aside>
+</section>
+
+<!-- SLIDE 04 · Cylinder symbols -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Symbols</span>
+    <h2>Cylinder Symbols</h2>
+    <p class="prose">A cylinder symbol is a rectangle with a line for the piston and a line for the rod. Ports are drawn where the air gets in.</p>
+    <div class="sym-row c2" style="max-width:1100px;">
+<div class="sym-card"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Single-acting cylinder symbol"><rect x="30" y="50" width="120" height="50" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M70 50 V100" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M70 75 H185" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M74 75 l6 -14 l8 28 l8 -28 l8 28 l8 -28 l8 28 l8 -28 l8 28 l8 -28 l6 14" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" stroke="#ffd166"/><path d="M42 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><b>Single-acting cylinder</b><span>One port; a spring returns the piston.</span></div>
+<div class="sym-card fragment fade-up"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Double-acting cylinder symbol"><rect x="30" y="50" width="120" height="50" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M70 50 V100" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M70 75 H185" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M42 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M138 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><b>Double-acting cylinder</b><span>A port at each end; air pushes both ways.</span></div>
+    </div>
+  </div>
+  <aside class="notes">These match the cutaways from Day 4. The VEX cylinder is double-acting. A single-acting cylinder can have its spring at either end, depending on whether the spring extends or retracts it.</aside>
+</section>
+
+<!-- SLIDE 05 · Reading a valve symbol -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Symbols</span>
+    <h2>Reading a Valve Symbol</h2>
+    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+      <div>
+<svg class="valve-big" viewBox="0 0 200 150" role="img" aria-label="5/2 valve symbol with a solenoid on the left and a spring on the right"><rect x="30" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="100" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M65 100 L53.3 55.6" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M50 43 L59.1 54.0 L47.5 57.1 Z" fill="#c9d6e6"/><path d="M80 40 L86.2 84.1" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M88 97 L80.3 85.0 L92.1 83.3 Z" fill="#c9d6e6"/><path d="M135 100 L146.7 55.6" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M150 43 L152.5 57.1 L140.9 54.0 Z" fill="#c9d6e6"/><path d="M120 40 L113.8 84.1" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M112 97 L107.9 83.3 L119.7 85.0 Z" fill="#c9d6e6"/><path d="M42 100 V86 M34 86 H50" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M158 100 V86 M150 86 H166" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><rect x="4" y="54" width="26" height="32" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M4 86 L30 54" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M170 70 l4 -9 l6 18 l6 -18 l6 18 l5 -9" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M120 40 V18" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M150 40 V18" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M135 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M112 100 V114" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M104 114 h16 l-8 12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M158 100 V114" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M150 114 h16 l-8 12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><text x="115" y="30" text-anchor="end" style="font:700 11px 'JetBrains Mono', monospace;fill:#5daaff;">4</text><text x="155" y="30" text-anchor="start" style="font:700 11px 'JetBrains Mono', monospace;fill:#5daaff;">2</text><text x="101" y="124" text-anchor="end" style="font:700 11px 'JetBrains Mono', monospace;fill:#5daaff;">5</text><text x="140" y="130" text-anchor="start" style="font:700 11px 'JetBrains Mono', monospace;fill:#5daaff;">1</text><text x="170" y="124" text-anchor="start" style="font:700 11px 'JetBrains Mono', monospace;fill:#5daaff;">3</text></svg>
+      </div>
+      <div class="v-notes">
+        <p class="prose fragment fade-up">Each <span class="term">box</span> is one position. Two boxes means two positions. Arrows show where air flows, and a T marks a blocked port.</p>
+        <p class="prose fragment fade-up">The ports attach to the box for the <span class="term">resting</span> position, usually the right box. Here, 1 is supply, 2 and 4 go to the cylinder, and 3 and 5 are exhausts.</p>
+        <p class="prose fragment fade-up">What moves the valve is drawn on the ends:</p>
+        <div class="mini-row fragment fade-up">
+          <div><svg class="mini-sym" viewBox="0 0 200 150" role="img" aria-label="Solenoid symbol"><rect x="70" y="45" width="60" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M70 105 L130 45" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><div class="mini-cap">Solenoid</div></div>
+          <div><svg class="mini-sym" viewBox="0 0 200 150" role="img" aria-label="Spring symbol"><path d="M40 75 l10 -20 l14 40 l14 -40 l14 40 l14 -40 l14 40 l14 -40 l14 40 l12 -20" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><div class="mini-cap">Spring</div></div>
+          <div><svg class="mini-sym" viewBox="0 0 200 150" role="img" aria-label="Push button symbol"><path d="M100 120 V70" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M68 70 Q100 20 132 70 Z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><div class="mini-cap">Push button</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">This is a 5/2 valve with a solenoid on the left and a spring on the right. At rest, the spring holds the right box in place: 1 feeds 2, and 4 exhausts through 5. Energize the solenoid and it pushes the left box into place: 1 feeds 4, and 2 exhausts through 3. Valves can be drawn in any orientation; the function is the same. Deck 5&rsquo;s explorer used the same right-box-at-rest rule.</aside>
+</section>
+
+<!-- SLIDE 06 · The 3/2 valve symbol -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Symbols</span>
+    <h2>The 3/2 Valve Symbol</h2>
+    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+      <div>
+<svg class="valve-big" viewBox="0 0 200 150" role="img" aria-label="3/2 valve symbol with a hand lever on the left. Right box: port 1 blocked, port 2 vents to exhaust port 3. Left box: port 1 feeds port 2, port 3 blocked."><rect x="30" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="100" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M45 100 L59.9 55.3" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M64 43 L65.6 57.2 L54.2 53.4 Z" fill="#c9d6e6"/><path d="M85 100 V86 M77 86 H93" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M135 40 L149.9 84.7" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M154 97 L144.2 86.6 L155.6 82.8 Z" fill="#c9d6e6"/><path d="M115 100 V86 M107 86 H123" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M30 70 H20 L10 50" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><circle cx="8" cy="45" r="4.5" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M135 40 V18" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M115 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M155 100 V114" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M147 114 h16 l-8 12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><text x="140" y="30" text-anchor="start" style="font:700 11px 'JetBrains Mono', monospace;fill:#5daaff;">2</text><text x="110" y="130" text-anchor="end" style="font:700 11px 'JetBrains Mono', monospace;fill:#5daaff;">1</text><text x="167" y="124" text-anchor="start" style="font:700 11px 'JetBrains Mono', monospace;fill:#5daaff;">3</text></svg>
+      </div>
+      <div class="v-notes">
+        <p class="prose">You met the <span class="pneu">3/2 valve</span> in the push-button explorer. Its ports attach to the right box: <span class="pneu">1</span> is supply, <span class="pneu">2</span> goes out to the part it feeds, and <span class="pneu">3</span> is the exhaust.</p>
+        <p class="prose fragment fade-up">In the right box, 1 is blocked and 2 vents through 3. In the left box, 1 feeds 2 and 3 is blocked.</p>
+        <p class="prose fragment fade-up">A <span class="term">lever</span>, drawn as a line with a small circle, means a person sets the valve by hand. With no spring, it stays where it is left, which is just what a <span class="term">shut-off valve</span> needs.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Deck 5&rsquo;s push-button explorer labeled the 3/2 ports P, A and R; ISO numbers them 1, 2 and 3. Same rules as the 5/2: each box is one position, the ports attach to the right box, and a T marks a blocked port. The lever has no spring, so whichever box the person selects stays in place. That sets up the VEX shut-off valve later in the lesson.</aside>
+</section>
+
+<!-- SLIDE 07 · Match the symbols -->
+<section id="fcb-symbols" data-fcb data-prevent-swipe>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+    <span class="slide-tag">Your Turn</span>
+    <h2 style="margin-bottom:6px;">Match the Symbols</h2>
+    <div data-fcb-root>
+      <div class="m-grid">
+<div class="m-card"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Mystery symbol 1"><circle cx="100" cy="85" r="40" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M100 47 L86 69 H114 Z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M100 45 V10" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><button type="button" class="fcb-slot" data-accept="compressor" aria-label="Empty name slot"><span class="fcb-ph">?</span></button></div>
+<div class="m-card"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Mystery symbol 2"><rect x="45" y="50" width="110" height="56" rx="28" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M10 78 H45" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M155 78 H190" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><button type="button" class="fcb-slot" data-accept="tank" aria-label="Empty name slot"><span class="fcb-ph">?</span></button></div>
+<div class="m-card"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Mystery symbol 3"><rect x="65" y="40" width="70" height="70" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M100 140 V110" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M100 40 V10" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M92 100 V56" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M92 50 l-7 12 h14 z" fill="#c9d6e6"/><path d="M135 75 l8 -8 l8 16 l8 -16 l8 16 l8 -8" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M100 25 H48 V75 H65" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" stroke-dasharray="6 5"/></svg><button type="button" class="fcb-slot" data-accept="regulator" aria-label="Empty name slot"><span class="fcb-ph">?</span></button></div>
+<div class="m-card"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Mystery symbol 4"><path d="M100 15 V80" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M80 80 H120 L100 112 Z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><button type="button" class="fcb-slot" data-accept="exhaust" aria-label="Empty name slot"><span class="fcb-ph">?</span></button></div>
+<div class="m-card"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Mystery symbol 5"><rect x="30" y="50" width="120" height="50" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M70 50 V100" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M70 75 H185" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M42 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M138 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><button type="button" class="fcb-slot" data-accept="double" aria-label="Empty name slot"><span class="fcb-ph">?</span></button></div>
+<div class="m-card"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Mystery symbol 6"><rect x="30" y="50" width="120" height="50" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M70 50 V100" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M70 75 H185" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M74 75 l6 -14 l8 28 l8 -28 l8 28 l8 -28 l8 28 l8 -28 l8 28 l8 -28 l6 14" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" stroke="#ffd166"/><path d="M42 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><button type="button" class="fcb-slot" data-accept="single" aria-label="Empty name slot"><span class="fcb-ph">?</span></button></div>
+<div class="m-card"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Mystery symbol 7"><rect x="30" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="100" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M65 100 L53.3 55.6" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M50 43 L59.1 54.0 L47.5 57.1 Z" fill="#c9d6e6"/><path d="M80 40 L86.2 84.1" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M88 97 L80.3 85.0 L92.1 83.3 Z" fill="#c9d6e6"/><path d="M135 100 L146.7 55.6" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M150 43 L152.5 57.1 L140.9 54.0 Z" fill="#c9d6e6"/><path d="M120 40 L113.8 84.1" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M112 97 L107.9 83.3 L119.7 85.0 Z" fill="#c9d6e6"/><rect x="4" y="54" width="26" height="32" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M4 86 L30 54" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M170 70 l4 -9 l6 18 l6 -18 l6 18 l5 -9" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M120 40 V18" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M150 40 V18" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M135 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M112 100 V114" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M104 114 h16 l-8 12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M158 100 V114" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M150 114 h16 l-8 12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/></svg><button type="button" class="fcb-slot" data-accept="valve52" aria-label="Empty name slot"><span class="fcb-ph">?</span></button></div>
+<div class="m-card"><svg class="sym-svg" viewBox="0 0 200 150" role="img" aria-label="Mystery symbol 8"><path d="M100 10 V140" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M82 45 Q100 75 82 105" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M118 45 Q100 75 118 105" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M68 118 L128 34" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M132 28 l-14 6 l9 9 z" fill="#c9d6e6"/></svg><button type="button" class="fcb-slot" data-accept="flow" aria-label="Empty name slot"><span class="fcb-ph">?</span></button></div>
+      </div>
+    </div>
+    <div class="fcb-panel">
+      <div class="fcb-status"><span class="fcb-count" data-fcb-score>0 of 8 placed</span><span data-fcb-attempts>0 tries</span><span class="fcb-complete" data-fcb-complete hidden></span><button type="button" class="fcb-perfect" data-fcb-perfect hidden title="Show the perfect-score check again">&#10003; Perfect on the first try</button><button type="button" class="sim-btn alt" data-fcb-reset style="margin-left:auto;">Start over</button></div>
+      <div class="fcb-bank" data-fcb-bank>
+<button type="button" class="fcb-chip" data-chip="compressor">Compressor</button>
+<button type="button" class="fcb-chip" data-chip="tank">Receiver tank</button>
+<button type="button" class="fcb-chip" data-chip="regulator">Pressure regulator</button>
+<button type="button" class="fcb-chip" data-chip="exhaust">Exhaust</button>
+<button type="button" class="fcb-chip" data-chip="double">Double-acting cylinder</button>
+<button type="button" class="fcb-chip" data-chip="single">Single-acting cylinder</button>
+<button type="button" class="fcb-chip" data-chip="valve52">5/2 solenoid valve</button>
+<button type="button" class="fcb-chip" data-chip="flow">Flow control</button>
+<button type="button" class="fcb-chip" data-chip="motor">Air motor</button>
+<button type="button" class="fcb-chip" data-chip="pump">Hydraulic pump</button>
+<button type="button" class="fcb-chip" data-chip="solenoid">Solenoid</button>
+      </div>
+    </div>
+  </div>
+  <div class="match-perfect-overlay" data-fcb-overlay aria-hidden="true">
+    <div class="match-perfect-badge">
+      <span class="match-perfect-check">&#10003;</span>
+      <span class="match-perfect-text">Perfect Symbols!</span>
+      <span class="match-perfect-hint">Every name on the first try. Click to see your board</span>
+    </div>
+  </div>
+  <aside class="notes">Students drag each name under its symbol, or click a name and then a slot. Three names are distractors (air motor, hydraulic pump, solenoid). A perfect first run shows a check mark and leaves a pulsing badge that survives Start over and a reload until the tab closes.</aside>
+</section>
+
+<!-- SLIDE 08 · An industrial circuit -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Circuits</span>
+    <h2>Drawing a Complete Circuit</h2>
+    <p class="prose">Connect the symbols in the order the air travels, and you have a <span class="term">pneumatic circuit</span>. Schematics are drawn from the bottom up: the air supply at the bottom, the valves in the middle, and the parts that move, like cylinders, at the top.</p>
+<svg class="circuit" viewBox="0 0 1300 490" role="img" aria-label="Industrial circuit schematic: compressor, receiver tank and regulator feed port 1 of a 5/2 solenoid valve with spring return. Port 4 feeds the cap end and port 2 feeds the rod end of a double-acting cylinder. Ports 3 and 5 exhaust."><g class="fragment fade-up" data-fragment-index="1"><circle cx="110" cy="380" r="40" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M148 380 l-20 -12 v24 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><text x="110" y="476" text-anchor="middle" class="c-lbl">Compressor</text></g><g class="fragment fade-up" data-fragment-index="2"><path d="M150 380 H230" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><rect x="230" y="350" width="160" height="60" rx="30" fill="none" stroke="#c9d6e6" stroke-width="3"/><text x="310" y="476" text-anchor="middle" class="c-lbl">Tank</text></g><g class="fragment fade-up" data-fragment-index="3"><path d="M390 380 H470" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><rect x="470" y="345" width="70" height="70" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M482 390 H522" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M530 390 l-12 -7 v14 z" fill="#c9d6e6"/><path d="M505 415 l-8 6 l16 8 l-16 8 l16 8 l-8 6" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M560 380 V325 H505 V345" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" stroke-dasharray="6 5"/><text x="505" y="476" text-anchor="middle" class="c-lbl">Regulator</text></g><g class="fragment fade-up" data-fragment-index="4"><path d="M540 380 H755 V290" fill="none" stroke="#5daaff" stroke-width="5" stroke-linejoin="round"/><rect x="590" y="170" width="110" height="80" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="700" y="170" width="110" height="80" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M645 250 L617 182" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M613 174 l-4 14 l11 -4 z" fill="#c9d6e6"/><path d="M675 170 L685 236" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M686 244 l-7 -12 l11 -2 z" fill="#c9d6e6"/><path d="M755 250 L783 182" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M787 174 l-11 4 l11 8 z" fill="#c9d6e6"/><path d="M725 170 L715 236" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M714 244 l-4 -12 l11 2 z" fill="#c9d6e6"/><path d="M725 170 V150" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M785 170 V150" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M715 250 V266" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M795 250 V266" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M755 250 V290" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M703 266 h24 l-12 18 z" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M783 266 h24 l-12 18 z" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="550" y="190" width="38" height="40" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M550 230 L588 190" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M810 210 l7 -10 l8 20 l8 -20 l8 20 l8 -20 l6 10" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><text x="713" y="166" text-anchor="end" class="c-port">4</text><text x="797" y="166" text-anchor="start" class="c-port">2</text><text x="765" y="300" text-anchor="start" class="c-port">1</text><text x="703" y="300" text-anchor="end" class="c-port">5</text><text x="807" y="300" text-anchor="start" class="c-port">3</text><text x="588" y="258" text-anchor="end" class="c-sub">Y1</text><text x="880" y="230" text-anchor="start" class="c-lbl">5/2 solenoid valve</text><text x="880" y="262" text-anchor="start" class="c-sub">spring return</text></g><g class="fragment fade-up" data-fragment-index="5"><rect x="560" y="30" width="280" height="70" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M610 30 V100" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M610 65 H920" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M580 100 V112" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M820 100 V112" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M725 150 V132 H580 V112" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M785 150 V122 H820 V112" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><text x="950" y="60" text-anchor="start" class="c-lbl">Double-acting cylinder</text></g></svg>
+  </div>
+  <aside class="notes">Build it one click at a time: compressor, tank, regulator, valve, cylinder. At rest the spring holds the right box, so 1 feeds 2 and the rod end: the cylinder stays retracted. Energizing the solenoid sends air through 4 to the cap end. Students will run exactly this circuit in Simulation C.</aside>
+</section>
+
+<!-- SLIDE 09 · The full VEX circuit -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Circuits</span>
+    <h2>A VEX Circuit With a Shut-Off Valve</h2>
+    <div style="display:grid;grid-template-columns:1000px 1fr;gap:40px;align-items:start;margin-top:var(--gap);">
+      <div style="position:relative;">
+        <img class="img-zoomable side-photo" style="max-height:none;" src="Pneumatic_Schematics_Assets/vexCircuitShutoff.jpeg" alt="A full VEX pneumatic circuit on a table, left to right: the air tank, a regulator with a gauge, the shut-off valve, the solenoid valve and a double-acting cylinder, joined by black tubing. The shut-off valve is circled.">
+        <svg class="fragment fade-in" data-fragment-index="1" viewBox="0 0 1600 939" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" aria-hidden="true">
+          <rect x="845" y="270" width="150" height="250" rx="24" fill="none" stroke="#ffd166" stroke-width="8"/>
+          <rect x="770" y="160" width="300" height="74" rx="12" fill="rgba(6,10,20,0.85)" stroke="#ffd166" stroke-width="3"/>
+          <text x="920" y="210" text-anchor="middle" style="font:700 40px 'DM Sans', sans-serif;fill:#ffd166;">Shut-off valve</text>
+          <path d="M920 234 V270" stroke="#ffd166" stroke-width="5"/>
+        </svg>
+      </div>
+      <div class="v-notes">
+        <p class="prose">This is the VEX circuit you know: tank, regulator, solenoid valve and cylinder.</p>
+        <p class="prose fragment fade-up" data-fragment-index="1">It has one <span class="warn-color">extra part</span> on the supply line, between the regulator and the solenoid valve.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Ask students to name each part left to right before the callout appears, then ask which part they have not seen in a schematic yet. The next two slides explain the shut-off valve, and slide 12 adds it to the VEX schematic.</aside>
+</section>
+
+<!-- SLIDE 10 · The shut-off valve -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Safety</span>
+    <h2>The Shut-Off Valve</h2>
+    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+      <figure style="margin:0;">
+        <img class="img-zoomable side-photo" src="Pneumatic_Schematics_Assets/vexShutoffCrop.jpeg" alt="Part of a VEX circuit: a regulator with a gauge on the left, a black tube to the shut-off valve in the middle with its dial turned in line with the tube, then a tube on to the solenoid valve on the right.">
+        <figcaption class="credit">Regulator, shut-off valve, then the solenoid valve.</figcaption>
+      </figure>
+      <div class="v-notes">
+        <p class="prose">The <span class="term">shut-off valve</span> sits on the supply line between the <span class="pneu">regulator</span> and the <span class="pneu">solenoid valve</span>. An arrow on its body shows which way the air must flow through it.</p>
+        <p class="prose fragment fade-up">It works like a <span class="term">lever</span>: turn the dial <span class="pneu">in line with the tube</span> to open it, and <span class="warn-color">across the tube</span> to close it. In the photo it is open.</p>
+        <p class="prose fragment fade-up">Close it before you touch any tube or fitting, and before you reach into a machine.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.4. Point out the flow arrow on the classroom fittings: installed backwards, it does not shut off properly. The dial has no spring; it stays where it is turned, which is why it is drawn with a lever and no spring. On Day 7, closing the shut-off valve is the first step before anyone touches a tube or fitting.</aside>
+</section>
+
+<!-- SLIDE 11 · The shut-off valve symbol -->
+<section data-prevent-swipe>
+  <div class="slide-inner">
+    <span class="slide-tag">Safety</span>
+    <h2>Drawing the Shut-Off Valve</h2>
+    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+      <div id="shutoff">
+        <svg class="circuit" viewBox="0 0 640 420" role="img" aria-label="Air from the regulator feeds a shut-off valve drawn as a 3/2 valve with a hand lever. Open, air flows on to the solenoid valve. Closed, the supply is blocked and the downstream side vents through the exhaust, while the line from the regulator stays charged." data-r="svg"></svg>
+        <div class="sc-row" style="margin-top:6px;"><span class="ctl-name">Shut-off valve</span>
+          <button type="button" class="s1-btn" data-r="toggle" aria-pressed="false">Closed</button>
+        </div>
+      </div>
+      <div>
+        <p class="prose">In a schematic, the shut-off valve is a <span class="pneu">3/2 valve</span> with a <span class="term">lever</span>. One box passes air from 1 to 2; the other blocks 1 and opens 2 to the exhaust.</p>
+        <p class="prose fragment fade-up" style="margin-top:var(--gap);">Closing it stops the supply and <span class="warn-color">vents the air already downstream</span>, so the solenoid valve and cylinder are safe to work on.</p>
+        <p class="prose fragment fade-up" style="margin-top:var(--gap);">The regulator and the tank <span class="pneu">stay charged</span>. Empty the tank before the kit is stored or taken apart.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Toggle the valve and point out that the line from the regulator stays blue either way. The VEX fitting vents downstream when closed (checked in class); VEX&rsquo;s documentation says only that closing it stops air loss and makes the system safe. Students add this symbol between the regulator and the solenoid valve in their notebook drawing.</aside>
+</section>
+
+<!-- SLIDE 12 · The VEX circuit -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Circuits</span>
+    <h2>The VEX Circuit as a Schematic</h2>
+<svg class="circuit" viewBox="0 0 1300 490" role="img" aria-label="VEX circuit schematic: a compressor fills the tank before a run (dashed line), then a regulator feeds a hand-lever shut-off valve, drawn as a 3/2, which feeds port P of the VEX solenoid, drawn as a 5/2 valve with a coil on each end. Port A feeds the rod end and port B feeds the cap end of a double-acting cylinder; both exhausts share one R passage."><g><circle cx="110" cy="380" r="40" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M148 380 l-20 -12 v24 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><text x="110" y="476" text-anchor="middle" class="c-lbl">Compressor</text><path d="M150 380 H190" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round" stroke-dasharray="8 6"/><rect x="190" y="350" width="120" height="60" rx="30" fill="none" stroke="#c9d6e6" stroke-width="3"/><text x="250" y="476" text-anchor="middle" class="c-lbl">Tank</text><path d="M310 380 H360" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><rect x="360" y="345" width="70" height="70" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M372 390 H412" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M420 390 l-12 -7 v14 z" fill="#c9d6e6"/><path d="M395 415 l-8 6 l16 8 l-16 8 l16 8 l-8 6" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M450 380 V325 H395 V345" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" stroke-dasharray="6 5"/><text x="395" y="476" text-anchor="middle" class="c-lbl">Regulator</text><path d="M430 380 H520" fill="none" stroke="#5daaff" stroke-width="5" stroke-linejoin="round"/><rect x="520" y="296" width="84" height="66" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="520" y="362" width="84" height="66" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M 520 314 L 590.2 326.8" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M 602 329 L 589.3 331.7 L 591.1 321.9 Z" fill="#c9d6e6"/><path d="M 520 347 H 531 M 531 341 V 353" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M 520 380 H 531 M 531 374 V 386" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M 604 395 L 533.7 410.5" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M 522 413 L 532.7 405.6 L 534.8 415.4 Z" fill="#c9d6e6"/><path d="M 520 413 H 495" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M 495 401 v 24 l -18 -12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M 562 296 V 284 L 578 270" fill="none" stroke="#c9d6e6" stroke-width="3"/><circle cx="581" cy="267" r="4.5" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M604 395 H755 V290" fill="none" stroke="#5daaff" stroke-width="5" stroke-linejoin="round"/><text x="562" y="476" text-anchor="middle" class="c-lbl">Shut-off valve</text><rect x="590" y="170" width="110" height="80" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="700" y="170" width="110" height="80" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M645 250 L617 182" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M613 174 l-4 14 l11 -4 z" fill="#c9d6e6"/><path d="M675 170 L685 236" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M686 244 l-7 -12 l11 -2 z" fill="#c9d6e6"/><path d="M755 250 L783 182" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M787 174 l-11 4 l11 8 z" fill="#c9d6e6"/><path d="M725 170 L715 236" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M714 244 l-4 -12 l11 2 z" fill="#c9d6e6"/><path d="M725 170 V150" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M785 170 V150" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M715 250 V266" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M795 250 V266" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M755 250 V290" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M703 266 h24 l-12 18 z" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M783 266 h24 l-12 18 z" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="550" y="190" width="38" height="40" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M550 230 L588 190" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><rect x="812" y="190" width="38" height="40" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M812 230 L850 190" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><text x="713" y="166" text-anchor="end" class="c-port">B</text><text x="797" y="166" text-anchor="start" class="c-port">A</text><text x="765" y="300" text-anchor="start" class="c-port">P</text><text x="805" y="300" text-anchor="start" class="c-sub">R (shared)</text><text x="542" y="219" text-anchor="end" class="c-sub">B coil</text><text x="858" y="219" text-anchor="start" class="c-sub">A coil</text><text x="970" y="212" text-anchor="start" class="c-lbl">VEX solenoid,</text><text x="970" y="244" text-anchor="start" class="c-sub">drawn as a 5/2</text><rect x="560" y="30" width="280" height="70" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M610 30 V100" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M610 65 H920" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M580 100 V112" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M820 100 V112" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M725 150 V132 H580 V112" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M785 150 V122 H820 V112" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><text x="950" y="60" text-anchor="start" class="c-lbl">Double-acting cylinder</text></g></svg>
+    <p class="prose fragment fade-up">The <span class="term">shut-off valve</span> sits between the regulator and the solenoid. The VEX solenoid is drawn by its <span class="term">function</span>: a 5/2 valve with a coil on each end, A to the rod end and B to the cap end.</p>
+    <p class="prose fragment fade-up">The drawing leaves out the plugged spare P port, the shared R passage inside the body, tube lengths and fittings. A schematic shows how the air flows, not where the parts sit.</p>
+  </div>
+  <aside class="notes">Compare with the industrial circuit on slide 8: the same job, drawn the same way, even though the VEX valve looks nothing like an industrial 5/2. The dashed line from the compressor means it charges the tank before a run; it is not connected while the robot runs.</aside>
+</section>
+
+<!-- SLIDE 13 · Resonance: Read the schematic -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:12:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "In a VEX schematic, the line from valve port A runs to the cap end of the cylinder, and the line from port B runs to the rod end. The build sheet says A should feed the rod end. When the signal is low and air goes to A, what does the cylinder do?", "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "It retracts, because port A always retracts", "isCorrect": false}, {"id": "q1b", "text": "It extends, because the A line feeds the cap end; the A and B lines are swapped", "isCorrect": true}, {"id": "q1c", "text": "Nothing moves until both lines get air", "isCorrect": false}, {"id": "q1d", "text": "It stops halfway, because the lines cross", "isCorrect": false}], "order": 0}, {"id": "q2", "type": "multiple-choice", "text": "A 5/2 valve symbol has a solenoid drawn on its left end and a spring on its right end. With the solenoid off, which box shows how the valve is connected?", "responseTimeLimitMs": 60000, "options": [{"id": "q2a", "text": "The left box, next to the solenoid", "isCorrect": false}, {"id": "q2b", "text": "Both boxes at once", "isCorrect": false}, {"id": "q2c", "text": "Neither box; the valve is closed", "isCorrect": false}, {"id": "q2d", "text": "The right box, next to the spring", "isCorrect": true}], "order": 1}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check</span>
+    <h2>Read the Schematic</h2>
+    <p class="q-head">1. In a VEX schematic, the line from valve port A runs to the cap end, and port B runs to the rod end. The build sheet says A should feed the rod end. When the signal is low and air goes to A, what does the cylinder do?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>It retracts, because port A always retracts</li>
+      <li><span class="mcq-letter">B</span>It extends, because the A line feeds the cap end; the A and B lines are swapped</li>
+      <li><span class="mcq-letter">C</span>Nothing moves until both lines get air</li>
+      <li><span class="mcq-letter">D</span>It stops halfway, because the lines cross</li>
+    </ol>
+    <p class="q-head">2. A 5/2 valve symbol has a solenoid on its left end and a spring on its right end. With the solenoid off, which box shows how the valve is connected?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>The left box, next to the solenoid</li>
+      <li><span class="mcq-letter">B</span>Both boxes at once</li>
+      <li><span class="mcq-letter">C</span>Neither box; the valve is closed</li>
+      <li><span class="mcq-letter">D</span>The right box, next to the spring</li>
+    </ol>
+  </div>
+  <aside class="notes">Answers: it extends, because the A and B lines are swapped (the schematic shows the fault before anyone builds it); and the right box, next to the spring.</aside>
+</section>
+
+<!-- SLIDE 14 · The control circuit -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Electro-Pneumatics</span>
+    <h2>The Control Circuit</h2>
+    <p class="prose">An <span class="term">electro-pneumatic</span> circuit has two sections: one for the electricity and one for the pneumatics that it controls. A small, safe <span class="warn-color">24 V signal</span> decides when the valve shifts, and the valve handles the air.</p>
+    <svg class="circuit" viewBox="0 0 1300 330" role="img" aria-label="A control circuit beside a valve symbol. A +24 volt rail and a 0 volt rail are joined by one rung. On the rung, normally open switch S1 is in series with coil Y1. A dashed line links coil Y1 to the solenoid labeled Y1 on a 5/2 valve symbol.">
+  <g class="fragment fade-up" data-fragment-index="1">
+    <path d="M60 40 V290 M520 40 V290" fill="none" stroke="#c9d6e6" stroke-width="4"/>
+    <text x="60" y="320" text-anchor="middle" class="c-lbl">+24 V</text><text x="520" y="320" text-anchor="middle" class="c-lbl">0 V</text>
+  </g>
+  <g class="fragment fade-up" data-fragment-index="2">
+    <path d="M60 165 H170 M170 165 L226 136" fill="none" stroke="#c9d6e6" stroke-width="4"/>
+    <circle cx="170" cy="165" r="6" fill="#c9d6e6"/><circle cx="232" cy="165" r="6" fill="#c9d6e6"/>
+    <text x="200" y="118" text-anchor="middle" class="c-lbl">S1</text>
+  </g>
+  <g class="fragment fade-up" data-fragment-index="3">
+    <path d="M232 165 H340 M400 165 H520" fill="none" stroke="#c9d6e6" stroke-width="4"/>
+    <circle cx="370" cy="165" r="30" fill="none" stroke="#ffd166" stroke-width="4"/>
+    <text x="370" y="174" text-anchor="middle" class="c-lbl" style="fill:#ffd166;">Y1</text>
+  </g>
+  <g class="fragment fade-up" data-fragment-index="4">
+    <g transform="translate(760 40) scale(1.6)"><rect x="30" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="100" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M65 100 L53.3 55.6" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M50 43 L59.1 54.0 L47.5 57.1 Z" fill="#c9d6e6"/><path d="M80 40 L86.2 84.1" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M88 97 L80.3 85.0 L92.1 83.3 Z" fill="#c9d6e6"/><path d="M135 100 L146.7 55.6" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M150 43 L152.5 57.1 L140.9 54.0 Z" fill="#c9d6e6"/><path d="M120 40 L113.8 84.1" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M112 97 L107.9 83.3 L119.7 85.0 Z" fill="#c9d6e6"/><rect x="4" y="54" width="26" height="32" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M4 86 L30 54" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M170 70 l4 -9 l6 18 l6 -18 l6 18 l5 -9" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M120 40 V18" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M150 40 V18" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M135 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M112 100 V114" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M104 114 h16 l-8 12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M158 100 V114" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M150 114 h16 l-8 12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/></g>
+    <text x="756" y="162" text-anchor="end" class="c-lbl" style="fill:#ffd166;">Y1</text>
+    <path d="M370 133 C 390 -10, 720 -10, 787 124" fill="none" stroke="#ffd166" stroke-width="3" stroke-dasharray="8 7"/>
+    <text x="640" y="104" text-anchor="middle" class="c-sub">same part</text>
+  </g>
+</svg>
+    <p class="prose fragment fade-up" data-fragment-index="2">The power rails run down each side. <b>S1</b> is a normally open switch: no current flows until it closes.</p>
+    <p class="prose fragment fade-up" data-fragment-index="4">When S1 closes, current flows through coil <b class="warn-color">Y1</b>, the solenoid on the valve. Matching labels tell the technician how the electrical and pneumatic sections correspond.</p>
+  </div>
+  <aside class="notes">Students have not seen a control circuit before. Build it a click at a time: the rails, the switch, the coil, then the link to the valve. The electrical drawing is a ladder rung, which students will meet properly in Festo MecLab. Next: the Simulation C challenge, finding the lowest pressure that pushes each load.</aside>
+</section>
+
+<!-- SLIDE 15 · Simulation C briefing -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Electro-Pneumatics</span>
+    <h2>Find the Pressure You Need</h2>
+    <p class="prose">Let&rsquo;s see how an electro-pneumatic circuit works with a simulation. Here&rsquo;s the scenario: an industrial press uses this circuit to push parts into place. Air costs money to compress, so the shop wants to run it at the <span class="term">lowest pressure</span> that still does the job.</p>
+    <div class="ask fragment fade-up"><b>1.</b> Set the load to 150&nbsp;lb and switch S1 on. Raise the supply pressure until the cylinder stops <span class="bad-color">stalling</span>. Record a trial in your notebook at the lowest pressure that works and one where it stalls.</div>
+    <div class="ask fragment fade-up"><b>2.</b> Change the load to 250&nbsp;lb and find the new lowest pressure. Record those trials in your notebook too.</div>
+    <div class="ask fragment fade-up"><b>3.</b> Use force = pressure &times; area to explain why a heavier load needs more pressure.</div>
+  </div>
+  <aside class="notes">ADE 7.5: operate a simulated industrial electro-pneumatic circuit, vary a physical parameter and record the response. In the model the cylinder pushes about 0.9 &times; P &times; 3.14&nbsp;lb, so 150&nbsp;lb needs about 53&nbsp;psi: 60&nbsp;psi works and 50 stalls. 250&nbsp;lb needs about 89&nbsp;psi: 90 works and 80 stalls. Strong students can predict the answers before they run the simulator. The trial table on the next slide keeps every trial and scrolls; students should still copy each one into their notebooks.</aside>
+</section>
+
+<!-- SLIDE 16 · Simulation C -->
+<section data-prevent-swipe>
+  <div class="slide-inner" style="max-width:1600px;padding:30px 40px 20px;justify-content:center;">
+    <span class="slide-tag" style="margin-bottom:4px;">Electro-Pneumatics &nbsp;·&nbsp; Find the lowest pressure that pushes the load</span>
+    <div id="sim-c">
+      <svg class="sc-svg" viewBox="0 0 1440 360" width="1440" height="360" role="img" aria-label="An industrial circuit. A 24 volt control rung with switch S1 powers solenoid coil Y1. Y1 shifts a 5/2 valve fed by a compressor and regulator. The valve drives a double-acting cylinder that pushes a load." data-r="svg"></svg>
+      <div class="sc-row">
+        <button type="button" class="s1-btn" data-r="s1" aria-pressed="false">S1: Off</button>
+        <span class="ctl-name" style="margin-left:10px;">Supply pressure</span>
+        <input type="range" class="sc-range" data-r="p" min="0" max="100" step="10" value="0" aria-label="Supply pressure">
+        <span class="ctl-val" data-v="p"></span>
+        <span class="ctl-name" style="margin-left:10px;">Load</span>
+        <input type="range" class="sc-range" data-r="load" min="0" max="300" step="25" value="0" aria-label="Load on the rod">
+        <span class="ctl-val" data-v="load"></span>
+        <button type="button" class="sim-btn" data-r="rec" style="margin-left:auto;">Record trial</button>
+        <button type="button" class="sim-btn alt" data-r="clear">Clear</button>
+      </div>
+      <div class="sc-bottom">
+        <div class="sc-status" data-r="status" aria-live="polite"></div>
+        <div class="sc-log"><table><thead><tr><th>Trial</th><th>Pressure</th><th>Load</th><th>Extending</th></tr></thead><tbody data-r="log"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.5, the explicit checkpoint. Students switch S1 on to energize coil Y1, which shifts the valve so 1 feeds 4 and the cap end. Then they change the supply pressure or the load and record at least two trials (times are estimates) (for example 60 psi with 150 lb, then 40 psi with 150 lb). Available force is about 0.9 &times; pressure &times; 3.14 in&sup2;. The control rung is drawn apart from the air circuit on purpose: a small electrical signal commands a large air flow. Sensors, interlocks and sequencing wait for Festo MecLab.</aside>
+</section>
+
+<!-- SLIDE 17 · Notebook: draw the VEX circuit -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Notebook</span>
+    <h2>Draw the VEX Circuit</h2>
+    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+      <img class="img-zoomable side-photo" src="Pneumatic_Schematics_Assets/vexCircuitShutoff.jpeg" alt="A full VEX pneumatic circuit on a table, left to right: the air tank, a regulator with a gauge, the shut-off valve, the solenoid valve and a double-acting cylinder, joined by black tubing. Tubes from the solenoid&rsquo;s A and B ports run to the two ends of the cylinder.">
+      <div class="v-notes">
+        <div class="ask">Draw <span class="term">this VEX circuit</span> as a schematic: tank, regulator, shut-off valve, the VEX solenoid as a 5/2 with a coil on each end, and the cylinder. Label A, B, P and R.</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">The plan&rsquo;s Day 6 notebook evidence: a VEX plumbing schematic. Click the photo to zoom in. Check that students follow the tubes in the photo for A and B rather than copying slide 12.</aside>
+</section>
+
+<!-- SLIDE 18 · Optional challenges -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">If Time Allows</span>
+    <h2>Draw It Yourself</h2>
+    <div class="ask"><b>Challenge A:</b> Draw a circuit where pressing a button extends a single-acting cylinder and releasing the button retracts it.</div>
+    <div class="ask fragment fade-up"><b>Challenge B:</b> Draw a 5/2 valve controlling a double-acting cylinder. Show the compressor, both cylinder ports and the valve&rsquo;s resting position.</div>
+    <div class="ask fragment fade-up"><b>Challenge C:</b> Design a circuit that does a useful job, such as clamping, stamping, ejecting or sliding a door, and label every symbol.</div>
+  </div>
+  <aside class="notes">From the PHS Day 4/5 challenges. Challenge A is a concept extension with a push-button 3/2 valve and a spring-return cylinder; it is not a build instruction for the VEX kit.</aside>
+</section>
+
+<!-- SLIDE 19 · Resonance: Exit ticket -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:18:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "In a pneumatic schematic, a circle with a hollow triangle at the top, pointing out of the circle, stands for which part?", "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "A hydraulic pump", "isCorrect": false}, {"id": "q1b", "text": "An air motor", "isCorrect": false}, {"id": "q1c", "text": "A compressor", "isCorrect": true}, {"id": "q1d", "text": "A receiver tank", "isCorrect": false}], "order": 0}, {"id": "q2", "type": "free-response", "text": "In Simulation C, what was the lowest pressure that pushed 150 lb, and the lowest that pushed 250 lb? Explain the difference using force = pressure × area.", "responseTimeLimitMs": 180000, "order": 1}, {"id": "q3", "type": "free-response", "text": "The VEX circuit and the industrial circuit do the same job. Name one way their schematics look different, and one way they work the same.", "responseTimeLimitMs": 150000, "order": 2}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Before You Go</h2>
+    <p class="q-head">1. In a pneumatic schematic, a circle with a hollow triangle at the top, pointing out of the circle, stands for which part?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>A hydraulic pump</li>
+      <li><span class="mcq-letter">B</span>An air motor</li>
+      <li><span class="mcq-letter">C</span>A compressor</li>
+      <li><span class="mcq-letter">D</span>A receiver tank</li>
+    </ol>
+    <p class="q-head">2. What was the lowest pressure that pushed 150&nbsp;lb, and the lowest that pushed 250&nbsp;lb? Explain the difference using force = pressure &times; area.</p>
+    <p class="q-head">3. Name one way the VEX and industrial schematics look different, and one way they work the same.</p>
+  </div>
+  <aside class="notes">Q1: a compressor (an air motor&rsquo;s triangle points in; a hydraulic pump&rsquo;s is filled). Q2 is the ADE 7.5 claim (expected: about 60 and 90 psi in the model). Q3 targets the plan&rsquo;s comparison of function and representation.</aside>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function(element) { return !element.closest('#storyboard'); }
+  );
+}
+
+/* ── Match-the-symbols builder (slide 7) ─────────────────────────
+   Adapted from initFlowchartBuilder in CSP 4.6. Each .fcb-slot has
+   data-accept; each .fcb-chip has data-chip. Click a chip and then a
+   slot, or drag a chip onto a slot. Correct chips fill the slot, wrong
+   ones shake it. Tries persist in sessionStorage so Start over or a
+   reload cannot erase misses. */
+function shuffleChildren(host) {
+  var kids = Array.prototype.slice.call(host.children);
+  for (var i = kids.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = kids[i]; kids[i] = kids[j]; kids[j] = t;
+  }
+  kids.forEach(function (k) { host.appendChild(k); });
+}
+function initLabelBuilder(section) {
+  var root = section.querySelector('[data-fcb-root]');
+  var bankEl = section.querySelector('[data-fcb-bank]');
+  var slots = Array.prototype.slice.call(root.querySelectorAll('.fcb-slot'));
+  var chips = Array.prototype.slice.call(bankEl.querySelectorAll('.fcb-chip'));
+  var scoreEl = section.querySelector('[data-fcb-score]');
+  var attemptsEl = section.querySelector('[data-fcb-attempts]');
+  var completeEl = section.querySelector('[data-fcb-complete]');
+  var perfectEl = section.querySelector('[data-fcb-perfect]');
+  var overlayEl = section.querySelector('[data-fcb-overlay]');
+  var total = slots.length, placed = 0, attempts = 0, misses = 0, selected = null;
+  /* earned: finished with zero misses at least once in this tab. It is saved,
+     so the badge survives closing the overlay, Start over and a reload. */
+  var earned = false;
+  var STORE_KEY = 'pneumatic-schematics:fcb:' + section.id;
+  function save() {
+    try {
+      sessionStorage.setItem(STORE_KEY, JSON.stringify({ attempts: attempts, misses: misses, earned: earned,
+        filled: slots.map(function (sl) { return sl.dataset.chipIdx || null; }) }));
+    } catch (e) {}
+  }
+  function load() { try { return JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } }
+  if (overlayEl) overlayEl.addEventListener('click', function () { overlayEl.classList.remove('visible'); });
+  if (perfectEl) perfectEl.addEventListener('click', function () { overlayEl.classList.add('visible'); });
+  function status(justFinished) {
+    var done = placed === total;
+    if (done && misses === 0 && !earned) { earned = true; save(); }
+    perfectEl.hidden = !earned;
+    if (overlayEl) overlayEl.classList.toggle('visible', !!justFinished && done && misses === 0);
+    scoreEl.textContent = placed + ' of ' + total + ' placed';
+    attemptsEl.textContent = attempts + (attempts === 1 ? ' try' : ' tries');
+    completeEl.hidden = !done;
+    completeEl.textContent = misses === 0 ? 'Perfect! Every symbol on the first try.'
+      : 'Labeled! ' + misses + (misses === 1 ? ' wrong try' : ' wrong tries') + ' along the way.';
+  }
+  function fill(slot, chip) {
+    slot.innerHTML = chip.innerHTML;
+    slot.classList.add('filled');
+    slot.dataset.chipIdx = String(chips.indexOf(chip));
+    slot.setAttribute('aria-label', 'Correct: ' + chip.textContent);
+    chip.classList.add('used');
+    placed++;
+  }
+  function select(chip) {
+    if (selected) selected.classList.remove('selected');
+    selected = (chip && chip !== selected) ? chip : null;
+    if (selected) selected.classList.add('selected');
+  }
+  function place(chip, slot) {
+    if (!chip || slot.classList.contains('filled') || chip.classList.contains('used')) return;
+    attempts++;
+    if (slot.dataset.accept.split(',').indexOf(chip.dataset.chip) !== -1) {
+      fill(slot, chip);
+    } else {
+      misses++;
+      slot.classList.remove('wrong'); void slot.offsetWidth; slot.classList.add('wrong');
+      var b = document.createElement('span');
+      b.className = 'fcb-x'; b.setAttribute('aria-hidden', 'true'); b.textContent = '✗';
+      slot.appendChild(b);
+      setTimeout(function () { slot.classList.remove('wrong'); if (b.parentNode) b.parentNode.removeChild(b); }, 650);
+    }
+    select(null); save(); status(placed === total);
+  }
+  var suppressClick = false;
+  function slotAt(x, y) {
+    var el = document.elementFromPoint(x, y);
+    var slot = el && el.closest ? el.closest('.fcb-slot') : null;
+    return slot && root.contains(slot) ? slot : null;
+  }
+  function startDrag(chip, e) {
+    if (chip.classList.contains('used') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    var startX = e.clientX, startY = e.clientY, rect = chip.getBoundingClientRect();
+    var offX = e.clientX - rect.left, offY = e.clientY - rect.top, ghost = null, hover = null;
+    try { chip.setPointerCapture(e.pointerId); } catch (err) {}
+    function move(ev) {
+      ev.stopPropagation();
+      if (!ghost) {
+        if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) < 6) return;
+        ghost = chip.cloneNode(true);
+        ghost.classList.add('fcb-ghost');
+        ghost.style.transform = 'scale(' + (Reveal.getScale ? Reveal.getScale() : 1) + ')';
+        document.body.appendChild(ghost);
+        chip.classList.add('dragging');
+        select(null);
+      }
+      ghost.style.left = (ev.clientX - offX) + 'px';
+      ghost.style.top = (ev.clientY - offY) + 'px';
+      var over = slotAt(ev.clientX, ev.clientY);
+      if (over !== hover) {
+        if (hover) hover.classList.remove('drag-over');
+        hover = over && !over.classList.contains('filled') ? over : null;
+        if (hover) hover.classList.add('drag-over');
+      }
+    }
+    function end(ev) {
+      ev.stopPropagation();
+      chip.removeEventListener('pointermove', move);
+      chip.removeEventListener('pointerup', end);
+      chip.removeEventListener('pointercancel', end);
+      if (hover) hover.classList.remove('drag-over');
+      if (!ghost) return;
+      ghost.parentNode.removeChild(ghost);
+      chip.classList.remove('dragging');
+      suppressClick = true;
+      var target = ev.type === 'pointerup' ? slotAt(ev.clientX, ev.clientY) : null;
+      if (target) place(chip, target);
+    }
+    chip.addEventListener('pointermove', move);
+    chip.addEventListener('pointerup', end);
+    chip.addEventListener('pointercancel', end);
+  }
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function () { if (suppressClick) { suppressClick = false; return; } select(chip); });
+    chip.addEventListener('pointerdown', function (e) { e.stopPropagation(); startDrag(chip, e); });
+    chip.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
+  });
+  slots.forEach(function (slot) {
+    slot.dataset.empty = slot.innerHTML;
+    slot.addEventListener('click', function () { if (selected) place(selected, slot); });
+  });
+  function clearBoard() {
+    slots.forEach(function (slot) { slot.innerHTML = slot.dataset.empty; slot.classList.remove('filled', 'wrong'); delete slot.dataset.chipIdx; });
+    chips.forEach(function (chip) { chip.classList.remove('used', 'selected'); });
+    placed = 0; selected = null;
+    shuffleChildren(bankEl);
+  }
+  section.querySelector('[data-fcb-reset]').addEventListener('click', function () { clearBoard(); save(); status(); });
+  clearBoard();
+  var saved = load();
+  if (saved) {
+    attempts = saved.attempts || 0; misses = saved.misses || 0; earned = !!saved.earned;
+    (saved.filled || []).forEach(function (idx, i) { if (idx !== null && chips[+idx] && slots[i]) fill(slots[i], chips[+idx]); });
+  }
+  status();
+}
+
+/* ── Pick-and-place photo carousel (slide 15) ──────────────────────
+   Prev / Next step through one vacuum pick-and-place cycle. Reveal's
+   only fragment on that side swaps the carousel for the diagram. */
+function initPickPlace(root) {
+  var A = 'Pressure_Into_Motion_Assets/pick-place-';
+  var STEPS = [
+    { n: 4, alt: 'A pneumatic pick-and-place machine. Its vacuum cup waits above a black workpiece.', cap: 'The vacuum cup waits above the workpiece.' },
+    { n: 1, alt: 'The vacuum cup has moved down onto the workpiece.', cap: 'The cup moves down onto the workpiece.' },
+    { n: 2, alt: 'The vacuum is on, and the cup has lifted the workpiece.', cap: 'The <span class="pneu">vacuum turns on</span>, and the cup lifts the workpiece.' },
+    { n: 3, alt: 'The vacuum stays on as the cup lowers the workpiece.', cap: 'The vacuum stays on as the cup lowers the workpiece.' },
+    { n: 4, alt: 'The cup has released the workpiece and risen again.', cap: 'The <span class="pneu">vacuum turns off</span>, and the cup lets go and rises.' }
+  ];
+  var img = root.querySelector('[data-pp-img]'), cap = root.querySelector('[data-pp-cap]');
+  var count = root.querySelector('[data-pp-count]');
+  var prev = root.querySelector('[data-pp-prev]'), next = root.querySelector('[data-pp-next]');
+  var k = 0;
+  STEPS.forEach(function (st) { var im = new Image(); im.src = A + st.n + '.jpg'; });
+  function show() {
+    var st = STEPS[k];
+    img.src = A + st.n + '.jpg';
+    img.alt = st.alt;
+    cap.innerHTML = st.cap;
+    count.textContent = 'Step ' + (k + 1) + ' of ' + STEPS.length;
+    prev.disabled = k === 0;
+    next.disabled = k === STEPS.length - 1;
+  }
+  prev.addEventListener('click', function () { if (k > 0) { k--; show(); } });
+  next.addEventListener('click', function () { if (k < STEPS.length - 1) { k++; show(); } });
+  show();
+}
+
+
+/* ── Simulation C: industrial electro-pneumatic circuit (slide 16) ──
+   A 24 V rung (switch S1, coil Y1) is drawn apart from the air circuit.
+   Y1 shifts a 5/2 valve with spring return: at rest 1 feeds 2 (rod end),
+   energized 1 feeds 4 (cap end). Model: 2 in bore (3.14 in²), about 10%
+   lost to friction, so available push = 0.9 × P × 3.14. The rod extends
+   only if that beats the load; extend time ≈ 0.6 s / √(1 − load/force).
+   Retraction is not resisted by the load and takes about 0.5 s. */
+function initSimC(root) {
+  var NS = 'http://www.w3.org/2000/svg';
+  var svg = root.querySelector('[data-r="svg"]');
+  var status = root.querySelector('[data-r="status"]');
+  var logEl = root.querySelector('[data-r="log"]');
+  var s1Btn = root.querySelector('[data-r="s1"]');
+  var pIn = root.querySelector('[data-r="p"]'), lIn = root.querySelector('[data-r="load"]');
+  var C = { line: '#c9d6e6', blue: '#5daaff', warn: '#ffd166', bad: '#ff8a80', air: 'rgba(93,170,255,0.40)', dim: 'rgba(232,242,255,0.35)' };
+  var st = { s1: false, p: 0, load: 0 }, pos = 0, raf = null, last = 0, trials = [];
+  function el(tag, a, t) { var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); if (t !== undefined) e.textContent = t; return e; }
+  function add(tag, a, t) { var e = el(tag, a, t); svg.appendChild(e); return e; }
+  function txt(x, y, t, anchor, cls, fill) { var a = { x: x, y: y, 'text-anchor': anchor || 'middle', style: 'font-size:' + (cls === 'sub' ? 22 : 26) + 'px;font-weight:' + (cls === 'sub' ? 400 : 700) + ';fill:' + (fill || (cls === 'sub' ? 'rgba(232,242,255,0.66)' : '#e8f2ff')) + ';' }; return add('text', a, t); }
+  function force() { return Math.round(0.9 * st.p * 3.14); }
+  function extendTime() { var f = force(); return f > st.load ? 0.6 / Math.sqrt(1 - st.load / f) : null; }
+  function target() { return st.s1 && force() > st.load ? 1 : 0; }
+
+  function draw() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var d = el('defs', {}), m = el('marker', { id: 'scA', markerUnits: 'userSpaceOnUse', markerWidth: 16, markerHeight: 16, refX: 8, refY: 8, orient: 'auto' });
+    m.appendChild(el('path', { d: 'M0 0 L16 8 L0 16 z', fill: C.blue })); d.appendChild(m); svg.appendChild(d);
+    var on = st.s1;
+    // ── electrical rung
+    txt(170, 34, 'Control circuit (24 V DC)', 'middle', 'sub');
+    add('line', { x1: 40, y1: 60, x2: 40, y2: 330, stroke: C.line, 'stroke-width': 4 });
+    add('line', { x1: 300, y1: 60, x2: 300, y2: 330, stroke: C.line, 'stroke-width': 4 });
+    txt(40, 352, '+24 V', 'middle', 'sub'); txt(300, 352, '0 V', 'middle', 'sub');
+    var ry = 190, live = on ? C.warn : C.line;
+    add('path', { d: 'M40 ' + ry + ' H90 M140 ' + ry + ' H190 M250 ' + ry + ' H300', fill: 'none', stroke: live, 'stroke-width': on ? 5 : 4 });
+    // NO switch S1: closed when on
+    add('path', { d: on ? 'M90 ' + ry + ' H140' : 'M90 ' + ry + ' L136 ' + (ry - 26), fill: 'none', stroke: live, 'stroke-width': on ? 5 : 4 });
+    add('circle', { cx: 90, cy: ry, r: 5, fill: live }); add('circle', { cx: 140, cy: ry, r: 5, fill: live });
+    txt(115, ry - 40, 'S1');
+    add('circle', { cx: 220, cy: ry, r: 28, fill: on ? 'rgba(255,209,102,0.25)' : 'none', stroke: live, 'stroke-width': on ? 5 : 4 });
+    txt(220, ry + 9, 'Y1', 'middle', null, on ? C.warn : null);
+    txt(220, ry + 62, on ? 'Energized' : 'Off', 'middle', 'sub', on ? C.warn : null);
+
+    // ── air supply: compressor -> regulator (with gauge) -> valve port 1
+    var cx = 370, cy = 300;
+    add('circle', { cx: cx, cy: cy, r: 30, fill: 'none', stroke: C.line, 'stroke-width': 3 });
+    add('path', { d: 'M' + cx + ' ' + (cy - 28) + ' l-11 18 h22 z', fill: 'none', stroke: C.line, 'stroke-width': 3 });
+    txt(cx + 34, cy + 56, 'Compressor', 'middle', 'sub');
+    add('path', { d: 'M' + cx + ' ' + (cy - 30) + ' V230 H450', fill: 'none', stroke: C.blue, 'stroke-width': 5 });
+    add('rect', { x: 450, y: 205, width: 50, height: 50, fill: '#0a1120', stroke: C.line, 'stroke-width': 3 });
+    add('path', { d: 'M460 240 H486', fill: 'none', stroke: C.line, 'stroke-width': 3, 'marker-end': 'url(#scA)' });
+    txt(475, 290, 'Regulator', 'middle', 'sub');
+    add('circle', { cx: 475, cy: 160, r: 26, fill: '#0a1120', stroke: C.line, 'stroke-width': 3 });
+    add('line', { x1: 475, y1: 186, x2: 475, y2: 205, stroke: C.line, 'stroke-width': 3 });
+    txt(475, 168, st.p, 'middle', null, C.blue);
+    txt(475, 122, 'psi', 'middle', 'sub');
+    // supply line to port 1 of the valve
+    var vx = 700, vy = 210, bw = 80, bh = 70;           // port box (resting box) position
+    var p1 = vx + 40, p4 = vx + 20, p2 = vx + 60, p5 = vx + 12, p3 = vx + 68;
+    add('path', { d: 'M500 230 H545 V335 H' + p1 + ' V' + (vy + bh), fill: 'none', stroke: C.blue, 'stroke-width': 5 });
+
+    // ── 5/2 valve, solenoid Y1 on the left, spring on the right
+    var leftX = on ? vx : vx - bw, rightX = leftX + bw;
+    [[leftX, 'on'], [rightX, 'rest']].forEach(function (b) {
+      var x = b[0], active = (b[1] === 'on') === on;
+      add('rect', { x: x, y: vy, width: bw, height: bh, fill: '#0a1120', stroke: C.line, 'stroke-width': 3 });
+      var col = active ? C.blue : C.dim, ecol = active ? C.line : C.dim;
+      if (b[1] === 'on') {      // 1 -> 4, 2 -> 3
+        add('line', { x1: x + 40, y1: vy + bh, x2: x + 22, y2: vy + 12, stroke: col, 'stroke-width': 4, 'marker-end': active ? 'url(#scA)' : '' });
+        add('line', { x1: x + 60, y1: vy, x2: x + 66, y2: vy + bh - 12, stroke: ecol, 'stroke-width': 3, 'stroke-dasharray': '6 5' });
+      } else {                  // 1 -> 2, 4 -> 5
+        add('line', { x1: x + 40, y1: vy + bh, x2: x + 58, y2: vy + 12, stroke: col, 'stroke-width': 4, 'marker-end': active ? 'url(#scA)' : '' });
+        add('line', { x1: x + 20, y1: vy, x2: x + 14, y2: vy + bh - 12, stroke: ecol, 'stroke-width': 3, 'stroke-dasharray': '6 5' });
+      }
+    });
+    // solenoid Y1 and spring
+    add('rect', { x: leftX - 36, y: vy + 18, width: 32, height: 36, fill: on ? 'rgba(255,209,102,0.25)' : 'none', stroke: on ? C.warn : C.line, 'stroke-width': 3 });
+    add('line', { x1: leftX - 36, y1: vy + 54, x2: leftX - 4, y2: vy + 18, stroke: on ? C.warn : C.line, 'stroke-width': 3 });
+    txt(leftX - 20, vy + 8, 'Y1', 'middle', 'sub', on ? C.warn : null);
+    add('path', { d: 'M' + (rightX + bw) + ' ' + (vy + 35) + ' l6 -10 l7 20 l7 -20 l7 20 l7 -20 l5 10', fill: 'none', stroke: C.line, 'stroke-width': 3 });
+    // fixed port stubs on the port box (x = vx..vx+bw)
+    [p4, p2].forEach(function (x) { add('line', { x1: x, y1: vy, x2: x, y2: vy - 26, stroke: C.line, 'stroke-width': 3 }); });
+    [p5, p3].forEach(function (x) {
+      add('line', { x1: x, y1: vy + bh, x2: x, y2: vy + bh + 14, stroke: C.line, 'stroke-width': 3 });
+      add('path', { d: 'M' + (x - 10) + ' ' + (vy + bh + 14) + ' h20 l-10 14 z', fill: 'none', stroke: C.line, 'stroke-width': 3 });
+    });
+    txt(p4 - 8, vy - 6, '4', 'end', 'sub'); txt(p2 + 8, vy - 6, '2', 'start', 'sub');
+    txt(p1 + 10, vy + bh + 48, '1', 'start', 'sub');
+    txt(vx + 160, vy + bh + 22, '5/2 valve', 'start', 'sub');
+
+    // ── lines to the cylinder: 4 -> cap end, 2 -> rod end
+    var bx0 = 840, bx1 = 1080, by0 = 70, by1 = 130, capP = bx0 + 30, rodP = bx1 - 30;
+    add('path', { d: 'M' + p4 + ' ' + (vy - 26) + ' V160 H' + capP + ' V' + by1, fill: 'none', stroke: on ? C.blue : C.line, 'stroke-width': on ? 5 : 3, 'stroke-dasharray': on ? '' : '8 6' });
+    add('path', { d: 'M' + p2 + ' ' + (vy - 26) + ' V172 H' + rodP + ' V' + by1, fill: 'none', stroke: on ? C.line : C.blue, 'stroke-width': on ? 3 : 5, 'stroke-dasharray': on ? '8 6' : '' });
+    // ── cylinder (symbol style) with piston, rod and load
+    var stroke = 200, px = bx0 + 8 + pos * stroke;
+    if (on) add('rect', { x: bx0, y: by0, width: px - bx0, height: by1 - by0, fill: C.air });
+    else add('rect', { x: px + 8, y: by0, width: bx1 - px - 8, height: by1 - by0, fill: C.air });
+    add('rect', { x: bx0, y: by0, width: bx1 - bx0, height: by1 - by0, fill: 'none', stroke: C.line, 'stroke-width': 3 });
+    add('rect', { x: px, y: by0 + 2, width: 8, height: by1 - by0 - 4, fill: '#e8f2ff' });
+    var tip = px + 8 + 260;
+    add('rect', { x: px + 8, y: (by0 + by1) / 2 - 6, width: 260, height: 12, fill: '#b8c7d9' });
+    var stalled = on && force() <= st.load;
+    add('rect', { x: tip, y: by0 - 10, width: 110, height: by1 - by0 + 20, rx: 6, fill: '#1b2a44', stroke: stalled ? C.bad : '#ffab5e', 'stroke-width': 3 });
+    txt(tip + 55, (by0 + by1) / 2 + 9, st.load + ' lb', 'middle', null);
+    add('path', { d: 'M' + (tip + 100) + ' ' + (by0 - 26) + ' H' + (tip + 22), fill: 'none', stroke: '#ffab5e', 'stroke-width': 4, 'marker-end': 'url(#scL)' });
+    txt(bx0 + 120, by0 - 40, 'Double-acting cylinder, 2 in bore', 'middle', 'sub');
+    txt(capP, by0 - 12, 'cap', 'middle', 'sub'); txt(rodP, by0 - 12, 'rod', 'middle', 'sub');
+    var m2 = el('marker', { id: 'scL', markerUnits: 'userSpaceOnUse', markerWidth: 16, markerHeight: 16, refX: 8, refY: 8, orient: 'auto' });
+    m2.appendChild(el('path', { d: 'M0 0 L16 8 L0 16 z', fill: '#ffab5e' })); d.appendChild(m2);
+  }
+
+  function render() {
+    root.querySelector('[data-v="p"]').textContent = st.p + ' psi';
+    root.querySelector('[data-v="load"]').textContent = st.load + ' lb';
+    s1Btn.textContent = 'S1: ' + (st.s1 ? 'On' : 'Off');
+    s1Btn.setAttribute('aria-pressed', st.s1 ? 'true' : 'false');
+    var f = force(), t = extendTime(), msg, stall = false;
+    if (!st.s1) msg = 'S1 is off, so Y1 is off. The spring holds the valve at rest: 1 feeds 2 and the rod end, and the cap end exhausts through 5. The rod stays retracted. Push available when Y1 is on: about ' + f + ' lb.';
+    else if (st.p === 0) { stall = true; msg = 'S1 is on and Y1 shifts the valve, but the supply is 0 psi. There is no air to push the piston, so the rod does not move.'; }
+    else if (t === null) { stall = true; msg = 'S1 is on and Y1 shifts the valve: 1 feeds 4 and the cap end. But the cylinder can push only about ' + f + ' lb, and the load is ' + st.load + ' lb, so the rod stalls.'; }
+    else msg = 'S1 is on and Y1 shifts the valve: 1 feeds 4 and the cap end, and the rod end exhausts through 3. About ' + f + ' lb beats the ' + st.load + ' lb load, so the rod extends in about ' + t.toFixed(1) + ' s.';
+    status.textContent = msg;
+    status.classList.toggle('stall', stall);
+    draw();
+  }
+  function step(ts) {
+    var dt = last ? (ts - last) / 1000 : 0; last = ts;
+    var tgt = target(), dur = tgt === 1 ? (extendTime() || 1) : 0.5;
+    var dpos = dt / dur;
+    if (pos < tgt) pos = Math.min(tgt, pos + dpos); else if (pos > tgt) pos = Math.max(tgt, pos - dpos);
+    draw();
+    if (pos !== tgt) raf = requestAnimationFrame(step); else { raf = null; last = 0; }
+  }
+  function kick() { render(); if (!raf) { last = 0; raf = requestAnimationFrame(step); } }
+  function renderLog() {
+    // Every trial stays in the table; the box scrolls, and a new trial scrolls into view.
+    var rows = trials.map(function (r) { return '<tr><td>' + r.n + '</td><td>' + r.p + ' psi</td><td>' + r.load + ' lb</td><td>' + r.res + '</td></tr>'; });
+    if (!rows.length) rows.push('<tr class="empty"><td colspan="4">Set the pressure and load, switch S1 on, then press Record trial.</td></tr>');
+    logEl.innerHTML = rows.join('');
+    var box = logEl.closest('.sc-log');
+    box.scrollTop = box.scrollHeight;
+  }
+  s1Btn.addEventListener('click', function () { st.s1 = !st.s1; kick(); });
+  pIn.addEventListener('input', function () { st.p = +pIn.value; kick(); });
+  lIn.addEventListener('input', function () { st.load = +lIn.value; kick(); });
+  root.querySelector('[data-r="rec"]').addEventListener('click', function () {
+    var t = extendTime();
+    trials.push({ n: trials.length + 1, p: st.p, load: st.load, res: st.p === 0 ? 'No air' : t === null ? 'Stalls' : 'Yes, ' + t.toFixed(1) + ' s' });
+    renderLog();
+  });
+  root.querySelector('[data-r="clear"]').addEventListener('click', function () { trials = []; renderLog(); });
+  render(); renderLog();
+}
+
+/* ── Shut-off valve (slide 11) ──────────────────────────────────────
+   A 3/2 valve worked by a hand lever, drawn rotated so air flows left
+   to right. Open: 1 feeds 2. Closed: 1 is blocked and 2 vents to 3.
+   The tank side stays charged either way. */
+function initShutoff(root) {
+  var NS = 'http://www.w3.org/2000/svg', svg = root.querySelector('[data-r="svg"]'), btn = root.querySelector('[data-r="toggle"]');
+  var C = { line: '#c9d6e6', blue: '#5daaff', dim: 'rgba(232,242,255,0.35)', warn: '#ffd166' };
+  var open = false;
+  function add(tag, a, t) { var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); if (t !== undefined) e.textContent = t; svg.appendChild(e); return e; }
+  function txt(x, y, t, anchor, sub, fill) { return add('text', { x: x, y: y, 'text-anchor': anchor || 'middle', style: 'font-size:' + (sub ? 24 : 26) + 'px;font-weight:' + (sub ? 400 : 700) + ';fill:' + (fill || (sub ? 'rgba(232,242,255,0.66)' : '#e8f2ff')) + ';' }, t); }
+  function head(x, y, dx, dy, col) { var n = Math.hypot(dx, dy), ux = dx / n, uy = dy / n, bx = x - ux * 14, by = y - uy * 14, px = -uy * 7, py = ux * 7;
+    add('path', { d: 'M' + x + ' ' + y + ' L' + (bx + px) + ' ' + (by + py) + ' L' + (bx - px) + ' ' + (by - py) + ' Z', fill: col }); }
+  function draw() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var x0 = 230, x1 = 370, Y = 235, h = 110;          // valve boxes: x0..x1 wide, stacked vertically
+    // the aligned box is centred on the line; the other box sits above or below it
+    var bOpen = { y: open ? Y - 55 : Y - 55 - h }, bClosed = { y: open ? Y - 55 + h : Y - 55 };
+    var p1 = Y - 25, p2 = Y, p3 = Y + 30;                 // port heights on the aligned box: 1 and 3 on the left, 2 on the right
+    // supply side (always charged)
+    add('path', { d: 'M8 ' + p1 + ' H' + x0, fill: 'none', stroke: C.blue, 'stroke-width': 5 });
+    txt(8, p1 - 16, 'Regulator', 'start', true, C.blue);
+    // boxes
+    [[bOpen.y, 'open'], [bClosed.y, 'closed']].forEach(function (b) {
+      var y = b[0], active = (b[1] === 'open') === open, col = active ? C.line : C.dim;
+      add('rect', { x: x0, y: y, width: x1 - x0, height: h, fill: '#0a1120', stroke: C.line, 'stroke-width': 3 });
+      var py1 = y + 30, py2 = y + 55, py3 = y + 85;     // same port grid inside every box
+      if (b[1] === 'open') {
+        add('path', { d: 'M' + x0 + ' ' + py1 + ' L' + (x1 - 14) + ' ' + (py2 - 2.5), fill: 'none', stroke: active ? C.blue : col, 'stroke-width': 4 });
+        head(x1 - 2, py2, 140, 25, active ? C.blue : col);
+        add('path', { d: 'M' + x0 + ' ' + py3 + ' H' + (x0 + 18) + ' M' + (x0 + 18) + ' ' + (py3 - 9) + ' V' + (py3 + 9), fill: 'none', stroke: col, 'stroke-width': 3 });
+      } else {
+        add('path', { d: 'M' + x0 + ' ' + py1 + ' H' + (x0 + 18) + ' M' + (x0 + 18) + ' ' + (py1 - 9) + ' V' + (py1 + 9), fill: 'none', stroke: col, 'stroke-width': 3 });
+        add('path', { d: 'M' + x1 + ' ' + py2 + ' L' + (x0 + 14) + ' ' + (py3 - 3), fill: 'none', stroke: col, 'stroke-width': 3, 'stroke-dasharray': '6 5' });
+        head(x0 + 2, py3, -140, 30, col);
+      }
+      txt(x1 + 12, y + 26, b[1] === 'open' ? 'Open' : 'Closed', 'start', true, active ? C.warn : null);
+    });
+    // hand lever on the far end of the stack
+    var topY = Math.min(bOpen.y, bClosed.y);
+    add('path', { d: 'M300 ' + topY + ' V' + (topY - 18) + ' L326 ' + (topY - 38), fill: 'none', stroke: C.line, 'stroke-width': 3 });
+    add('circle', { cx: 330, cy: topY - 41, r: 6, fill: 'none', stroke: C.line, 'stroke-width': 3 });
+    // downstream line, and the exhaust on the same side as the supply
+    add('path', { d: 'M' + x1 + ' ' + p2 + ' H630', fill: 'none', stroke: open ? C.blue : C.line, 'stroke-width': open ? 5 : 3, 'stroke-dasharray': open ? '' : '8 6' });
+    txt(630, p2 + 34, 'To the solenoid', 'end', true, open ? C.blue : null);
+    add('path', { d: 'M' + x0 + ' ' + p3 + ' H180', fill: 'none', stroke: C.line, 'stroke-width': 3 });
+    add('path', { d: 'M180 ' + (p3 - 12) + ' v24 l-18 -12 z', fill: 'none', stroke: open ? C.line : C.warn, 'stroke-width': 3 });
+    txt(150, p3 + 9, 'Exhaust', 'end', true, open ? null : C.warn);
+    txt(x0 - 10, p1 - 8, '1', 'end', true); txt(x1 + 10, p2 + 28, '2', 'start', true); txt(x0 - 10, p3 + 30, '3', 'end', true);
+    btn.textContent = open ? 'Open' : 'Closed';
+    btn.setAttribute('aria-pressed', open ? 'true' : 'false');
+  }
+  btn.addEventListener('click', function () { open = !open; draw(); });
+  draw();
+}
+
+initSyncDeckReveal({
+  deckId: 'pneumatic-schematics',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    var fcb = getLiveElementById('fcb-symbols');
+    if (fcb) initLabelBuilder(fcb);
+    var so = getLiveElementById('shutoff');
+    if (so) initShutoff(so);
+    var sc = getLiveElementById('sim-c');
+    if (sc) initSimC(sc);
+  },
+});
+</script>
+</body>
+</html>
