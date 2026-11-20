@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1cjlvl6">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1 - Intro to Fluid Power</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC: Intro to Fluid Power
+   Color semantics used throughout this deck (and the unit):
+     --accent  (blue)   → pneumatics: air, gas, compressor, tank
+     --hyd     (amber)  → hydraulics: liquid, oil, pump
+     --result  (green)  → general key terms (fluid power, pressure, actuator)
+     --warn    (yellow) → cautions and limits of a simple model
+   ============================================================ */
+
+:root {
+  --hyd: #ffab5e;
+  --hyd-dim: rgba(255,171,94,0.10);
+  --hyd-border: rgba(255,171,94,0.40);
+  --bad: #ff8a80;
+}
+
+.pneu { color: var(--accent); }
+.hyd  { color: var(--hyd); }
+.term { color: var(--result); }
+
+.lead {
+  font-size: 34px;
+  line-height: 1.45;
+  color: var(--text-muted);
+  max-width: 1300px;
+}
+.lead + .lead { margin-top: var(--gap); }
+
+.prose {
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+  max-width: 1300px;
+}
+.prose + .prose { margin-top: var(--gap); }
+
+/* Pneumatic / hydraulic cards */
+.sys-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-top: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 26px 30px;
+  height: 100%;
+}
+.sys-card.hyd-card {
+  border-color: var(--hyd-border);
+  border-top-color: var(--hyd);
+}
+.sys-card h3 { font-size: var(--h3); margin-bottom: var(--gap-sm); }
+.sys-card p {
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.sys-card .byline {
+  font-size: var(--small);
+  color: var(--text-dim);
+  margin-top: var(--gap-sm);
+}
+
+/* Discussion / instruction prompt card */
+.ask {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  padding: 20px 26px;
+  margin-top: var(--gap);
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text);
+  max-width: 1300px;
+}
+
+/* Annotation key */
+.mark-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap);
+  margin-top: var(--gap);
+}
+.mark-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 22px 24px;
+}
+.mark-symbol {
+  font-family: var(--font-mono);
+  font-size: 54px;
+  font-weight: 700;
+  color: var(--result);
+  line-height: 1;
+  margin-bottom: 12px;
+  display: block;
+}
+.mark-symbol.underline {
+  text-decoration: underline;
+  text-decoration-thickness: 4px;
+  text-underline-offset: 8px;
+}
+.mark-card p {
+  font-size: var(--body);
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* Prediction scenarios */
+.scenario {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 24px 28px;
+  height: 100%;
+}
+.scenario h3 { font-size: var(--h3); margin-bottom: var(--gap-sm); color: var(--text); }
+.scenario p { font-size: var(--body); line-height: 1.45; color: var(--text-muted); }
+.scenario-photo {
+  display: block;
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+
+/* Photo credits (captions) */
+.credit {
+  font-size: var(--small);
+  line-height: 1.4;
+  color: var(--text-dim);
+  margin-top: var(--gap-sm);
+}
+.credit a { color: inherit; }
+
+/* Photo beside text */
+.side-photo {
+  display: block;
+  width: 100%;
+  max-height: 560px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--accent-border), 0 6px 24px rgba(0,0,0,0.5);
+}
+
+/* Comparison table */
+.compare {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  font-size: var(--body);
+  line-height: 1.35;
+}
+.compare th {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 0 18px 4px;
+}
+.compare td {
+  background: var(--bg-card);
+  color: var(--text-muted);
+  padding: 12px 18px;
+  vertical-align: top;
+}
+.compare td:first-child {
+  color: var(--text);
+  font-weight: 700;
+  border-radius: 6px 0 0 6px;
+  width: 230px;
+}
+.compare td:nth-child(2) { border-left: 3px solid var(--accent); }
+.compare td:nth-child(3) { border-left: 3px solid var(--hyd); border-radius: 0 6px 6px 0; }
+.reveal .compare tr.fragment { display: table-row; }
+
+/* Reason cards (why fluid power) */
+.reason-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  margin-top: var(--gap-sm);
+}
+.reason-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--result);
+  border-radius: 0 8px 8px 0;
+  padding: 18px 24px;
+}
+.reason-card h3 { font-size: var(--h3); margin-bottom: 6px; }
+.reason-card p { font-size: var(--body); line-height: 1.45; color: var(--text-muted); }
+
+/* Summary checklist */
+.check-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  margin-top: var(--gap);
+}
+.check-list li {
+  position: relative;
+  padding-left: 52px;
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.check-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--result);
+  border-radius: 5px;
+}
+
+/* ─── Pneumatic-or-hydraulic classify activity ──────────────
+   Adapted from the commit-then-check two-bin classifier in
+   CSP 3.2 (initClassifyIO). Drag or click-select, click-place
+   each machine into a bin; Check locks the board and marks
+   every chip. ──────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.badge-amber {
+  border-color: rgba(255,209,102,0.45);
+  background: rgba(255,209,102,0.10);
+  color: var(--warn);
+}
+.badge-pulse-complete {
+  border-color: var(--result);
+  background: rgba(77,255,176,0.14);
+  color: var(--result);
+}
+.classify-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: 100%;
+}
+.classify-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.classify-btn {
+  font-family: var(--font-ui);
+  font-size: var(--small);
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--result);
+  background: rgba(77,255,176,0.10);
+  color: var(--result);
+}
+.classify-btn:disabled { opacity: 0.65; cursor: default; }
+.classify-btn-secondary {
+  border-color: rgba(255,209,102,0.5);
+  background: rgba(255,209,102,0.08);
+  color: var(--warn);
+}
+.classify-tray {
+  /* Fixed heights keep the bins from jumping as the tray empties and
+     check marks widen the chips. */
+  height: 192px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px dashed var(--accent-border);
+  border-radius: 6px;
+}
+.classify-empty {
+  font-size: var(--small);
+  color: var(--text-dim);
+  font-style: italic;
+}
+.classify-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  width: 100%;
+}
+.classify-bin { display: flex; flex-direction: column; gap: 10px; }
+.classify-bin-header {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 4px;
+  text-align: center;
+}
+.classify-bin-header-pneu {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+}
+.classify-bin-header-hyd {
+  background: var(--hyd-dim);
+  color: var(--hyd);
+  border: 1px solid var(--hyd-border);
+}
+.classify-bin-items {
+  height: 262px;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+}
+.classify-bin[data-bin="hyd"] .classify-bin-items { border-color: var(--hyd-border); }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(232,242,255,0.05);
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: var(--small);
+  font-weight: 500;
+  color: var(--text);
+  cursor: grab;
+  user-select: none;
+}
+.chip:hover { border-color: var(--accent); }
+.chip-selected {
+  border-color: var(--result);
+  background: rgba(77,255,176,0.10);
+  box-shadow: 0 0 0 1px rgba(77,255,176,0.35) inset;
+}
+.chip-correct {
+  border-color: var(--result);
+  background: rgba(77,255,176,0.12);
+  color: var(--result);
+  cursor: default;
+}
+.chip-incorrect {
+  border-color: var(--bad);
+  background: rgba(255,138,128,0.10);
+  color: var(--bad);
+  cursor: default;
+}
+.chip-mark { font-weight: 900; }
+.classify-perfect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6,11,20,0.92);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease);
+}
+.classify-perfect-overlay.visible { opacity: 1; pointer-events: auto; cursor: pointer; }
+.classify-perfect-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+}
+.classify-perfect-overlay.visible .classify-perfect-badge {
+  animation: classify-perfect-pop 0.7s var(--ease) both;
+}
+.classify-perfect-check {
+  font-size: 220px;
+  line-height: 1;
+  color: var(--result);
+  filter: drop-shadow(0 0 46px rgba(77,255,176,0.5));
+}
+.classify-perfect-text {
+  font-size: 84px;
+  font-weight: 700;
+  color: var(--text);
+}
+.classify-perfect-hint {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+@keyframes classify-perfect-pop {
+  0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  75%  { transform: scale(0.96) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .classify-perfect-overlay.visible .classify-perfect-badge { animation: none; opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<div class="reveal"><div class="slides">
+
+<!-- SLIDE 01 · Title -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 5</span>
+    <h1 class="title-h1">Introduction to <span class="accent">Fluid Power</span></h1>
+    <p class="lead" style="margin-top:var(--gap);text-align:center;">How can we use pressure to produce, control, and safely apply motion in an automated machine?</p>
+  </div>
+  <div class="glow" style="width:620px;height:620px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(42,143,255,0.08),transparent 70%);"></div>
+  <div class="glow" style="width:560px;height:560px;right:-140px;bottom:-160px;background:radial-gradient(circle,rgba(255,171,94,0.06),transparent 70%);"></div>
+</section>
+
+<!-- SLIDE 02 · What Is Fluid Power? -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Fluid Power</span>
+    <h2>What Is Fluid Power?</h2>
+    <p class="lead"><span class="term">Fluid power</span> uses a fluid under <span class="term">pressure</span> to carry force and energy from one place to another. At the end of the line, an <span class="term">actuator</span> turns that pressure into motion.</p>
+    <div class="split split-50 split-top" style="margin-top:var(--gap-lg);flex:none;">
+      <div class="sys-card fragment fade-up">
+        <h3 class="pneu">Pneumatics</h3>
+        <p>Pneumatic systems use a <span class="pneu">gas</span>, almost always compressed air. A compressor squeezes the air, and a tank stores it until a valve lets it into an actuator.</p>
+      </div>
+      <div class="sys-card hyd-card fragment fade-up">
+        <h3 class="hyd">Hydraulics</h3>
+        <p>Hydraulic systems use a <span class="hyd">liquid</span>, usually oil. A pump pushes the liquid through hoses to a cylinder or motor, and the same fluid circulates through the system again and again.</p>
+      </div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap-lg);">Air and oil both count as fluids because both flow and take the shape of their container. The big difference between them shows up when you try to squeeze them.</p>
+  </div>
+  <aside class="notes">Keep this short; students need just enough vocabulary to read the articles. Do not explain compressibility yet. The articles and the end-of-class comparison do that work.</aside>
+</section>
+
+<!-- SLIDE 03 · Resonance: Air or Liquid? -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:3:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"![A road worker breaks up pavement with a jackhammer. A red hose runs from the jackhammer to a yellow machine on a trailer.](https://perryhighcs.github.io/Presentations/AR1/Fluid%20Power/Intro_to_Fluid_Power_Assets/jackhammer-thumb.jpg)\n\nA thick hose runs from the jackhammer to a loud machine on a trailer. Is the jackhammer pneumatic or hydraulic?\n\n*Photo: Josh Parris, public domain, via Wikimedia Commons*","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"Hydraulic","isCorrect":false},{"id":"q1b","text":"Pneumatic","isCorrect":true}]},{"id":"q2","type":"multiple-choice","text":"![A red excavator arm holds a large bucket over a trench. Metal rods and hoses run along the arm.](https://perryhighcs.github.io/Presentations/AR1/Fluid%20Power/Intro_to_Fluid_Power_Assets/excavator-thumb.jpg)\n\nMetal rods slide in and out of cylinders on the excavator arm, which can hold a heavy bucket perfectly still. Is the excavator arm pneumatic or hydraulic?\n\n*Photo: Rami Tarawneh, CC BY 2.5, via Wikimedia Commons*","order":1,"responseTimeLimitMs":30000,"options":[{"id":"q2a","text":"Hydraulic","isCorrect":true},{"id":"q2b","text":"Pneumatic","isCorrect":false}]},{"id":"q3","type":"free-response","text":"Pick one of the two machines. What clue helped you decide whether it uses air or liquid?","order":2,"responseTimeLimitMs":90000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict</span>
+    <h2>Air or Liquid?</h2>
+    <p class="prose" style="margin-bottom:var(--gap-sm);">Predict whether each machine is pneumatic or hydraulic, and be ready to explain your clue.</p>
+    <div class="split split-50 split-top" style="flex:none;">
+      <div class="scenario">
+        <img class="scenario-photo img-zoomable" src="Intro_to_Fluid_Power_Assets/jackhammer.jpg" alt="A road worker breaks up pavement with a jackhammer. A red hose runs from the jackhammer to a yellow machine on a trailer behind him.">
+        <h3>The Jackhammer</h3>
+        <p>A thick hose runs from the jackhammer to a loud machine on a trailer.</p>
+      </div>
+      <div class="scenario">
+        <img class="scenario-photo img-zoomable" src="Intro_to_Fluid_Power_Assets/excavator.jpg" alt="A red excavator arm holds a large bucket over a trench. Metal rods and hoses run along the arm.">
+        <h3>The Excavator Arm</h3>
+        <p>Metal rods slide in and out of cylinders on the arm, which can hold a heavy bucket perfectly still.</p>
+      </div>
+    </div>
+    <p class="credit">Photos: Josh Parris, public domain; Rami Tarawneh, <a href="https://creativecommons.org/licenses/by/2.5">CC BY 2.5</a>, both via Wikimedia Commons.</p>
+  </div>
+  <aside class="notes">This is a prediction, so do not correct answers yet. The jackhammer is pneumatic: the loud trailer machine is a compressor. The excavator arm is hydraulic: the rods are hydraulic rams, and holding a heavy load perfectly still is a hydraulic strength. Students will check their reasoning against the articles.</aside>
+</section>
+
+<!-- SLIDE 04 · Today's Reading -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Reading</span>
+    <h2>Today&rsquo;s Reading</h2>
+    <p class="prose">Half the class reads about each system. You will become the expert on your system and write a summary of it. Then you will trade summaries with someone who read about the other system.</p>
+    <div class="split split-50 split-top" style="margin-top:var(--gap);flex:none;">
+      <div class="sys-card">
+        <h3 class="pneu">Article A: Pneumatics</h3>
+        <p>&ldquo;Pneumatics: A Simple Introduction&rdquo;</p>
+        <p class="byline">Chris Woodford, Explain that Stuff</p>
+      </div>
+      <div class="sys-card hyd-card">
+        <h3 class="hyd">Article B: Hydraulics</h3>
+        <p>&ldquo;How Hydraulics Works&rdquo;</p>
+        <p class="byline">Chris Woodford, Explain that Stuff</p>
+      </div>
+    </div>
+    <div class="ask">By the end of class, you should be able to explain how <span class="pneu">pneumatic</span> and <span class="hyd">hydraulic</span> systems are alike, how they differ, and which jobs each one suits best.</div>
+  </div>
+  <aside class="notes">Hand out the two articles so that neighbors read different ones; this makes the second swap easy. Each article packet has the sentence starters and the peer-review rubric attached.</aside>
+</section>
+
+<!-- SLIDE 05 · Step 1: Preview -->
+<section>
+  <div class="slide-inner">
+    <div class="step-header"><span class="step-badge">1</span><h2 class="step-title">Preview the Text</h2></div>
+    <p class="lead">Before you read closely, skim the whole article. Look at the title, the subheadings, the photo captions, and any words in <strong style="color:var(--text);">bold</strong> or <em>italics</em>.</p>
+    <div class="ask">What do you think the article will be about? What do you already know about machines that use air or liquid to move? Jot your prediction at the top of the article.</div>
+  </div>
+</section>
+
+<!-- SLIDE 06 · Step 2: Read and Annotate -->
+<section>
+  <div class="slide-inner">
+    <div class="step-header"><span class="step-badge">2</span><h2 class="step-title">Read and Annotate</h2></div>
+    <p class="lead">Read the article once just to understand it. On your second read, mark it up with these symbols so you can find the important parts again.</p>
+    <div class="mark-grid">
+      <div class="mark-card">
+        <span class="mark-symbol">!</span>
+        <p>Anything that supports the <span class="term">main idea</span> of the article.</p>
+      </div>
+      <div class="mark-card">
+        <span class="mark-symbol underline">abc</span>
+        <p>Underline anything that is a <span class="term">supporting detail</span>, such as an example or a reason.</p>
+      </div>
+      <div class="mark-card">
+        <span class="mark-symbol">?</span>
+        <p>Anything that is <span class="term">confusing</span>, and any vocabulary you do not know.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Allow about 12 to 15 minutes for both reads. Circulate and look for question marks; unfamiliar terms like actuator, reservoir and ram are worth a quick whole-class definition.</aside>
+</section>
+
+<!-- SLIDE 07 · Step 3: Gist -->
+<section>
+  <div class="slide-inner">
+    <div class="step-header"><span class="step-badge">3</span><h2 class="step-title">Identify the Gist</h2></div>
+    <p class="lead">The <span class="term">gist</span> is what the article is mostly about, stated in one sentence. It is not a list of facts; it is the big idea that all of those facts support.</p>
+    <div class="ask">Write a one-sentence gist statement at the bottom of the article. If you are stuck, try finishing this sentence: &ldquo;This article is mostly about&hellip;&rdquo;</div>
+  </div>
+</section>
+
+<!-- SLIDE 08 · Step 4: Draft the Summary -->
+<section>
+  <div class="slide-inner">
+    <div class="step-header"><span class="step-badge">4</span><h2 class="step-title">Draft Your Summary</h2></div>
+    <p class="lead">Write a summary of <span class="term">4 to 6 sentences</span>. Your first sentence should name the article&rsquo;s title, in quotation marks, and its author.</p>
+    <p class="lead">Use <span class="term">2 or 3 of the sentence starters</span> provided with your article. You may reword a starter so it fits your own sentence.</p>
+    <div class="ask">Build your summary from your gist and the details you marked with ! and underlines. Leave out the small details that do not support the main idea.</div>
+  </div>
+</section>
+
+<!-- SLIDE 09 · Step 5: Checklist -->
+<section>
+  <div class="slide-inner">
+    <div class="step-header"><span class="step-badge">5</span><h2 class="step-title">Check Your Summary</h2></div>
+    <p class="lead">Before you trade, check your own summary against this list and fix anything that is missing.</p>
+    <ul class="check-list">
+      <li>Your first sentence includes the article&rsquo;s title in quotation marks and its author. <span class="term">Highlight</span> the title and author.</li>
+      <li>You used 2 or 3 of the sentence starters. <span class="term">Highlight</span> each starter you used.</li>
+      <li>Your summary is 4 to 6 sentences long.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- SLIDE 10 · Step 6: Swap, same article -->
+<section>
+  <div class="slide-inner">
+    <div class="step-header"><span class="step-badge">6</span><h2 class="step-title">Swap with the Same Article</h2></div>
+    <p class="lead">Trade summaries with someone who read the <span class="term">same article</span> as you. Detach the rubric attached to your article and use it to score the summary you were given.</p>
+    <div class="ask">Write your name on the rubric so you get credit for your review. Because you both read the same article, you can tell whether the summary left out anything important.</div>
+  </div>
+</section>
+
+<!-- SLIDE 11 · Step 7: Swap, different article -->
+<section>
+  <div class="slide-inner">
+    <div class="step-header"><span class="step-badge">7</span><h2 class="step-title">Swap with a Different Article</h2></div>
+    <p class="lead">Get your summary back, then trade with someone who read the <span class="term">other article</span>. Read their summary carefully, because it is your only source for the system you did not read about.</p>
+    <div class="ask">Get your own summary back. On the back, answer this question: What are the <span class="term">similarities</span> and <span class="term">differences</span> between <span class="pneu">pneumatic</span> and <span class="hyd">hydraulic</span> systems?</div>
+  </div>
+  <aside class="notes">Give students a few minutes to write on the back before moving on. The sorting activity and the comparison slides that follow let them check and extend what they wrote.</aside>
+</section>
+
+<!-- SLIDE 12 · Classify: Pneumatic or Hydraulic? -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+    <span class="slide-tag">Check Your Understanding</span>
+    <h2 style="margin-bottom:var(--gap-sm);">Pneumatic or Hydraulic?</h2>
+    <p class="prose" style="margin-bottom:var(--gap-sm);">Each machine comes from one of the articles. Drag it into the system it uses, or click it and then click a bin.</p>
+    <div class="classify-wrap" id="classify-fluid">
+      <div class="classify-status">
+        <span class="badge" data-classify-placed>0 of 12 placed</span>
+        <span class="badge badge-amber" data-classify-score style="display:none;">0 of 12 correct</span>
+        <button type="button" class="classify-btn" data-classify-check disabled>Check My Answers</button>
+        <button type="button" class="classify-btn classify-btn-secondary" data-classify-reset style="display:none;">Try Again</button>
+      </div>
+      <div class="classify-tray" data-classify-tray data-bin="tray" tabindex="0" aria-label="Unplaced machines"></div>
+      <div class="classify-board">
+        <div class="classify-bin" data-bin="pneu">
+          <div class="classify-bin-header classify-bin-header-pneu">Pneumatic (air)</div>
+          <div class="classify-bin-items" data-classify-items="pneu" tabindex="0" aria-label="Pneumatic machines"></div>
+        </div>
+        <div class="classify-bin" data-bin="hyd">
+          <div class="classify-bin-header classify-bin-header-hyd">Hydraulic (liquid)</div>
+          <div class="classify-bin-items" data-classify-items="hyd" tabindex="0" aria-label="Hydraulic machines"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="classify-perfect-overlay" data-classify-overlay aria-hidden="true">
+    <div class="classify-perfect-badge">
+      <span class="classify-perfect-check">&#10003;</span>
+      <span class="classify-perfect-text">Perfect!</span>
+      <span class="classify-perfect-hint">Click to keep exploring the board</span>
+    </div>
+  </div>
+  <aside class="notes">Pneumatic: air-powered grinder, dentist&rsquo;s drill, nail gun, truck air brakes, robot paint sprayer, milking machine suction cups. Hydraulic: hedge-cutter arm, car brakes, crane boom, garage jack, garbage truck tipper, small elevator ram. Car brakes versus truck air brakes is the most useful pair to discuss: both stop vehicles, but they use different fluids.</aside>
+</section>
+
+<!-- SLIDE 13 · Squeezing a Fluid -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Compressibility</span>
+    <h2>What Happens When You Squeeze?</h2>
+    <p class="lead">Most differences between the two systems come from one property: how much the fluid shrinks when you squeeze it. Scientists call this <span class="term">compressibility</span>.</p>
+    <div class="split split-50 split-top" style="margin-top:var(--gap);flex:none;">
+      <div class="sys-card fragment fade-up">
+        <h3 class="pneu">Air Squeezes</h3>
+        <p>A gas shrinks into a smaller space and stores energy like a spring. That makes pneumatic motion <span class="pneu">soft and springy</span>, which is good for cushioning but makes an exact stopping point hard to hold.</p>
+      </div>
+      <div class="sys-card hyd-card fragment fade-up">
+        <h3 class="hyd">Liquid Barely Squeezes</h3>
+        <p>A liquid hardly shrinks at all, so it pushes back almost like a solid rod. That makes hydraulic motion <span class="hyd">firm and precise</span>, which is how an excavator holds a heavy bucket perfectly still.</p>
+      </div>
+    </div>
+    <div class="callout-warn fragment fade-up" style="margin-top:var(--gap);">Water and oil do shrink a tiny amount under very high pressure, so they are not perfectly incompressible. For the machines in this unit, treating them as incompressible works well.</div>
+  </div>
+  <aside class="notes">Students will feel this difference directly in tomorrow&rsquo;s syringe lab, so keep it as a claim to test rather than a fact to memorize.</aside>
+</section>
+
+<!-- SLIDE 14 · Comparison table -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Compare</span>
+    <h2>Pneumatics and Hydraulics Side by Side</h2>
+    <table class="compare">
+      <thead>
+        <tr><th></th><th class="pneu">Pneumatic</th><th class="hyd">Hydraulic</th></tr>
+      </thead>
+      <tbody>
+        <tr class="fragment fade-up"><td>Force</td><td>It gives medium force, using air at about 100&nbsp;psi.</td><td>It gives very large force, at many times that pressure.</td></tr>
+        <tr class="fragment fade-up"><td>Speed</td><td>It is fast, because air moves and vents quickly.</td><td>It is slower, but its motion is smooth and steady.</td></tr>
+        <tr class="fragment fade-up"><td>Precision</td><td>Air squeezes under a load, so exact positions are hard to hold.</td><td>Oil barely squeezes, so the actuator holds its position under a load.</td></tr>
+        <tr class="fragment fade-up"><td>Used fluid</td><td>Used air is exhausted to the room, which is noisy.</td><td>Oil returns to a reservoir and is reused, which also lubricates parts.</td></tr>
+        <tr class="fragment fade-up"><td>Hazards</td><td>It has no flammable fluid, so it suits explosive places like mines.</td><td>Oil leaks are slippery and the oil can burn.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <aside class="notes">Before revealing each row, ask students what they wrote on the back of their summaries. Hydraulic safety, including high-pressure pinhole leaks, is covered in detail before the syringe lab.</aside>
+</section>
+
+<!-- SLIDE 15 · Why fluid power? -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Fluid Power and Robots</span>
+    <h2>Why Not Just Use an Electric Motor?</h2>
+    <div class="reason-grid">
+      <div class="reason-card fragment fade-up">
+        <h3>Quick to Start and Stop</h3>
+        <p>A motor&rsquo;s heavy spinning parts resist changes in speed. A fluid actuator has little momentum, so it can start, stop and reverse quickly.</p>
+      </div>
+      <div class="reason-card fragment fade-up">
+        <h3>Power from a Distance</h3>
+        <p>The compressor or pump can sit far away, so the tool at the end of the hose stays small and light, like a dentist&rsquo;s drill.</p>
+      </div>
+      <div class="reason-card fragment fade-up">
+        <h3>No Sparks at the Work</h3>
+        <p>No electricity reaches the point where the work happens, so fluid power is safer where a spark could start a fire.</p>
+      </div>
+      <div class="reason-card fragment fade-up">
+        <h3>A Gentle Grip</h3>
+        <p>Springy air lets suction cups and grippers hold delicate objects softly, which is why many factory robots use them.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.2 asks for the benefits of integrating fluid power with robotics. The next slide shows a robot that uses both kinds of power.</aside>
+</section>
+
+<!-- SLIDE 16 · Fluid power on a robot -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Fluid Power and Robots</span>
+    <h2>Fluid Power on a Factory Robot</h2>
+    <div class="split split-50" style="flex:none;">
+      <div>
+        <img class="side-photo img-zoomable" src="Intro_to_Fluid_Power_Assets/robot-gripper.jpg" alt="A white industrial robot arm in a fenced cell lifts a stack of white panels. Large flexible hoses run along the arm to the gripper at its end.">
+        <p class="credit">Photo: De Man Automation + Service, <a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>, via Wikimedia Commons.</p>
+      </div>
+      <div>
+        <p class="prose">This robot stacks furniture panels onto pallets. <span class="term">Electric motors</span> swing its arm into position, because motors are good at precise, programmable movement.</p>
+        <p class="prose fragment fade-up">At the end of the arm, a gripper fed by <span class="pneu">large air hoses</span> picks up each panel. Engineers often pair motors and fluid power this way, letting each one do the job it does best.</p>
+        <p class="prose fragment fade-up">Your final project uses the same idea: a <span class="pneu">pneumatic</span> actuator doing one job on an assembly line.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">The photo&rsquo;s source does not name the gripper type. The large corrugated hoses running to it suggest a vacuum (suction) gripper, so present that as an observation students can make, and return to it when the unit covers vacuum technology on Day 4.</aside>
+</section>
+
+<!-- SLIDE 17 · Resonance: Misconception check -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:17:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Why can a hydraulic machine usually hold a position more precisely than a pneumatic machine?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"Oil is heavier than air.","isCorrect":false},{"id":"q1b","text":"Hydraulic systems use lower pressures than pneumatic systems.","isCorrect":false},{"id":"q1c","text":"A liquid barely compresses, so it pushes back almost like a solid rod.","isCorrect":true},{"id":"q1d","text":"Hydraulic hoses are thicker than air hoses.","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"Why does a pneumatic system store compressed air in a tank (reservoir)?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"Air would leak out of the hoses without a tank.","isCorrect":false},{"id":"q2b","text":"Pressure is ready to move the actuator the instant a valve opens.","isCorrect":true},{"id":"q2c","text":"The tank cools the air until it turns into a liquid.","isCorrect":false},{"id":"q2d","text":"Storing the air in a tank makes it incompressible.","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check</span>
+    <h2>Quick Check</h2>
+    <p class="lead">1. Why can a hydraulic machine usually hold a position more precisely than a pneumatic machine?</p>
+    <p class="lead">2. Why does a pneumatic system store compressed air in a tank (reservoir)?</p>
+  </div>
+  <aside class="notes">Question 1: a liquid barely compresses. The pressure option is a common reversal; hydraulic systems run at higher pressure, not lower. Question 2: the tank holds pressure ready so the actuator responds immediately; without it, the actuator would wait for the compressor to build pressure, like a slowly inflating tire.</aside>
+</section>
+
+<!-- SLIDE 18 · Resonance: Exit ticket -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:18:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Pneumatics: name one advantage, one limitation, and one job it suits well.","order":0,"responseTimeLimitMs":150000},{"id":"q2","type":"free-response","text":"Hydraulics: name one advantage, one limitation, and one job it suits well.","order":1,"responseTimeLimitMs":150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Before You Go</h2>
+    <p class="lead">1. <span class="pneu">Pneumatics:</span> name one advantage, one limitation, and one job it suits well.</p>
+    <p class="lead">2. <span class="hyd">Hydraulics:</span> name one advantage, one limitation, and one job it suits well.</p>
+  </div>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+/* ── Pneumatic-or-hydraulic classify activity ──────────────────────
+   Adapted from initClassifyIO in CSP 3.2 (commit-then-check two-bin
+   classifier). Twelve machines from the two articles start in a tray
+   in a freshly shuffled order every run; Check My Answers is disabled
+   until all are placed, then locks the board and marks each chip.
+   Once any completed run has missed something, the "Perfect!" overlay
+   stays off for the rest of the session (sessionStorage). ───────── */
+var CLASSIFY_ITEMS = [
+  { id: 'grinder',   label: 'Air-powered grinder',        correct: 'pneu' },
+  { id: 'dentist',   label: 'Dentist’s drill',       correct: 'pneu' },
+  { id: 'nailgun',   label: 'Nail gun',                   correct: 'pneu' },
+  { id: 'airbrakes', label: 'Truck air brakes',           correct: 'pneu' },
+  { id: 'paint',     label: 'Robot paint sprayer',        correct: 'pneu' },
+  { id: 'milking',   label: 'Milking machine suction cups', correct: 'pneu' },
+  { id: 'hedge',     label: 'Hedge-cutter arm',           correct: 'hyd' },
+  { id: 'carbrakes', label: 'Car brakes',                 correct: 'hyd' },
+  { id: 'crane',     label: 'Crane boom',                 correct: 'hyd' },
+  { id: 'jack',      label: 'Garage jack',                correct: 'hyd' },
+  { id: 'garbage',   label: 'Garbage truck tipper',       correct: 'hyd' },
+  { id: 'elevator',  label: 'Small elevator ram',         correct: 'hyd' },
+];
+
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function(element) { return !element.closest('#storyboard'); }
+  );
+}
+
+function shuffled(array) {
+  var copy = array.slice();
+  for (var i = copy.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
+  }
+  return copy;
+}
+
+function initClassifyFluid(Reveal) {
+  var root = getLiveElementById('classify-fluid');
+  if (!root) return;
+
+  var section = root.closest('section');
+  var trayEl = root.querySelector('[data-classify-tray]');
+  var binEls = {
+    pneu: root.querySelector('[data-classify-items="pneu"]'),
+    hyd: root.querySelector('[data-classify-items="hyd"]')
+  };
+  var placedBadge = root.querySelector('[data-classify-placed]');
+  var scoreBadge = root.querySelector('[data-classify-score]');
+  var checkBtn = root.querySelector('[data-classify-check]');
+  var resetBtn = root.querySelector('[data-classify-reset]');
+  var overlayEl = section ? section.querySelector('[data-classify-overlay]') : null;
+  var zones = Array.prototype.slice.call(root.querySelectorAll('[data-bin]'));
+
+  var MISSED_KEY = 'intro-to-fluid-power:classify-fluid-missed';
+  var everMissed = false;
+  try { everMissed = sessionStorage.getItem(MISSED_KEY) === '1'; } catch (e) { /* storage unavailable */ }
+
+  var state = { placement: {}, order: [], selected: null, locked: false };
+
+  function resetState() {
+    CLASSIFY_ITEMS.forEach(function(item) { state.placement[item.id] = 'tray'; });
+    state.order = shuffled(CLASSIFY_ITEMS);
+    state.selected = null;
+    state.locked = false;
+  }
+  resetState();
+
+  function renderChip(item) {
+    var cls = 'chip';
+    if (state.selected === item.id) cls += ' chip-selected';
+    var mark = '';
+    if (state.locked && state.placement[item.id] !== 'tray') {
+      if (item.correct === state.placement[item.id]) {
+        cls += ' chip-correct';
+        mark = '<span class="chip-mark" aria-hidden="true">&#10003;</span>';
+      } else {
+        cls += ' chip-incorrect';
+        mark = '<span class="chip-mark" aria-hidden="true">&#10007;</span>';
+      }
+    }
+    return '<div class="' + cls + '" draggable="' + (!state.locked) + '" data-item="' + item.id +
+      '" tabindex="0" role="button" aria-label="' + item.label + '">' + item.label + mark + '</div>';
+  }
+
+  function render() {
+    function inBin(bin) {
+      return state.order.filter(function(i) { return state.placement[i.id] === bin; });
+    }
+    var tray = inBin('tray');
+    trayEl.innerHTML = tray.length
+      ? tray.map(renderChip).join('')
+      : '<span class="classify-empty">All machines placed</span>';
+    binEls.pneu.innerHTML = inBin('pneu').map(renderChip).join('');
+    binEls.hyd.innerHTML = inBin('hyd').map(renderChip).join('');
+
+    var placedCount = CLASSIFY_ITEMS.length - tray.length;
+    placedBadge.textContent = placedCount + ' of ' + CLASSIFY_ITEMS.length + ' placed';
+    checkBtn.disabled = state.locked || placedCount < CLASSIFY_ITEMS.length;
+  }
+
+  function place(itemId, bin) {
+    if (state.locked || !itemId) return;
+    state.placement[itemId] = bin;
+    state.selected = null;
+    render();
+  }
+
+  function evaluate() {
+    if (state.locked) return;
+    state.locked = true;
+    var correct = CLASSIFY_ITEMS.filter(function(i) { return state.placement[i.id] === i.correct; }).length;
+    if (correct < CLASSIFY_ITEMS.length) {
+      everMissed = true;
+      try { sessionStorage.setItem(MISSED_KEY, '1'); } catch (e) { /* storage unavailable */ }
+    }
+    var perfect = correct === CLASSIFY_ITEMS.length && !everMissed;
+    render();
+    placedBadge.style.display = 'none';
+    scoreBadge.style.display = 'inline-flex';
+    scoreBadge.textContent = correct + ' of ' + CLASSIFY_ITEMS.length + ' correct';
+    scoreBadge.classList.toggle('badge-amber', !perfect);
+    scoreBadge.classList.toggle('badge-pulse-complete', perfect);
+    checkBtn.style.display = 'none';
+    resetBtn.style.display = 'inline-flex';
+    if (overlayEl) overlayEl.classList.toggle('visible', perfect);
+  }
+
+  function tryAgain() {
+    resetState();
+    placedBadge.style.display = 'inline-flex';
+    scoreBadge.style.display = 'none';
+    checkBtn.style.display = 'inline-flex';
+    resetBtn.style.display = 'none';
+    if (overlayEl) overlayEl.classList.remove('visible');
+    render();
+  }
+
+  function toggleSelect(chip) {
+    if (state.locked) return;
+    var id = chip.getAttribute('data-item');
+    state.selected = state.selected === id ? null : id;
+    render();
+  }
+
+  root.addEventListener('click', function(event) {
+    var chip = event.target.closest('.chip');
+    if (chip) { toggleSelect(chip); return; }
+    var zone = event.target.closest('[data-bin]');
+    if (zone && state.selected) place(state.selected, zone.getAttribute('data-bin'));
+  });
+
+  root.addEventListener('keydown', function(event) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    var chip = event.target.closest('.chip');
+    if (chip) { event.preventDefault(); toggleSelect(chip); return; }
+    var zone = event.target.closest('[data-bin]');
+    if (zone && state.selected) {
+      event.preventDefault();
+      place(state.selected, zone.getAttribute('data-bin'));
+    }
+  });
+
+  root.addEventListener('dragstart', function(event) {
+    var chip = event.target.closest('.chip');
+    if (!chip || state.locked) return;
+    event.dataTransfer.setData('text/plain', chip.getAttribute('data-item'));
+    state.selected = chip.getAttribute('data-item');
+  });
+
+  zones.forEach(function(zone) {
+    zone.addEventListener('dragover', function(event) {
+      if (state.locked) return;
+      event.preventDefault();
+    });
+    zone.addEventListener('drop', function(event) {
+      if (state.locked) return;
+      event.preventDefault();
+      var id = event.dataTransfer.getData('text/plain') || state.selected;
+      place(id, zone.getAttribute('data-bin'));
+    });
+  });
+
+  checkBtn.addEventListener('click', evaluate);
+  resetBtn.addEventListener('click', tryAgain);
+  if (overlayEl) {
+    overlayEl.addEventListener('click', function() { overlayEl.classList.remove('visible'); });
+  }
+
+  render();
+
+  Reveal.on('slidechanged', function(event) {
+    if (event.currentSlide === section) tryAgain();
+  });
+}
+
+initSyncDeckReveal({
+  deckId: 'intro-to-fluid-power',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    initClassifyFluid(Reveal);
+  },
+});
+</script>
+</body>
+</html>
