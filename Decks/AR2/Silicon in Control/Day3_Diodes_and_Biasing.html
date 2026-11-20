@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="15ts3c5">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 3: Diodes and Biasing</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: Silicon in Control Day 3 · Diodes and Biasing
+   ============================================================ */
+.diode-row { display: grid; grid-template-columns: 1fr 60px 1fr 60px 1fr; align-items: center; gap: 8px; }
+.diode-row .arrow { font-family: var(--font-mono); font-size: 40px; color: var(--accent); text-align: center; }
+.fig-lbl { font-family: var(--font-mono); font-size: 26px; fill: var(--text); }
+.fig-lbl-m { font-family: var(--font-mono); font-size: 26px; fill: var(--text-muted); }
+.p-reg { fill: rgba(249,168,212,0.18); stroke: var(--hole); stroke-width: 3; }
+.n-reg { fill: rgba(124,196,255,0.16); stroke: var(--electron); stroke-width: 3; }
+.dep-reg { fill: rgba(255,209,102,0.10); stroke: var(--warn); stroke-width: 2; stroke-dasharray: 6 5; }
+.wire { fill: none; stroke: rgba(230,247,234,0.6); stroke-width: 4; stroke-linejoin: round; }
+.calc-line { font-family: var(--font-mono); font-size: 32px; color: var(--text); line-height: 1.6; white-space: nowrap; }
+.calc-line .res { font-weight: 700; }
+.mcq-2col { display: grid; grid-template-columns: 1fr 1fr; max-width: none; }
+.doping-lab .dl-grid { grid-template-columns: 820px 1fr; }
+.diode-bench .plot-panel svg { max-height: 300px; }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(249,168,212,0.10),transparent 70%);"></div>
+  <div class="glow" style="width:420px;height:420px;bottom:-90px;right:12%;background:radial-gradient(circle,rgba(124,196,255,0.08),transparent 70%);"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; Silicon in Control &nbsp;·&nbsp; Day 3</span>
+    <h1 class="title-h1">Diodes and <span class="accent">Biasing</span></h1>
+    <p class="subtitle">// Anode and cathode &nbsp;·&nbsp; Forward and reverse bias &nbsp;·&nbsp; The 0.7 V drop</p>
+    <svg viewBox="0 0 900 160" style="width:900px;margin-top:44px;" aria-hidden="true">
+      <path d="M40 80 H380 M520 80 H860" stroke="rgba(230,247,234,0.6)" stroke-width="5" fill="none"/>
+      <path d="M380 30 L380 130 L500 80 Z" fill="rgba(57,211,83,0.18)" stroke="#39d353" stroke-width="5" stroke-linejoin="round"/>
+      <line x1="510" y1="30" x2="510" y2="130" stroke="#39d353" stroke-width="7"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · DAY QUESTION AND OBJECTIVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Today&#39;s Question &amp; Objectives</span>
+    <div class="eq-box" style="margin-bottom:var(--gap-lg);">
+      <span class="eq-label">Today&#39;s question</span>
+      What has to happen at the junction before <span class="accent">current can flow</span>?
+    </div>
+    <div class="split split-50 split-top" style="flex:0 0 auto;">
+      <div>
+        <h3>By the end of class you can <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Identify a diode&#39;s <strong>anode</strong> and <strong>cathode</strong> and draw its symbol.</li>
+          <li>Explain <strong>forward</strong> and <strong>reverse bias</strong> with the depletion region.</li>
+          <li>Measure a diode&#39;s <strong>voltage drop</strong> and the circuit current.</li>
+          <li>Calculate current in a <strong>diode and resistor</strong> circuit.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today&#39;s <span class="accent">path</span></h3>
+        <div class="agenda-grid">
+          <a class="agenda-item" href="#/3"><span class="agenda-num">01</span><span class="agenda-text">Name the <strong>mystery component</strong></span></a>
+          <a class="agenda-item" href="#/4"><span class="agenda-num">02</span><span class="agenda-text"><strong>Forward</strong> and <strong>reverse</strong> bias</span></a>
+          <a class="agenda-item" href="#/7"><span class="agenda-num">03</span><span class="agenda-text">Calculate with the <strong>0.7 V</strong> rule</span></a>
+          <a class="agenda-item" href="#/9"><span class="agenda-num">04</span><span class="agenda-text">Bench lab: <strong>measure</strong> a diode</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · NAME THE MYSTERY COMPONENT -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Mystery Component</span>
+    <h2>It Is a <span class="accent">Diode</span></h2>
+    <p class="slide-intro">The mystery part we saw last lesson is a <span class="key">diode</span>: one PN junction in a small case. The <strong>band</strong> on the case marks the N side, which is called the <span class="key">cathode</span>. The P side is the <span class="key">anode</span>.</p>
+    <div class="diode-row" style="margin:var(--gap) 0;">
+      <figure class="fig">
+        <svg viewBox="0 0 360 200" role="img" aria-label="A diode case: a black cylinder with leads at both ends and a light band near the right end.">
+          <path d="M10 100 H90 M270 100 H350" class="wire"/>
+          <rect x="90" y="62" width="180" height="76" rx="14" fill="#1b1f24" stroke="rgba(230,247,234,0.75)" stroke-width="3"/>
+          <rect x="226" y="62" width="22" height="76" fill="#c9d1d9"/>
+          <text x="237" y="180" class="fig-lbl" text-anchor="middle">band</text>
+        </svg>
+        <figcaption class="fig-caption">The case</figcaption>
+      </figure>
+      <span class="arrow fragment fade-up" data-fragment-index="1">&rarr;</span>
+      <figure class="fig fragment fade-up" data-fragment-index="1">
+        <svg viewBox="0 0 360 200" role="img" aria-label="Inside the case: a P region on the left and an N region on the right, with the band over the N side.">
+          <path d="M10 100 H70 M290 100 H350" class="wire"/>
+          <rect x="70" y="50" width="110" height="100" class="p-reg"/>
+          <rect x="180" y="50" width="110" height="100" class="n-reg"/>
+          <text x="125" y="110" class="fig-lbl" text-anchor="middle" style="font-weight:700">P</text>
+          <text x="235" y="110" class="fig-lbl" text-anchor="middle" style="font-weight:700">N</text>
+          <text x="125" y="184" class="fig-lbl-m" text-anchor="middle">anode</text>
+          <text x="235" y="184" class="fig-lbl-m" text-anchor="middle">cathode</text>
+        </svg>
+        <figcaption class="fig-caption">Inside: one PN junction</figcaption>
+      </figure>
+      <span class="arrow fragment fade-up" data-fragment-index="2">&rarr;</span>
+      <figure class="fig fragment fade-up" data-fragment-index="2">
+        <svg viewBox="0 0 360 200" role="img" aria-label="The diode schematic symbol: a triangle pointing right toward a bar. The anode is on the triangle side and the cathode on the bar side. An arrow above shows conventional current flowing left to right under forward bias.">
+          <path d="M10 110 H120 M240 110 H350" class="wire"/>
+          <path d="M120 70 L120 150 L222 110 Z" fill="rgba(57,211,83,0.18)" stroke="#39d353" stroke-width="4" stroke-linejoin="round"/>
+          <line x1="230" y1="70" x2="230" y2="150" stroke="#39d353" stroke-width="6"/>
+          <path d="M110 34 H250 M236 24 L252 34 L236 44" fill="none" stroke="var(--result)" stroke-width="3"/>
+          <text x="60" y="184" class="fig-lbl-m" text-anchor="middle">anode</text>
+          <text x="300" y="184" class="fig-lbl-m" text-anchor="middle">cathode</text>
+        </svg>
+        <figcaption class="fig-caption">The symbol</figcaption>
+      </figure>
+    </div>
+    <p class="slide-intro fragment fade-up" data-fragment-index="3">The symbol&#39;s arrow points the way <span class="res">conventional current</span> flows when the diode conducts: from anode to cathode. Your LED from Day 1 is a diode too, which is why turning it around also turned it off.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · FORWARD AND REVERSE BIAS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Biasing the Junction</span>
+    <h2>Two Ways to Connect a <span class="accent">Battery</span></h2>
+    <div class="row-2">
+      <div class="card is-key">
+        <span class="card-name">Forward bias: + to the anode</span>
+        <svg viewBox="0 0 560 200" style="width:100%;display:block;margin:8px 0;" role="img" aria-label="Forward bias: a battery with its positive terminal on the P side. The depletion region between P and N is thin.">
+          <rect x="80" y="30" width="190" height="90" class="p-reg"/>
+          <rect x="290" y="30" width="190" height="90" class="n-reg"/>
+          <rect x="270" y="30" width="20" height="90" class="dep-reg"/>
+          <text x="175" y="86" class="fig-lbl" text-anchor="middle" style="font-weight:700">P</text>
+          <text x="385" y="86" class="fig-lbl" text-anchor="middle" style="font-weight:700">N</text>
+          <path d="M80 75 H40 V170 H250 M310 170 H520 V75 H480" class="wire"/>
+          <line x1="250" y1="145" x2="250" y2="195" stroke="rgba(230,247,234,0.8)" stroke-width="4"/>
+          <line x1="270" y1="155" x2="270" y2="185" stroke="rgba(230,247,234,0.8)" stroke-width="8"/>
+          <path d="M270 170 H310" class="wire"/>
+          <text x="236" y="150" class="fig-lbl" text-anchor="end" style="fill:var(--warn);font-weight:700">+</text>
+        </svg>
+        <p class="card-body">The battery pushes carriers <strong>toward</strong> the junction, and the depletion region <strong>shrinks</strong>. Above about <span class="res">0.6 to 0.7 V</span>, carriers flood across and current flows.</p>
+      </div>
+      <div class="card is-warn">
+        <span class="card-name">Reverse bias: + to the cathode</span>
+        <svg viewBox="0 0 560 200" style="width:100%;display:block;margin:8px 0;" role="img" aria-label="Reverse bias: a battery with its positive terminal on the N side. The depletion region between P and N is wide.">
+          <rect x="80" y="30" width="150" height="90" class="p-reg"/>
+          <rect x="330" y="30" width="150" height="90" class="n-reg"/>
+          <rect x="230" y="30" width="100" height="90" class="dep-reg"/>
+          <text x="155" y="86" class="fig-lbl" text-anchor="middle" style="font-weight:700">P</text>
+          <text x="405" y="86" class="fig-lbl" text-anchor="middle" style="font-weight:700">N</text>
+          <path d="M80 75 H40 V170 H250 M310 170 H520 V75 H480" class="wire"/>
+          <line x1="250" y1="155" x2="250" y2="185" stroke="rgba(230,247,234,0.8)" stroke-width="8"/>
+          <line x1="270" y1="145" x2="270" y2="195" stroke="rgba(230,247,234,0.8)" stroke-width="4"/>
+          <path d="M270 170 H310" class="wire"/>
+          <text x="284" y="150" class="fig-lbl" style="fill:var(--warn);font-weight:700">+</text>
+        </svg>
+        <p class="card-body">The battery pulls carriers <strong>away</strong> from the junction, and the depletion region <strong>widens</strong>. Almost no current flows, so the diode acts like an open switch.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · BIAS THE JUNCTION (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+    <span class="slide-tag">Investigate · Bias the Junction</span>
+    <h2 style="margin-bottom:12px;">Push and Pull on the <span class="accent">Junction</span></h2>
+    <div class="doping-lab" data-mode="junction">
+      <div class="dl-grid">
+        <div>
+          <div class="sim-panel">
+            <svg data-role="lattice" viewBox="0 0 960 450" role="img" aria-label="A PN junction in silicon between two metal contacts, P-type on the left and N-type on the right. Free electrons appear as blue dots and holes as pink rings. A dashed band marks the depletion region, which changes width with the bias voltage."></svg>
+          </div>
+          <div class="dl-legend">
+            <span class="lg"><i class="lg-e"></i>Electron</span>
+            <span class="lg"><i class="lg-h"></i>Hole</span>
+            <span class="lg">Click a carrier to follow it</span>
+          </div>
+          <div class="task-pager">
+            <div class="tp-head">
+              <span class="tp-count"></span>
+              <button class="tp-nav tp-prev" aria-label="Previous task">&lsaquo;</button>
+              <button class="tp-nav tp-next" aria-label="Next task">&rsaquo;</button>
+            </div>
+            <div class="tp-text"></div>
+            <ol hidden>
+              <li>At <b>0 V</b>, watch the depletion region form. Which ions glow inside the band, and what is the charge of the ions on each side?</li>
+              <li>Raise the bias to <b>+0.3 V</b>, then <b>+0.5 V</b>. Does current flow yet? What is the depletion region doing?</li>
+              <li>Keep raising the bias. At about what voltage does current <b>really start</b>, and what happens to the band?</li>
+              <li>Set the bias to <b>&minus;3 V</b>. What happens to the depletion region and the current?</li>
+              <li>Stay at &minus;3 V and heat the junction to <b>150 &deg;C</b>. Where does the small reverse current come from?</li>
+            </ol>
+          </div>
+        </div>
+        <div class="dl-right">
+          <div class="sim-panel">
+            <div class="ctl-row">
+              <label class="ctl-label" for="d3-v">Bias</label>
+              <input type="range" class="sim-range" id="d3-v" data-role="volts" min="-3" max="1" step="0.05" value="0">
+              <span class="range-val" data-role="volts-val">0.00 V</span>
+            </div>
+            <div class="ctl-row">
+              <label class="ctl-label" for="d3-t">Temperature</label>
+              <input type="range" class="sim-range" id="d3-t" data-role="temp" min="0" max="150" step="5" value="25">
+              <span class="range-val" data-role="temp-val">25 &deg;C</span>
+            </div>
+            <div class="ctl-row">
+              <span class="ctl-label">Speed</span>
+              <span class="seg">
+                <button class="seg-btn" data-speed="0.35" aria-pressed="true">Slow</button>
+                <button class="seg-btn" data-speed="1" aria-pressed="false">Normal</button>
+              </span>
+            </div>
+            <div class="ctl-row">
+              <button class="sim-btn alt" data-act="restart">Restart</button>
+              <button class="sim-btn alt" data-act="pause">Pause</button>
+            </div>
+          </div>
+          <div class="tiles">
+            <div class="tile"><span class="t-name">Electrons</span><span class="t-val elec" data-role="ne">0</span></div>
+            <div class="tile"><span class="t-name">Holes</span><span class="t-val hole-txt" data-role="nh">0</span></div>
+            <div class="tile is-result cur-tile"><span class="t-name">Current</span><span class="t-val" data-role="cur">0.0 carriers/s</span><span class="t-note">A real 1 mA is about 6 &times; 10<sup>15</sup> carriers/s</span></div>
+          </div>
+          <div class="sim-feedback" data-role="feedback"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · BIAS CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:5:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Why does a silicon diode need about 0.6 to 0.7 V of forward bias before much current flows?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"The diode has a 700 Ω resistor built into its case","isCorrect":false},{"id":"q1b","text":"The battery must first charge the diode like a capacitor","isCorrect":false},{"id":"q1c","text":"Electrons need 0.7 V to escape from the metal leads","isCorrect":false},{"id":"q1d","text":"The forward voltage must overcome the field of the depletion region before carriers can cross","isCorrect":true}]},{"id":"q2","type":"multiple-choice","text":"When a diode is reverse biased, with + on the cathode, what happens to its depletion region?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"It widens, because carriers are pulled away from the junction","isCorrect":true},{"id":"q2b","text":"It narrows, because the battery adds carriers","isCorrect":false},{"id":"q2c","text":"It disappears, so current flows backward","isCorrect":false},{"id":"q2d","text":"It moves to the metal contact on the N side","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · Biasing</span>
+    <h2>What the Junction <span class="accent">Does</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>Why does a silicon diode need about 0.6 to 0.7 V of forward bias before much current flows?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>The diode has a 700 &Omega; resistor built into its case</li>
+      <li><span class="opt-key">B</span>The battery must first charge the diode like a capacitor</li>
+      <li><span class="opt-key">C</span>Electrons need 0.7 V to escape from the metal leads</li>
+      <li><span class="opt-key">D</span>The forward voltage must overcome the field of the depletion region before carriers can cross</li>
+    </ul>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">2</span>When a diode is reverse biased, with + on the cathode, what happens to its depletion region?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col">
+      <li><span class="opt-key">A</span>It widens, because carriers are pulled away from the junction</li>
+      <li><span class="opt-key">B</span>It narrows, because the battery adds carriers</li>
+      <li><span class="opt-key">C</span>It disappears, so current flows backward</li>
+      <li><span class="opt-key">D</span>It moves to the metal contact on the N side</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · THE 0.7 V RULE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Calculating · The 0.7 V Rule</span>
+    <h2>Current in a Diode <span class="accent">Circuit</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1fr 1.15fr;align-items:center;">
+      <figure class="fig">
+        <svg viewBox="0 0 520 360" role="img" aria-label="A series circuit: a 5 volt supply, a 1 kilohm resistor, and a forward-biased diode.">
+          <path d="M80 140 V50 H200 M320 50 H440 V130 M440 230 V310 H80 V200" class="wire"/>
+          <line x1="44" y1="146" x2="116" y2="146" stroke="rgba(230,247,234,0.85)" stroke-width="4"/>
+          <line x1="62" y1="176" x2="98" y2="176" stroke="rgba(230,247,234,0.85)" stroke-width="9"/>
+          <path d="M80 140 V146 M80 176 V200" class="wire"/>
+          <text x="128" y="152" class="fig-lbl" style="fill:var(--warn);font-weight:700">+</text>
+          <text x="128" y="196" class="fig-lbl">5 V</text>
+          <path d="M200 50 l10 -18 l20 36 l20 -36 l20 36 l20 -36 l20 36 l10 -18" fill="none" stroke="rgba(230,247,234,0.85)" stroke-width="4" stroke-linejoin="round"/>
+          <text x="260" y="110" class="fig-lbl" text-anchor="middle">1 k&Omega;</text>
+          <path d="M410 130 L470 130 L440 222 Z" fill="rgba(57,211,83,0.18)" stroke="#39d353" stroke-width="4" stroke-linejoin="round"/>
+          <line x1="406" y1="228" x2="474" y2="228" stroke="#39d353" stroke-width="6"/>
+          <text x="486" y="186" class="fig-lbl">D</text>
+        </svg>
+      </figure>
+      <div>
+        <p class="slide-intro">A forward-biased silicon diode has a <span class="key">voltage drop</span> of about <span class="res">0.7 V</span>, almost no matter how much current flows. The rest of the supply voltage drops across the resistor.</p>
+        <div class="calc-line fragment fade-up">V<sub>R</sub> = 5 V &minus; 0.7 V = <span class="res">4.3 V</span></div>
+        <div class="calc-line fragment fade-up">I = 4.3 V &divide; 1000 &Omega; = <span class="res">4.3 mA</span></div>
+        <div class="callout-warn fragment fade-up" style="margin-top:var(--gap);">Turn the diode around and almost <strong>no current</strong> flows. The resistor drops 0 V, so the diode has the <strong>whole 5 V</strong> across it.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · PRACTICE (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:7:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A 9 V supply, a 2.2 kΩ resistor, and a forward-biased silicon diode are connected in series. About how much current flows?","order":0,"responseTimeLimitMs":90000,"options":[{"id":"q1a","text":"4.1 mA","isCorrect":false},{"id":"q1b","text":"0.32 mA","isCorrect":false},{"id":"q1c","text":"3.8 mA","isCorrect":true},{"id":"q1d","text":"0 mA","isCorrect":false}]},{"id":"q2","type":"free-response","text":"A classmate answered 4.1 mA for a 9 V supply, a 2.2 kΩ resistor, and a forward-biased silicon diode in series. What did they forget, and how would you fix their calculation?","order":1,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Practice · The 0.7 V Rule</span>
+    <h2>Your <span class="accent">Turn</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A 9 V supply, a 2.2 k&Omega; resistor, and a forward-biased silicon diode are connected in series. About how much current flows?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>4.1 mA</li>
+      <li><span class="opt-key">B</span>0.32 mA</li>
+      <li><span class="opt-key">C</span>3.8 mA</li>
+      <li><span class="opt-key">D</span>0 mA</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>A classmate answered 4.1 mA for the same circuit. What did they forget, and how would you fix their calculation?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · BENCH LAB -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Measure a Diode</span>
+    <h2>Forward and Reverse on the <span class="accent">Bench</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.15fr 1fr;align-items:start;gap:var(--gap-lg);">
+      <div class="lab-steps">
+        <div class="step-card"><span class="sc-num">1</span><p class="sc-body">Build the <strong>5 V supply, 1 k&Omega; resistor, and diode</strong> in series, band toward the negative side. <span class="key">Checkpoint:</span> about 5 V across the supply.</p></div>
+        <div class="step-card"><span class="sc-num">2</span><p class="sc-body"><strong>Predict</strong> V<sub>D</sub>, V<sub>R</sub>, and the current. Then measure the voltage across the <strong>diode</strong> and the <strong>resistor</strong>.</p></div>
+        <div class="step-card"><span class="sc-num">3</span><p class="sc-body">Measure the <strong>current</strong>: open the loop and put the meter <strong>in series</strong> on its mA setting.</p></div>
+        <div class="step-card"><span class="sc-num">4</span><p class="sc-body">Turn the diode <strong>around</strong> and repeat steps 2 and 3.</p></div>
+      </div>
+      <div>
+        <div class="callout-warn">An ammeter goes <strong>in series</strong>, never across a part or the supply. Across the supply, it becomes a short circuit.</div>
+        <div class="card" style="margin-top:var(--gap);"><span class="card-name">Extension</span><p class="card-body">With an <strong>adjustable supply</strong>, record V<sub>D</sub> and the current at several supply settings, and plot current against diode voltage.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · WHAT TO RECORD -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Engineering Notebook</span>
+    <h2>Record Your <span class="accent">Measurements</span></h2>
+    <p class="slide-intro">Draw the circuit, then copy this table. Fill in the <strong>prediction</strong> columns before you measure.</p>
+    <table class="data-table record-table">
+      <thead><tr><th>Bias</th><th>Predicted V<sub>D</sub></th><th>Measured V<sub>D</sub></th><th>V<sub>R</sub></th><th>I = V<sub>R</sub> &divide; 1000 &Omega;</th><th>Measured I</th></tr></thead>
+      <tbody>
+        <tr><td>Forward</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+        <tr><td>Reverse</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+      </tbody>
+    </table>
+    <div class="row-2" style="margin-top:var(--gap-lg);">
+      <div class="card fragment fade-up"><span class="card-name">Compare</span><p class="card-body">How close is your calculated current to the <strong>measured</strong> current? Which reading do you trust more, and why?</p></div>
+      <div class="card fragment fade-up"><span class="card-name">Explain</span><p class="card-body">For each row, explain the readings using the <span class="warn">depletion region</span>.</p></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · DIODE BENCH (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+    <span class="slide-tag">Virtual Bench · For Absent Students or the Extension</span>
+    <h2 style="margin-bottom:12px;">Diode <span class="accent">Bench</span></h2>
+    <div class="diode-bench">
+      <div class="db-grid">
+        <div>
+          <div class="sim-panel">
+            <svg data-role="circuit" viewBox="0 0 900 470" role="img" aria-label="Interactive circuit: an adjustable supply, a 1 kilohm resistor, an ammeter, and a diode in a series loop. Controls set the supply, turn the diode around, and measure the voltage across the diode or resistor or the current."></svg>
+          </div>
+          <div class="ctl-row" style="margin-top:10px;">
+            <label class="ctl-label" for="d3-vs">Supply</label>
+            <input type="range" class="sim-range" id="d3-vs" data-role="vs" min="0" max="9" step="0.1" value="5">
+            <span class="range-val" data-role="vs-val">5.0 V</span>
+            <button class="sim-btn alt" data-act="flip">Turn the diode around</button>
+          </div>
+          <div class="ctl-row">
+            <span class="ctl-label">Measure:</span>
+            <span class="seg">
+              <button class="seg-btn" data-measure="vd" aria-pressed="false">V across diode</button>
+              <button class="seg-btn" data-measure="vr" aria-pressed="false">V across resistor</button>
+              <button class="seg-btn" data-measure="i" aria-pressed="false">Current</button>
+            </span>
+          </div>
+        </div>
+        <div class="db-right">
+          <div class="dmm"><span class="dmm-name" data-role="dmm-name">DMM</span><span class="dmm-val" data-role="dmm">-.--</span></div>
+          <div class="sim-panel plot-panel">
+            <div class="sim-head">Current vs diode voltage <span class="sim-note" data-role="pt-count">0 points</span></div>
+            <svg data-role="plot" viewBox="0 0 470 300" role="img" aria-label="A graph of current in milliamps against diode voltage from 0 to 0.8 volts. Plotted points appear as dots."></svg>
+            <div class="ctl-row">
+              <button class="sim-btn" data-act="plot">Plot this point</button>
+              <button class="sim-btn alt" data-act="clear">Clear</button>
+            </div>
+          </div>
+          <div class="sim-feedback" data-role="feedback"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · EXIT TICKET (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:11:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A 1 kΩ resistor and a forward-biased silicon diode are in series. The supply rises from 5 V to 9 V. What happens to the diode voltage and the current?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Both the diode voltage and the current double","isCorrect":false},{"id":"q1b","text":"The diode voltage stays near 0.7 V, and the current nearly doubles, from about 4.3 mA to 8.3 mA","isCorrect":true},{"id":"q1c","text":"The diode voltage rises to about 4.3 V, and the current stays the same","isCorrect":false},{"id":"q1d","text":"The current stays the same, because the diode limits it","isCorrect":false}]},{"id":"q2","type":"free-response","text":"Explain your forward and reverse measurements from today&#39;s lab using the depletion region. Why did the diode drop only about 0.7 V one way and the whole supply the other way?","order":1,"responseTimeLimitMs":180000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Exit <span class="accent">Ticket</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A 1 k&Omega; resistor and a forward-biased silicon diode are in series. The supply rises from 5 V to 9 V. What happens to the diode voltage and the current?</div>
+    </div>
+    <ul class="mcq-opts" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>Both the diode voltage and the current double</li>
+      <li><span class="opt-key">B</span>The diode voltage stays near 0.7 V, and the current nearly doubles, from about 4.3 mA to 8.3 mA</li>
+      <li><span class="opt-key">C</span>The diode voltage rises to about 4.3 V, and the current stays the same</li>
+      <li><span class="opt-key">D</span>The current stays the same, because the diode limits it</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>Explain your forward and reverse measurements using the <span class="warn">depletion region</span>. Why did the diode drop only about 0.7 V one way and the whole supply the other way?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · WRAP UP -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Wrap Up</span>
+    <h2>What We Know, and What Comes <span class="accent">Next</span></h2>
+    <div class="row-2" style="margin-bottom:var(--gap-lg);">
+      <div class="card is-key"><span class="card-name">Forward bias</span><p class="card-body">+ on the <strong>anode</strong>. The depletion region collapses above about <span class="res">0.7 V</span>, and the resistor sets the current.</p></div>
+      <div class="card is-warn"><span class="card-name">Reverse bias</span><p class="card-body">+ on the <strong>cathode</strong>. The depletion region widens, almost no current flows, and the <strong>whole supply</strong> appears across the diode.</p></div>
+    </div>
+    <div class="callout fragment fade-up">
+      <strong>Next class:</strong> AC changes direction 60 times a second. What happens when a one-way valve meets a current that keeps reversing?
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script src="semiconductor-sims.js"></script>
+<script>
+var SIMS = [];
+document.querySelectorAll('.doping-lab').forEach(function (r) { SIMS.push(SiliconSims.buildDopingLab(r)); });
+document.querySelectorAll('.diode-bench').forEach(function (r) { SIMS.push(SiliconSims.buildDiodeBench(r)); });
+document.querySelectorAll('.task-pager').forEach(SiliconSims.initTaskPager);
+
+initSyncDeckReveal({
+    deckId: 'day3-diodes-and-biasing',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        SiliconSims.startSimLoop(Reveal, SIMS);
+    },
+});
+</script>
+</body>
+</html>

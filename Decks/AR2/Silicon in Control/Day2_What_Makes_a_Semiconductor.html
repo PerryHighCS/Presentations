@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="vj02do">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 2: What Makes a Semiconductor?</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: Silicon in Control Day 2 · What Makes a Semiconductor?
+   ============================================================ */
+
+/* Resistivity scale */
+.rho-scale text { font-family: var(--font-mono); }
+.rho-zone-lbl { font-size: 26px; font-weight: 700; }
+.rho-tick { font-size: 24px; fill: var(--text-muted); }
+.rho-mark-lbl { font-size: 26px; fill: var(--text); }
+
+/* Evidence recap */
+.evidence-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-bottom: var(--gap); }
+
+/* Junction figure */
+.jn-fig text { font-family: var(--font-mono); }
+.jn-ion-n { fill: rgba(124,196,255,0.18); stroke: var(--electron); stroke-width: 3; }
+.jn-ion-p { fill: rgba(249,168,212,0.16); stroke: var(--hole); stroke-width: 3; }
+.jn-ion-txt { font-size: 24px; font-weight: 700; fill: var(--text); }
+.jn-side { font-size: 30px; font-weight: 700; fill: var(--text); }
+.jn-band { fill: rgba(255,209,102,0.07); stroke: var(--warn); stroke-width: 2; stroke-dasharray: 8 6; }
+.jn-band-lbl { font-size: 26px; fill: var(--warn); }
+.jn-field { stroke: var(--warn); stroke-width: 4; fill: none; }
+.jn-stage { opacity: 0; transition: opacity 0.6s ease; }
+.jn-fig.show-band .jn-bandg, .jn-fig.show-field .jn-fieldg { opacity: 1; }
+.jn-fig .jn-in-band circle { transition: filter 0.6s ease, stroke-width 0.6s ease; }
+.jn-fig.show-band .jn-in-band circle { stroke-width: 5; filter: drop-shadow(0 0 8px rgba(255,209,102,0.7)); }
+.jn-flash { fill: none; stroke: var(--text); stroke-width: 3; }
+.jn-fig.show-field .jn-bounce-e { animation: jn-bounce-e 2.4s ease-in-out infinite; }
+.jn-fig.show-field .jn-bounce-h { animation: jn-bounce-h 2.4s ease-in-out infinite 1.2s; }
+@keyframes jn-bounce-e { 0%, 100% { transform: translateX(0); } 45% { transform: translateX(-40px); } 60% { transform: translateX(-30px); } }
+@keyframes jn-bounce-h { 0%, 100% { transform: translateX(0); } 45% { transform: translateX(40px); } 60% { transform: translateX(30px); } }
+.jn-fig.no-anim .jn-stage, .jn-fig.no-anim .jn-in-band circle { transition: none; }
+@media (prefers-reduced-motion: reduce) { .jn-fig.show-field .jn-bounce-e, .jn-fig.show-field .jn-bounce-h { animation: none; } }
+[data-shake-fig] .lat-atom-g, [data-hop-fig] .lat-atom-g { cursor: pointer; }
+[data-hop-fig] .lat-atom-g.can-hop circle { stroke: var(--warn); stroke-width: 3; stroke-dasharray: 6 4; }
+.hop-trail { stroke: var(--electron); stroke-width: 3; stroke-dasharray: 4 5; transition: opacity 0.35s ease; }
+.hop-trail.fade { opacity: 0; }
+[data-shake-fig] .lat-atom-g:hover circle { stroke: var(--warn); }
+.lat-atom-g.shaking { animation: atom-shake 0.1s linear 5; transform-box: fill-box; transform-origin: center; }
+.lat-atom-g.shaking circle { stroke: var(--warn); fill: rgba(255,209,102,0.18); }
+@keyframes atom-shake { 0% { transform: translate(0, 0); } 25% { transform: translate(-4px, 2px); } 50% { transform: translate(3px, -3px); } 75% { transform: translate(-2px, -2px); } 100% { transform: translate(0, 0); } }
+.hole-new { animation: hole-in 0.5s ease-out; transform-box: fill-box; transform-origin: center; }
+@keyframes hole-in { from { transform: scale(2.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.free-wander { animation: wander 3s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes wander { 0% { transform: translate(0, 0); } 33% { transform: translate(8px, -6px); } 66% { transform: translate(-6px, 7px); } 100% { transform: translate(5px, 4px); } }
+@media (prefers-reduced-motion: reduce) { .lat-atom-g.shaking, .hole-new, .free-wander { animation: none; } }
+.mcq-2col { display: grid; grid-template-columns: 1fr 1fr; max-width: none; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(124,196,255,0.10),transparent 70%);"></div>
+  <div class="glow" style="width:420px;height:420px;bottom:-90px;right:12%;background:radial-gradient(circle,rgba(249,168,212,0.08),transparent 70%);"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; Silicon in Control &nbsp;·&nbsp; Day 2</span>
+    <h1 class="title-h1">What Makes a <span class="accent">Semiconductor?</span></h1>
+    <p class="subtitle">// Silicon &nbsp;·&nbsp; Doping &nbsp;·&nbsp; Electrons and holes &nbsp;·&nbsp; The PN junction</p>
+    <svg viewBox="0 0 900 140" style="width:900px;margin-top:44px;" aria-hidden="true" data-lattice-strip></svg>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · DAY QUESTION AND OBJECTIVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Today&#39;s Question &amp; Objectives</span>
+    <div class="eq-box" style="margin-bottom:var(--gap-lg);">
+      <span class="eq-label">Today&#39;s question</span>
+      Why does the mystery component let current through in <span class="accent">one direction only</span>?
+    </div>
+    <div class="split split-50 split-top" style="flex:0 0 auto;">
+      <div>
+        <h3>By the end of class you can <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Tell <strong>conductors, insulators, and semiconductors</strong> apart.</li>
+          <li>Explain how <strong>doping</strong> makes N-type and P-type silicon.</li>
+          <li>Describe current as <strong>electrons</strong> one way and <strong>holes</strong> the other.</li>
+          <li>Describe the <strong>depletion region</strong> at a PN junction.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today&#39;s <span class="accent">path</span></h3>
+        <div class="agenda-grid">
+          <a class="agenda-item" href="#/4"><span class="agenda-num">01</span><span class="agenda-text">Conductors, insulators, and <strong>semiconductors</strong></span></a>
+          <a class="agenda-item" href="#/5"><span class="agenda-num">02</span><span class="agenda-text">Silicon and <strong>doping</strong></span></a>
+          <a class="agenda-item" href="#/9"><span class="agenda-num">03</span><span class="agenda-text">Investigate: the <strong>Doping Lab</strong></span></a>
+          <a class="agenda-item" href="#/10"><span class="agenda-num">04</span><span class="agenda-text">Temperature on the <strong>bench</strong></span></a>
+          <a class="agenda-item" href="#/12"><span class="agenda-num">05</span><span class="agenda-text">The <strong>PN junction</strong></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · HOOK: DAY 1 EVIDENCE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Hook · What We Found</span>
+    <h2>A One-Way Valve for <span class="accent">Current</span></h2>
+    <p class="slide-intro">In the last lesson, the mystery component sat in a loop with a 5 V supply, a 1 k&Omega; resistor, and an LED. Here is the class evidence.</p>
+    <div class="evidence-row">
+      <div class="card is-key"><span class="card-name">Band toward the negative side</span><p class="card-body">The LED <strong>lit</strong>. The mystery part used only about <span class="res">0.6 V</span>, and current flowed.</p></div>
+      <div class="card is-warn"><span class="card-name">Band toward the positive side</span><p class="card-body">The LED stayed <strong>dark</strong>. The whole <span class="res">5 V</span> appeared across the part, so almost no current flowed.</p></div>
+    </div>
+    <p class="slide-intro">It has <strong>no moving parts, no vacuum, and no heater</strong>. It is a small piece of silicon crystal.</p>
+    <ul class="bullets">
+      <li class="fragment fade-up">Look back at your claim from the last lesson. Which ideas could explain a <strong>one-way</strong> path for current?</li>
+      <li class="fragment fade-up">What would have to be <strong>different</strong> about the two ends of the part?</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · CONDUCTORS, INSULATORS, SEMICONDUCTORS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Materials · How Freely Charge Moves</span>
+    <h2>Conductors, Insulators, and <span class="accent">Semiconductors</span></h2>
+    <div class="row-3" style="margin-bottom:var(--gap);">
+      <div class="card"><span class="card-name">Conductor · copper</span><p class="card-body">Each atom lets go of an electron, so the metal is full of <span class="key">free electrons</span> that move at the smallest push.</p></div>
+      <div class="card"><span class="card-name">Insulator · glass, rubber</span><p class="card-body">Every electron is <span class="warn">locked in a bond</span>. Almost nothing can move, even with a large voltage.</p></div>
+      <div class="card is-key"><span class="card-name">Semiconductor · silicon</span><p class="card-body">Electrons are locked in bonds, but <span class="key">a few break free</span>, and we can add more on purpose.</p></div>
+    </div>
+    <figure class="fig fragment fade-up">
+      <svg class="rho-scale" viewBox="0 0 1320 210" role="img" aria-label="A logarithmic resistivity scale from 10 to the minus 8 to 10 to the 14 ohm meters. Copper sits at the far left near 10 to the minus 8. Lightly doped silicon sits near 0.01. Pure silicon sits near 2,300. Glass sits at the far right, from 10 to the 10 to 10 to the 14.">
+        <rect x="60" y="70" width="330" height="36" fill="rgba(57,211,83,0.22)"/>
+        <rect x="390" y="70" width="550" height="36" fill="rgba(124,196,255,0.18)"/>
+        <rect x="940" y="70" width="330" height="36" fill="rgba(255,209,102,0.18)"/>
+        <text x="225" y="56" class="rho-zone-lbl" text-anchor="middle" fill="var(--accent)">Conductors</text>
+        <text x="665" y="56" class="rho-zone-lbl" text-anchor="middle" fill="var(--electron)">Semiconductors</text>
+        <text x="1105" y="56" class="rho-zone-lbl" text-anchor="middle" fill="var(--warn)">Insulators</text>
+        <path d="M60 106 H1270" stroke="rgba(230,247,234,0.5)" stroke-width="2"/>
+        <g class="rho-tick">
+          <text x="60" y="198" text-anchor="middle">10&#8315;&#8312;</text>
+          <text x="390" y="198" text-anchor="middle">10&#8315;&#178;</text>
+          <text x="665" y="198" text-anchor="middle">10&#179;</text>
+          <text x="940" y="198" text-anchor="middle">10&#8312;</text>
+          <text x="1270" y="198" text-anchor="middle">10&#185;&#8308; &#937;&#183;m</text>
+        </g>
+        <circle cx="73" cy="88" r="10" fill="var(--accent)"/>
+        <text x="90" y="146" class="rho-mark-lbl">Copper</text>
+        <circle cx="390" cy="88" r="10" fill="var(--electron)"/>
+        <text x="390" y="146" class="rho-mark-lbl" text-anchor="middle">Doped silicon</text>
+        <circle cx="685" cy="88" r="10" fill="var(--electron)"/>
+        <text x="685" y="146" class="rho-mark-lbl" text-anchor="middle">Pure silicon</text>
+        <rect x="1050" y="80" width="220" height="16" rx="8" fill="var(--warn)"/>
+        <text x="1160" y="146" class="rho-mark-lbl" text-anchor="middle">Glass</text>
+      </svg>
+      <figcaption class="fig-caption">Resistivity on a scale where each step is 10 times larger. Adding one phosphorus atom per 5 million silicon atoms makes silicon conduct <strong>hundreds of thousands of times</strong> better.</figcaption>
+    </figure>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · THE SILICON CRYSTAL -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Silicon · The Crystal</span>
+    <h2>Silicon Shares <span class="accent">Four Electrons</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.1fr 1fr;align-items:center;">
+      <div>
+        <p class="slide-intro">A silicon atom has <span class="key">four outer electrons</span>. In a crystal, each atom shares one electron with each of its four neighbors, so every bond holds a <strong>pair</strong> of electrons.</p>
+        <p class="slide-intro fragment fade-up">With every electron locked in a bond, pure silicon at room temperature has <strong>very few free carriers</strong>, so it conducts poorly.</p>
+        <p class="slide-intro fragment fade-up">Heat can shake an electron loose. It leaves an empty spot in its bond called a <span class="hole-txt">hole</span>. That is why silicon conducts <strong>better when it is warm</strong>.</p>
+        <p class="slide-intro fragment fade-up">The first transistors were made of <strong>germanium</strong>, which works the same way but leaks much more current when warm. That is one reason the industry moved to silicon.</p>
+      </div>
+      <figure class="fig" data-shake-fig>
+        <svg viewBox="0 0 560 400" data-lattice-fig="none" role="img" aria-label="A grid of silicon atoms. Each pair of neighboring atoms is joined by a bond holding two shared electrons. Clicking an atom shakes one electron loose, leaving a hole behind."></svg>
+        <figcaption class="fig-caption">Click an atom to heat it and shake an <span class="elec">electron</span> loose, leaving a <span class="hole-txt">hole</span>.</figcaption>
+        <div class="ctl-row" style="justify-content:center;margin-top:10px;">
+          <button class="sim-btn" data-act="shake">Shake an electron loose</button>
+          <button class="sim-btn alt" data-act="reset-lattice">Reset</button>
+        </div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · N-TYPE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Doping · N-Type Silicon</span>
+    <h2>Phosphorus Adds a <span class="elec">Free Electron</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.1fr 1fr;align-items:center;">
+      <div>
+        <p class="slide-intro"><span class="key">Doping</span> means replacing a few silicon atoms with a different element on purpose.</p>
+        <p class="slide-intro fragment fade-up">A <strong>phosphorus</strong> atom has <strong>five</strong> outer electrons. Four fill the bonds, and the fifth has nowhere to go, so it wanders free.</p>
+        <p class="slide-intro fragment fade-up">The phosphorus atom is now a fixed <strong>positive ion</strong> (P&#8314;). It stays in place in the crystal while its electron moves.</p>
+        <p class="slide-intro fragment fade-up">Silicon with extra free electrons is <span class="key">N-type</span>, for the <strong>negative</strong> charge carriers.</p>
+      </div>
+      <figure class="fig">
+        <svg viewBox="0 0 560 400" data-lattice-fig="P" role="img" aria-label="The silicon grid with one atom replaced by phosphorus. All four bonds are full, and a fifth electron sits loose beside it, free to move."></svg>
+        <figcaption class="fig-caption">The fifth <span class="elec">electron</span> is free to move.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · P-TYPE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Doping · P-Type Silicon</span>
+    <h2>Boron Leaves a <span class="hole-txt">Hole</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.1fr 1fr;align-items:center;">
+      <div>
+        <p class="slide-intro">A <strong>boron</strong> atom has only <strong>three</strong> outer electrons, so one of its four bonds is missing an electron. That empty spot is a <span class="hole-txt">hole</span>.</p>
+        <p class="slide-intro fragment fade-up">A neighboring electron can jump into the hole. Now the empty spot is where that electron used to be, so the <strong>hole has moved the other way</strong>.</p>
+        <p class="slide-intro fragment fade-up">A hole acts like a <strong>positive</strong> charge that moves, so silicon with extra holes is <span class="key">P-type</span>. The boron becomes a fixed negative ion (B&#8315;).</p>
+        <div class="callout-warn fragment fade-up">A hole is <strong>not a particle</strong>. It is a missing electron, and it moves only when real electrons move into it.</div>
+      </div>
+      <figure class="fig" data-hop-fig>
+        <svg viewBox="0 0 560 400" data-lattice-fig="B" role="img" aria-label="The silicon grid with one atom replaced by boron. One bond next to the boron is missing an electron, shown as an open ring. Clicking a highlighted neighboring atom makes one of its electrons jump into the hole, so the hole moves the other way."></svg>
+        <figcaption class="fig-caption">Click a glowing atom: an <span class="elec">electron</span> jumps in, and the <span class="hole-txt">hole</span> moves the other way.</figcaption>
+        <div class="ctl-row" style="justify-content:center;margin-top:10px;">
+          <button class="sim-btn" data-act="hop">Jump an electron in</button>
+          <button class="sim-btn alt" data-act="reset-lattice">Reset</button>
+        </div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · DOPING CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:7:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A phosphorus atom, which has five outer electrons, replaces one silicon atom in a crystal. What does that add to the silicon?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"A hole, because phosphorus is missing an electron","isCorrect":false},{"id":"q1b","text":"A free electron that can move, leaving a fixed positive phosphorus ion behind","isCorrect":true},{"id":"q1c","text":"Nothing, because phosphorus fits into the crystal exactly like silicon","isCorrect":false},{"id":"q1d","text":"A free positive ion that carries the current","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"In P-type silicon, a hole jumps one bond to the right. What actually moved?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"A positive particle moved one bond to the right","isCorrect":false},{"id":"q2b","text":"A boron atom moved one place to the right","isCorrect":false},{"id":"q2c","text":"An electron moved one bond to the left, into the empty spot","isCorrect":true},{"id":"q2d","text":"Nothing moved; holes stay in one place","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · Doping</span>
+    <h2>Electrons and <span class="accent">Holes</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A phosphorus atom, which has five outer electrons, replaces one silicon atom in a crystal. What does that add to the silicon?</div>
+    </div>
+    <ul class="mcq-opts" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>A hole, because phosphorus is missing an electron</li>
+      <li><span class="opt-key">B</span>A free electron that can move, leaving a fixed positive phosphorus ion behind</li>
+      <li><span class="opt-key">C</span>Nothing, because phosphorus fits into the crystal exactly like silicon</li>
+      <li><span class="opt-key">D</span>A free positive ion that carries the current</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>In P-type silicon, a hole jumps one bond to the right. What actually moved?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col">
+      <li><span class="opt-key">A</span>A positive particle moved one bond to the right</li>
+      <li><span class="opt-key">B</span>A boron atom moved one place to the right</li>
+      <li><span class="opt-key">C</span>An electron moved one bond to the left, into the empty spot</li>
+      <li><span class="opt-key">D</span>Nothing moved; holes stay in one place</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · DOPING LAB (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+    <span class="slide-tag">Investigate · Doping Lab</span>
+    <h2 style="margin-bottom:12px;">Inside the <span class="accent">Crystal</span></h2>
+    <div class="doping-lab">
+      <div class="dl-grid" style="grid-template-columns:820px 1fr;">
+        <div>
+          <div class="sim-panel">
+            <svg data-role="lattice" viewBox="0 0 960 450" role="img" aria-label="Doping Lab: a grid of silicon atoms between two metal contacts. Free electrons appear as blue dots and holes as pink rings. Dopant atoms are labeled P plus or B minus."></svg>
+          </div>
+          <div class="ctl-row" style="margin-top:10px;">
+            <span class="seg">
+              <button class="seg-btn" data-mode-btn="pure" aria-pressed="true">Pure Si</button>
+              <button class="seg-btn" data-mode-btn="n" aria-pressed="false">N-type</button>
+              <button class="seg-btn" data-mode-btn="p" aria-pressed="false">P-type</button>
+              <button class="seg-btn" data-mode-btn="pn" aria-pressed="false">PN junction</button>
+            </span>
+            <button class="sim-btn alt" data-act="restart">Restart</button>
+            <button class="sim-btn alt" data-act="pause">Pause</button>
+          </div>
+          <div class="dl-legend">
+            <span class="lg"><i class="lg-e"></i>Electron</span>
+            <span class="lg"><i class="lg-h"></i>Hole</span>
+            <span class="lg">Click a carrier to follow it</span>
+          </div>
+          <div class="task-pager">
+            <div class="tp-head">
+              <span class="tp-count"></span>
+              <button class="tp-nav tp-prev" aria-label="Previous task">&lsaquo;</button>
+              <button class="tp-nav tp-next" aria-label="Next task">&rsaquo;</button>
+            </div>
+            <div class="tp-text"></div>
+            <ol hidden>
+              <li><b>Pure Si</b> at 25 &deg;C: how many free carriers are there? Raise the temperature to 100 &deg;C. Why do carriers appear in <b>pairs</b>?</li>
+              <li>Click a <b>hole</b> to follow it, and try <b>Pause</b>. When it jumps, what actually moved, and which way?</li>
+              <li>Choose <b>N-type</b>. Where does each free electron come from? What charge is left on each P atom?</li>
+              <li>Set the battery to <b>+1.5 V</b>. Which way do electrons drift? Now try <b>P-type</b>: which way do holes drift?</li>
+              <li>N-type at +1.5 V: heat it to <b>150 &deg;C</b>. Why does the current change with no new dopants?</li>
+              <li>Choose <b>PN junction</b> and watch the boundary. What happens there, and what is left behind?</li>
+            </ol>
+          </div>
+        </div>
+        <div class="dl-right">
+          <div class="sim-panel">
+            <div class="ctl-row">
+              <label class="ctl-label" for="d2-dop">Dopant atoms</label>
+              <input type="range" class="sim-range" id="d2-dop" data-role="dopants" min="0" max="10" step="1" value="6">
+              <span class="range-val" data-role="dop-val">6</span>
+            </div>
+            <div class="ctl-row">
+              <label class="ctl-label" for="d2-v">Battery</label>
+              <input type="range" class="sim-range" id="d2-v" data-role="volts" min="-2" max="2" step="0.1" value="0">
+              <span class="range-val" data-role="volts-val">0.0 V</span>
+            </div>
+            <div class="ctl-row">
+              <label class="ctl-label" for="d2-t">Temperature</label>
+              <input type="range" class="sim-range" id="d2-t" data-role="temp" min="0" max="150" step="5" value="25">
+              <span class="range-val" data-role="temp-val">25 &deg;C</span>
+            </div>
+            <div class="ctl-row">
+              <span class="ctl-label">Speed</span>
+              <span class="seg">
+                <button class="seg-btn" data-speed="0.35" aria-pressed="true">Slow</button>
+                <button class="seg-btn" data-speed="1" aria-pressed="false">Normal</button>
+              </span>
+            </div>
+          </div>
+          <div class="tiles">
+            <div class="tile"><span class="t-name">Electrons</span><span class="t-val elec" data-role="ne">0</span></div>
+            <div class="tile"><span class="t-name">Holes</span><span class="t-val hole-txt" data-role="nh">0</span></div>
+            <div class="tile is-result cur-tile"><span class="t-name">Current</span><span class="t-val" data-role="cur">0.0 carriers/s</span><span class="t-note">A real 1 mA is about 6 &times; 10<sup>15</sup> carriers/s</span></div>
+          </div>
+          <div class="sim-feedback" data-role="feedback"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · TEMPERATURE ON THE BENCH -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Bench · Temperature and Silicon</span>
+    <h2>Warm a Diode With Your <span class="accent">Fingers</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1fr 1fr;align-items:start;gap:var(--gap-lg);">
+      <div class="lab-steps">
+        <div class="step-card"><span class="sc-num">1</span><p class="sc-body">Set your DMM to <strong>diode test</strong> and touch the leads to a diode, red on the end <strong>without</strong> the band.</p></div>
+        <div class="step-card"><span class="sc-num">2</span><p class="sc-body">Record the reading. It is the voltage the junction needs at a small test current.</p></div>
+        <div class="step-card"><span class="sc-num">3</span><p class="sc-body">Pinch the diode body between your fingers for <strong>30 seconds</strong>, keeping the leads connected, and record the reading again.</p></div>
+      </div>
+      <div>
+        <table class="data-table record-table">
+          <thead><tr><th>Reading</th><th>Diode test (V)</th></tr></thead>
+          <tbody>
+            <tr><td>Room temperature</td><td class="blank">___</td></tr>
+            <tr><td>After 30 s in your fingers</td><td class="blank">___</td></tr>
+            <tr><td>Change (mV)</td><td class="blank">___</td></tr>
+          </tbody>
+        </table>
+        <div class="callout-result fragment fade-up" style="margin-top:var(--gap);">The reading <strong>drops</strong> about <strong>2 mV for every &deg;C</strong> of warming, because heat frees more carriers. For example, 0.552 V might fall to 0.537 V.</div>
+        <div class="callout fragment fade-up" style="margin-top:var(--gap-sm);">Copper does the opposite: warm copper conducts <strong>slightly worse</strong>, because its atoms vibrate and get in the way of electrons it already has.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · TEMPERATURE CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:10:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A diode read 0.552 V on a DMM diode test. After a student held it for 30 seconds, it read 0.537 V. Why did the reading drop?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"Warming freed more carriers in the silicon, so the junction conducts at a slightly lower voltage","isCorrect":true},{"id":"q1b","text":"The student&#39;s hand added extra electrons to the diode","isCorrect":false},{"id":"q1c","text":"Silicon conducts worse when warm, just like copper","isCorrect":false},{"id":"q1d","text":"The meter battery ran down during the 30 seconds","isCorrect":false}]},{"id":"q2","type":"free-response","text":"Copper conducts slightly worse when it gets warm, but silicon conducts better. Explain the difference using charge carriers.","order":1,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · Temperature</span>
+    <h2>Why Did the Reading <span class="accent">Drop?</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A diode read 0.552 V on a DMM diode test. After a student held it for 30 seconds, it read 0.537 V. Why did the reading drop?</div>
+    </div>
+    <ul class="mcq-opts" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>Warming freed more carriers in the silicon, so the junction conducts at a slightly lower voltage</li>
+      <li><span class="opt-key">B</span>The student&#39;s hand added extra electrons to the diode</li>
+      <li><span class="opt-key">C</span>Silicon conducts worse when warm, just like copper</li>
+      <li><span class="opt-key">D</span>The meter battery ran down during the 30 seconds</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>Copper conducts slightly worse when it gets warm, but silicon conducts better. Explain the difference using <span class="key">charge carriers</span>.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · THE PN JUNCTION -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The PN Junction</span>
+    <h2>Where P Meets <span class="accent">N</span></h2>
+    <figure class="fig" style="margin-bottom:var(--gap);">
+      <svg class="jn-fig" viewBox="0 0 1300 300" data-junction-fig role="img" aria-label="A PN junction. The P side on the left holds fixed B minus ions and free holes. The N side on the right holds fixed P plus ions and free electrons. A band at the boundary, the depletion region, holds only fixed ions and no free carriers. An arrow inside the band points from the N side to the P side."></svg>
+    </figure>
+    <ul class="bullets">
+      <li class="fragment fade-up">Electrons near the boundary <strong>cross</strong> into the P side and fill holes. Both carriers disappear.</li>
+      <li class="fragment fade-up">That leaves a band with <strong>no free carriers</strong>, only fixed ions: B&#8315; on the P side and P&#8314; on the N side. This band is the <span class="warn">depletion region</span>.</li>
+      <li class="fragment fade-up">The fixed ions make an <strong>electric field</strong> that pushes carriers back, so the crossing stops. The junction now acts like a <strong>barrier</strong>.</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · MODEL THE JUNCTION -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Engineering Notebook · Model the Junction</span>
+    <h2>Draw Your <span class="accent">PN Junction</span></h2>
+    <p class="slide-intro">Draw a PN junction in your notebook and label every part below. Use one color for electrons and another for holes.</p>
+    <div class="row-2">
+      <div class="card"><span class="card-name">Label</span><p class="card-body">The <strong>P side</strong> and the <strong>N side</strong>, free <span class="elec">electrons</span> and <span class="hole-txt">holes</span>, the fixed <strong>B&#8315;</strong> and <strong>P&#8314;</strong> ions, and the <span class="warn">depletion region</span>.</p></div>
+      <div class="card"><span class="card-name">Explain</span><p class="card-body">In two or three sentences, explain how <strong>doping</strong> gave each side its carriers, and why the depletion region has <strong>none</strong>.</p></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · EXIT TICKET (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:13:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"In a PN junction, which side starts with extra free electrons, and what happens to some of them at the boundary?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"The P side; they stay put because the boundary is an insulator","isCorrect":false},{"id":"q1b","text":"The N side; they repel each other and leave the crystal","isCorrect":false},{"id":"q1c","text":"The P side; they cross and fill the holes on the N side","isCorrect":false},{"id":"q1d","text":"The N side; some cross, fill holes on the P side, and leave a region with no free carriers","isCorrect":true}]},{"id":"q2","type":"free-response","text":"Tomorrow we connect a battery across a PN junction. Predict what happens to the depletion region if the battery pushes carriers toward the junction, and what happens if it pulls them away.","order":1,"responseTimeLimitMs":150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Exit <span class="accent">Ticket</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>In a PN junction, which side starts with extra free electrons, and what happens to some of them at the boundary?</div>
+    </div>
+    <ul class="mcq-opts" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>The P side; they stay put because the boundary is an insulator</li>
+      <li><span class="opt-key">B</span>The N side; they repel each other and leave the crystal</li>
+      <li><span class="opt-key">C</span>The P side; they cross and fill the holes on the N side</li>
+      <li><span class="opt-key">D</span>The N side; some cross, fill holes on the P side, and leave a region with no free carriers</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>Tomorrow we connect a battery across a PN junction. <strong>Predict</strong> what happens to the depletion region if the battery pushes carriers toward the junction, and what happens if it pulls them away.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · WRAP UP -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Wrap Up</span>
+    <h2>What We Know, and What Comes <span class="accent">Next</span></h2>
+    <div class="row-2" style="margin-bottom:var(--gap-lg);">
+      <div class="card is-key"><span class="card-name">Today</span><p class="card-body"><strong>Doping</strong> gives silicon its carriers: <span class="elec">electrons</span> in N-type and <span class="hole-txt">holes</span> in P-type. Where they meet, a <span class="warn">depletion region</span> forms with no free carriers.</p></div>
+      <div class="card"><span class="card-name">The mystery part</span><p class="card-body">Inside is a <strong>PN junction</strong>. The band on its case marks the <strong>N side</strong>.</p></div>
+    </div>
+    <div class="callout fragment fade-up">
+      <strong>Next class:</strong> we name the mystery part, connect a battery across the junction both ways, and measure what the depletion region does to the current.
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script src="semiconductor-sims.js"></script>
+<script>
+var el = SiliconSims.el;
+
+// Static lattice figures. A 4 x 3 grid of atoms 120 units apart; each bond
+// holds two electron dots. dopant "P" replaces atom (1,1) and adds a loose
+// fifth electron; "B" replaces it and leaves one bond with a hole, plus an
+// arrow for the neighboring electron that jumps in.
+function drawLatticeFig(svg) {
+    var dop = svg.dataset.latticeFig;
+    var AX = 100, AY = 80, S = 120, C = 4, Rw = 3;
+    function at(i, j) { return [AX + S * i, AY + S * j]; }
+    var gB = el('g', {}, svg), gD = el('g', {}, svg), gA = el('g', {}, svg);
+    var skip = dop === 'B' ? '1,1-2,1' : '';
+    for (var j = 0; j < Rw; j++) for (var i = 0; i < C; i++) {
+        var p = at(i, j);
+        [[1, 0], [0, 1], [-1, 0], [0, -1]].forEach(function (d) {
+            var ni = i + d[0], nj = j + d[1];
+            var inside = ni >= 0 && ni < C && nj >= 0 && nj < Rw;
+            if (inside && (d[0] < 0 || d[1] < 0)) return;
+            var len = inside ? S : 52;
+            var x2 = p[0] + d[0] * len, y2 = p[1] + d[1] * len;
+            el('line', { x1: p[0], y1: p[1], x2: x2, y2: y2, class: 'lat-bond' }, gB);
+            var mx = p[0] + d[0] * (inside ? S / 2 : 40), my = p[1] + d[1] * (inside ? S / 2 : 40);
+            var ox = d[1] ? 9 : 0, oy = d[0] ? 9 : 0;
+            var key = i + ',' + j + '-' + ni + ',' + nj;
+            var owners = i + ',' + j + (inside ? ' ' + ni + ',' + nj : '');
+            if (key === skip) {
+                el('circle', { cx: mx - ox, cy: my - oy, r: 7, class: 'lat-pair', 'data-owners': owners }, gD);
+                el('circle', { cx: mx + ox, cy: my + oy, r: 11, class: 'lat-h', 'data-owners': owners }, gD);
+            } else {
+                el('circle', { cx: mx - ox, cy: my - oy, r: 7, class: 'lat-pair', 'data-owners': owners }, gD);
+                el('circle', { cx: mx + ox, cy: my + oy, r: 7, class: 'lat-pair', 'data-owners': owners }, gD);
+            }
+        });
+    }
+    for (j = 0; j < Rw; j++) for (i = 0; i < C; i++) {
+        var q = at(i, j), isD = dop !== 'none' && i === 1 && j === 1;
+        var ga = el('g', { class: 'lat-atom-g', 'data-ij': i + ',' + j }, gA);
+        el('circle', { cx: q[0], cy: q[1], r: 30, class: isD ? (dop === 'P' ? 'lat-atom-p' : 'lat-atom-b') : 'lat-atom' }, ga);
+        el('text', { x: q[0], y: q[1] + 2, class: 'lat-lbl', 'text-anchor': 'middle', 'dominant-baseline': 'central' }, ga).textContent = isD ? dop : 'Si';
+    }
+    if (dop === 'P') {
+        el('circle', { cx: 268, cy: 248, r: 11, class: 'lat-e' }, svg);
+        el('path', { d: 'M284 260 q30 20 60 10', fill: 'none', stroke: 'var(--electron)', 'stroke-width': 3, 'stroke-dasharray': '6 6' }, svg);
+        el('text', { x: 350, y: 286, class: 'lat-lbl', style: 'fill:var(--electron)' }, svg).textContent = 'free';
+    }
+    if (dop === 'B') {
+        // the electron at the top of the bond above atom (2,1) jumps into the hole
+        el('path', { d: 'M328 152 Q300 170 286 198', fill: 'none', stroke: 'var(--electron)', 'stroke-width': 3, class: 'hop-hint' }, svg);
+        el('path', { d: 'M285 184 L286 198 L298 190', fill: 'none', stroke: 'var(--electron)', 'stroke-width': 3, class: 'hop-hint' }, svg);
+        el('text', { x: 280, y: 266, class: 'lat-lbl hop-hint', 'text-anchor': 'middle', style: 'fill:var(--hole)' }, svg).textContent = 'hole';
+    }
+}
+
+// Title strip: a single row of atoms with paired electrons, one P and one B.
+function drawStrip(svg) {
+    for (var i = 0; i < 8; i++) {
+        var x = 70 + i * 108;
+        if (i < 7) {
+            el('line', { x1: x, y1: 70, x2: x + 108, y2: 70, class: 'lat-bond' }, svg);
+            el('circle', { cx: x + 54, cy: 61, r: 6, class: 'lat-pair' }, svg);
+            el('circle', { cx: x + 54, cy: 79, r: 6, class: 'lat-pair' }, svg);
+        }
+    }
+    for (i = 0; i < 8; i++) {
+        var cx = 70 + i * 108, kind = i === 2 ? 'P' : i === 5 ? 'B' : 'Si';
+        el('circle', { cx: cx, cy: 70, r: 28, class: kind === 'P' ? 'lat-atom-p' : kind === 'B' ? 'lat-atom-b' : 'lat-atom' }, svg);
+        el('text', { x: cx, y: 72, class: 'lat-lbl', 'text-anchor': 'middle', 'dominant-baseline': 'central' }, svg).textContent = kind;
+    }
+    el('circle', { cx: 290, cy: 122, r: 9, class: 'lat-e' }, svg);
+    el('circle', { cx: 610, cy: 122, r: 10, class: 'lat-h' }, svg);
+}
+
+// PN junction figure: P side left, N side right, depletion band in the middle.
+function drawJunction(svg) {
+    // Before any fragment: carriers fill both sides up to the boundary.
+    // Three electron-hole pairs sit inside the future depletion band; the band,
+    // its label, and the field start hidden. animateJunction() steps through
+    // the three fragments on slide 12.
+    var MID = 650, DW = 150;
+    el('rect', { x: 40, y: 40, width: 1220, height: 200, rx: 10, fill: '#121a22', stroke: 'rgba(230,247,234,0.35)', 'stroke-width': 2 }, svg);
+    var gBand = el('g', { class: 'jn-stage jn-bandg' }, svg);
+    el('rect', { x: MID - DW, y: 40, width: 2 * DW, height: 200, class: 'jn-band' }, gBand);
+    el('text', { x: MID, y: 284, class: 'jn-band-lbl', 'text-anchor': 'middle' }, gBand).textContent = 'Depletion region';
+    el('line', { x1: MID, y1: 40, x2: MID, y2: 240, stroke: 'rgba(230,247,234,0.5)', 'stroke-width': 2, 'stroke-dasharray': '4 8' }, svg);
+    var ionsP = [[120, 90], [260, 180], [400, 100], [560, 80], [580, 190]];
+    var ionsN = [[720, 100], [740, 190], [900, 90], [1040, 180], [1180, 100]];
+    function ion(p, cls, txt) {
+        var inBand = Math.abs(p[0] - MID) < DW;
+        var g = el('g', { class: inBand ? 'jn-in-band' : '' }, svg);
+        el('circle', { cx: p[0], cy: p[1], r: 22, class: cls }, g);
+        el('text', { x: p[0], y: p[1] + 2, class: 'jn-ion-txt', 'text-anchor': 'middle', 'dominant-baseline': 'central' }, g).textContent = txt;
+    }
+    ionsP.forEach(function (p) { ion(p, 'jn-ion-p', 'B⁻'); });
+    ionsN.forEach(function (p) { ion(p, 'jn-ion-n', 'P⁺'); });
+    [[170, 150], [330, 70], [320, 200], [90, 200]].forEach(function (p) { el('circle', { cx: p[0], cy: p[1], r: 11, class: 'lat-h' }, svg); });
+    el('circle', { cx: 450, cy: 170, r: 11, class: 'lat-h jn-bounce-h' }, svg);
+    [[960, 70], [1000, 130], [1120, 200], [1220, 160]].forEach(function (p) { el('circle', { cx: p[0], cy: p[1], r: 9, class: 'lat-e' }, svg); });
+    el('circle', { cx: 850, cy: 160, r: 9, class: 'lat-e jn-bounce-e' }, svg);
+    // electron [x, y] crosses to meet hole [x, y]
+    [[[690, 150], [600, 135]], [[775, 60], [520, 60]], [[770, 220], [540, 225]]].forEach(function (pr, i) {
+        el('circle', { cx: pr[1][0], cy: pr[1][1], r: 11, class: 'lat-h jn-pair', 'data-pair': i }, svg);
+        el('circle', { cx: pr[0][0], cy: pr[0][1], r: 9, class: 'lat-e jn-pair', 'data-pair': i,
+                       'data-dx': pr[1][0] - pr[0][0], 'data-dy': pr[1][1] - pr[0][1] }, svg);
+    });
+    var gField = el('g', { class: 'jn-stage jn-fieldg' }, svg);
+    el('path', { d: 'M760 140 H560', class: 'jn-field' }, gField);
+    el('path', { d: 'M576 128 L556 140 L576 152', class: 'jn-field' }, gField);
+    el('text', { x: 660, y: 182, class: 'jn-band-lbl', 'text-anchor': 'middle' }, gField).textContent = 'field';
+    el('text', { x: 270, y: 284, class: 'jn-side', 'text-anchor': 'middle' }, svg).textContent = 'P side';
+    el('text', { x: 1030, y: 284, class: 'jn-side', 'text-anchor': 'middle' }, svg).textContent = 'N side';
+}
+
+// Step the junction figure with the slide's fragments: 1 = pairs cross and
+// recombine, 2 = the depletion band appears and its ions glow, 3 = the field
+// appears and an electron and a hole keep bouncing off the band. Moving
+// forward one fragment animates; any other change jumps to the final look.
+function animateJunction(Reveal) {
+    var section = Array.prototype.find.call(document.querySelectorAll('svg[data-junction-fig]'), function (svgEl) {
+        return !svgEl.closest('#storyboard');
+    });
+    if (!section) return;
+    var svg = section;
+    section = svg.closest('section');
+    var shown = 0;
+    function setPairs(gone, animate) {
+        svg.querySelectorAll('.jn-pair').forEach(function (c) {
+            c.getAnimations().forEach(function (a) { a.cancel(); });
+            c.style.transform = ''; c.style.opacity = gone ? '0' : '';
+        });
+        svg.querySelectorAll('.jn-flash').forEach(function (f) { f.remove(); });
+        if (!gone || !animate) return;
+        svg.querySelectorAll('.jn-pair').forEach(function (c) { c.style.opacity = ''; });
+        svg.querySelectorAll('.lat-e.jn-pair').forEach(function (e) {
+            var i = +e.dataset.pair, dx = +e.dataset.dx, dy = +e.dataset.dy;
+            var h = svg.querySelector('.lat-h.jn-pair[data-pair="' + i + '"]');
+            var mv = e.animate([{ transform: 'translate(0px, 0px)' }, { transform: 'translate(' + dx + 'px, ' + dy + 'px)' }],
+                { duration: 1100, delay: i * 350, easing: 'ease-in', fill: 'forwards' });
+            mv.onfinish = function () {
+                var x = +h.getAttribute('cx'), y = +h.getAttribute('cy');
+                var f = el('circle', { cx: x, cy: y, r: 12, class: 'jn-flash' }, svg);
+                f.animate([{ r: 12, opacity: 1 }, { r: 34, opacity: 0 }], { duration: 600, fill: 'forwards' });
+                [e, h].forEach(function (c) {
+                    c.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: 'forwards' });
+                });
+            };
+        });
+    }
+    function apply(n, animate) {
+        setPairs(n >= 1, animate && n === 1);
+        svg.classList.toggle('show-band', n >= 2);
+        svg.classList.toggle('show-field', n >= 3);
+        svg.classList.toggle('no-anim', !animate);
+    }
+    function sync() {
+        var n = section.querySelectorAll('.fragment.visible').length;
+        if (n !== shown) { apply(n, n === shown + 1); shown = n; }
+    }
+    Reveal.on('fragmentshown', function (e) { if (e.fragment.closest('section') === section) sync(); });
+    Reveal.on('fragmenthidden', function (e) { if (e.fragment.closest('section') === section) sync(); });
+    Reveal.on('slidechanged', function () { shown = -1; sync(); });
+    shown = -1; sync();
+}
+
+document.querySelectorAll('svg[data-lattice-fig]').forEach(drawLatticeFig);
+
+// Shake an electron loose (slide 5). Clicking an atom shakes it, then one of
+// its bond electrons breaks free and drifts into the nearest open space
+// between atoms, and a hole ring appears where it was. Only the live slide
+// is wired, so storyboard copies stay static; leaving the slide resets it.
+// Move the hole (slide 7). Atoms that own an electron in a bond touching
+// the hole's bond glow. Clicking one makes that electron jump into the hole,
+// and the hole reappears where the electron was, so it moves the other way.
+// After the first jump the boron, which now holds the extra electron, is
+// relabeled as a fixed negative ion.
+function initHoleHop(root, Reveal) {
+    var svg = root.querySelector('svg[data-lattice-fig]');
+    var busy = false;
+    function owners(e) { return e.dataset.owners.split(' '); }
+    function hole() { return svg.querySelector('.lat-h'); }
+    function candidates() {
+        var ho = owners(hole());
+        return Array.prototype.filter.call(svg.querySelectorAll('.lat-pair'), function (d) {
+            var o = owners(d);
+            if (o.join() === ho.join()) return false;
+            return o.some(function (a) { return ho.indexOf(a) >= 0; });
+        });
+    }
+    function mark() {
+        var ok = {};
+        candidates().forEach(function (d) { owners(d).forEach(function (a) { ok[a] = true; }); });
+        svg.querySelectorAll('.lat-atom-g').forEach(function (g) { g.classList.toggle('can-hop', !!ok[g.dataset.ij]); });
+    }
+    function jump(dot) {
+        busy = true;
+        var h = hole();
+        var x0 = +dot.getAttribute('cx'), y0 = +dot.getAttribute('cy');
+        var x1 = +h.getAttribute('cx'), y1 = +h.getAttribute('cy');
+        svg.querySelectorAll('.hop-hint').forEach(function (n) { n.style.display = 'none'; });
+        var b = svg.querySelector('.lat-atom-g[data-ij="1,1"] text');
+        if (b) b.textContent = 'B\u207B';
+        var trail = el('line', { x1: x0, y1: y0, x2: x0, y2: y0, class: 'hop-trail' }, svg);
+        h.style.opacity = '0';
+        var t0 = performance.now();
+        (function step(now) {
+            var u = Math.min(1, (now - t0) / 550), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+            var x = x0 + (x1 - x0) * e, y = y0 + (y1 - y0) * e;
+            dot.setAttribute('cx', x.toFixed(1)); dot.setAttribute('cy', y.toFixed(1));
+            trail.setAttribute('x2', x.toFixed(1)); trail.setAttribute('y2', y.toFixed(1));
+            if (u < 1) return requestAnimationFrame(step);
+            var ho = h.dataset.owners;
+            h.dataset.owners = dot.dataset.owners;
+            dot.dataset.owners = ho;
+            h.setAttribute('cx', x0); h.setAttribute('cy', y0);
+            h.style.opacity = '';
+            h.classList.remove('hole-new'); void h.getBoundingClientRect(); h.classList.add('hole-new');
+            setTimeout(function () { trail.remove(); }, 350);
+            trail.classList.add('fade');
+            busy = false;
+            mark();
+        })(t0);
+    }
+    function nudge(g) { g.classList.add('shaking'); setTimeout(function () { g.classList.remove('shaking'); }, 500); }
+    svg.addEventListener('click', function (ev) {
+        var g = ev.target.closest && ev.target.closest('.lat-atom-g');
+        if (!g || busy) return;
+        var mine = candidates().filter(function (d) { return owners(d).indexOf(g.dataset.ij) >= 0; });
+        if (!mine.length) return nudge(g);
+        jump(mine[Math.floor(Math.random() * mine.length)]);
+    });
+    root.querySelector('[data-act="hop"]').addEventListener('click', function () {
+        if (busy) return;
+        var c = candidates();
+        if (c.length) jump(c[Math.floor(Math.random() * c.length)]);
+    });
+    function reset() { svg.innerHTML = ''; drawLatticeFig(svg); busy = false; mark(); }
+    root.querySelector('[data-act="reset-lattice"]').addEventListener('click', reset);
+    Reveal.on('slidechanged', function (e) { if (!e.currentSlide.contains(root)) reset(); });
+    mark();
+}
+
+function initShakeLoose(root, Reveal) {
+    var svg = root.querySelector('svg[data-lattice-fig]');
+    var AX = 100, AY = 80, S = 120, C = 4, Rw = 3, busy = false, used = {};
+    var NS = 'http://www.w3.org/2000/svg';
+    function centers(i, j) {
+        var out = [];
+        [[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [0.5, 0.5]].forEach(function (o) {
+            var ci = i + o[0], cj = j + o[1];
+            if (ci < 0 || ci > C - 1 || cj < 0 || cj > Rw - 1) return;
+            out.push({ key: ci + ',' + cj, x: AX + S * ci, y: AY + S * cj });
+        });
+        return out;
+    }
+    function shake(g) {
+        if (busy) return;
+        var ij = g.dataset.ij.split(',').map(Number);
+        var dots = Array.prototype.filter.call(svg.querySelectorAll('.lat-pair'), function (d) {
+            return !d.classList.contains('freed') && d.dataset.owners.split(' ').indexOf(g.dataset.ij) >= 0;
+        });
+        var spots = centers(ij[0], ij[1]).filter(function (c) { return !used[c.key]; });
+        if (!dots.length || !spots.length) { g.classList.add('shaking'); setTimeout(function () { g.classList.remove('shaking'); }, 500); return; }
+        busy = true;
+        var dot = dots[Math.floor(Math.random() * dots.length)];
+        var x0 = +dot.getAttribute('cx'), y0 = +dot.getAttribute('cy');
+        spots.sort(function (a, b) { return Math.hypot(a.x - x0, a.y - y0) - Math.hypot(b.x - x0, b.y - y0); });
+        var to = spots[0];
+        used[to.key] = true;
+        dot.classList.add('freed');
+        g.classList.add('shaking');
+        setTimeout(function () {
+            g.classList.remove('shaking');
+            var hole = el('circle', { cx: x0, cy: y0, r: 11, class: 'lat-h hole-new' }, dot.parentNode);
+            var t0 = performance.now();
+            (function step(now) {
+                var u = Math.min(1, (now - t0) / 650), e = 1 - Math.pow(1 - u, 3);
+                dot.setAttribute('cx', (x0 + (to.x - x0) * e).toFixed(1));
+                dot.setAttribute('cy', (y0 + (to.y - y0) * e).toFixed(1));
+                dot.setAttribute('r', (7 + 4 * e).toFixed(1));
+                if (u < 1) return requestAnimationFrame(step);
+                dot.setAttribute('class', 'lat-e freed free-wander');
+                busy = false;
+            })(t0);
+        }, 520);
+    }
+    svg.addEventListener('click', function (ev) {
+        var g = ev.target.closest && ev.target.closest('.lat-atom-g');
+        if (g) shake(g);
+    });
+    root.querySelector('[data-act="shake"]').addEventListener('click', function () {
+        var gs = Array.prototype.slice.call(svg.querySelectorAll('.lat-atom-g'));
+        for (var k = gs.length - 1; k > 0; k--) { var r = Math.floor(Math.random() * (k + 1)); var t = gs[k]; gs[k] = gs[r]; gs[r] = t; }
+        var g = gs.find(function (a) {
+            var ij = a.dataset.ij.split(',').map(Number);
+            return centers(ij[0], ij[1]).some(function (c) { return !used[c.key]; });
+        });
+        if (g) shake(g);
+    });
+    function reset() {
+        svg.innerHTML = '';
+        drawLatticeFig(svg);
+        used = {}; busy = false;
+    }
+    root.querySelector('[data-act="reset-lattice"]').addEventListener('click', reset);
+    Reveal.on('slidechanged', function (e) { if (!e.currentSlide.contains(root)) reset(); });
+}
+document.querySelectorAll('svg[data-lattice-strip]').forEach(drawStrip);
+document.querySelectorAll('svg[data-junction-fig]').forEach(drawJunction);
+
+var SIMS = [];
+document.querySelectorAll('.doping-lab').forEach(function (r) { SIMS.push(SiliconSims.buildDopingLab(r)); });
+document.querySelectorAll('.task-pager').forEach(SiliconSims.initTaskPager);
+
+initSyncDeckReveal({
+    deckId: 'day2-what-makes-a-semiconductor',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        SiliconSims.startSimLoop(Reveal, SIMS);
+        animateJunction(Reveal);
+        document.querySelectorAll('[data-shake-fig]').forEach(function (r) {
+            if (!r.closest('#storyboard')) initShakeLoose(r, Reveal);
+        });
+        document.querySelectorAll('[data-hop-fig]').forEach(function (r) {
+            if (!r.closest('#storyboard')) initHoleHop(r, Reveal);
+        });
+    },
+});
+</script>
+</body>
+</html>

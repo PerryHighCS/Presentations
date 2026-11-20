@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="za6hw0">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 1: The Evolution of Control</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: Silicon in Control Day 1 · The Evolution of Control
+   ============================================================ */
+
+/* ─── Relay circuit simulator ───────────────────────────────
+   Root: .relay-sim. Adapted from the AC Circuits EX4 relay
+   simulator for a DC supply: current dashes travel one way
+   (from the + terminal) instead of sloshing back and forth.
+   Any element with data-when="energized | closed" gets .on
+   while that condition holds.
+   ───────────────────────────────────────────────────────── */
+.relay-sim svg { width: 100%; height: auto; display: block; overflow: visible; }
+.relay-sim .w, .relay-sim .flow, .relay-sim .sym {
+  fill: none;
+  stroke: rgba(230,247,234,0.45);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.25s ease, filter 0.25s ease;
+}
+.relay-sim .w.ctl.on  { stroke: var(--accent); filter: drop-shadow(0 0 4px rgba(57,211,83,0.55)); }
+.relay-sim .w.load.on { stroke: var(--result); filter: drop-shadow(0 0 4px rgba(94,234,212,0.55)); }
+.relay-sim .flow { opacity: 0; stroke: #ffffff; stroke-width: 2; stroke-dasharray: 3 15; }
+.relay-sim .flow.on { opacity: 0.85; animation: dc-flow 0.9s linear infinite; }
+@keyframes dc-flow { from { stroke-dashoffset: 36; } to { stroke-dashoffset: 0; } }
+.relay-sim .node { fill: rgba(230,247,234,0.75); }
+.relay-sim .term { fill: var(--bg); stroke: rgba(230,247,234,0.75); stroke-width: 2.5; }
+.relay-sim .lbl { font-family: var(--font-mono); font-size: 34px; fill: var(--text-muted); }
+.relay-sim .lbl-in { font-family: var(--font-mono); font-size: 34px; font-weight: 700; fill: var(--text); text-anchor: middle; dominant-baseline: central; }
+.relay-sim .blade { transform-box: view-box; transform: rotate(-24deg); transition: transform 0.25s var(--ease); }
+.relay-sim .blade.on { transform: rotate(0deg); }
+.relay-sim .coil { fill: var(--bg); stroke: rgba(230,247,234,0.6); stroke-width: 3; transition: all 0.25s ease; }
+.relay-sim .coil.on { fill: rgba(57,211,83,0.22); stroke: var(--accent); filter: drop-shadow(0 0 10px rgba(57,211,83,0.7)); }
+.relay-sim .bridge { stroke: var(--result); stroke-width: 5; opacity: 0; transition: opacity 0.2s ease; }
+.relay-sim .bridge.on { opacity: 1; }
+.relay-sim .lamp { fill: var(--bg); stroke: rgba(230,247,234,0.6); stroke-width: 3; transition: all 0.25s ease; }
+.relay-sim .lamp.on { fill: var(--glow); stroke: var(--glow); filter: drop-shadow(0 0 16px rgba(255,224,138,0.9)); }
+.relay-sim .ray { stroke: rgba(230,247,234,0.45); stroke-width: 2.5; transition: stroke 0.25s ease; }
+.relay-sim .ray.on { stroke: var(--glow); }
+.relay-sim .hit { fill: transparent; cursor: pointer; }
+.relay-sim .hit-ring { pointer-events: none; fill: none; stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 5 5; opacity: 0.55; }
+.relay-sim .sim-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: var(--gap-sm); }
+.relay-sim .sim-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.sim-chip {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  color: var(--text-muted);
+  padding: 6px 12px;
+  border: 1px solid rgba(230,247,234,0.2);
+  border-radius: 999px;
+  transition: all 0.2s ease;
+}
+.sim-chip b { color: var(--text); font-weight: 700; }
+.sim-chip.on { color: var(--text); border-color: var(--accent-border); background: var(--accent-dim); }
+.sim-chip.on b { color: var(--accent); }
+.sim-chip.count b { color: var(--result); }
+
+/* ─── Vacuum tube drawings (static figure and Triode Explorer) ── */
+.tube-glass { fill: rgba(124,196,255,0.05); stroke: rgba(230,247,234,0.45); stroke-width: 3; }
+.tube-plate { fill: #6b7783; stroke: rgba(230,247,234,0.7); stroke-width: 2; }
+.tube-grid  { fill: none; stroke: rgba(230,247,234,0.8); stroke-width: 4; stroke-dasharray: 12 12; }
+.tube-cath  { fill: #3a4450; stroke: rgba(230,247,234,0.7); stroke-width: 2; transition: fill 0.3s ease; }
+.tube-heater { fill: none; stroke: rgba(230,247,234,0.5); stroke-width: 3; stroke-linejoin: round; }
+.tube-lead  { fill: none; stroke: rgba(230,247,234,0.55); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.tube-e     { fill: var(--electron); }
+.tube-lbl   { font-family: var(--font-mono); font-size: 26px; fill: var(--text); }
+.tube-lbl-k { font-family: var(--font-mono); font-size: 26px; font-weight: 700; fill: var(--accent); }
+
+.triode-lab .tri-grid { display: grid; grid-template-columns: 600px 1fr; gap: 22px; align-items: start; }
+.triode-lab .tri-right { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.triode-lab .tiles { grid-template-columns: 1fr 1fr; }
+.triode-lab [data-role="feedback"] { height: 130px; font-size: var(--small); }
+.triode-lab [data-act="heater"] { width: 236px; }
+.triode-lab .status-chip { width: 200px; }
+.triode-lab .tri-lamp { transition: fill 0.2s ease, filter 0.2s ease; }
+.triode-lab .task-pager .tp-text { height: 130px; overflow: hidden; }
+
+/* ENIAC tube field */
+.tube-field { display: grid; grid-template-columns: repeat(30, 1fr); gap: 5px; }
+.tube-field i { display: block; height: 14px; border-radius: 7px 7px 3px 3px; background: rgba(255,209,102,0.55); box-shadow: 0 0 6px rgba(255,209,102,0.35); }
+.tube-field i.dead { background: rgba(255,138,128,0.25); box-shadow: none; }
+
+/* Comparison table */
+.cmp-table td:nth-child(4) { color: var(--accent); font-family: var(--font-mono); font-weight: 700; text-align: center; }
+.cmp-table th:nth-child(4) { text-align: center; }
+
+/* ─── Mystery component bench ───────────────────────────────
+   Root: .bench. buildBench() draws the series circuit into the
+   SVG marked data-role="circuit"; with data-static it draws a
+   fixed picture with no controls.
+   ───────────────────────────────────────────────────────── */
+.bench svg { display: block; width: 100%; height: auto; overflow: visible; }
+.bench .bw { fill: none; stroke: rgba(230,247,234,0.55); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.25s ease; }
+.bench.flowing .bw { stroke: var(--result); }
+.bench .b-lbl { font-family: var(--font-mono); font-size: 36px; fill: var(--text-muted); }
+.bench .b-lbl-b { font-family: var(--font-mono); font-size: 36px; font-weight: 700; fill: var(--text); }
+.bench .part-body { fill: #1b1f24; stroke: rgba(230,247,234,0.75); stroke-width: 3; }
+.bench .part-band { fill: #c9d1d9; }
+.bench .led-body { fill: rgba(255,138,128,0.15); stroke: var(--fault); stroke-width: 3; transition: fill 0.25s ease, filter 0.25s ease; }
+.bench.lit .led-body { fill: var(--fault); filter: drop-shadow(0 0 14px rgba(255,138,128,0.95)); }
+.bench .led-ray { stroke: rgba(230,247,234,0.4); stroke-width: 3; transition: stroke 0.25s ease; }
+.bench.lit .led-ray { stroke: var(--fault); }
+.bench .probe-mark { fill: none; stroke: var(--warn); stroke-width: 3; stroke-dasharray: 8 6; opacity: 0; }
+.bench .probe-mark.on { opacity: 1; }
+.bench-grid { display: grid; grid-template-columns: 1fr 470px; gap: 22px; align-items: start; }
+.bench-right { display: flex; flex-direction: column; gap: 10px; }
+.dmm {
+  background: #1a2a1f;
+  border: 2px solid var(--accent-border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  text-align: right;
+}
+.dmm .dmm-name { display: block; text-align: left; font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted); }
+.dmm .dmm-val { display: block; font-family: var(--font-mono); font-size: 54px; font-weight: 700; color: var(--result); line-height: 1.1; }
+.bench-log { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: var(--small); }
+.bench-log th { color: var(--accent); text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--accent-border); font-weight: 700; }
+.bench-log td { color: var(--text); padding: 4px 6px; border-bottom: 1px solid rgba(57,211,83,0.12); white-space: nowrap; }
+.bench-log td.v { color: var(--result); text-align: right; }
+.bench .log-wrap { height: 160px; overflow: hidden; }
+.bench [data-role="feedback"] { height: 150px; }
+
+/* Lab steps */
+.lab-steps { display: flex; flex-direction: column; gap: 10px; }
+.lab-steps .step-card { display: flex; gap: 16px; align-items: flex-start; padding: 10px 16px; }
+.lab-steps .sc-num { font-size: 30px; min-width: 30px; }
+.lab-steps .sc-body { margin-top: 0; }
+.record-table td, .record-table th { text-align: center; }
+.record-table td:first-child { text-align: left; }
+.record-table td.blank { color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(255,209,102,0.10),transparent 70%);"></div>
+  <div class="glow" style="width:420px;height:420px;bottom:-90px;right:12%;background:radial-gradient(circle,rgba(124,196,255,0.08),transparent 70%);"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; Silicon in Control &nbsp;·&nbsp; Day 1</span>
+    <h1 class="title-h1">The Evolution of <span class="accent">Control</span></h1>
+    <p class="subtitle">// Relays &nbsp;·&nbsp; Vacuum tubes &nbsp;·&nbsp; The mystery component</p>
+    <svg viewBox="0 0 900 150" style="width:900px;margin-top:44px;" aria-hidden="true">
+      <!-- relay coil -->
+      <circle cx="130" cy="75" r="46" fill="none" stroke="rgba(230,247,234,0.55)" stroke-width="4"/>
+      <text x="130" y="75" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono" font-size="30" font-weight="700" fill="#e6f7ea">CR</text>
+      <path d="M200 75 H330" stroke="rgba(57,211,83,0.6)" stroke-width="4" stroke-dasharray="10 10"/>
+      <!-- tube -->
+      <rect x="390" y="10" width="120" height="130" rx="60" fill="rgba(124,196,255,0.06)" stroke="rgba(230,247,234,0.55)" stroke-width="4"/>
+      <rect x="415" y="36" width="70" height="12" fill="#6b7783"/>
+      <path d="M410 78 H490" stroke="rgba(230,247,234,0.8)" stroke-width="4" stroke-dasharray="8 8"/>
+      <rect x="420" y="104" width="60" height="10" fill="#ffd166"/>
+      <path d="M570 75 H700" stroke="rgba(57,211,83,0.6)" stroke-width="4" stroke-dasharray="10 10"/>
+      <!-- mystery part -->
+      <rect x="740" y="50" width="120" height="50" rx="10" fill="#1b1f24" stroke="rgba(230,247,234,0.75)" stroke-width="3"/>
+      <rect x="828" y="50" width="16" height="50" fill="#c9d1d9"/>
+      <text x="790" y="76" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono" font-size="30" font-weight="700" fill="#ffd166">?</text>
+    </svg>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · DAY QUESTION AND OBJECTIVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Today&#39;s Question &amp; Objectives</span>
+    <div class="eq-box" style="margin-bottom:var(--gap-lg);">
+      <span class="eq-label">Today&#39;s question</span>
+      How could we switch a machine on and off with <span class="accent">no moving parts</span>?
+    </div>
+    <div class="split split-50 split-top" style="flex:0 0 auto;">
+      <div>
+        <h3>By the end of class you can <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Describe how a <strong>relay</strong> lets a small current control a larger one.</li>
+          <li>Explain why engineers replaced relays with <strong>vacuum tubes</strong>, and then replaced tubes.</li>
+          <li>Collect evidence about a <strong>mystery component</strong> and make a claim about it.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today&#39;s <span class="accent">path</span></h3>
+        <div class="agenda-grid">
+          <a class="agenda-item" href="#/3"><span class="agenda-num">01</span><span class="agenda-text">Revisit the <strong>relay</strong></span></a>
+          <a class="agenda-item" href="#/6"><span class="agenda-num">02</span><span class="agenda-text">Switching with no moving parts: the <strong>vacuum tube</strong></span></a>
+          <a class="agenda-item" href="#/12"><span class="agenda-num">03</span><span class="agenda-text">Lab: the <strong>mystery component</strong></span></a>
+          <a class="agenda-item" href="#/15"><span class="agenda-num">04</span><span class="agenda-text">Make a <strong>claim</strong> from your evidence</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · REVISIT THE RELAY (INTERACTIVE) -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Hook · A Relay You Already Know</span>
+    <h2>Revisiting the <span class="accent">Relay</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1fr 1.15fr;align-items:center;">
+      <div>
+        <p class="slide-intro">This is the relay circuit from the AC Circuits unit, built with the trainer&#39;s <strong>DC relay</strong> on its <strong>24 V DC</strong> supply. A small current through the <span class="key">coil</span> makes a magnetic field. The field pulls the armature, which closes the <span class="key">contact</span> and lets a larger current reach the lamp.</p>
+        <p class="slide-intro">Every time the relay switches, a piece of metal <span class="warn">physically moves</span>. Close and open the switch a few times, and think about these questions.</p>
+        <ul class="bullets">
+          <li class="fragment fade-up">How many times per second could this relay switch?</li>
+          <li class="fragment fade-up">Which part wears out?</li>
+          <li class="fragment fade-up">What would a computer built from <strong>10,000</strong> of these be like?</li>
+        </ul>
+      </div>
+
+      <div class="relay-sim">
+        <svg viewBox="-60 0 980 460" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive circuit: a 24 volt DC source, a toggle switch and relay coil CR in the control circuit, and a normally open contact CR and a lamp in the load circuit.">
+          <path class="w ctl" data-when="energized" d="M170,206 V130"/>
+          <path class="w ctl" data-when="energized" d="M170,330 V274"/>
+          <path class="w ctl" data-when="energized" d="M170,130 H292"/>
+          <path class="w ctl" data-when="energized" d="M378,130 H460 V206"/>
+          <path class="w ctl" data-when="energized" d="M460,274 V330 H170"/>
+          <path class="w load" data-when="energized" d="M170,130 V24 H820 V150"/>
+          <path class="w load" data-when="energized" d="M820,170 V300"/>
+          <path class="w load" data-when="energized" d="M820,368 V420 H170 V330"/>
+
+          <!-- 24 V DC source -->
+          <line x1="170" y1="206" x2="170" y2="226" class="sym"/>
+          <line x1="138" y1="226" x2="202" y2="226" class="sym" style="stroke-width:4"/>
+          <line x1="154" y1="254" x2="186" y2="254" class="sym" style="stroke-width:7"/>
+          <line x1="170" y1="254" x2="170" y2="274" class="sym"/>
+          <text x="212" y="222" class="lbl">+</text>
+          <text x="124" y="252" class="lbl" text-anchor="end">24 V DC</text>
+          <circle cx="170" cy="130" r="6" class="node"/>
+          <circle cx="170" cy="330" r="6" class="node"/>
+
+          <!-- toggle switch -->
+          <line x1="298" y1="130" x2="370" y2="130" class="sym blade" data-when="closed" style="transform-origin:298px 130px;"/>
+          <circle cx="298" cy="130" r="6" class="term"/>
+          <circle cx="372" cy="130" r="6" class="term"/>
+          <text x="335" y="72" class="lbl" text-anchor="middle">Switch</text>
+          <rect x="280" y="84" width="110" height="64" rx="8" class="hit" data-act="toggle"/>
+          <rect x="280" y="84" width="110" height="64" rx="8" class="hit-ring"/>
+
+          <!-- relay coil -->
+          <circle cx="460" cy="240" r="36" class="coil" data-when="energized"/>
+          <text x="460" y="240" class="lbl-in">CR</text>
+          <text x="508" y="250" class="lbl">Coil</text>
+
+          <!-- NO contact -->
+          <line x1="820" y1="150" x2="820" y2="170" class="bridge" data-when="energized"/>
+          <line x1="792" y1="150" x2="848" y2="150" class="sym"/>
+          <line x1="792" y1="170" x2="848" y2="170" class="sym"/>
+          <text x="862" y="172" class="lbl">CR</text>
+          <text x="776" y="172" class="lbl" text-anchor="end">Contact</text>
+
+          <!-- lamp -->
+          <circle cx="820" cy="334" r="34" class="lamp" data-when="energized"/>
+          <g class="ray" data-when="energized">
+            <line x1="796" y1="310" x2="786" y2="300"/><line x1="844" y1="310" x2="854" y2="300"/>
+            <line x1="796" y1="358" x2="786" y2="368"/><line x1="844" y1="358" x2="854" y2="368"/>
+          </g>
+          <text x="772" y="344" class="lbl" text-anchor="end">Lamp</text>
+        </svg>
+        <div class="sim-controls">
+          <button class="sim-btn" data-act="toggle" data-label-off="Close the switch" data-label-on="Open the switch">Close the switch</button>
+          <div class="sim-chips">
+            <span class="sim-chip" data-when="energized" data-on="Coil: <b>energized</b>" data-off="Coil: <b>off</b>">Coil: <b>off</b></span>
+            <span class="sim-chip" data-when="energized" data-on="Lamp: <b>on</b>" data-off="Lamp: <b>off</b>">Lamp: <b>off</b></span>
+            <span class="sim-chip count">Operations: <b data-role="ops">0</b></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · THE COST OF 10,000 RELAYS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Limits of the Relay</span>
+    <h2>The Cost of <span class="accent">10,000 Relays</span></h2>
+    <p class="slide-intro">Early computers really were built from relays. They worked, but four problems grew with every relay engineers added.</p>
+    <div class="row-2">
+      <div class="card is-warn fragment fade-up"><span class="card-name">Speed</span><p class="card-body">Moving the armature takes about <strong>10 milliseconds</strong>, so a relay can switch only a few dozen times per second.</p></div>
+      <div class="card is-warn fragment fade-up"><span class="card-name">Wear</span><p class="card-body">A typical relay is rated for about <strong>10 million operations</strong> before its mechanism wears out.</p></div>
+      <div class="card is-warn fragment fade-up"><span class="card-name">Power</span><p class="card-body">Each coil uses about <strong>0.5 W</strong> while it is on. Ten thousand coils would use <strong>5,000 W</strong>, as much as several space heaters.</p></div>
+      <div class="card is-warn fragment fade-up"><span class="card-name">Arcing</span><p class="card-body">Contacts <strong>spark</strong> as they open. The sparks pit the metal, and over time the contacts stick or stop conducting.</p></div>
+    </div>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap);">
+      In <strong>1947</strong>, operators of the Harvard Mark II relay computer found a moth trapped in one of its relays. They taped it into their logbook as the first actual case of a <span class="key">bug</span> being found.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · RELAY CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:4:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A relay is rated for about 10 million operations. If it switches 50 times per second without stopping, about how long will it last?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"About 1 hour","isCorrect":false},{"id":"q1b","text":"About 2 days","isCorrect":true},{"id":"q1c","text":"About 6 months","isCorrect":false},{"id":"q1d","text":"About 50 years","isCorrect":false}]},{"id":"q2","type":"free-response","text":"Besides wearing out, name one other problem you would expect in a machine built from 10,000 relays, and explain why it would happen.","order":1,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · Relays at Scale</span>
+    <h2>How Long Would It <span class="accent">Last?</span></h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>A relay is rated for about 10 million operations. If it switches 50 times per second without stopping, about how long will it last?</div>
+    </div>
+    <ul class="mcq-opts" style="margin:12px 0 var(--gap);">
+      <li><span class="opt-key">A</span>About 1 hour</li>
+      <li><span class="opt-key">B</span>About 2 days</li>
+      <li><span class="opt-key">C</span>About 6 months</li>
+      <li><span class="opt-key">D</span>About 50 years</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>Besides wearing out, name one other problem you would expect in a machine built from 10,000 relays, and explain why it would happen.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · INSIDE A VACUUM TUBE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Switching With No Moving Parts</span>
+    <h2>Inside a <span class="accent">Vacuum Tube</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.3fr 1fr;align-items:center;">
+      <div>
+        <p class="slide-intro">A vacuum tube controls current with <span class="key">electrons flying through empty space</span>. Nothing inside it moves except the electrons.</p>
+        <p class="slide-intro fragment fade-up">A <span class="warn">heater</span> warms the <span class="key">cathode</span> until electrons boil off its surface. The positive <span class="key">plate</span> at the top attracts them, so current flows across the vacuum.</p>
+        <p class="slide-intro fragment fade-up">Between them sits the <span class="key">grid</span>, a wire mesh. Making the grid slightly negative pushes electrons back toward the cathode, so a <strong>few volts on the grid</strong> control the much larger current in the plate circuit.</p>
+        <p class="slide-intro fragment fade-up">This tube, with three working parts, is called a <span class="key">triode</span>. It was invented in 1906.</p>
+      </div>
+      <figure class="fig">
+        <svg viewBox="0 0 470 520" role="img" aria-label="A triode vacuum tube: a glass envelope holding a heater and cathode at the bottom, a mesh grid in the middle, and a metal plate at the top. Arrows show electrons traveling up from the cathode to the plate.">
+          <rect x="70" y="20" width="230" height="440" rx="115" class="tube-glass"/>
+          <rect x="105" y="90" width="160" height="22" class="tube-plate"/>
+          <path d="M100 260 H270" class="tube-grid"/>
+          <rect x="115" y="380" width="140" height="14" class="tube-cath" style="fill:#c98a2b;"/>
+          <path d="M125 420 l12 -14 l12 14 l12 -14 l12 14 l12 -14 l12 14 l12 -14 l12 14 l12 -14" class="tube-heater" style="stroke:#ff8a3d;"/>
+          <path d="M185 360 V300 M160 360 V300 M210 360 V300" stroke="var(--electron)" stroke-width="3" fill="none"/>
+          <path d="M175 312 l10 -14 l10 14 M150 312 l10 -14 l10 14 M200 312 l10 -14 l10 14" stroke="var(--electron)" stroke-width="3" fill="none"/>
+          <path d="M185 230 V140 M160 230 V140 M210 230 V140" stroke="var(--electron)" stroke-width="3" fill="none" opacity="0.7"/>
+          <path d="M175 152 l10 -14 l10 14 M150 152 l10 -14 l10 14 M200 152 l10 -14 l10 14" stroke="var(--electron)" stroke-width="3" fill="none" opacity="0.7"/>
+          <path d="M265 101 H330" class="tube-lead"/><text x="338" y="110" class="tube-lbl-k">Plate</text>
+          <path d="M270 260 H330" class="tube-lead"/><text x="338" y="269" class="tube-lbl-k">Grid</text>
+          <path d="M255 387 H330" class="tube-lead"/><text x="338" y="396" class="tube-lbl-k">Cathode</text>
+          <path d="M245 420 H330" class="tube-lead"/><text x="338" y="440" class="tube-lbl" style="fill:var(--warn);font-weight:700;">Heater</text>
+        </svg>
+        <figcaption class="fig-caption">A triode. <span class="elec">Blue arrows</span> show electrons.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · TRIODE EXPLORER (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+    <span class="slide-tag">Investigate · Triode Explorer</span>
+    <h2 style="margin-bottom:14px;">Control a Tube With Its <span class="accent">Grid</span></h2>
+    <div class="triode-lab">
+      <div class="tri-grid">
+        <div class="sim-panel">
+          <svg data-role="tube" viewBox="0 0 600 600" role="img" aria-label="Triode explorer: a vacuum tube with a heater, cathode, grid, and plate. The plate circuit runs through a lamp to a 100 volt supply. Animated electrons travel from the cathode toward the plate, and some are turned back at the grid."></svg>
+        </div>
+        <div class="tri-right">
+          <div class="sim-panel">
+            <div class="ctl-row">
+              <button class="sim-btn" data-act="heater">Turn heater on</button>
+              <span class="status-chip" data-role="heat-chip">Cold</span>
+            </div>
+            <div class="ctl-row">
+              <label class="ctl-label" for="tri-grid-v">Grid voltage</label>
+              <input type="range" class="sim-range" id="tri-grid-v" data-role="grid" min="-6" max="0" step="0.5" value="0">
+              <span class="range-val" data-role="grid-val">0.0 V</span>
+            </div>
+          </div>
+          <div class="tiles">
+            <div class="tile is-result"><span class="t-name">Plate current</span><span class="t-val" data-role="ip">0.0 mA</span></div>
+            <div class="tile"><span class="t-name">Heater power</span><span class="t-val" data-role="hp">0 W</span></div>
+          </div>
+          <div class="sim-feedback" data-role="feedback"></div>
+          <div class="task-pager">
+            <div class="tp-head">
+              <span class="tp-count"></span>
+              <button class="tp-nav tp-prev" aria-label="Previous task">&lsaquo;</button>
+              <button class="tp-nav tp-next" aria-label="Next task">&rsaquo;</button>
+            </div>
+            <div class="tp-text"></div>
+            <ol hidden>
+              <li>Leave the heater <b>off</b> and set the grid to 0 V. Why is there no plate current?</li>
+              <li>Turn the heater <b>on</b>. What happens while it warms up, and why would that matter in a machine?</li>
+              <li>Make the grid more negative one step at a time. Record the plate current at <b>0, &minus;1, &minus;2, &minus;3, and &minus;4 V</b>.</li>
+              <li>Find the grid voltage that turns the plate current <b>completely off</b>. What kind of switch is the tube acting like there?</li>
+              <li>The heater uses <b>1.9 W</b> the whole time, even when the tube is off. What would that mean for a computer with <b>18,000 tubes</b>?</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · TRIODE CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:7:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"In a triode vacuum tube, what happens to the plate current when the grid is made more negative?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"It increases, because the grid adds more electrons","isCorrect":false},{"id":"q1b","text":"It stays the same, because the grid is not part of the plate circuit","isCorrect":false},{"id":"q1c","text":"It decreases, because the negative grid pushes electrons back toward the cathode","isCorrect":true},{"id":"q1d","text":"It reverses direction and flows from the plate to the cathode","isCorrect":false}]},{"id":"q2","type":"free-response","text":"In the Triode Explorer, a 100 V supply drove the plate circuit. About how many volts on the grid did it take to switch the plate current completely off? Why is that useful for controlling a machine?","order":1,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · The Triode</span>
+    <h2>What Does the <span class="accent">Grid</span> Do?</h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>In a triode vacuum tube, what happens to the plate current when the grid is made more negative?</div>
+    </div>
+    <ul class="mcq-opts" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>It increases, because the grid adds more electrons</li>
+      <li><span class="opt-key">B</span>It stays the same, because the grid is not part of the plate circuit</li>
+      <li><span class="opt-key">C</span>It decreases, because the negative grid pushes electrons back toward the cathode</li>
+      <li><span class="opt-key">D</span>It reverses direction and flows from the plate to the cathode</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>In the Triode Explorer, a 100 V supply drove the plate circuit. About how many volts on the grid did it take to switch the plate current completely off? Why is that useful for controlling a machine?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · ENIAC -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Vacuum Tubes at Scale</span>
+    <h2>ENIAC: A Room Full of <span class="accent">Tubes</span></h2>
+    <p class="slide-intro">ENIAC, finished in 1945, was one of the first general-purpose electronic computers. Its tubes switched <strong>thousands of times faster</strong> than any relay, but it had problems of its own.</p>
+    <div class="row-3" style="margin-bottom:var(--gap);">
+      <div class="card fragment fade-up"><span class="card-name">Tubes</span><p class="card-body"><strong>17,468</strong> vacuum tubes, each with its own heater.</p></div>
+      <div class="card is-warn fragment fade-up"><span class="card-name">Power</span><p class="card-body">About <strong>150 kW</strong>, much of it turned straight into heat.</p></div>
+      <div class="card is-fault fragment fade-up"><span class="card-name">Failures</span><p class="card-body">Heaters burn out like light bulbs. Even after improvements, a tube failed about <strong>every two days</strong>.</p></div>
+    </div>
+    <div class="fragment fade-up">
+      <div class="tube-field" data-role="tube-field" aria-hidden="true"></div>
+      <p class="fig-caption">Each mark stands for about 50 tubes. Finding the one that failed meant searching a whole room.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · COMPARING SWITCHING TECHNOLOGIES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Engineering Notebook · Comparison Chart</span>
+    <h2>Three Ways to <span class="accent">Switch</span></h2>
+    <p class="slide-intro">Copy this chart into your engineering notebook. You will fill in the transistor column with evidence over the next week.</p>
+    <table class="data-table cmp-table">
+      <thead><tr><th></th><th>Relay</th><th>Vacuum tube</th><th>Transistor</th></tr></thead>
+      <tbody>
+        <tr><td>Moving parts</td><td>An armature and contacts</td><td>None, only electrons</td><td>?</td></tr>
+        <tr class="fragment fade-up"><td>Time to switch</td><td>About 10 ms</td><td>Under 1 &micro;s</td><td>?</td></tr>
+        <tr class="fragment fade-up"><td>Power just to be ready</td><td>About 0.5 W per coil, while on</td><td>About 2 W per heater, all the time</td><td>?</td></tr>
+        <tr class="fragment fade-up"><td>How it fails</td><td>Contacts pit, stick, or wear out</td><td>Heater burns out</td><td>?</td></tr>
+        <tr class="fragment fade-up"><td>Size</td><td>About a thumb</td><td>A thumb to a fist</td><td>?</td></tr>
+      </tbody>
+    </table>
+    <div class="callout-result fragment fade-up" style="margin-top:var(--gap);">
+      In 1947, engineers at Bell Labs built the first <strong>transistor</strong>. It controlled current inside a solid crystal, with <strong>no vacuum, no heater, and no moving parts</strong>. This unit is about how it works.
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · TUBE CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:10:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A vacuum tube has no moving parts. Which relay problem does it solve, and which new problem does it bring?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"It solves high power use, but it switches more slowly than a relay","isCorrect":false},{"id":"q1b","text":"It solves arcing, but it needs a strong magnet to work","isCorrect":false},{"id":"q1c","text":"It solves nothing; tubes were used only because they were cheaper","isCorrect":false},{"id":"q1d","text":"It solves slow switching, but its heater uses power all the time and eventually burns out","isCorrect":true}]},{"id":"q2","type":"free-response","text":"Look at the comparison chart of relays, vacuum tubes, and transistors. To replace the vacuum tube, which row would a new switching device most need to improve, and why?","order":1,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · Relays and Tubes</span>
+    <h2>What Did the Tube <span class="accent">Fix?</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A vacuum tube has no moving parts. Which relay problem does it solve, and which new problem does it bring?</div>
+    </div>
+    <ul class="mcq-opts" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>It solves high power use, but it switches more slowly than a relay</li>
+      <li><span class="opt-key">B</span>It solves arcing, but it needs a strong magnet to work</li>
+      <li><span class="opt-key">C</span>It solves nothing; tubes were used only because they were cheaper</li>
+      <li><span class="opt-key">D</span>It solves slow switching, but its heater uses power all the time and eventually burns out</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>Look at the comparison chart. To replace the vacuum tube, which row would a new switching device most need to improve, and why?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · THE MYSTERY COMPONENT LAB -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · The Mystery Component</span>
+    <h2>Investigate the <span class="accent">Mystery Component</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.1fr 1fr;align-items:start;gap:var(--gap-lg);">
+      <div class="lab-steps">
+        <div class="step-card"><span class="sc-num">1</span><p class="sc-body">Build the <strong>5 V supply, 1 k&Omega; resistor, and LED</strong> in a loop, with a jumper wire where the mystery part will go. <span class="key">Checkpoint:</span> the LED lights.</p></div>
+        <div class="step-card"><span class="sc-num">2</span><p class="sc-body">Replace the jumper with the <strong>mystery part</strong>, band toward the negative side. Does the LED light?</p></div>
+        <div class="step-card"><span class="sc-num">3</span><p class="sc-body">Measure the voltage across the <strong>mystery part</strong>, the <strong>resistor</strong>, and the <strong>LED</strong>.</p></div>
+        <div class="step-card"><span class="sc-num">4</span><p class="sc-body">Turn the mystery part <strong>around</strong> and repeat steps 2 and 3.</p></div>
+      </div>
+      <div>
+        <div class="bench" data-static>
+          <svg data-role="circuit" viewBox="0 0 900 470" role="img" aria-label="Lab circuit: a 5 volt supply, a 1 kilohm resistor, an LED, and the mystery part connected in one series loop."></svg>
+        </div>
+        <div class="callout-warn" style="margin-top:var(--gap);">
+          Use <strong>5 V only</strong>, and always keep the resistor in the loop. It limits the current that protects the LED and the mystery part.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · WHAT TO RECORD -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Engineering Notebook</span>
+    <h2>Record Your <span class="accent">Evidence</span></h2>
+    <p class="slide-intro">Draw the circuit, then copy this table. <strong>Predict</strong> whether the LED will light in each orientation before you test it. Find the current from your resistor reading: <span class="res">current = V<sub>resistor</sub> &divide; 1000 &Omega;</span>.</p>
+    <table class="data-table record-table">
+      <thead><tr><th>Orientation</th><th>Prediction</th><th>LED on?</th><th>V<sub>part</sub></th><th>V<sub>resistor</sub></th><th>V<sub>LED</sub></th><th>Current</th></tr></thead>
+      <tbody>
+        <tr><td>A: band toward the negative side</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+        <tr><td>B: band toward the positive side</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+      </tbody>
+    </table>
+    <div class="row-2" style="margin-top:var(--gap-lg);">
+      <div class="card fragment fade-up"><span class="card-name">Check your readings</span><p class="card-body">In each row, add the three voltages. Do they add up to the <strong>supply voltage</strong>? If not, measure again.</p></div>
+      <div class="card fragment fade-up"><span class="card-name">Extension</span><p class="card-body">Leave the mystery part in orientation A and turn the <strong>LED</strong> around instead. What do you notice?</p></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · VIRTUAL BENCH (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:48px;">
+    <span class="slide-tag">Virtual Bench · For Absent Students or a Second Look</span>
+    <h2 style="margin-bottom:14px;">Mystery Component <span class="accent">Bench</span></h2>
+    <div class="bench">
+      <div class="bench-grid">
+        <div>
+          <div class="sim-panel">
+            <svg data-role="circuit" viewBox="0 0 900 470" role="img" aria-label="Interactive lab circuit: a 5 volt supply, a 1 kilohm resistor, an LED, and the mystery part in a series loop. Buttons flip the mystery part or the LED and measure the voltage across each component."></svg>
+          </div>
+          <div class="ctl-row" style="margin-top:10px;">
+            <button class="sim-btn" data-act="flip-part">Turn the mystery part around</button>
+            <button class="sim-btn alt" data-act="flip-led">Turn the LED around</button>
+          </div>
+          <div class="ctl-row">
+            <span class="ctl-label">Measure across:</span>
+            <span class="seg">
+              <button class="seg-btn" data-measure="part" aria-pressed="false">Mystery part</button>
+              <button class="seg-btn" data-measure="res" aria-pressed="false">Resistor</button>
+              <button class="seg-btn" data-measure="led" aria-pressed="false">LED</button>
+              <button class="seg-btn" data-measure="sup" aria-pressed="false">Supply</button>
+            </span>
+          </div>
+        </div>
+        <div class="bench-right">
+          <div class="dmm"><span class="dmm-name" data-role="dmm-name">DMM &middot; DC volts</span><span class="dmm-val" data-role="dmm">-.-- V</span></div>
+          <div class="sim-panel">
+            <div class="sim-head">Measurement log</div>
+            <div class="log-wrap">
+              <table class="bench-log">
+                <thead><tr><th>Part</th><th>LED</th><th>Across</th><th style="text-align:right">Reading</th></tr></thead>
+                <tbody data-role="log"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="sim-feedback" data-role="feedback"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · CLAIM AND EXIT TICKET (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:14:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"In a series loop of a 5 V supply, a 1 kΩ resistor, an LED, and a mystery part, the LED was dark and the voltage across the mystery part was about 5 V. What does that tell you?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Almost no current flowed, so the resistor and LED used no voltage and the whole supply appeared across the mystery part","isCorrect":true},{"id":"q1b","text":"The mystery part was acting like a plain wire","isCorrect":false},{"id":"q1c","text":"The mystery part was producing 5 V of its own","isCorrect":false},{"id":"q1d","text":"The resistor had burned out and needed to be replaced","isCorrect":false}]},{"id":"q2","type":"free-response","text":"Make a claim about the mystery component. Describe what it did in each orientation, give the voltages you measured as evidence, and propose what might be happening inside it.","order":1,"responseTimeLimitMs":180000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Claim · Evidence · Reasoning</span>
+    <h2>What Is the <span class="accent">Mystery Component</span> Doing?</h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>In a series loop of a 5 V supply, a 1 k&Omega; resistor, an LED, and the mystery part, the LED was dark and the voltage across the mystery part was about 5 V. What does that tell you?</div>
+    </div>
+    <ul class="mcq-opts" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>Almost no current flowed, so the resistor and LED used no voltage and the whole supply appeared across the mystery part</li>
+      <li><span class="opt-key">B</span>The mystery part was acting like a plain wire</li>
+      <li><span class="opt-key">C</span>The mystery part was producing 5 V of its own</li>
+      <li><span class="opt-key">D</span>The resistor had burned out and needed to be replaced</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>Make a <span class="key">claim</span> about the mystery component. Describe what it did in each orientation, give the voltages you measured as <span class="res">evidence</span>, and propose what might be happening inside it.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 16 · NEXT TIME -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Wrap Up</span>
+    <h2>What We Know, and What Comes <span class="accent">Next</span></h2>
+    <div class="row-2" style="margin-bottom:var(--gap-lg);">
+      <div class="card is-key"><span class="card-name">Today</span><p class="card-body">Relays switch by <strong>moving metal</strong>, so they are slow and wear out. Vacuum tubes switch with <strong>electrons in a vacuum</strong>, but their heaters waste power and burn out.</p></div>
+      <div class="card"><span class="card-name">The mystery</span><p class="card-body">The mystery component let current through in <strong>one direction only</strong>, with no moving parts, no vacuum, and no heater.</p></div>
+    </div>
+    <div class="callout fragment fade-up">
+      <strong>Next class:</strong> the mystery part is made from a crystal of <span class="key">silicon</span>. What could be inside a solid crystal that lets current through one way but not the other?
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+var NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+}
+function liveRoots(selector) {
+    return Array.prototype.filter.call(document.querySelectorAll(selector), function (r) {
+        return !r.closest('#storyboard');
+    });
+}
+function fmtV(v) { return (v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + ' V'; }
+
+// Relay circuit simulator, adapted from the AC Circuits EX4 engine for DC.
+// A toggle switch energizes coil CR; every element with data-when gets .on
+// while its condition holds. Each closing of the switch counts one operation.
+function initRelaySims(Reveal) {
+    liveRoots('.relay-sim').forEach(function (root) {
+        var closed = false, ops = 0;
+        root.querySelectorAll('path.w').forEach(function (wire) {
+            var flow = wire.cloneNode(false);
+            flow.classList.remove('w');
+            flow.classList.add('flow');
+            wire.after(flow);
+        });
+        function render() {
+            var state = { energized: closed, closed: closed };
+            root.querySelectorAll('[data-when]').forEach(function (el) {
+                var on = !!state[el.dataset.when];
+                el.classList.toggle('on', on);
+                if (el.hasAttribute('data-on')) el.innerHTML = on ? el.dataset.on : el.dataset.off;
+            });
+            root.querySelectorAll('[data-label-on]').forEach(function (el) {
+                el.textContent = closed ? el.dataset.labelOn : el.dataset.labelOff;
+            });
+            root.querySelector('[data-role="ops"]').textContent = ops.toLocaleString();
+        }
+        root.querySelectorAll('[data-act="toggle"]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                closed = !closed;
+                if (closed) ops++;
+                render();
+            });
+        });
+        Reveal.on('slidechanged', function () { closed = false; render(); });
+        render();
+    });
+}
+
+// Prev / next pager over the hidden <li> tasks inside a .task-pager.
+function initTaskPager(el) {
+    var items = Array.prototype.map.call(el.querySelectorAll('ol > li'), function (li) { return li.innerHTML; });
+    var i = 0;
+    var count = el.querySelector('.tp-count'), text = el.querySelector('.tp-text');
+    var prev = el.querySelector('.tp-prev'), next = el.querySelector('.tp-next');
+    function show() {
+        count.textContent = 'TASK ' + (i + 1) + ' OF ' + items.length;
+        text.innerHTML = items[i];
+        prev.disabled = i === 0;
+        next.disabled = i === items.length - 1;
+    }
+    prev.addEventListener('click', function () { if (i > 0) { i--; show(); } });
+    next.addEventListener('click', function () { if (i < items.length - 1) { i++; show(); } });
+    show();
+}
+
+// Triode Explorer. Plate current follows a simple three-halves power law:
+// Ip = e * K * max(0, Vg + Vp/mu)^1.5, with Vp = 100 V and mu = 20, so the
+// tube cuts off at Vg = -5 V, and K sets Ip = 10 mA at Vg = 0. The emission
+// factor e (0 to 1) follows the heater: it rises over WARM seconds after
+// the heater is switched on and falls over COOL seconds after it is off.
+// Electrons are drawn in slow motion. Each one leaves the cathode and passes
+// the grid with probability Ip / Ip(0, hot); the rest turn back at the grid.
+var SIMS = [];
+function buildTriode(root) {
+    var VP_MU = 5, K = 10 / Math.pow(5, 1.5), WARM = 4, COOL = 3, HEATER_W = 1.9;
+    var svg = root.querySelector('[data-role="tube"]');
+    function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
+    var heaterOn = false, e = 0, vg = 0, parts = [], spawnAcc = 0;
+
+    // Drawing. Tube in the middle, labels on the left, plate circuit
+    // (lamp and supply) on the right. Leads exit through the glass.
+    var PLATE_Y = 121, GRID_Y = 300, CATH_Y = 451, EX0 = 205, EX1 = 315;
+    svgEl('path', { d: 'M260 110 V40 H480 V124', class: 'tube-lead' }, svg);
+    svgEl('path', { d: 'M480 196 V286', class: 'tube-lead' }, svg);
+    svgEl('path', { d: 'M480 306 V570 H345 V451 H330', class: 'tube-lead' }, svg);
+    var lamp = svgEl('circle', { cx: 480, cy: 160, r: 36, class: 'tri-lamp', fill: '#0d1117', stroke: 'rgba(230,247,234,0.6)', 'stroke-width': 3 }, svg);
+    svgEl('text', { x: 528, y: 168, class: 'tube-lbl' }, svg).textContent = 'Lamp';
+    svgEl('line', { x1: 448, y1: 286, x2: 512, y2: 286, stroke: 'rgba(230,247,234,0.6)', 'stroke-width': 4 }, svg);
+    svgEl('line', { x1: 462, y1: 306, x2: 498, y2: 306, stroke: 'rgba(230,247,234,0.6)', 'stroke-width': 8 }, svg);
+    svgEl('text', { x: 522, y: 280, class: 'tube-lbl' }, svg).textContent = '+';
+    svgEl('text', { x: 500, y: 352, class: 'tube-lbl' }, svg).textContent = '100 V';
+    svgEl('rect', { x: 150, y: 70, width: 220, height: 450, rx: 110, class: 'tube-glass' }, svg);
+    svgEl('rect', { x: 185, y: PLATE_Y - 11, width: 150, height: 22, class: 'tube-plate' }, svg);
+    svgEl('text', { x: 140, y: PLATE_Y + 9, class: 'tube-lbl-k', 'text-anchor': 'end' }, svg).textContent = 'Plate';
+    svgEl('path', { d: 'M180 ' + GRID_Y + ' H340', class: 'tube-grid' }, svg);
+    svgEl('path', { d: 'M180 ' + GRID_Y + ' H60 V236', class: 'tube-lead' }, svg);
+    svgEl('text', { x: 60, y: 186, class: 'tube-lbl-k', 'text-anchor': 'middle' }, svg).textContent = 'Grid';
+    var gridLbl = svgEl('text', { x: 60, y: 222, class: 'tube-lbl', 'text-anchor': 'middle' }, svg);
+    var cath = svgEl('rect', { x: 190, y: CATH_Y - 7, width: 140, height: 14, class: 'tube-cath' }, svg);
+    svgEl('text', { x: 140, y: CATH_Y + 9, class: 'tube-lbl-k', 'text-anchor': 'end' }, svg).textContent = 'Cathode';
+    var heater = svgEl('path', { d: 'M200 494 l12 -14 l12 14 l12 -14 l12 14 l12 -14 l12 14 l12 -14 l12 14 l12 -14 l12 14', class: 'tube-heater' }, svg);
+    svgEl('path', { d: 'M200 494 V545 M320 494 V545', class: 'tube-lead', style: 'stroke-width:2' }, svg);
+    svgEl('text', { x: 140, y: 540, class: 'tube-lbl', 'text-anchor': 'end', style: 'fill:var(--warn);font-weight:700' }, svg).textContent = 'Heater';
+    var eLayer = svgEl('g', {}, svg);
+
+    function ip() { return e * K * Math.pow(Math.max(0, vg + VP_MU), 1.5); }
+    function render() {
+        var i = ip();
+        q('ip').textContent = i.toFixed(1) + ' mA';
+        q('hp').textContent = heaterOn ? HEATER_W.toFixed(1) + ' W' : '0 W';
+        q('grid-val').textContent = fmtV(vg);
+        gridLbl.textContent = fmtV(vg);
+        var b = Math.min(1, i / 10);
+        lamp.setAttribute('fill', b > 0.02 ? 'rgba(255,224,138,' + (0.15 + 0.85 * b).toFixed(2) + ')' : '#0d1117');
+        lamp.style.filter = b > 0.02 ? 'drop-shadow(0 0 ' + Math.round(4 + 16 * b) + 'px rgba(255,224,138,0.9))' : 'none';
+        cath.style.fill = e > 0.02 ? 'rgb(' + (58 + Math.round(150 * e)) + ',' + (68 + Math.round(70 * e)) + ',' + Math.round(80 - 40 * e) + ')' : '';
+        heater.style.stroke = heaterOn ? 'rgb(255,' + (138 - Math.round(20 * e)) + ',61)' : '';
+        var chip = q('heat-chip');
+        var btn = root.querySelector('[data-act="heater"]');
+        btn.textContent = heaterOn ? 'Turn heater off' : 'Turn heater on';
+        chip.className = 'status-chip';
+        if (heaterOn && e >= 0.999) { chip.textContent = 'Hot'; chip.classList.add('ok'); }
+        else if (heaterOn) { chip.textContent = 'Warming ' + Math.round(e * 100) + '%'; chip.classList.add('caution'); }
+        else if (e > 0.001) { chip.textContent = 'Cooling'; chip.classList.add('caution'); }
+        else { chip.textContent = 'Cold'; }
+
+        var fb = q('feedback'), msg;
+        fb.className = 'sim-feedback';
+        if (e <= 0.001) msg = 'The heater is off. A cold cathode does not release electrons, so <b>no current flows</b>, no matter what the grid does.';
+        else if (heaterOn && e < 0.999) msg = 'The heater is warming the cathode, and electrons start to boil off. Real tubes took <b>10 to 30 seconds</b> to warm up before they worked.';
+        else if (!heaterOn) msg = 'The heater is off, so the cathode is cooling and releasing fewer electrons. The plate current is fading away.';
+        else if (vg <= -VP_MU) { msg = '<b>Cutoff.</b> The grid is negative enough to push every electron back. The tube acts like an <b>open switch</b>, but its heater still uses ' + HEATER_W + ' W.'; fb.classList.add('caution'); }
+        else if (vg === 0) msg = 'Grid at 0 V: nearly every electron reaches the plate, and the plate current is at its largest, about <b>10 mA</b>. The tube acts like a <b>closed switch</b>.';
+        else msg = 'The negative grid turns back some electrons. Just <b>' + Math.abs(vg).toFixed(1) + ' V</b> on the grid has cut the plate current from 10 mA to <b>' + i.toFixed(1) + ' mA</b>.';
+        fb.innerHTML = msg;
+    }
+
+    root.querySelector('[data-act="heater"]').addEventListener('click', function () { heaterOn = !heaterOn; render(); });
+    q('grid').addEventListener('input', function () { vg = parseFloat(this.value); render(); });
+
+    var lastRender = 0;
+    function tick(dt) {
+        var prevE = e;
+        if (heaterOn) e = Math.min(1, e + dt / WARM);
+        else e = Math.max(0, e - dt / COOL);
+        // Electrons: slow motion, spawn rate proportional to emission.
+        spawnAcc += dt * 26 * e;
+        var pPass = e > 0 ? ip() / (e * 10) : 0;
+        while (spawnAcc >= 1) {
+            spawnAcc -= 1;
+            var x = EX0 + Math.random() * (EX1 - EX0);
+            var dot = svgEl('circle', { cx: x, cy: CATH_Y - 10, r: 5, class: 'tube-e' }, eLayer);
+            parts.push({ el: dot, x: x, y: CATH_Y - 10, vy: -(150 + Math.random() * 60), pass: Math.random() < pPass, back: false });
+        }
+        parts = parts.filter(function (p) {
+            p.y += p.vy * dt;
+            if (!p.pass && !p.back && p.y <= GRID_Y + 22) { p.back = true; p.vy = -p.vy * 0.8; }
+            if (p.y <= PLATE_Y + 12 || (p.back && p.y >= CATH_Y - 10)) { p.el.remove(); return false; }
+            p.el.setAttribute('cy', p.y.toFixed(1));
+            return true;
+        });
+        lastRender += dt;
+        if (e !== prevE || lastRender > 0.25) { lastRender = 0; render(); }
+    }
+    function reset() {
+        heaterOn = false; e = 0; vg = 0; spawnAcc = 0;
+        q('grid').value = 0;
+        parts.forEach(function (p) { p.el.remove(); });
+        parts = [];
+        render();
+    }
+    render();
+    return { root: root, tick: tick, reset: reset };
+}
+
+// Mystery Component Bench. A 5 V supply, a 1 kOhm resistor, an LED, and a
+// silicon diode (the mystery part) in one series loop, clockwise from the
+// + terminal. The part is forward biased when its band (cathode) points
+// down the loop, toward the - terminal. With both the LED and the part
+// forward biased, I = (5 - V_LED - V_D) / 1000. If either is reversed, no
+// current flows and the reversed device has the whole 5 V across it. With
+// both reversed, the 5 V divides between them according to leakage currents
+// that differ from part to part, so the reading is shown as unsteady.
+function buildBench(root) {
+    var VS = 5, R = 1000, VLED = 1.85, VD = 0.62;
+    var interactive = !root.hasAttribute('data-static');
+    var svg = root.querySelector('[data-role="circuit"]');
+    var partFwd = true, ledFwd = true, measuring = null;
+
+    // Loop: supply at left (x=90), top wire y=70, right wire x=800, bottom y=400.
+    svgEl('path', { d: 'M90 190 V70 H230', class: 'bw' }, svg);
+    svgEl('path', { d: 'M350 70 H440', class: 'bw' }, svg);
+    svgEl('path', { d: 'M540 70 H800 V170', class: 'bw' }, svg);
+    svgEl('path', { d: 'M800 300 V400 H90 V250', class: 'bw' }, svg);
+    // supply
+    svgEl('line', { x1: 50, y1: 196, x2: 130, y2: 196, stroke: 'rgba(230,247,234,0.75)', 'stroke-width': 4 }, svg);
+    svgEl('line', { x1: 70, y1: 228, x2: 110, y2: 228, stroke: 'rgba(230,247,234,0.75)', 'stroke-width': 9 }, svg);
+    svgEl('line', { x1: 90, y1: 190, x2: 90, y2: 196, class: 'bw' }, svg);
+    svgEl('line', { x1: 90, y1: 228, x2: 90, y2: 250, class: 'bw' }, svg);
+    svgEl('text', { x: 156, y: 192, class: 'b-lbl-b' }, svg).textContent = '+';
+    svgEl('text', { x: 156, y: 250, class: 'b-lbl' }, svg).textContent = '5 V';
+    // resistor
+    svgEl('path', { d: 'M230 70 l10 -18 l20 36 l20 -36 l20 36 l20 -36 l20 36 l10 -18', fill: 'none', stroke: 'rgba(230,247,234,0.85)', 'stroke-width': 4, 'stroke-linejoin': 'round' }, svg);
+    svgEl('text', { x: 290, y: 130, class: 'b-lbl', 'text-anchor': 'middle' }, svg).textContent = '1 kΩ';
+    // LED (group flips about its center)
+    var led = svgEl('g', {}, svg);
+    svgEl('path', { d: 'M440 70 H462', class: 'bw' }, led);
+    svgEl('path', { d: 'M518 70 H540', class: 'bw' }, led);
+    svgEl('path', { d: 'M462 42 L462 98 L512 70 Z', class: 'led-body' }, led);
+    svgEl('line', { x1: 514, y1: 42, x2: 514, y2: 98, stroke: 'var(--fault)', 'stroke-width': 4 }, led);
+    svgEl('path', { d: 'M494 36 l14 -20 M512 44 l14 -20', class: 'led-ray' }, svg);
+    svgEl('text', { x: 490, y: 136, class: 'b-lbl', 'text-anchor': 'middle' }, svg).textContent = 'LED';
+    // mystery part: a body with a band, flips about its center
+    var part = svgEl('g', {}, svg);
+    svgEl('path', { d: 'M800 170 V190 M800 280 V300', class: 'bw' }, part);
+    svgEl('rect', { x: 774, y: 190, width: 52, height: 90, rx: 10, class: 'part-body' }, part);
+    svgEl('rect', { x: 774, y: 252, width: 52, height: 14, class: 'part-band' }, part);
+    svgEl('text', { x: 846, y: 246, class: 'b-lbl-b', style: 'fill:var(--warn)' }, svg).textContent = '?';
+    svgEl('text', { x: 690, y: 450, class: 'b-lbl', 'text-anchor': 'middle' }, svg).textContent = 'Mystery part';
+    // probe marks
+    var marks = {
+        part: svgEl('rect', { x: 756, y: 160, width: 88, height: 150, rx: 12, class: 'probe-mark' }, svg),
+        res: svgEl('rect', { x: 220, y: 34, width: 140, height: 72, rx: 12, class: 'probe-mark' }, svg),
+        led: svgEl('rect', { x: 446, y: 14, width: 88, height: 96, rx: 12, class: 'probe-mark' }, svg),
+        sup: svgEl('rect', { x: 40, y: 176, width: 100, height: 70, rx: 12, class: 'probe-mark' }, svg),
+    };
+
+    function readings() {
+        if (partFwd && ledFwd) {
+            var i = (VS - VLED - VD) / R;
+            return { i: i, part: VD, res: i * R, led: VLED, sup: VS };
+        }
+        if (!partFwd && !ledFwd) return { i: 0, part: null, res: 0, led: null, sup: VS };
+        return { i: 0, part: partFwd ? 0 : VS, res: 0, led: ledFwd ? 0 : VS, sup: VS };
+    }
+    var NAMES = { part: 'Mystery part', res: 'Resistor', led: 'LED', sup: 'Supply' };
+    function fmt(v) { return v === null ? 'unsteady' : v.toFixed(2) + ' V'; }
+    function orient() { return partFwd ? 'A' : 'B'; }
+
+    function render() {
+        part.setAttribute('transform', partFwd ? '' : 'rotate(180 800 235)');
+        led.setAttribute('transform', ledFwd ? '' : 'rotate(180 490 70)');
+        var r = readings();
+        root.classList.toggle('lit', r.i > 0);
+        root.classList.toggle('flowing', r.i > 0);
+        if (!interactive) return;
+        Object.keys(marks).forEach(function (k) { marks[k].classList.toggle('on', k === measuring); });
+        root.querySelectorAll('[data-measure]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.measure === measuring ? 'true' : 'false'); });
+        root.querySelector('[data-role="dmm"]').textContent = measuring ? (r[measuring] === null ? '~2.5 V ?' : r[measuring].toFixed(2) + ' V') : '-.-- V';
+        root.querySelector('[data-role="dmm-name"]').textContent = measuring ? 'DMM · across the ' + NAMES[measuring].toLowerCase() : 'DMM · DC volts';
+        var fb = root.querySelector('[data-role="feedback"]'), msg;
+        fb.className = 'sim-feedback';
+        if (!measuring) msg = 'Orientation <b>' + orient() + '</b>: the band points toward the <b>' + (partFwd ? 'negative' : 'positive') + '</b> side. Pick a part to measure across.';
+        else if (r[measuring] === null) { msg = 'Both parts are turned around, so tiny leakage currents decide how the 5 V divides between them, and the reading drifts. Turn one back.'; fb.classList.add('caution'); }
+        else msg = 'Red probe on the side nearer the + terminal. Record this reading for orientation <b>' + orient() + '</b>, then compare it with the other orientation.';
+        fb.innerHTML = msg;
+    }
+    function log() {
+        if (!measuring) return;
+        var r = readings();
+        var tb = root.querySelector('[data-role="log"]');
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + orient() + '</td><td>' + (ledFwd ? 'normal' : 'flipped') + '</td><td>' + NAMES[measuring] + '</td><td class="v">' + fmt(r[measuring]) + '</td>';
+        tb.insertBefore(tr, tb.firstChild);
+        while (tb.children.length > 3) tb.removeChild(tb.lastChild);
+    }
+    if (interactive) {
+        root.querySelector('[data-act="flip-part"]').addEventListener('click', function () { partFwd = !partFwd; render(); log(); });
+        root.querySelector('[data-act="flip-led"]').addEventListener('click', function () { ledFwd = !ledFwd; render(); log(); });
+        root.querySelectorAll('[data-measure]').forEach(function (b) {
+            b.addEventListener('click', function () { measuring = b.dataset.measure; render(); log(); });
+        });
+    }
+    render();
+}
+
+// ENIAC tube field: 17,468 tubes at about 50 per mark is 350 marks.
+function buildTubeField(el) {
+    for (var i = 0; i < 350; i++) {
+        var m = document.createElement('i');
+        if (i === 217) m.className = 'dead';
+        el.appendChild(m);
+    }
+}
+
+function startSimLoop(Reveal) {
+    var last = performance.now();
+    function frame(now) {
+        var dt = Math.max(0, Math.min(0.05, (now - last) / 1000));
+        last = now;
+        var cur = Reveal.getCurrentSlide();
+        SIMS.forEach(function (s) { if (cur && cur.contains(s.root)) s.tick(dt); });
+        requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+    Reveal.on('slidechanged', function () { SIMS.forEach(function (s) { s.reset(); }); });
+}
+
+document.querySelectorAll('.bench').forEach(buildBench);
+document.querySelectorAll('[data-role="tube-field"]').forEach(buildTubeField);
+liveRoots('.triode-lab').forEach(function (r) { SIMS.push(buildTriode(r)); });
+liveRoots('.task-pager').forEach(initTaskPager);
+
+initSyncDeckReveal({
+    deckId: 'day1-evolution-of-control',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        initRelaySims(Reveal);
+        startSimLoop(Reveal);
+    },
+});
+</script>
+</body>
+</html>

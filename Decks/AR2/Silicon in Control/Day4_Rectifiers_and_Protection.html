@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1p6uhn0">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 4: Rectifiers and Protection</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: Silicon in Control Day 4 · Rectifiers and Protection
+   ============================================================ */
+.fig-lbl { font-family: var(--font-mono); font-size: 26px; fill: var(--text-muted); }
+.fig-lbl-b { font-family: var(--font-mono); font-size: 26px; font-weight: 700; fill: var(--text); }
+.wire { fill: none; stroke: rgba(230,247,234,0.6); stroke-width: 4; stroke-linejoin: round; }
+.sym { fill: none; stroke: rgba(230,247,234,0.85); stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
+.stage-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap); }
+.mcq-2col { display: grid; grid-template-columns: 1fr 1fr; max-width: none; }
+.wo-slide .slide-inner { max-width: 1600px; padding: 36px 36px 30px; justify-content: flex-start; }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(255,209,102,0.10),transparent 70%);"></div>
+  <div class="glow" style="width:420px;height:420px;bottom:-90px;right:12%;background:radial-gradient(circle,rgba(94,234,212,0.08),transparent 70%);"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; Silicon in Control &nbsp;·&nbsp; Day 4</span>
+    <h1 class="title-h1">Rectifiers and <span class="accent">Protection</span></h1>
+    <p class="subtitle">// Half-wave and bridge rectifiers &nbsp;·&nbsp; Flyback diodes &nbsp;·&nbsp; Troubleshooting</p>
+    <svg viewBox="0 0 900 150" style="width:900px;margin-top:44px;" aria-hidden="true">
+      <path data-wave="sin" data-x0="0" data-x1="900" data-mid="75" data-amp="60" data-cycles="3" style="fill:none;stroke:#ffd166;stroke-width:4;stroke-dasharray:10 8;opacity:0.7"/>
+      <path data-wave="abs" data-x0="0" data-x1="900" data-mid="75" data-amp="60" data-cycles="3" style="fill:none;stroke:#5eead4;stroke-width:5"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · DAY QUESTION AND OBJECTIVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Today&#39;s Question &amp; Objectives</span>
+    <div class="eq-box" style="margin-bottom:var(--gap-lg);">
+      <span class="eq-label">Today&#39;s question</span>
+      How can a one-way valve for current turn <span class="accent">AC into DC</span>?
+    </div>
+    <div class="split split-50 split-top" style="flex:0 0 auto;">
+      <div>
+        <h3>By the end of class you can <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Sketch the output of a <strong>half-wave</strong> and a <strong>bridge</strong> rectifier.</li>
+          <li>Measure a rectified wave on an <strong>oscilloscope</strong>.</li>
+          <li>Explain how a <strong>flyback diode</strong> protects a switch.</li>
+          <li>Find a <strong>hidden fault</strong> in a diode circuit from measurements.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today&#39;s <span class="accent">path</span></h3>
+        <div class="agenda-grid">
+          <a class="agenda-item" href="#/3"><span class="agenda-num">01</span><span class="agenda-text">Turning AC into DC: <strong>rectifiers</strong></span></a>
+          <a class="agenda-item" href="#/8"><span class="agenda-num">02</span><span class="agenda-text">Bench: rectified waves on the <strong>scope</strong></span></a>
+          <a class="agenda-item" href="#/10"><span class="agenda-num">03</span><span class="agenda-text">Diodes as <strong>protection</strong></span></a>
+          <a class="agenda-item" href="#/12"><span class="agenda-num">04</span><span class="agenda-text">Troubleshooting: <strong>Diode Bench Diagnosis</strong></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · HOOK -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Hook · AC Meets a One-Way Valve</span>
+    <h2>What Happens to a <span class="accent">Sine Wave?</span></h2>
+    <p class="slide-intro">In AC Circuits you saw that alternating current reverses direction <strong>60 times a second</strong>. A diode only lets current through one way.</p>
+    <figure class="fig" style="margin:var(--gap) 0;">
+      <svg viewBox="0 0 1300 230" role="img" aria-label="Two cycles of an AC sine wave, swinging from 17 volts positive to 17 volts negative.">
+        <path d="M60 115 H1260" class="wire" style="stroke:rgba(230,247,234,0.35);stroke-width:2"/>
+        <path data-wave="sin" data-x0="60" data-x1="1260" data-mid="115" data-amp="90" data-cycles="2" style="fill:none;stroke:#ffd166;stroke-width:5"/>
+        <text x="20" y="32" class="fig-lbl">+17 V</text>
+        <text x="20" y="218" class="fig-lbl">&minus;17 V</text>
+      </svg>
+    </figure>
+    <p class="slide-intro">The 12 V in &ldquo;12 VAC&rdquo; is the <strong>RMS</strong> value, the DC voltage that would do the same work. The <strong>peak</strong> is 1.41 times larger: 12 V &times; 1.41 &asymp; <span class="res">17.0 V</span>.</p>
+    <ul class="bullets">
+      <li class="fragment fade-up">If this wave feeds a diode and a resistor in series, what <strong>shape</strong> appears across the resistor?</li>
+      <li class="fragment fade-up">Most electronics, including PLCs and the LogiKIT, need <strong>steady DC</strong>. How could we get there from this wave?</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · PREDICTION (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:3:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Prediction: a 12 VAC sine wave feeds a silicon diode in series with a load resistor. What will the voltage across the resistor look like?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"The same sine wave, a little smaller","isCorrect":false},{"id":"q1b","text":"Only the positive humps, with flat gaps between them","isCorrect":false},{"id":"q1c","text":"A flat, steady DC line","isCorrect":false},{"id":"q1d","text":"Only the negative humps","isCorrect":false}]},{"id":"q2","type":"free-response","text":"Explain your prediction. What does the diode do during each half of the AC cycle?","order":1,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predictions · No Wrong Answers Yet</span>
+    <h2>Make Your <span class="accent">Prediction</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A 12 VAC sine wave feeds a silicon diode in series with a load resistor. What will the voltage across the resistor look like?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>The same sine wave, a little smaller</li>
+      <li><span class="opt-key">B</span>Only the positive humps, with flat gaps between them</li>
+      <li><span class="opt-key">C</span>A flat, steady DC line</li>
+      <li><span class="opt-key">D</span>Only the negative humps</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>Explain your prediction. What does the diode do during each half of the AC cycle?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · THE HALF-WAVE RECTIFIER -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Rectification · Half-Wave</span>
+    <h2>The Half-Wave <span class="accent">Rectifier</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1fr 1.2fr;align-items:center;">
+      <figure class="fig">
+        <svg viewBox="0 0 560 380" role="img" aria-label="A half-wave rectifier: an AC source, a diode in the top wire pointing toward the load, and a 1 kilohm load resistor.">
+          <circle cx="80" cy="190" r="34" fill="#0d1117" stroke="rgba(230,247,234,0.75)" stroke-width="3"/>
+          <path d="M60 190 q10 -18 20 0 t20 0" class="sym" style="stroke-width:3"/>
+          <path d="M80 156 V70 H220 M320 70 H460 V140 M460 260 V330 H80 V224" class="wire"/>
+          <path d="M228 40 L228 100 L300 70 Z" fill="rgba(57,211,83,0.18)" stroke="#39d353" stroke-width="4" stroke-linejoin="round"/>
+          <line x1="306" y1="40" x2="306" y2="100" stroke="#39d353" stroke-width="6"/>
+          <path d="M220 70 H228 M306 70 H320" class="wire"/>
+          <path d="M460 140 l-16 10 l32 20 l-32 20 l32 20 l-32 20 l32 20 l-16 10" class="sym"/>
+          <text x="264" y="140" class="fig-lbl-b" text-anchor="middle">D1</text>
+          <text x="490" y="208" class="fig-lbl">1 k&Omega;</text>
+          <text x="128" y="198" class="fig-lbl">12 VAC</text>
+        </svg>
+      </figure>
+      <div>
+        <figure class="fig" style="margin-bottom:var(--gap-sm);">
+          <svg viewBox="0 0 700 220" role="img" aria-label="The input sine wave as a dashed line and the output as solid positive humps with flat gaps where the input is negative. The output peaks are slightly lower than the input peaks.">
+            <path d="M20 110 H690" class="wire" style="stroke:rgba(230,247,234,0.35);stroke-width:2"/>
+            <path data-wave="sin" data-x0="20" data-x1="690" data-mid="110" data-amp="90" data-cycles="2" style="fill:none;stroke:#ffd166;stroke-width:3;stroke-dasharray:8 6"/>
+            <path data-wave="half" data-x0="20" data-x1="690" data-mid="110" data-amp="90" data-cycles="2" data-drop="0.041" style="fill:none;stroke:#5eead4;stroke-width:5"/>
+          </svg>
+          <figcaption class="fig-caption"><span style="color:var(--warn)">Dashed: input</span> &nbsp; <span class="res">Solid: output</span></figcaption>
+        </figure>
+        <p class="slide-intro fragment fade-up">During the <strong>positive half</strong>, D1 is forward biased and current reaches the load. During the <strong>negative half</strong>, D1 is reverse biased, so the output is <strong>0 V</strong>.</p>
+        <p class="slide-intro fragment fade-up">The 12 VAC (RMS) input peaks at 17.0 V, and the output peak is one diode drop lower: <span class="res" style="white-space:nowrap;">17.0 V &minus; 0.7 V = 16.3 V</span>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · SCOPE LAB -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · A Half-Wave Rectifier on the Scope</span>
+    <h2>See It on the <span class="accent">Oscilloscope</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.15fr 1fr;align-items:start;gap:var(--gap-lg);">
+      <div class="lab-steps">
+        <div class="step-card"><span class="sc-num">1</span><p class="sc-body">Build the half-wave rectifier: the <strong>low voltage AC source</strong>, a 1N4001 diode, and a <strong>1 k&Omega;</strong> load.</p></div>
+        <div class="step-card"><span class="sc-num">2</span><p class="sc-body">Connect <strong>CH1</strong> across the source and <strong>CH2</strong> across the load, with both ground clips on the <strong>same</strong> bottom wire.</p></div>
+        <div class="step-card"><span class="sc-num">3</span><p class="sc-body">Sketch both waves. Measure the <strong>input peak</strong> and the <strong>output peak</strong>, and find the difference.</p></div>
+        <div class="step-card"><span class="sc-num">4</span><p class="sc-body">Leave the circuit built. After the Rectifier Lab, watch the demo of a <strong>bridge</strong> with a <strong>filter capacitor</strong> and fill in its row.</p></div>
+      </div>
+      <div>
+        <div class="callout-warn"><strong>Low voltage only:</strong> use the 12 VAC transformer output or a function generator. Never connect anything to a wall outlet.</div>
+        <table class="data-table record-table" style="margin-top:var(--gap);">
+          <thead><tr><th>Circuit</th><th>In peak</th><th>Out peak</th><th>Difference</th></tr></thead>
+          <tbody>
+            <tr><td>Half-wave</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+            <tr><td>Bridge + C</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+          </tbody>
+        </table>
+        <div class="callout-result fragment fade-up" style="margin-top:var(--gap);">Expect the difference to be about <strong>0.7 V</strong> for half-wave and <strong>1.4 V</strong> for the bridge.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · WHY A BRIDGE RECTIFIER -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Rectification · Full-Wave</span>
+    <h2>Why a Bridge <span class="accent">Rectifier?</span></h2>
+    <p class="slide-intro">A half-wave rectifier <strong>throws away</strong> the whole negative half of every cycle. The load gets nothing half the time, so the average DC voltage is low and the output is lumpy.</p>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1fr 1fr;align-items:start;gap:var(--gap-lg);margin-top:var(--gap);">
+      <figure class="fig">
+        <svg viewBox="0 0 700 110" role="img" aria-label="Half-wave output: positive humps separated by flat gaps where the negative halves were removed.">
+          <path d="M20 100 H690" class="wire" style="stroke:rgba(230,247,234,0.35);stroke-width:2"/>
+          <path data-wave="half" data-x0="20" data-x1="690" data-mid="100" data-amp="85" data-cycles="2" data-drop="0" style="fill:none;stroke:#5eead4;stroke-width:5"/>
+        </svg>
+        <figcaption class="fig-caption"><strong>Half-wave:</strong> negative halves blocked</figcaption>
+      </figure>
+      <figure class="fig fragment fade-up">
+        <svg viewBox="0 0 700 110" role="img" aria-label="Full-wave output: the negative halves are flipped upward, so the positive humps follow one another with no gaps.">
+          <path d="M20 100 H690" class="wire" style="stroke:rgba(230,247,234,0.35);stroke-width:2"/>
+          <path data-wave="abs" data-x0="20" data-x1="690" data-mid="100" data-amp="85" data-cycles="2" style="fill:none;stroke:#5eead4;stroke-width:5"/>
+        </svg>
+        <figcaption class="fig-caption"><strong>Full-wave:</strong> negative halves flipped</figcaption>
+      </figure>
+    </div>
+    <p class="slide-intro fragment fade-up" style="margin-top:var(--gap);">What if we <span class="accent">flipped</span> the negative half instead of blocking it? Twice as many humps gives about <strong>twice the average DC</strong>, and the gaps a capacitor must fill get much shorter.</p>
+    <p class="slide-intro fragment fade-up">A <span class="accent">bridge rectifier</span> does this with <strong>four diodes</strong>, arranged so current always flows through the load in the <strong>same direction</strong>. In the Rectifier Lab you will find out which diodes do the work on each half.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · RECTIFIER LAB TASKS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Investigate · Rectifier Lab Tasks</span>
+    <h2>What to <span class="accent">Find Out</span></h2>
+    <div class="task-grid">
+      <div class="task-item"><span class="t-key">A</span><span><strong>Half-wave, no capacitor:</strong> where are the gaps in the output, and which diode conducts when there is output?</span></div>
+      <div class="task-item"><span class="t-key">B</span><span>Compare the <strong>input peak</strong> and the <strong>output peak</strong>. Where did the missing voltage go?</span></div>
+      <div class="task-item"><span class="t-key">C</span><span>Switch to <strong>Bridge</strong>. Which diodes conduct on each half? What happened to the gaps and to the peak?</span></div>
+      <div class="task-item"><span class="t-key">D</span><span>Add <strong>100, 470, then 1000 &micro;F</strong>. What happens to the ripple? Where does the load current come from while the diodes are off (<span class="warn">amber</span>)?</span></div>
+      <div class="task-item"><span class="t-key">E</span><span>With 470 &micro;F, compare the <strong>DMM (DC)</strong> reading for half-wave and bridge. Which makes a better DC supply?</span></div>
+      <div class="task-item"><span class="t-key">F</span><span>Record each output shape in your notebook with its <strong>peak</strong> and <strong>ripple</strong>.</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · RECTIFIER LAB (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+    <span class="slide-tag">Investigate · Rectifier Lab</span>
+    <h2 style="margin-bottom:12px;">From AC to <span class="accent">DC</span></h2>
+    <div class="rect-lab">
+      <div class="rl-grid">
+        <div class="rl-col">
+          <div class="sim-panel">
+            <svg data-role="rect-circuit" viewBox="0 0 760 450" role="img" aria-label="Rectifier Lab circuit: a 12 volt AC source feeding either one diode (half-wave) or four diodes in a bridge, then a 1 kilohm load and an optional filter capacitor. Wires and diodes light up while they carry current."></svg>
+            <div class="rl-state" data-role="rect-state"></div>
+          </div>
+          <div class="ctl-row">
+            <span class="seg">
+              <button class="seg-btn" data-rect-mode="half" aria-pressed="true">Half-wave</button>
+              <button class="seg-btn" data-rect-mode="bridge" aria-pressed="false">Bridge</button>
+            </span>
+            <button class="sim-btn alt" data-act="rect-pause">Pause</button>
+          </div>
+          <div class="ctl-row">
+            <span class="ctl-label">Capacitor</span>
+            <span class="seg">
+              <button class="seg-btn" data-cap="0" aria-pressed="true">None</button>
+              <button class="seg-btn" data-cap="100" aria-pressed="false">100 &micro;F</button>
+              <button class="seg-btn" data-cap="470" aria-pressed="false">470 &micro;F</button>
+              <button class="seg-btn" data-cap="1000" aria-pressed="false">1000 &micro;F</button>
+            </span>
+          </div>
+        </div>
+        <div class="rl-col">
+          <div class="sim-panel">
+            <div class="sim-head">Oscilloscope <span class="sim-note">slow motion</span></div>
+            <svg data-role="rect-scope" viewBox="0 0 760 320" role="img" aria-label="Oscilloscope showing two cycles: the input sine wave dashed and the output voltage solid, with a cursor sweeping across."></svg>
+            <div class="sc-legend"><span class="lg-in">- - Input</span><span class="lg-out">&mdash;&mdash; Output</span></div>
+          </div>
+          <div class="tiles">
+            <div class="tile"><span class="t-name">In peak</span><span class="t-val" data-role="vin-pk">0 V</span></div>
+            <div class="tile is-result"><span class="t-name">Out peak</span><span class="t-val" data-role="vout-pk">0 V</span></div>
+            <div class="tile"><span class="t-name">Ripple</span><span class="t-val" data-role="ripple">n/a</span></div>
+            <div class="tile is-result"><span class="t-name">DMM (DC)</span><span class="t-val" data-role="vdc">0 V</span></div>
+          </div>
+          <div class="sim-feedback" data-role="feedback"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · RECTIFIER CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:9:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A 12 VAC source has a peak of about 17.0 V. What is the peak voltage across the load of a half-wave rectifier with one silicon diode?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"17.0 V","isCorrect":false},{"id":"q1b","text":"12.0 V","isCorrect":false},{"id":"q1c","text":"16.3 V","isCorrect":true},{"id":"q1d","text":"8.5 V","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"Why does a bridge rectifier lose about 1.4 V instead of 0.7 V?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"Current passes through two diodes in series on every half-cycle","isCorrect":true},{"id":"q2b","text":"The bridge uses bigger diodes with a larger drop","isCorrect":false},{"id":"q2c","text":"The capacitor uses up 0.7 V","isCorrect":false},{"id":"q2d","text":"Four diodes each drop 0.35 V","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · Rectifiers</span>
+    <h2>Peaks and <span class="accent">Drops</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A 12 VAC source has a peak of about 17.0 V. What is the peak voltage across the load of a half-wave rectifier with one silicon diode?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>17.0 V</li>
+      <li><span class="opt-key">B</span>12.0 V</li>
+      <li><span class="opt-key">C</span>16.3 V</li>
+      <li><span class="opt-key">D</span>8.5 V</li>
+    </ul>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">2</span>Why does a bridge rectifier lose about 1.4 V instead of 0.7 V?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col">
+      <li><span class="opt-key">A</span>Current passes through two diodes in series on every half-cycle</li>
+      <li><span class="opt-key">B</span>The bridge uses bigger diodes with a larger drop</li>
+      <li><span class="opt-key">C</span>The capacitor uses up 0.7 V</li>
+      <li><span class="opt-key">D</span>Four diodes each drop 0.35 V</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · FLYBACK DIODE (INTERACTIVE) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+    <span class="slide-tag">Diodes as Protection · The Flyback Diode</span>
+    <h2 style="margin-bottom:12px;">Coils Fight a <span class="accent">Sudden Stop</span></h2>
+    <p class="slide-intro">A relay coil stores energy in its magnetic field. When the switch opens, the field collapses and tries to <strong>keep the current flowing</strong>. A diode across the coil, pointed <strong>against</strong> the supply, gives that current a safe loop.</p>
+    <div class="flyback">
+      <div class="split" style="flex:0 0 auto;grid-template-columns:560px 1fr;align-items:start;gap:20px;">
+        <div class="sim-panel">
+          <svg viewBox="0 0 600 420" role="img" aria-label="A 24 volt supply, a switch, and a relay coil in a loop. A flyback diode sits across the coil with its cathode toward the positive side. A spark appears at the switch when it opens without the diode.">
+            <line x1="40" y1="200" x2="120" y2="200" class="sym"/>
+            <line x1="58" y1="226" x2="102" y2="226" class="sym" style="stroke-width:9"/>
+            <path d="M80 200 V80 H200 M276 80 H420 V140 M420 280 V360 H80 V226" class="wire"/>
+            <line x1="200" y1="80" x2="268" y2="50" class="sym"/>
+            <circle cx="200" cy="80" r="6" fill="#0d1117" stroke="rgba(230,247,234,0.85)" stroke-width="3"/>
+            <circle cx="276" cy="80" r="6" fill="#0d1117" stroke="rgba(230,247,234,0.85)" stroke-width="3"/>
+            <path class="fly-spark" d="M236 70 l8 -18 l4 14 l12 -12 l-4 18 l14 2 l-16 8 l6 12 l-14 -6 l-6 14 l-4 -16 l-14 4 z" fill="var(--warn)" stroke="var(--fault)" stroke-width="2"/>
+            <path d="M420 140 a20 17.5 0 0 1 0 35 a20 17.5 0 0 1 0 35 a20 17.5 0 0 1 0 35 a20 17.5 0 0 1 0 35" class="sym"/>
+            <g class="fly-diode">
+              <path d="M420 110 H520 V170 M520 230 V330 H420" class="wire" style="stroke:var(--result)"/>
+              <path d="M490 232 L550 232 L520 176 Z" fill="rgba(94,234,212,0.2)" stroke="var(--result)" stroke-width="4" stroke-linejoin="round"/>
+              <line x1="488" y1="170" x2="552" y2="170" stroke="var(--result)" stroke-width="6"/>
+              <text x="470" y="390" class="fig-lbl" text-anchor="middle" style="fill:var(--result)">diode</text>
+            </g>
+            <text x="20" y="180" class="fig-lbl-b">+</text>
+            <text x="96" y="262" class="fig-lbl">24 V</text>
+            <text x="200" y="130" class="fig-lbl">switch</text>
+            <text x="300" y="214" class="fig-lbl">coil</text>
+          </svg>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="sim-panel">
+            <svg data-role="fly-scope" viewBox="0 0 760 330" role="img" aria-label="Scope traces: the voltage across the switch on top and the coil current below, over 40 milliseconds. The switch closes at 5 milliseconds and opens at 25 milliseconds."></svg>
+          </div>
+          <div class="ctl-row">
+            <span class="seg">
+              <button class="seg-btn" data-fly="without" aria-pressed="true">No diode</button>
+              <button class="seg-btn" data-fly="with" aria-pressed="false">With flyback diode</button>
+            </span>
+            <button class="sim-btn" data-act="fly-run">Run again</button>
+          </div>
+          <div class="sim-feedback" data-role="feedback"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · FLYBACK CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:11:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Why is a diode placed across a relay coil, pointing against the supply?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"To make the relay switch on faster","isCorrect":false},{"id":"q1b","text":"To let the coil run on AC","isCorrect":false},{"id":"q1c","text":"To drop 0.7 V so the coil gets less voltage","isCorrect":false},{"id":"q1d","text":"To give the coil current a safe path when the switch opens, so the voltage cannot spike to hundreds of volts","isCorrect":true}]},{"id":"q2","type":"free-response","text":"On Day 1 we listed arcing as a problem with relays. Explain how a flyback diode reduces arcing at the switch that controls a relay coil.","order":1,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · Flyback Diodes</span>
+    <h2>Why the <span class="accent">Diode?</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>Why is a diode placed across a relay coil, pointing against the supply?</div>
+    </div>
+    <ul class="mcq-opts" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>To make the relay switch on faster</li>
+      <li><span class="opt-key">B</span>To let the coil run on AC</li>
+      <li><span class="opt-key">C</span>To drop 0.7 V so the coil gets less voltage</li>
+      <li><span class="opt-key">D</span>To give the coil current a safe path when the switch opens, so the voltage cannot spike to hundreds of volts</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>On Day 1 we listed <span class="warn">arcing</span> as a problem with relays. Explain how a flyback diode reduces arcing at the switch that controls a relay coil.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · HOW THE SERVICE CALL WORKS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Troubleshooting · Diode Bench Diagnosis</span>
+    <h2>Find the <span class="accent">Hidden Fault</span></h2>
+    <p class="slide-intro">The circuit from Day 1, a <strong>5 V supply, a 1 k&Omega; resistor, the diode, and an LED</strong> in one loop, has stopped working. Something is wrong, and you have <strong>14 minutes</strong> of bench time to find out what.</p>
+    <div class="stage-row">
+      <div class="step-card"><div class="sc-num">1</div><p class="sc-body"><strong>Investigate.</strong> Each test costs time. Choose tests whose readings tell the causes apart.</p></div>
+      <div class="step-card"><div class="sc-num">2</div><p class="sc-body"><strong>Rule out.</strong> Strike out a cause on the Causes tab only when a reading rules it out.</p></div>
+      <div class="step-card"><div class="sc-num">3</div><p class="sc-body"><strong>Diagnose.</strong> Pick the most likely cause and the fix that actually cures it.</p></div>
+      <div class="step-card"><div class="sc-num">4</div><p class="sc-body"><strong>Defend.</strong> Tag the readings that prove it, then read your record.</p></div>
+    </div>
+    <div class="callout-warn fragment fade-up" style="margin-top:var(--gap-lg);">Some choices are <strong>unsafe or bad practice</strong>. They cost time like any test, but they are never carried out, and they count against you.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · SERVICE CALL (SIMULATOR) -->
+<section class="wo-slide">
+  <div class="slide-inner">
+    <span class="slide-tag" style="margin-bottom:10px;">Troubleshooting · Diode Bench Diagnosis</span>
+    <div class="wo" id="diode-call">
+      <div class="wo-top">
+        <button class="sim-btn alt" data-role="new" type="button">New case</button>
+        <span class="dt" aria-live="polite"><span class="dt-label">Bench time</span><span class="dt-bar"><span class="dt-fill" data-role="dt-fill"></span></span><span class="dt-val" data-role="dt-val"></span></span>
+        <span class="status-chip" data-role="status">INVESTIGATE</span>
+      </div>
+      <div class="wo-grid">
+        <div class="sim-panel wo-info" data-role="info"></div>
+        <div class="wo-right">
+          <div class="sim-panel wo-work" data-role="work"></div>
+          <div class="sim-panel ev" data-role="ev" aria-live="polite">
+            <div class="ev-top"><span class="ev-label">EVIDENCE</span><span data-role="chips"></span></div>
+            <div class="ev-body" data-role="ev-body"></div>
+          </div>
+          <div class="wo-bar">
+            <button class="sim-btn alt" data-role="back" type="button">&#9664; Back</button>
+            <button class="sim-btn" data-role="to-diag" type="button">Diagnose &#9654;</button>
+            <button class="sim-btn" data-role="to-defend" type="button">Defend &#9654;</button>
+            <button class="sim-btn" data-role="submit" type="button">Submit record</button>
+            <span class="wo-count" data-role="count"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Causes: diode reversed (key: in-circuit diode voltage, out-of-circuit diode test reads normal), diode open (out-of-circuit diode test reads OL both ways), LED reversed (in-circuit LED voltage of 5 V), and a 100 kΩ resistor (color bands or out-of-circuit resistance). The dead supply is a distractor that the supply reading rules out. The reversed and open diode look identical in the circuit; only the out-of-circuit diode test separates them. Unsafe choices: measuring resistance with the power on, and touching the diode to feel for heat.</aside>
+</section>
+
+
+<!-- SLIDE 15 · EXIT TICKET (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:14:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A loop has a 5 V supply, a 1 kΩ resistor, a silicon diode, and an LED. The LED is dark, and the voltage across the diode in the circuit reads 5.00 V. Which two causes fit this reading?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"A reversed LED or a 100 kΩ resistor","isCorrect":false},{"id":"q1b","text":"A reversed diode or an open diode","isCorrect":true},{"id":"q1c","text":"A dead supply or a reversed LED","isCorrect":false},{"id":"q1d","text":"A 100 kΩ resistor or an open diode","isCorrect":false}]},{"id":"q2","type":"free-response","text":"Record one fault you diagnosed in Diode Bench Diagnosis, the reading that gave it away, and why that reading points to that cause.","order":1,"responseTimeLimitMs":180000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Exit <span class="accent">Ticket</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A loop has a 5 V supply, a 1 k&Omega; resistor, a silicon diode, and an LED. The LED is dark, and the diode reads <strong>5.00 V</strong> in the circuit. Which two causes fit this reading?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>A reversed LED or a 100 k&Omega; resistor</li>
+      <li><span class="opt-key">B</span>A reversed diode or an open diode</li>
+      <li><span class="opt-key">C</span>A dead supply or a reversed LED</li>
+      <li><span class="opt-key">D</span>A 100 k&Omega; resistor or an open diode</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>Record one fault you diagnosed, the <span class="res">reading</span> that gave it away, and why that reading points to that cause.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 16 · WRAP UP -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Wrap Up</span>
+    <h2>What We Know, and What Comes <span class="accent">Next</span></h2>
+    <div class="row-3" style="margin-bottom:var(--gap-lg);">
+      <div class="card is-key"><span class="card-name">Rectifiers</span><p class="card-body">Diodes turn AC into pulsing DC. A <strong>bridge</strong> uses both halves, and a <strong>capacitor</strong> smooths the ripple.</p></div>
+      <div class="card is-warn"><span class="card-name">Protection</span><p class="card-body">A <strong>flyback diode</strong> gives a coil&#39;s current a safe loop, so switches are not destroyed by the spike.</p></div>
+      <div class="card"><span class="card-name">Troubleshooting</span><p class="card-body">Readings that <strong>differ between causes</strong> are the ones worth the time.</p></div>
+    </div>
+    <div class="callout fragment fade-up">
+      <strong>Next class:</strong> what if a junction could be <strong>switched on and off</strong> by a tiny current? Two junctions back to back make a <span class="key">transistor</span>.
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script src="semiconductor-sims.js"></script>
+<script>
+// Static waveform paths: <path data-wave="sin|abs|half"> gets its d attribute
+// from x0..x1, a midline, an amplitude, a cycle count, and for "half" a diode
+// drop as a fraction of the amplitude.
+function drawWaves() {
+    document.querySelectorAll('path[data-wave]').forEach(function (p) {
+        var d = p.dataset, x0 = +d.x0, x1 = +d.x1, mid = +d.mid, amp = +d.amp, cyc = +d.cycles, drop = +(d.drop || 0);
+        var pts = [];
+        for (var i = 0; i <= 400; i++) {
+            var u = i / 400, s = Math.sin(u * cyc * 2 * Math.PI), v;
+            if (d.wave === 'sin') v = s;
+            else if (d.wave === 'abs') v = Math.abs(s);
+            else v = Math.max(0, s - drop);
+            pts.push((x0 + u * (x1 - x0)).toFixed(1) + ' ' + (mid - amp * v).toFixed(1));
+        }
+        p.setAttribute('d', 'M' + pts.join(' L'));
+    });
+}
+
+// Diode Bench Diagnosis: the Day 1 loop (5 V, 1 kOhm, 1N4001, red LED) with
+// the LED dark. Readings follow the same diode model as the Day 1 and Day 3
+// benches: with a 100 kOhm resistor only about 0.03 mA flows, so the diode
+// drops 0.42 V, the LED 1.62 V, and the resistor the remaining 2.96 V.
+var DIODE_CALL = {
+    budget: 14,
+    logLabel: 'Bench log',
+    history: [
+        ['Monday', 'Circuit built and checked: the LED lit, and the diode read 0.62 V.'],
+        ['Tuesday', 'A student pulled the diode out to read its part number, then pushed it back in.'],
+        ['Tuesday', 'The resistor drawer was restocked. The 1 kΩ and 100 kΩ bins sit side by side.'],
+        ['Wednesday', 'The board was bumped off the table. The LED popped out and was pushed back in.'],
+        ['Wednesday', 'The diode leads were bent back and forth several times while the board was rearranged.'],
+        ['Thursday', 'The bench supply fan has been noisy all week.'],
+    ],
+    title: 'Day 1 Loop: LED Is Dark',
+    overview: 'A 5 V supply, a 1 kΩ resistor, a 1N4001 diode, and a red LED in one series loop, with the diode band toward the negative side.',
+    npHead: 'Circuit',
+    nameplate: [['Supply', '5.0 V DC'], ['Resistor', '1 kΩ'], ['Diode', '1N4001'], ['LED', 'Red, 5 mm']],
+    symptom: 'The LED is dark. It worked on Monday, and nothing has smoked or smelled hot.',
+    causes: {
+        drev: { name: 'Diode reversed', key: ['vd', 'dout'], why: 'The diode&#39;s band now faces the + side, so it is reverse biased. Its depletion region blocks current, so the whole <b>5 V</b> appears across it and the resistor and LED read 0 V. Out of the circuit it tests <b>normal</b> (about 0.55 V one way, OL the other), which is what separates it from an open diode.' },
+        dopen: { name: 'Diode open inside', key: ['dout'], why: 'Bending the leads broke the connection inside the diode, so no current flows either way. In the circuit it looks exactly like a reversed diode: <b>5 V</b> across it and 0 V everywhere else. Only the out-of-circuit diode test, <b>OL both ways</b>, tells them apart.' },
+        lrev: { name: 'LED reversed', key: ['vled'], why: 'The LED is a diode too. Pushed back in the wrong way, it is reverse biased, so it blocks current and the whole <b>5 V</b> appears across it, while the diode and the resistor read 0 V.' },
+        r100k: { name: 'Wrong resistor (100 kΩ)', key: ['bands', 'rout', 'vr'], why: 'A 100 kΩ resistor lets through only about <b>0.03 mA</b>, a hundred times less than 1 kΩ, so the LED glows too faintly to see. The yellow third band (instead of red) or the out-of-circuit resistance gives it away. The in-circuit readings still add up to 5 V, with almost 3 V across the resistor.' },
+    },
+    tests: [
+        { id: 'bands', min: 1, name: 'Bands', label: 'Read the resistor color bands',
+          proc: 'Resistor color bands:',
+          r: { def: '<span class="rd">Brown, black, red, gold</span>: 1 kΩ.',
+               r100k: '<span class="rd">Brown, black, yellow, gold</span>: 100 kΩ.' } },
+        { id: 'supply', min: 2, name: 'Supply', label: 'Measure the supply voltage',
+          proc: 'DMM across the supply terminals:',
+          r: { def: '<span class="rd">5.00 V</span>.' } },
+        { id: 'limit', min: 1, name: 'Limit', label: 'Check the supply current-limit setting',
+          proc: 'Supply front panel:',
+          r: { def: 'Current limit set to <span class="rd">0.50 A</span>. The constant-current light is <span class="rd">off</span>.' } },
+        { id: 'vd', min: 2, name: 'V diode', label: 'Measure the voltage across the diode, in the circuit',
+          proc: 'DMM across the diode, power on:',
+          r: { def: '<span class="rd">0.00 V</span>.', drev: '<span class="rd">5.00 V</span>.', dopen: '<span class="rd">5.00 V</span>.', r100k: '<span class="rd">0.42 V</span>.' } },
+        { id: 'vr', min: 2, name: 'V resistor', label: 'Measure the voltage across the resistor, in the circuit',
+          proc: 'DMM across the resistor, power on:',
+          r: { def: '<span class="rd">0.00 V</span>.', r100k: '<span class="rd">2.96 V</span>.' } },
+        { id: 'vled', min: 2, name: 'V LED', label: 'Measure the voltage across the LED, in the circuit',
+          proc: 'DMM across the LED, power on:',
+          r: { def: '<span class="rd">0.00 V</span>.', lrev: '<span class="rd">5.00 V</span>.', r100k: '<span class="rd">1.62 V</span>.' } },
+        { id: 'ohmhot', min: 2, unsafe: true, label: 'Measure the resistor in ohms with the power on',
+          warn: 'An ohmmeter measures by sending its own small current. With the circuit powered, the reading is meaningless, and on higher voltages it can damage the meter. Turn the power off and lift one end of the part first.' },
+        { id: 'dout', min: 5, name: 'Diode test', label: 'Pull the diode and test it in diode mode, both ways',
+          proc: 'Power off, diode removed, DMM diode test:',
+          r: { def: 'One way: <span class="rd">0.55 V</span>. Leads reversed: <span class="rd">OL</span>.', dopen: 'One way: <span class="rd">OL</span>. Leads reversed: <span class="rd">OL</span>.' } },
+        { id: 'rout', min: 5, name: 'Ohms', label: 'Pull the resistor and measure its resistance',
+          proc: 'Power off, resistor removed, DMM ohms:',
+          r: { def: '<span class="rd">0.99 kΩ</span>.', r100k: '<span class="rd">99.6 kΩ</span>.' } },
+        { id: 'touch', min: 1, unsafe: true, label: 'Touch the diode to feel whether it is hot',
+          warn: 'Feeling parts with your fingers is a bad habit. On higher power circuits, diodes and resistors run hot enough to burn, and you can touch a live lead. Measure instead, or use the back of a finger only after the power is off.' },
+    ],
+    diagnoses: [
+        { text: 'LED reversed', cause: 'lrev' },
+        { text: 'Dead supply', ruledBy: ['supply'] },
+        { text: 'Diode reversed', cause: 'drev' },
+        { text: 'Wrong resistor (100 kΩ)', cause: 'r100k' },
+        { text: 'Diode open inside', cause: 'dopen' },
+    ],
+    repairs: [
+        { text: 'Raise the supply to 12 V so the LED gets more voltage', note: 'This does not fix the cause. A blocked loop stays blocked, and with the wrong resistor it only makes the LED slightly brighter.' },
+        { text: 'Turn the diode around so its band faces the negative side', fixes: 'drev' },
+        { text: 'Replace the resistor with a 1 kΩ (brown, black, red)', fixes: 'r100k' },
+        { text: 'Replace the diode with a new 1N4001', fixes: 'dopen' },
+        { text: 'Turn the LED around', fixes: 'lrev' },
+    ],
+};
+
+drawWaves();
+var SIMS = [];
+document.querySelectorAll('.rect-lab').forEach(function (r) { SIMS.push(SiliconSims.buildRectifierLab(r)); });
+document.querySelectorAll('.flyback').forEach(function (r) { SIMS.push(SiliconSims.buildFlyback(r)); });
+
+initSyncDeckReveal({
+    deckId: 'day4-rectifiers-and-protection',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        SiliconSims.startSimLoop(Reveal, SIMS);
+        document.querySelectorAll('.wo').forEach(function (r) {
+            if (!r.closest('#storyboard')) SiliconSims.buildServiceCall(r, DIODE_CALL);
+        });
+    },
+});
+</script>
+</body>
+</html>
