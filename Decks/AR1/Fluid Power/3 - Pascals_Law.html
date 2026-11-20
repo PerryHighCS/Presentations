@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="xfulm3">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3 - Pascal's Law</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC: Pascal's Law (Day 3)
+   Unit colors and shared styles live in the unit theme.css:
+   amber = hydraulic fluid and pressure, green = key terms,
+   blue = force you apply (input), yellow = limits of the model.
+   ============================================================ */
+
+/* Formulas */
+.formula {
+  font-family: var(--font-mono);
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.formula .hyd { color: var(--hyd); }
+.has-frac { display: flex; align-items: center; gap: 0.4em; }
+.has-frac.fragment.visible { display: flex; }
+.ans-step { display: inline-flex; align-items: center; gap: 0.4em; }
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+.frac > span { padding: 0 0.25em; }
+.frac > span:first-child { border-bottom: 4px solid currentColor; padding-bottom: 4px; }
+.frac > span:last-child { padding-top: 4px; }
+.formula-row {
+  display: flex;
+  gap: var(--gap-lg);
+  align-items: center;
+  margin: var(--gap) 0;
+}
+.formula-card {
+  background: var(--bg-card);
+  border: 1px solid var(--hyd-border);
+  border-radius: 8px;
+  padding: 18px 28px;
+}
+.formula-key {
+  font-size: var(--body);
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* Worked-example steps */
+.calc {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: var(--gap);
+}
+.calc-line {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  color: var(--text);
+}
+.calc-line .ans { color: var(--result); font-weight: 700; }
+.calc-note { font-size: var(--body); color: var(--text-muted); line-height: 1.45; }
+
+/* Static jack figure */
+.jack-fig { display: block; width: 100%; height: auto; }
+.jack-fig text { font-family: 'DM Sans', sans-serif; }
+.jack-fig .t-lbl { font-size: 28px; font-weight: 700; }
+.jack-fig .t-sub { font-size: 24px; fill: rgba(232,242,255,0.72); }
+
+/* ─── Simulation A: hydraulic jack ─────────────────────────── */
+.psim {
+  display: grid;
+  grid-template-columns: 760px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+.psim-svg { display: block; width: 760px; height: 600px; }
+.psim-stage { position: relative; width: 760px; height: 600px; }
+.chal {
+  margin-top: 14px;
+  padding: 12px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--result);
+  border-radius: 8px;
+}
+.chal-body { min-height: 134px; }
+.chal-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--result); margin-bottom: 6px; }
+.chal-text { font-size: var(--body); line-height: 1.4; color: var(--text); margin: 0; }
+.chal-nav { display: flex; gap: 10px; }
+.chal-nav .sim-btn { min-width: 130px; }
+.psim-svg .push-grab { cursor: grab; }
+.psim-svg.dragging, .psim-svg.dragging .push-grab { cursor: grabbing; }
+.psim-svg { touch-action: none; }
+/* Vertical push slider beside the input cylinder. Thumb travel matches the
+   piston's 8 in of travel in the drawing (y 197 to 469, 34 px per inch). */
+.push-ctl {
+  position: absolute;
+  left: 0;
+  top: 96px;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.push-ctl .ctl-val { text-align: center; }
+.sim-range.push-range {
+  writing-mode: vertical-lr;
+  direction: ltr;
+  width: 36px;
+  height: 288px;
+  margin-top: 25px;
+}
+.push-hint { font-size: var(--small); color: var(--text-muted); margin-top: 4px; }
+.psim-svg text { font-family: 'DM Sans', sans-serif; }
+.psim-panel { display: flex; flex-direction: column; gap: 12px; }
+.ctl {
+  display: grid;
+  grid-template-columns: 210px 1fr 110px;
+  align-items: center;
+  gap: 12px;
+}
+.ctl-name { font-size: var(--small); color: var(--text); }
+.ctl-val {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  color: var(--text);
+  text-align: right;
+  white-space: nowrap;
+}
+.ctl-val.in-color { color: var(--accent); }
+.ctl-val.hyd { color: var(--hyd); }
+.sim-range { width: 100%; height: 28px; accent-color: var(--accent); cursor: pointer; }
+.sim-range.hyd-range { accent-color: var(--hyd); }
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.tile {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+.tile .t-name { display: block; font-size: var(--small); color: var(--text-muted); white-space: nowrap; }
+.tile .t-val { display: block; font-family: var(--font-mono); font-size: 30px; font-weight: 700; color: var(--text); white-space: nowrap; }
+.tile.hyd-tile { background: var(--hyd-dim); border-color: var(--hyd-border); }
+.tile.hyd-tile .t-val { color: var(--hyd); }
+.psim-status {
+  height: 104px;
+  box-sizing: border-box;
+  overflow: hidden;
+  font-size: var(--small);
+  line-height: 1.4;
+  color: var(--text);
+  border-left: 4px solid var(--result);
+  background: rgba(77,255,176,0.06);
+  padding: 8px 14px;
+  border-radius: 0 6px 6px 0;
+}
+.psim-status.stall { border-left-color: var(--bad); background: rgba(255,138,128,0.07); }
+.psim-status.lossy { border-left-color: var(--warn); background: rgba(255,209,102,0.07); }
+.psim-row { display: flex; align-items: center; gap: 12px; }
+.psim-note { font-size: var(--small); color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="reveal"><div class="slides">
+
+<!-- SLIDE 01 · Title -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 5 &nbsp;·&nbsp; Pascal&rsquo;s Law</span>
+    <h1 class="title-h1">Why Can a Small Push <span class="hyd">Lift a Heavy Load?</span></h1>
+    <p class="lead" style="margin-top:var(--gap);text-align:center;">Yesterday a small cylinder made a large one push harder. Today we explain why, with numbers.</p>
+  </div>
+  <div class="glow" style="width:620px;height:620px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(255,171,94,0.07),transparent 70%);"></div>
+  <div class="glow" style="width:560px;height:560px;right:-140px;bottom:-160px;background:radial-gradient(circle,rgba(77,255,176,0.05),transparent 70%);"></div>
+</section>
+
+<!-- SLIDE 02 · Resonance: Predictions (poll) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:2:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Predict: a small water-filled cylinder is connected to a large one. You push the small piston with 10 lb of force. How hard does the large piston push?","order":0,"responseTimeLimitMs":40000,"options":[{"id":"q1a","text":"Less than 10 lb","isCorrect":false},{"id":"q1b","text":"Exactly 10 lb","isCorrect":false},{"id":"q1c","text":"More than 10 lb","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"Predict: in that same system, how does the water pressure near the large piston compare with the pressure near the small piston?","order":1,"responseTimeLimitMs":40000,"options":[{"id":"q2a","text":"Higher near the large piston","isCorrect":false},{"id":"q2b","text":"The same at both pistons","isCorrect":false},{"id":"q2c","text":"Lower near the large piston","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict</span>
+    <h2>Make Your Predictions</h2>
+    <p class="lead">A small water-filled cylinder is connected to a large one, and you push the small piston with 10&nbsp;lb.</p>
+    <p class="lead">1. How hard does the <span class="hyd">large piston</span> push?</p>
+    <p class="lead">2. How does the water <span class="term">pressure</span> near the large piston compare with the pressure near the small one?</p>
+  </div>
+  <aside class="notes">These are ungraded polls. Many students expect higher pressure at the large piston, because it pushes harder. Pascal&rsquo;s Law says the pressure is the same everywhere; the extra force comes from the larger area.</aside>
+</section>
+
+<!-- SLIDE 03 · What pressure is -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Pressure</span>
+    <h2>What Pressure Really Is</h2>
+    <p class="lead"><span class="term">Pressure</span> is how much force pushes on each square inch of a surface. Press your thumb on a table, and your push is spread over the small area of your thumb.</p>
+    <div class="formula-row">
+      <div class="formula-card fragment fade-up">
+        <div class="formula has-frac"><span class="hyd">P</span><span>=</span><span class="frac"><span>F</span><span>A</span></span></div>
+        <div class="formula-key">pressure = force &divide; area</div>
+      </div>
+      <p class="prose fragment fade-up" style="flex:1;">Force is in <span class="term">pounds (lb)</span> and area is in <span class="term">square inches (in&sup2;)</span>, so pressure comes out in pounds per square inch: <span class="hyd">psi</span>. That is the unit on almost every hydraulic and pneumatic gauge.</p>
+    </div>
+    <p class="prose fragment fade-up">The same force on a smaller area makes a higher pressure. That is why a nail goes into wood point first.</p>
+  </div>
+</section>
+
+<!-- SLIDE 04 · Pascal's Law -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Pascal&rsquo;s Law</span>
+    <h2>Pascal&rsquo;s Law</h2>
+    <div class="split split-50" style="flex:none;">
+      <div>
+        <p class="lead"><span class="term">Pascal&rsquo;s Law:</span> pressure applied to a confined fluid is passed equally to every part of that fluid.</p>
+        <p class="prose fragment fade-up" style="margin-top:var(--gap);">Every connected piston, hose and cylinder feels the <span class="hyd">same pressure</span>. A small piston and a large piston feel the same psi, but the large piston has more square inches for that pressure to push on, so it pushes harder.</p>
+      </div>
+      <svg class="jack-fig" viewBox="0 0 640 440" role="img" aria-label="A small input cylinder and a large output cylinder share the same water. The pressure is 20 psi in both. A 10 pound push on the small piston makes the large piston push with 80 pounds.">
+        <defs>
+          <marker id="pl-arr" markerUnits="userSpaceOnUse" markerWidth="24" markerHeight="24" refX="12" refY="12" orient="auto"><path d="M0 0 L24 12 L0 24 z" fill="#5daaff"/></marker>
+          <marker id="pl-arr-g" markerUnits="userSpaceOnUse" markerWidth="24" markerHeight="24" refX="12" refY="12" orient="auto"><path d="M0 0 L24 12 L0 24 z" fill="#4dffb0"/></marker>
+        </defs>
+        <!-- fluid -->
+        <rect x="115" y="190" width="50" height="150" fill="rgba(255,171,94,0.45)"/>
+        <rect x="350" y="170" width="200" height="170" fill="rgba(255,171,94,0.45)"/>
+        <rect x="115" y="340" width="435" height="40" fill="rgba(255,171,94,0.45)"/>
+        <!-- walls -->
+        <path d="M112 120 V383 H553 V120 M347 120 V337 H168 V120" fill="none" stroke="#ffab5e" stroke-width="5"/>
+        <!-- pistons -->
+        <rect x="117" y="176" width="46" height="14" fill="#e8f2ff"/>
+        <rect x="134" y="96" width="12" height="80" fill="#e8f2ff"/>
+        <rect x="352" y="156" width="196" height="14" fill="#e8f2ff"/>
+        <rect x="440" y="106" width="20" height="50" fill="#e8f2ff"/>
+        <!-- forces -->
+        <path d="M140 22 V80" stroke="#5daaff" stroke-width="6" marker-end="url(#pl-arr)"/>
+        <path d="M450 100 V40" stroke="#4dffb0" stroke-width="6" marker-end="url(#pl-arr-g)"/>
+        <text class="t-lbl" x="164" y="58" fill="#5daaff">10 lb</text>
+        <text class="t-lbl" x="474" y="70" fill="#4dffb0">80 lb</text>
+        <text class="t-sub" x="140" y="420" text-anchor="middle">0.5 in&sup2;</text>
+        <text class="t-sub" x="450" y="420" text-anchor="middle">4 in&sup2;</text>
+        <text class="t-lbl" x="250" y="371" fill="#e8f2ff" text-anchor="middle">20 psi</text>
+        <text class="t-lbl" x="450" y="270" fill="#e8f2ff" text-anchor="middle">20 psi</text>
+      </svg>
+    </div>
+  </div>
+  <aside class="notes">The figure is the worked example on the next two slides. Point out that the pressure label is the same in both cylinders.</aside>
+</section>
+
+<!-- SLIDE 05 · Finding pressure -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Worked Example</span>
+    <h2>Step 1: Find the Pressure</h2>
+    <p class="lead">You push a small piston with an area of 0.5&nbsp;in&sup2; using a force of 10&nbsp;lb. What pressure does the water feel?</p>
+    <div class="calc">
+      <div class="calc-line has-frac fragment fade-up"><span>P =</span><span class="frac"><span>F</span><span>A</span></span></div>
+      <div class="calc-line has-frac fragment fade-up"><span>P =</span><span class="frac"><span>10&nbsp;lb</span><span>0.5&nbsp;in&sup2;</span></span></div>
+      <div class="calc-line fragment fade-up">P = <span class="ans">20&nbsp;psi</span></div>
+    </div>
+    <p class="calc-note fragment fade-up" style="margin-top:var(--gap);">By Pascal&rsquo;s Law, that <span class="hyd">20&nbsp;psi</span> now fills the entire system, every hose and every piston, no matter how large or small.</p>
+  </div>
+  <aside class="notes">Before revealing the answer, ask students to predict whether the pressure will be more or less than 10. Dividing by an area smaller than 1 makes the number bigger.</aside>
+</section>
+
+<!-- SLIDE 06 · Finding output force -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Worked Example</span>
+    <h2>Step 2: Find the Output Force</h2>
+    <p class="lead">That 20&nbsp;psi reaches a second piston with an area of 4&nbsp;in&sup2;. How hard does it push?</p>
+    <div class="calc">
+      <div class="calc-line has-frac fragment fade-up"><span>P =</span><span class="frac"><span>F</span><span>A</span></span><span style="margin-left:-0.4em;">, so F = P &times; A</span></div>
+      <div class="calc-line fragment fade-up">F = 20&nbsp;psi &times; 4&nbsp;in&sup2;</div>
+      <div class="calc-line fragment fade-up">F = <span class="ans">80&nbsp;lb</span></div>
+    </div>
+    <p class="calc-note fragment fade-up" style="margin-top:var(--gap);">You supplied 10&nbsp;lb, and the system pushes with 80&nbsp;lb, because the output piston has 8 times the area. Each of its square inches gets the same 20&nbsp;pounds of push.</p>
+  </div>
+</section>
+
+<!-- SLIDE 07 · Nothing for free -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Trade-Off</span>
+    <h2>Nothing for Free</h2>
+    <p class="lead">The water that leaves the small cylinder has to fill the large one. The large cylinder is 8 times wider, so it rises only 1/8 as far.</p>
+    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+      <div class="sys-card hyd-card fragment fade-up">
+        <h3 class="hyd">Volume In = Volume Out</h3>
+        <p class="calc-line" style="font-size:28px;">0.5&nbsp;in&sup2; &times; 8&nbsp;in = 4&nbsp;in&sup3;</p>
+        <p class="calc-line" style="font-size:28px;">4&nbsp;in&sup2; &times; 1&nbsp;in = 4&nbsp;in&sup3;</p>
+        <p>Push the small piston 8&nbsp;in, and the large piston rises 1&nbsp;in.</p>
+      </div>
+      <div class="sys-card term-card fragment fade-up">
+        <h3 class="term">Work In = Work Out</h3>
+        <p class="calc-line" style="font-size:28px;">10&nbsp;lb &times; 8&nbsp;in = 80&nbsp;lb&middot;in</p>
+        <p class="calc-line" style="font-size:28px;">80&nbsp;lb &times; 1&nbsp;in = 80&nbsp;lb&middot;in</p>
+        <p>Force times distance is the same on both sides, in an ideal system.</p>
+      </div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">Hydraulics trades <span class="term">distance for force</span>, just like a gear train or a pulley system. It never creates energy from nothing.</p>
+  </div>
+  <aside class="notes">This explains the Station 3 observation: the large syringe moved less but pushed harder. Real systems lose a little to friction and leaks, so the work out is slightly less than the work in.</aside>
+</section>
+
+<!-- SLIDE 08 · Simulation A -->
+<section data-prevent-swipe>
+  <div class="slide-inner" style="max-width:1600px;padding:40px 56px 28px;justify-content:center;">
+    <span class="slide-tag" style="margin-bottom:8px;">Hydraulic Jack Simulator &nbsp;·&nbsp; Ideal model: no friction or leaks, and the load rises slowly</span>
+    <div class="psim" id="jack-sim">
+      <div class="psim-stage">
+        <svg class="psim-svg" viewBox="0 0 760 600" role="img" aria-label="Hydraulic jack simulation. A small input cylinder on the left is connected to a larger output cylinder on the right that lifts a load." data-r="svg"></svg>
+        <div class="push-ctl">
+          <label class="ctl-name" for="ps-push">Push</label>
+          <span class="ctl-val in-color" data-v="push"></span>
+          <input class="sim-range push-range" id="ps-push" type="range" min="0" max="8" step="0.5" value="0" data-k="push" aria-label="Push distance">
+          <span class="push-hint">Drag down</span>
+        </div>
+      </div>
+      <div class="psim-panel">
+        <div class="ctl"><label class="ctl-name" for="ps-fin">Your push</label><input class="sim-range" id="ps-fin" type="range" min="1" max="40" step="1" value="10" data-k="fin"><span class="ctl-val in-color" data-v="fin"></span></div>
+        <div class="ctl"><label class="ctl-name" for="ps-ain">Input piston area</label><input class="sim-range" id="ps-ain" type="range" min="0.25" max="2" step="0.25" value="0.5" data-k="ain"><span class="ctl-val" data-v="ain"></span></div>
+        <div class="ctl"><label class="ctl-name" for="ps-aout">Output piston area</label><input class="sim-range" id="ps-aout" type="range" min="0.5" max="8" step="0.5" value="4" data-k="aout"><span class="ctl-val" data-v="aout"></span></div>
+        <div class="ctl"><label class="ctl-name" for="ps-load">Load on output</label><input class="sim-range hyd-range" id="ps-load" type="range" min="0" max="200" step="10" value="60" data-k="load"><span class="ctl-val hyd" data-v="load"></span></div>
+        <div class="psim-row">
+          <span class="ctl-name">Trapped air</span>
+          <span class="seg" role="group" aria-label="Trapped air">
+            <button type="button" class="seg-btn" data-air="0" aria-pressed="true">None</button>
+            <button type="button" class="seg-btn" data-air="1" aria-pressed="false">Small bubble</button>
+          </span>
+          <button type="button" class="sim-btn alt" data-r="reset" style="margin-left:auto;">Reset</button>
+        </div>
+        <div class="tiles">
+          <div class="tile hyd-tile"><span class="t-name">Pressure</span><span class="t-val" data-t="p"></span></div>
+          <div class="tile"><span class="t-name">Output force</span><span class="t-val" data-t="fout"></span></div>
+          <div class="tile"><span class="t-name">Force multiplier</span><span class="t-val" data-t="mult"></span></div>
+          <div class="tile"><span class="t-name">Input moved</span><span class="t-val" data-t="din"></span></div>
+          <div class="tile"><span class="t-name">Output rose</span><span class="t-val" data-t="dout"></span></div>
+          <div class="tile"><span class="t-name">Work in &rarr; out</span><span class="t-val" data-t="work"></span></div>
+        </div>
+        <div class="psim-status" data-r="status" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="chal" data-r="chal">
+      <div class="chal-body">
+        <div class="chal-head">
+          <span><span data-r="chal-num">Challenge 1 of 3</span> &nbsp;·&nbsp; Record your settings and results in your notebook.</span>
+          <span class="chal-nav">
+            <button type="button" class="sim-btn alt" data-r="chal-prev" disabled>&larr; Prev</button>
+            <button type="button" class="sim-btn" data-r="chal-next">Next &rarr;</button>
+          </span>
+        </div>
+        <p class="chal-text" data-chal="1">Set up the worked example: 10&nbsp;lb on a 0.5&nbsp;in&sup2; input and a 4&nbsp;in&sup2; output. Confirm the pressure, the output force and how far the output rises for an 8&nbsp;in push.</p>
+        <p class="chal-text" data-chal="2" hidden>Keep your push at 10&nbsp;lb, but increase the load on the output to <span class="hyd">150&nbsp;lb</span>. Lift it by changing only the piston areas. Which areas did you choose, and how far does the load rise when you push the full 8&nbsp;in?</p>
+        <p class="chal-text" data-chal="3" hidden>Turn on <span class="term">trapped air</span> and repeat challenge 1. What changes, and how does it explain your Day 2 syringe results?</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Simulation A. The model is ideal: pressure = push &divide; input area, output force = pressure &times; output area, and volume in = volume out. If the output force is less than the load, the jack stalls. Trapped air uses Boyle&rsquo;s Law (a 0.6&nbsp;in&sup3; bubble at room pressure) to show how a bubble absorbs part of the push. Real syringes add friction and small leaks, so students&rsquo; Day 2 numbers will not match exactly.</aside>
+</section>
+
+<!-- SLIDE 09 · Designing a lift -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Design Problem</span>
+    <h2>Designing a Lift</h2>
+    <p class="lead">You want the output piston to lift <span class="hyd">150&nbsp;lb</span>, and the output piston has an area of 3&nbsp;in&sup2;. Your input piston has an area of 0.5&nbsp;in&sup2;.</p>
+    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+      <div class="calc">
+        <div class="calc-note">What pressure does the system need?</div>
+        <div class="calc-line has-frac fragment fade-up"><span>P =</span><span class="frac"><span>F</span><span>A</span></span><span>=</span><span class="frac"><span>150</span><span>3</span></span></div>
+        <div class="calc-line fragment fade-up">P = <span class="ans">50&nbsp;psi</span></div>
+      </div>
+      <div class="calc">
+        <div class="calc-note fragment fade-up">What input force makes 50&nbsp;psi?</div>
+        <div class="calc-line fragment fade-up">F = P &times; A = 50 &times; 0.5</div>
+        <div class="calc-line fragment fade-up">F = <span class="ans">25&nbsp;lb</span></div>
+      </div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">Engineers design around this trade-off: a small input force lifts a large load, as long as you are willing to push farther.</p>
+  </div>
+  <aside class="notes">Have partners solve each step before revealing it. This matches simulator challenge 2, so groups can check their simulator settings against it.</aside>
+</section>
+
+<!-- SLIDE 10 · Resonance: practice problem -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:11:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A car lift&#39;s output piston has an area of 6 in² and must lift 240 lb. What pressure does the fluid need?","order":0,"responseTimeLimitMs":90000,"options":[{"id":"q1a","text":"1,440 psi","isCorrect":false},{"id":"q1b","text":"246 psi","isCorrect":false},{"id":"q1c","text":"40 psi","isCorrect":true},{"id":"q1d","text":"0.025 psi","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"The same car lift has an input piston with an area of 0.75 in². The fluid must reach 40 psi. What input force is needed?","order":1,"responseTimeLimitMs":90000,"options":[{"id":"q2a","text":"320 lb","isCorrect":false},{"id":"q2b","text":"53 lb","isCorrect":false},{"id":"q2c","text":"180 lb","isCorrect":false},{"id":"q2d","text":"30 lb","isCorrect":true}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Your Turn</span>
+    <h2>Try One</h2>
+    <p class="lead">A car lift&rsquo;s output piston has an area of 6&nbsp;in&sup2; and must lift 240&nbsp;lb. Its input piston has an area of 0.75&nbsp;in&sup2;.</p>
+    <p class="lead">1. What pressure does the fluid need?</p>
+    <p class="lead">2. What input force is needed to make that pressure?</p>
+  </div>
+  <aside class="notes">Answers: 240 &divide; 6 = 40 psi, then 40 &times; 0.75 = 30 lb. The distractors come from multiplying when you should divide (1,440 psi), adding (246 psi), dividing upside down (0.025 psi), and using the wrong area (53 lb, 180 lb, 320 lb).</aside>
+</section>
+
+<!-- SLIDE 11 · Practice -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Practice</span>
+    <h2>Pascal&rsquo;s Law Practice</h2>
+    <p class="lead">Work through the <span class="term">Pascal&rsquo;s Law Practice</span> sheet with a partner, then check your answers together.</p>
+    <div class="ask">For every numerical problem, write the formula, substitute your numbers with units, and box the answer. In your notebook, sketch one system from the sheet and label its pressure, both areas and both forces.</div>
+    <p class="prose" style="margin-top:var(--gap);">When a problem asks how far a piston moves, use <span class="hyd">volume in = volume out</span>: area &times; distance is the same on both sides.</p>
+  </div>
+  <aside class="notes">The notebook sketch with a complete calculation is the Day 3 evidence for ADE 7.3. The Application and Reasoning questions at the end of the sheet connect back to the syringe lab and to car brakes.</aside>
+</section>
+
+<!-- SLIDE 12 · Extension: area from diameter -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Extension</span>
+    <h2>Extension: Area from Diameter</h2>
+    <p class="lead">Real cylinders are labeled by their <span class="term">bore</span>, the inside diameter, not their area. To use P = F &divide; A, first find the area of the circle. The radius is half the bore.</p>
+    <div class="formula-row">
+      <div class="formula-card">
+        <div class="formula">A = &pi; &times; r&sup2;</div>
+        <div class="formula-key">r = radius = bore &divide; 2</div>
+      </div>
+      <div class="calc" style="margin-top:0;">
+        <div class="calc-note fragment fade-up" data-fragment-index="1">A 2&nbsp;in bore has a radius of 1&nbsp;in:</div>
+        <div class="calc-line has-frac fragment fade-up" data-fragment-index="2"><span>A = 3.14 &times; 1&sup2;</span><span class="fragment fade-up ans-step" data-fragment-index="3"><span>=</span><span class="ans">3.14&nbsp;in&sup2;</span></span></div>
+        <div class="calc-note fragment fade-up" data-fragment-index="4" style="margin-top:10px;">A 4&nbsp;in bore has a radius of 2&nbsp;in:</div>
+        <div class="calc-line has-frac fragment fade-up" data-fragment-index="5"><span>A = 3.14 &times; 2&sup2;</span><span class="fragment fade-up ans-step" data-fragment-index="6"><span>=</span><span class="ans">12.56&nbsp;in&sup2;</span></span></div>
+      </div>
+    </div>
+    <p class="prose fragment fade-up" data-fragment-index="7">Doubling the bore from 2&nbsp;in to 4&nbsp;in makes the area <span class="term">4 times</span> larger (3.14 to 12.56&nbsp;in&sup2;), because the radius doubles and then is squared: 2&sup2; = 4.</p>
+  </div>
+  <aside class="notes">Optional, for students ready for circle geometry. It comes back on Day 4 when students read cylinder bores. The rectangular piston problem on the practice sheet is a good warm-up: area = length &times; width.</aside>
+</section>
+
+<!-- SLIDE 13 · Resonance: Exit ticket -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:14:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"In a hydraulic jack, the output piston&#39;s area is doubled. The push and the input piston stay the same. What happens to the output force and to how far the output rises for the same push?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"The force doubles, and the output rises twice as far.","isCorrect":false},{"id":"q1b","text":"The force stays the same, and the output rises half as far.","isCorrect":false},{"id":"q1c","text":"The force doubles, and the output rises half as far.","isCorrect":true},{"id":"q1d","text":"The force halves, and the output rises twice as far.","isCorrect":false}]},{"id":"q2","type":"free-response","text":"Explain your answer using pressure (P = F ÷ A) and the volume of fluid that moves.","order":1,"responseTimeLimitMs":150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Before You Go</h2>
+    <p class="lead">In a hydraulic jack, the output piston&rsquo;s <span class="hyd">area is doubled</span>. The push and the input piston stay the same.</p>
+    <p class="lead">1. What happens to the output force and to how far the output rises for the same push?</p>
+    <p class="lead">2. Explain your answer using pressure and the volume of fluid that moves.</p>
+  </div>
+  <aside class="notes">The pressure is unchanged, so doubling the area doubles the force. The same volume spread over twice the area rises half as far. Work in still equals work out.</aside>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function(element) { return !element.closest('#storyboard'); }
+  );
+}
+
+/* ── Simulation A: hydraulic jack (slide 8) ────────────────────────
+   Ideal model. Pressure = push ÷ input area, output force = pressure ×
+   output area, and the fluid volume pushed out of the input cylinder
+   fills the output cylinder. If the output force is below the load,
+   the jack stalls and neither piston moves (unless a bubble lets the
+   input squeeze it). A trapped bubble (0.6 in³ at 14.7 psi absolute)
+   shrinks by Boyle's Law, absorbing part of the push, so work out is
+   less than work in. The drawing scales piston width with the
+   diameter for each area, and every readout has a fixed size. */
+function initJackSim(root) {
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var PX = 34;          // drawing pixels per inch of travel
+  var DPX = 66;         // drawing pixels per inch of diameter
+  var MAX_OUT = 9;      // output stroke, inches (piston reaches the top of the drawn cylinder)
+  var BUBBLE = 0.6;     // trapped air volume, cubic inches
+  var ATM = 14.7;       // atmospheric pressure, psi
+  var DEFAULTS = { fin: 10, ain: 0.5, aout: 4, load: 60, push: 0, air: 0 };
+  var st = Object.assign({}, DEFAULTS);
+  var svg = root.querySelector('[data-r="svg"]');
+  var status = root.querySelector('[data-r="status"]');
+
+  function fmt(n, d) {
+    var s = n.toFixed(d);
+    return s.indexOf('.') >= 0 ? s.replace(/0+$/, '').replace(/\.$/, '') : s;
+  }
+  function el(tag, attrs, text) {
+    var e = document.createElementNS(SVGNS, tag);
+    Object.keys(attrs).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function lb(n) { return fmt(n, n < 10 ? 1 : 0); }
+  function diam(a) { return Math.sqrt(4 * a / Math.PI) * DPX; }
+
+  function model() {
+    var p = st.fin / st.ain;
+    var fout = p * st.aout;
+    var squeezed = st.air ? BUBBLE * (1 - ATM / (ATM + p)) : 0;   // in³ of bubble shrink at this pressure
+    var r = { p: p, fout: fout, mult: st.aout / st.ain, din: 0, dout: 0, state: 'ok' };
+    if (st.push === 0) { r.state = 'ready'; return r; }
+    if (fout < st.load) {
+      r.state = 'stall';
+      r.din = Math.min(st.push, squeezed / st.ain);
+      return r;
+    }
+    var vol = st.ain * st.push - Math.min(squeezed, st.ain * st.push);
+    r.din = st.push;
+    r.dout = vol / st.aout;
+    if (st.air) r.state = 'air';
+    if (r.dout > MAX_OUT) {
+      r.dout = MAX_OUT;
+      r.din = (MAX_OUT * st.aout + Math.min(squeezed, st.ain * st.push)) / st.ain;
+      r.state = 'end';
+    }
+    return r;
+  }
+
+  function draw(r) {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var defs = el('defs', {});
+    var mk = el('marker', { id: 'js-arr', markerUnits: 'userSpaceOnUse', markerWidth: 26, markerHeight: 26, refX: 12, refY: 13, orient: 'auto' });
+    mk.appendChild(el('path', { d: 'M0 0 L26 13 L0 26 z', fill: '#5daaff' }));
+    defs.appendChild(mk);
+    svg.appendChild(defs);
+
+    var xi = 190, xo = 520, top = 150, bot = 520;
+    var wi = diam(st.ain), wo = diam(st.aout);
+    var yIn = 190 + r.din * PX;            // top of input piston
+    var yOut = 470 - r.dout * PX;          // top of output piston
+    var fluid = 'rgba(255,171,94,0.45)', wall = '#ffab5e';
+
+    // fluid: input column, output column, connecting pipe
+    svg.appendChild(el('rect', { x: xi - wi / 2, y: yIn + 14, width: wi, height: bot - yIn - 14, fill: fluid }));
+    svg.appendChild(el('rect', { x: xo - wo / 2, y: yOut + 14, width: wo, height: bot - yOut - 14, fill: fluid }));
+    svg.appendChild(el('rect', { x: xi - wi / 2, y: bot - 2, width: (xo + wo / 2) - (xi - wi / 2), height: 28, fill: fluid }));
+    if (st.air) {
+      var rb = 13 * Math.cbrt(1 - (r.state === 'ready' ? 0 : (1 - ATM / (ATM + r.p))));
+      svg.appendChild(el('circle', { cx: (xi + xo) / 2, cy: bot + 13, r: Math.max(5, rb), fill: '#e8f2ff', 'fill-opacity': 0.85 }));
+    }
+    // cylinder walls and pipe outline
+    var pathD = 'M' + (xi - wi / 2 - 3) + ' ' + top + ' V' + (bot + 29) + ' H' + (xo + wo / 2 + 3) + ' V' + top +
+                ' M' + (xo - wo / 2 - 3) + ' ' + top + ' V' + (bot - 3) + ' H' + (xi + wi / 2 + 3) + ' V' + top;
+    svg.appendChild(el('path', { d: pathD, fill: 'none', stroke: wall, 'stroke-width': 5, 'stroke-linejoin': 'round' }));
+    // input piston, rod, and push arrow
+    svg.appendChild(el('rect', { x: xi - wi / 2 + 2, y: yIn, width: wi - 4, height: 14, fill: '#e8f2ff' }));
+    svg.appendChild(el('rect', { x: xi - 6, y: yIn - 110, width: 12, height: 110, fill: '#e8f2ff' }));
+    svg.appendChild(el('rect', { x: xi - 60, y: yIn - 120, width: 120, height: 140, fill: 'transparent', class: 'push-grab' }));
+    svg.appendChild(el('path', { d: 'M' + xi + ' ' + (yIn - 172) + ' V' + (yIn - 122), stroke: '#5daaff', 'stroke-width': 7, 'marker-end': 'url(#js-arr)' }));
+    svg.appendChild(el('text', { x: xi + 24, y: yIn - 140, fill: '#5daaff', 'font-size': 28, 'font-weight': 700, stroke: '#060b14', 'stroke-width': 8, 'paint-order': 'stroke', 'stroke-linejoin': 'round' }, fmt(st.fin, 0) + ' lb push'));
+    // output piston, rod, and load block
+    svg.appendChild(el('rect', { x: xo - wo / 2 + 2, y: yOut, width: wo - 4, height: 14, fill: '#e8f2ff' }));
+    svg.appendChild(el('rect', { x: xo - 9, y: yOut - 56, width: 18, height: 56, fill: '#e8f2ff' }));
+    if (st.load > 0) {
+      svg.appendChild(el('rect', { x: xo - 85, y: yOut - 126, width: 170, height: 70, rx: 6, fill: '#1b2a44', stroke: '#ffab5e', 'stroke-width': 3 }));
+      svg.appendChild(el('text', { x: xo, y: yOut - 82, fill: '#e8f2ff', 'font-size': 28, 'font-weight': 700, 'text-anchor': 'middle' }, fmt(st.load, 0) + ' lb load'));
+    }
+    // labels
+    svg.appendChild(el('text', { x: xi, y: 590, fill: '#e8f2ff', 'font-size': 26, 'font-weight': 700, 'text-anchor': 'middle' }, 'Input ' + fmt(st.ain, 2) + ' in²'));
+    svg.appendChild(el('text', { x: xo, y: 590, fill: '#e8f2ff', 'font-size': 26, 'font-weight': 700, 'text-anchor': 'middle' }, 'Output ' + fmt(st.aout, 1) + ' in²'));
+    svg.appendChild(el('text', { x: (xi + xo) / 2, y: 590, fill: '#ffab5e', 'font-size': 28, 'font-weight': 700, 'text-anchor': 'middle', stroke: '#060b14', 'stroke-width': 8, 'paint-order': 'stroke', 'stroke-linejoin': 'round' }, fmt(r.p, 1) + ' psi'));
+  }
+
+  function render() {
+    var r = model();
+    root.querySelector('[data-v="fin"]').textContent = st.fin + ' lb';
+    root.querySelector('[data-v="ain"]').textContent = fmt(st.ain, 2) + ' in²';
+    root.querySelector('[data-v="aout"]').textContent = fmt(st.aout, 1) + ' in²';
+    root.querySelector('[data-v="load"]').textContent = st.load + ' lb';
+    root.querySelector('[data-v="push"]').textContent = fmt(st.push, 1) + ' in';
+    root.querySelector('[data-t="p"]').textContent = fmt(r.p, 1) + ' psi';
+    root.querySelector('[data-t="fout"]').textContent = lb(r.fout) + ' lb';
+    root.querySelector('[data-t="mult"]').textContent = '× ' + fmt(r.mult, 2);
+    root.querySelector('[data-t="din"]').textContent = fmt(r.din, 2) + ' in';
+    root.querySelector('[data-t="dout"]').textContent = fmt(r.dout, 2) + ' in';
+    root.querySelector('[data-t="work"]').textContent = fmt(st.fin * r.din, 0) + ' → ' + fmt(r.fout * r.dout, 0);
+    var msg, cls = '';
+    if (r.state === 'ready') msg = 'Set your push and the piston areas, then drag the input piston down (or use the Push slider).';
+    else if (r.state === 'stall') { cls = 'stall'; msg = 'Stalled. The output can push only ' + lb(r.fout) + ' lb, but the load is ' + st.load + ' lb, so the load does not rise' + (st.air ? '. The input moves only as far as it can squeeze the bubble.' : ', and the water stops the input from moving.'); }
+    else if (r.state === 'end') msg = 'The output piston reached the top of its cylinder after ' + fmt(r.din, 2) + ' in of push. Pushing farther does nothing.';
+    else if (r.state === 'air') { cls = 'lossy'; msg = 'Part of your push squeezed the air bubble instead of moving water, so the output rose less and work out is less than work in.'; }
+    else msg = 'Volume in = volume out: ' + fmt(st.ain, 2) + ' × ' + fmt(r.din, 2) + ' = ' + fmt(st.aout, 1) + ' × ' + fmt(r.dout, 2) + ' in³. Work in equals work out.';
+    status.className = 'psim-status' + (cls ? ' ' + cls : '');
+    status.textContent = msg;
+    draw(r);
+  }
+
+  root.querySelectorAll('[data-k]').forEach(function (inp) {
+    inp.addEventListener('input', function () { st[inp.dataset.k] = parseFloat(inp.value); render(); });
+  });
+  // Drag the input piston itself. getScreenCTM accounts for Reveal's scaling.
+  var pushInp = root.querySelector('[data-k="push"]');
+  var drag = null;
+  function svgY(e) {
+    var pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse()).y;
+  }
+  svg.addEventListener('pointerdown', function (e) {
+    var y = svgY(e);
+    if (!e.target.classList || !e.target.classList.contains('push-grab')) return;
+    drag = { y0: y, push0: st.push };
+    svg.setPointerCapture(e.pointerId);
+    svg.classList.add('dragging');
+    e.preventDefault();
+  });
+  svg.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    var v = drag.push0 + (svgY(e) - drag.y0) / PX;
+    v = Math.max(0, Math.min(8, Math.round(v * 2) / 2));
+    if (v !== st.push) { st.push = v; pushInp.value = v; render(); }
+  });
+  function endDrag(e) {
+    if (!drag) return;
+    drag = null;
+    svg.classList.remove('dragging');
+    if (svg.hasPointerCapture(e.pointerId)) svg.releasePointerCapture(e.pointerId);
+  }
+  svg.addEventListener('pointerup', endDrag);
+  svg.addEventListener('pointercancel', endDrag);
+
+  // Challenge card: Prev / Next switch which challenge text is shown.
+  var slideEl = root.closest('section');
+  var chal = 1, CHAL_N = slideEl.querySelectorAll('[data-chal]').length;
+  function showChal() {
+    slideEl.querySelectorAll('[data-chal]').forEach(function (p) { p.hidden = +p.dataset.chal !== chal; });
+    slideEl.querySelector('[data-r="chal-num"]').textContent = 'Challenge ' + chal + ' of ' + CHAL_N;
+    slideEl.querySelector('[data-r="chal-prev"]').disabled = chal === 1;
+    slideEl.querySelector('[data-r="chal-next"]').disabled = chal === CHAL_N;
+  }
+  slideEl.querySelector('[data-r="chal-prev"]').addEventListener('click', function () { if (chal > 1) { chal--; showChal(); } });
+  slideEl.querySelector('[data-r="chal-next"]').addEventListener('click', function () { if (chal < CHAL_N) { chal++; showChal(); } });
+  showChal();
+
+  root.querySelectorAll('[data-air]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      st.air = +b.dataset.air;
+      root.querySelectorAll('[data-air]').forEach(function (o) { o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+      render();
+    });
+  });
+  root.querySelector('[data-r="reset"]').addEventListener('click', function () {
+    st = Object.assign({}, DEFAULTS);
+    root.querySelectorAll('[data-k]').forEach(function (inp) { inp.value = st[inp.dataset.k]; });
+    root.querySelectorAll('[data-air]').forEach(function (o) { o.setAttribute('aria-pressed', o.dataset.air === '0' ? 'true' : 'false'); });
+    render();
+  });
+  render();
+}
+
+initSyncDeckReveal({
+  deckId: 'pascals-law',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    var sim = getLiveElementById('jack-sim');
+    if (sim) initJackSim(sim);
+  },
+});
+</script>
+</body>
+</html>
