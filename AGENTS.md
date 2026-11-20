@@ -84,6 +84,12 @@ Read these when the work calls for them; they are not needed for every deck.
    for students, so never attach one to a teaching or worked-example slide (fragments, figures,
    explanations) that students still need to see. If a content slide needs a check-in question,
    give the question its own slide right after it.
+   **Both the slide and the question text must stand on their own.** Students never see the slide
+   while the activity runs, so each question's `text` must carry everything needed to answer it.
+   Put any picture the question depends on into the question as
+   Markdown with an absolute published URL (`https://perryhighcs.github.io/Presentations/<path
+   without Decks/>`, spaces as `%20`, a small `-thumb` copy), relative paths do not resolve inside the activity. The image loads only after the deck is deployed. The slide itself should still show the prompt clearly for the
+   room when not upgraded to the activity.
 11. **Vary the position of the correct answer** in every multiple-choice question (Resonance
    `options` arrays, fallback `.mcq-opts` lists, and any printed answer choices). Never leave the
    correct option first by default; across a deck's questions the correct answers must land in
