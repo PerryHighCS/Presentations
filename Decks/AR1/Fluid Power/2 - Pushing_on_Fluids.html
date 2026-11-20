@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1kw4qq3">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2 - Pushing on Fluids</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC: Pushing on Fluids (Day 2)
+   Unit colors and shared styles live in the unit theme.css:
+   blue = pneumatic/air, amber = hydraulic/water, green = key terms.
+   ============================================================ */
+
+/* Safety rules: two columns of numbered rules */
+.rule-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px var(--gap-lg);
+  margin-top: var(--gap-sm);
+}
+.rule {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  font-size: var(--body);
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+.rule-num {
+  flex: 0 0 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--warn);
+  color: var(--warn);
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+/* Station cards */
+.station-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap);
+  margin-top: var(--gap);
+}
+.station-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-top: 4px solid var(--hyd);
+  border-radius: 8px;
+  padding: 22px 26px;
+}
+.station-card.air { border-top-color: var(--accent); }
+.station-num {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.station-card h3 { font-size: var(--h3); margin-bottom: var(--gap-sm); }
+.station-card p { font-size: var(--body); line-height: 1.45; color: var(--text-muted); }
+
+/* Station detail slides */
+.watch-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.watch-list li {
+  position: relative;
+  padding-left: 40px;
+  font-size: var(--body);
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.watch-list li::before {
+  content: '?';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--result);
+  color: var(--result);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.panel-head {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--result);
+  margin-bottom: 12px;
+  display: block;
+}
+
+/* Rotation slide */
+.rotate-wrap {
+  display: flex;
+  gap: var(--gap-lg);
+  align-items: center;
+  margin-top: var(--gap);
+}
+.rotate-steps { flex: 1; }
+
+/* Service call: each cause card lists what you would expect to see,
+   a scaffold for students' first troubleshooting activity. */
+.wo .cause-btn { align-items: flex-start; }
+.wo .cb-body { display: flex; flex-direction: column; gap: 2px; }
+.wo .cb-hint { font-size: var(--small); line-height: 1.3; color: var(--text-muted); }
+.wo .cause-btn[aria-pressed="true"] .cb-hint { text-decoration: line-through; }
+
+/* Hydraulic circuit diagram */
+.circuit-fig { width: 100%; height: auto; display: block; }
+.circuit-fig .lbl {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+}
+.circuit-fig .sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 27px;
+  fill: rgba(232,242,255,0.72);
+}
+</style>
+</head>
+<body>
+
+<div class="reveal"><div class="slides">
+
+<!-- SLIDE 01 · Title -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 5 &nbsp;·&nbsp; Pushing on Fluids</span>
+    <h1 class="title-h1">What Happens When We <span class="hyd">Push a Fluid?</span></h1>
+    <p class="lead" style="margin-top:var(--gap);text-align:center;">Today you will test the claim from the readings: air squeezes, but water barely does.</p>
+  </div>
+  <div class="glow" style="width:620px;height:620px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(255,171,94,0.07),transparent 70%);"></div>
+  <div class="glow" style="width:560px;height:560px;right:-140px;bottom:-160px;background:radial-gradient(circle,rgba(42,143,255,0.07),transparent 70%);"></div>
+</section>
+
+<!-- SLIDE 02 · Safety rules -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Safety</span>
+    <h2>Safety Rules for Fluid Power</h2>
+    <p class="prose" style="margin-bottom:var(--gap-sm);">These rules apply to every fluid power system in this unit, from today&rsquo;s syringes to the VEX pneumatics kit.</p>
+    <div class="rule-grid">
+      <div class="rule"><span class="rule-num">1</span><span>Wear <span class="term">safety glasses</span> whenever a system is filled or pressurized.</span></div>
+      <div class="rule"><span class="rule-num">2</span><span>Never point a cylinder, syringe or open line <span class="term">at anyone</span>, including yourself.</span></div>
+      <div class="rule"><span class="rule-num">3</span><span>Check that every connection is <span class="term">secure</span> before you push or pressurize.</span></div>
+      <div class="rule"><span class="rule-num">4</span><span><span class="term">Release the pressure</span> before you change, disconnect or adjust anything.</span></div>
+      <div class="rule"><span class="rule-num">5</span><span>Keep fingers clear of <span class="term">pinch points</span> where a moving part meets a fixed one.</span></div>
+      <div class="rule"><span class="rule-num">6</span><span>Wipe up spills right away, because wet floors and tables are <span class="term">slippery</span>.</span></div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.4. These come from the original Day 1 safety slides, rewritten as rules students can check themselves against. Manufacturer pressure limits come up again with the VEX kit, which is rated to 100 psi.</aside>
+</section>
+
+<!-- SLIDE 03 · Two different dangers -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Safety</span>
+    <h2>Two Different Dangers</h2>
+    <div class="split split-50 split-top" style="flex:none;">
+      <div class="sys-card">
+        <h3 class="pneu">Pneumatic: Stored Energy</h3>
+        <p>Compressed air stores energy like a squeezed spring. If a line or fitting fails, that energy releases <span class="pneu">all at once</span>, so a part can burst or a loose hose can whip around.</p>
+      </div>
+      <div class="sys-card hyd-card fragment fade-up">
+        <h3 class="hyd">Hydraulic: Pinhole Leaks</h3>
+        <p>Oil stores little energy, but real hydraulic systems run at very high pressure. A <span class="hyd">pinhole leak</span> sprays a jet thin enough to inject oil through skin, and the injury can look minor while it badly damages the hand.</p>
+      </div>
+    </div>
+    <div class="callout-warn fragment fade-up" style="margin-top:var(--gap);"><strong>Never feel for a hydraulic leak with your hand.</strong> Check with a piece of cardboard or a paper towel instead. Today&rsquo;s syringes are low pressure, but this is the habit to build now.</div>
+  </div>
+  <aside class="notes">This corrects the old Day 3 slide that described leaking as the only hydraulic risk. A fluid injection injury is a medical emergency even when the wound looks small.</aside>
+</section>
+
+<!-- SLIDE 04 · Resonance: Safety check -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:4:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A hydraulic hose on a machine has a tiny leak somewhere along its length. What is the safe way to find it?","order":0,"responseTimeLimitMs":40000,"options":[{"id":"q1a","text":"Run a bare hand along the hose to feel for the spray.","isCorrect":false},{"id":"q1b","text":"Hold a piece of cardboard near the hose and look for fluid on it.","isCorrect":true},{"id":"q1c","text":"Tighten every fitting as hard as possible while the machine runs.","isCorrect":false},{"id":"q1d","text":"Wrap tape around the whole hose so the leak stops.","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"Why can a burst pneumatic line whip around so dangerously?","order":1,"responseTimeLimitMs":40000,"options":[{"id":"q2a","text":"Compressed air is heavier than the hose.","isCorrect":false},{"id":"q2b","text":"The air turns into a liquid when the line bursts.","isCorrect":false},{"id":"q2c","text":"Pneumatic hoses are made of stiff metal.","isCorrect":false},{"id":"q2d","text":"Compressed air stores energy like a spring and releases it all at once.","isCorrect":true}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Safety Check</span>
+    <h2>Before We Start</h2>
+    <p class="lead">1. A hydraulic hose on a machine has a tiny leak somewhere along its length. What is the safe way to find it?</p>
+    <p class="lead">2. Why can a burst pneumatic line whip around so dangerously?</p>
+  </div>
+  <aside class="notes">Question 1: cardboard, never a hand. Question 2: stored energy, which students will feel directly in the air-filled syringe at Station 1.</aside>
+</section>
+
+<!-- SLIDE 05 · Three stations -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab Stations</span>
+    <h2>Three Stations</h2>
+    <p class="prose">Your team will rotate through three stations. At each one, follow the posted directions, measure carefully, and record what you <span class="term">observe</span> on your data sheet, even when it surprises you.</p>
+    <div class="station-row">
+      <div class="station-card air">
+        <span class="station-num">Station 1</span>
+        <h3><span class="pneu">Air</span> vs. <span class="hyd">Water</span></h3>
+        <p>Push on two connected syringes filled with air, then with water, and compare how each one responds.</p>
+      </div>
+      <div class="station-card">
+        <span class="station-num">Station 2</span>
+        <h3>Equal Syringes</h3>
+        <p>Push one of two same-size, water-filled syringes and watch how the other one shares the push.</p>
+      </div>
+      <div class="station-card">
+        <span class="station-num">Station 3</span>
+        <h3>Small vs. Large</h3>
+        <p>Push a small syringe connected to a large one, then reverse it, and compare distance and force.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Stations use the PHS Day 2 lab directions and data sheet. Have paper towels and a cup of water at every station, and keep the syringe sizes at Station 2 matched.</aside>
+</section>
+
+<!-- SLIDE 06 · Resonance: Predictions (poll) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:6:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Predict: Station 1, air: two same-size syringes are filled with air and connected. You push the input plunger 1 cm. What will the output plunger do?","order":0,"responseTimeLimitMs":40000,"options":[{"id":"q1a","text":"Move exactly 1 cm, right away","isCorrect":false},{"id":"q1b","text":"Move less than 1 cm, possibly after a delay","isCorrect":false},{"id":"q1c","text":"Move more than 1 cm","isCorrect":false},{"id":"q1d","text":"Not move at all","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"Predict: Station 2, water: two same-size syringes are filled with water and connected. You push the input plunger 1 cm. What will the output plunger do?","order":1,"responseTimeLimitMs":40000,"options":[{"id":"q2a","text":"Move exactly 1 cm, right away","isCorrect":false},{"id":"q2b","text":"Move less than 1 cm, possibly after a delay","isCorrect":false},{"id":"q2c","text":"Move more than 1 cm","isCorrect":false},{"id":"q2d","text":"Not move at all","isCorrect":false}]},{"id":"q3","type":"multiple-choice","text":"Predict: Station 3, water: a small syringe is connected to a large one. You push the small plunger 1 cm. How far will the large plunger move?","order":2,"responseTimeLimitMs":40000,"options":[{"id":"q3a","text":"More than 1 cm","isCorrect":false},{"id":"q3b","text":"Exactly 1 cm","isCorrect":false},{"id":"q3c","text":"Less than 1 cm","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict</span>
+    <h2>Make Your Predictions</h2>
+    <p class="lead">1. <span class="pneu">Air</span>, same-size syringes: you push the input 1 cm. What will the output do?</p>
+    <p class="lead">2. <span class="hyd">Water</span>, same-size syringes: you push the input 1 cm. What will the output do?</p>
+    <p class="lead">3. <span class="hyd">Water</span>, small syringe into a large one: you push the small one 1 cm. How far will the large one move?</p>
+  </div>
+  <aside class="notes">These are polls with no correct answer marked, so students commit to a prediction without being graded on it. Come back to the class results during the debrief.</aside>
+</section>
+
+<!-- SLIDE 07 · Station 1 -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Station 1</span>
+    <h2><span class="pneu">Air</span> vs. <span class="hyd">Water</span>: Which One Is Squishy?</h2>
+    <div class="split split-50 split-top" style="flex:none;">
+      <div>
+        <span class="panel-head">What to do</span>
+        <p class="prose">Mark centimeters on both barrels. Connect two same-size syringes filled with air, have a partner hold the output barrel, and push the input 1 cm at a time.</p>
+        <p class="prose">Then fill the input syringe and tubing with water, push out as many bubbles as you can, and repeat.</p>
+      </div>
+      <div>
+        <span class="panel-head">What to watch for</span>
+        <ul class="watch-list">
+          <li>Does the output move right away, or after a delay?</li>
+          <li>Does the push feel firm, or soft and springy?</li>
+          <li>What happens when you let go of the input?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">The air system should show a delay, a springy feel, and a bounce back when released. The water system should respond almost immediately. Remind students that leftover bubbles make water act a little like air.</aside>
+</section>
+
+<!-- SLIDE 08 · Station 2 -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Station 2</span>
+    <h2>Equal Syringes: Sharing the Push</h2>
+    <div class="split split-50 split-top" style="flex:none;">
+      <div>
+        <span class="panel-head">What to do</span>
+        <p class="prose">With two same-size syringes full of water, one partner pushes the input 1 cm while the other watches the output. Keep pushing 1 cm at a time, then switch roles.</p>
+        <p class="prose">Finally, set both plungers near the middle and gently push toward each other at the same time.</p>
+      </div>
+      <div>
+        <span class="panel-head">What to watch for</span>
+        <ul class="watch-list">
+          <li>Does the output always move the same distance as the input?</li>
+          <li>Does the push feel the same to both partners?</li>
+          <li>What happens when both of you push at once?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Equal syringes should move equal distances and feel the same, almost like a solid rod. When both partners push, neither plunger moves much: the water passes each push to the other side.</aside>
+</section>
+
+<!-- SLIDE 09 · Station 3 -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Station 3</span>
+    <h2>Small vs. Large: A Mini Hydraulic Jack</h2>
+    <div class="split split-50 split-top" style="flex:none;">
+      <div>
+        <span class="panel-head">What to do</span>
+        <p class="prose">Fill a small syringe with water and connect it to a large syringe that starts pushed all the way in. Push the small plunger 1 cm, then switch and push the large plunger 1 cm.</p>
+        <p class="prose">If you have time, set a small load on the large plunger and try to lift it by pushing the small one.</p>
+      </div>
+      <div>
+        <span class="panel-head">What to watch for</span>
+        <ul class="watch-list">
+          <li>How far does the other plunger move each time?</li>
+          <li>Which plunger is harder to hold still?</li>
+          <li>What do you give up to get a bigger push?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Pushing the small syringe 1 cm moves the large one less than 1 cm, but the large one pushes back much harder. Pushing the large one moves the small one farther. This is the force and distance trade-off from gears and pulleys, which Day 3 explains with Pascal&rsquo;s Law.</aside>
+</section>
+
+<!-- SLIDE 10 · Rotation timer -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab Stations</span>
+    <h2>Rotate When You Hear the Chime</h2>
+    <div class="rotate-wrap">
+      <div class="rotate-steps">
+        <p class="prose">Finish your measurements and record them before you move. Then rotate to the next station: 1 to 2, 2 to 3, and 3 to 1.</p>
+        <p class="prose">Leave the station the way you found it: syringes reset, water in the cup, and spills wiped up.</p>
+      </div>
+      <div class="timer-wrap" id="rotate-timer">
+        <div class="timer-label">Next rotation in</div>
+        <div class="timer-display" id="rotate-timer-display">08:00</div>
+        <div class="timer-controls">
+          <button type="button" class="timer-btn timer-btn-start" id="rotate-timer-start">Start</button>
+          <button type="button" class="timer-btn timer-btn-stop" id="rotate-timer-stop" disabled>Stop</button>
+          <button type="button" class="timer-btn timer-btn-reset" id="rotate-timer-reset">Reset</button>
+        </div>
+        <div class="timer-durations" role="group" aria-label="Timer length">
+          <button type="button" class="timer-dur-btn" data-dur="360">6 min</button>
+          <button type="button" class="timer-dur-btn is-active" data-dur="480">8 min</button>
+          <button type="button" class="timer-dur-btn" data-dur="600">10 min</button>
+        </div>
+        <div class="timer-hint">Chimes and restarts on each cycle.</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Start the timer when the first rotation begins; it chimes and restarts automatically for each rotation. It keeps running if you change slides.</aside>
+</section>
+
+<!-- SLIDE 11 · Resonance: Debrief -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:11:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"Station 1: How did the air-filled system and the water-filled system behave differently? Use your measurements.","order":0,"responseTimeLimitMs":120000},{"id":"q2","type":"free-response","text":"Station 3: When you pushed the small syringe 1 cm, how far did the large one move, and how hard was it to hold the large one still?","order":1,"responseTimeLimitMs":120000},{"id":"q3","type":"free-response","text":"What pattern did you notice between how far a plunger moves and how hard it pushes?","order":2,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Debrief</span>
+    <h2>What Did You Find?</h2>
+    <p class="lead">1. <span class="term">Station 1:</span> How did the air-filled and water-filled systems behave differently? Use your measurements.</p>
+    <p class="lead">2. <span class="term">Station 3:</span> When you pushed the small syringe 1 cm, how far did the large one move, and how hard was it to hold still?</p>
+    <p class="lead">3. What pattern did you notice between how far a plunger moves and how hard it pushes?</p>
+  </div>
+  <aside class="notes">Compare the class answers with the predictions from slide 6. Where measurements disagree between groups, ask what could cause the difference: bubbles, leaks, friction, or reading the marks.</aside>
+</section>
+
+<!-- SLIDE 12 · What the syringes showed -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Patterns</span>
+    <h2>What the Syringes Showed</h2>
+    <div class="split split-50 split-top" style="flex:none;">
+      <div class="sys-card">
+        <h3 class="pneu">Air Squeezes</h3>
+        <p>Part of your push went into squeezing the air, so the output moved late and less. The squeezed air <span class="pneu">stored energy</span> and pushed back when you let go.</p>
+      </div>
+      <div class="sys-card hyd-card">
+        <h3 class="hyd">Water Passes the Push</h3>
+        <p>Water barely squeezes, so the volume you pushed out of one syringe went <span class="hyd">into the other</span> almost instantly. Equal syringes moved equal distances.</p>
+      </div>
+    </div>
+    <div class="callout-result fragment fade-up" style="margin-top:var(--gap);">With a small and a large syringe, the large one moved <strong>less</strong> but pushed <strong>harder</strong>. You traded distance for force, just like a gear train or a pulley system. Tomorrow&rsquo;s question is why.</div>
+  </div>
+  <aside class="notes">Water is approximately incompressible here, not perfectly. The trade-off links back to mechanical advantage from the Mechanical Linkages unit. Day 3 explains it with Pascal&rsquo;s Law and P = F / A.</aside>
+</section>
+
+<!-- SLIDE 13 · You built a hydraulic circuit -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Hydraulic Circuit</span>
+    <h2>You Built a Hydraulic Circuit</h2>
+    <div class="split split-50" style="flex:none;">
+      <svg class="circuit-fig" viewBox="0 0 680 400" role="img" aria-label="Two cylinders joined by a water line. The left cylinder is the input, pushed by your hand. The water line carries water to the right cylinder, the output, whose piston pushes a load.">
+        <!-- input syringe -->
+        <rect x="40" y="150" width="200" height="80" rx="6" fill="rgba(255,171,94,0.18)" stroke="#ffab5e" stroke-width="3"/>
+        <rect x="120" y="150" width="120" height="80" fill="rgba(255,171,94,0.45)"/>
+        <rect x="108" y="146" width="14" height="88" fill="#e8f2ff"/>
+        <rect x="10" y="182" width="100" height="16" fill="#e8f2ff"/>
+        <!-- tube -->
+        <path d="M240 190 H262 Q292 190 292 220 V300 Q292 330 322 330 H362 Q392 330 392 300 V220 Q392 190 422 190 H440" fill="none" stroke="#ffab5e" stroke-width="12"/>
+        <!-- output syringe -->
+        <rect x="440" y="150" width="200" height="80" rx="6" fill="rgba(255,171,94,0.18)" stroke="#ffab5e" stroke-width="3"/>
+        <rect x="440" y="150" width="90" height="80" fill="rgba(255,171,94,0.45)"/>
+        <rect x="528" y="146" width="14" height="88" fill="#e8f2ff"/>
+        <rect x="540" y="182" width="110" height="16" fill="#e8f2ff"/>
+        <!-- arrows -->
+        <path d="M30 120 H100" stroke="#4dffb0" stroke-width="5" marker-end="url(#arr)"/>
+        <path d="M560 120 H630" stroke="#4dffb0" stroke-width="5" marker-end="url(#arr)"/>
+        <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#4dffb0"/></marker></defs>
+        <text class="lbl" x="40" y="285" fill="#e8f2ff">Input cylinder</text>
+        <text class="sub" x="40" y="318">your push</text>
+        <text class="lbl" x="342" y="380" fill="#ffab5e" text-anchor="middle">Water line</text>
+        <text class="lbl" x="440" y="285" fill="#e8f2ff">Output cylinder</text>
+        <text class="sub" x="440" y="318">the actuator</text>
+      </svg>
+      <div>
+        <p class="prose">Each syringe is a simple <span class="term">cylinder</span>, and its plunger is the <span class="term">piston</span> that slides inside it.</p>
+        <p class="prose">The input cylinder does the job of a pump, the tubing is a <span class="hyd">hydraulic line</span>, and the output cylinder is an <span class="term">actuator</span> that moves a load.</p>
+        <div class="ask">In your notebook, draw and label your Station 3 circuit. Add your measurements and one sentence about how well it worked as a hydraulic jack.</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.8 asks students to build and examine a hydraulic circuit. This notebook entry is the evidence: an assembled circuit, a labeled diagram, measurements, and a performance conclusion.</aside>
+</section>
+
+<!-- SLIDE 14 · Service call briefing -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Troubleshooting</span>
+    <h2>The Station 2 Service Call</h2>
+    <p class="prose">Station 2 is acting up: pushing the input 2 cm moves the output only about 1.4 cm. Something is wrong, and your job is to find out what without guessing.</p>
+    <div class="station-row">
+      <div class="station-card air">
+        <span class="station-num">Step 1</span>
+        <h3>Investigate</h3>
+        <p>Read the ticket, the station log, and what each cause would look like. Then choose tests, which cost <span class="term">class time</span>.</p>
+      </div>
+      <div class="station-card air">
+        <span class="station-num">Step 2</span>
+        <h3>Diagnose</h3>
+        <p>Strike out the causes your evidence rules out, then pick the cause and a fix.</p>
+      </div>
+      <div class="station-card air">
+        <span class="station-num">Step 3</span>
+        <h3>Defend</h3>
+        <p>Tag the readings that back your diagnosis. Your record scores six things, including safety.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.10 asks students to troubleshoot hydraulic circuits. The hidden cause changes with New case, so groups can solve it more than once. If the period runs short, open Day 3 with this activity instead.</aside>
+</section>
+
+<!-- SLIDE 15 · Service call simulator -->
+<section>
+  <div class="slide-inner" style="max-width:1600px;padding:40px 36px 36px;justify-content:flex-start;">
+    <span class="slide-tag" style="margin-bottom:10px;">Troubleshooting · Station 2 Service Call</span>
+    <div class="wo" id="service-call">
+      <div class="wo-top">
+        <button class="sim-btn alt" data-role="new" type="button">New case</button>
+        <span class="dt" aria-live="polite"><span class="dt-label">Class time</span><span class="dt-bar"><span class="dt-fill" data-role="dt-fill"></span></span><span class="dt-val" data-role="dt-val"></span></span>
+        <span class="status-chip" data-role="status">INVESTIGATE</span>
+      </div>
+      <div class="wo-grid">
+        <div class="sim-panel wo-info" data-role="info"></div>
+        <div class="wo-right">
+          <div class="sim-panel wo-work" data-role="work"></div>
+          <div class="sim-panel ev" data-role="ev" aria-live="polite">
+            <div class="ev-top"><span class="ev-label">EVIDENCE</span><span data-role="chips"></span></div>
+            <div class="ev-body" data-role="ev-body"></div>
+          </div>
+          <div class="wo-bar">
+            <button class="sim-btn alt" data-role="back" type="button">&#9664; Back</button>
+            <button class="sim-btn" data-role="to-diag" type="button">Diagnose &#9654;</button>
+            <button class="sim-btn" data-role="to-defend" type="button">Defend &#9654;</button>
+            <button class="sim-btn" data-role="submit" type="button">Submit record</button>
+            <span class="wo-count" data-role="count"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Causes: a trapped air bubble (key tests: tap the tip, release the input), a leaking output joint (paper towel, hold under load), or a mismatched output syringe (measure the barrels). The Causes tab tells students what each cause would look like, as a scaffold for a first troubleshooting activity. The unsafe finger check is charged but never carried out.</aside>
+</section>
+
+<!-- SLIDE 16 · Resonance: Exit ticket -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:16:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"At Station 3, a small cylinder pushed water into a large one. Why can the larger piston push with more force but travel less distance?","order":0,"responseTimeLimitMs":180000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Before You Go</h2>
+    <p class="lead">At Station 3, a small cylinder pushed water into a large one. Why can the <span class="hyd">larger piston</span> push with more force but travel less distance?</p>
+  </div>
+  <aside class="notes">Look for answers that mention the volume of water moving from one syringe to the other, or a trade-off between force and distance. Day 3 builds the full explanation with Pascal&rsquo;s Law.</aside>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function(element) { return !element.closest('#storyboard'); }
+  );
+}
+
+/* ── Station 2 Service Call (slide 15) ─────────────────────────────
+   Adapted from the AR2 AC Motors Day 5 Work Orders (buildWorkOrders),
+   reduced to a single ticket. The hidden cause is dealt from a
+   shuffled deck, so New case shows every cause once before any
+   repeats. Every test returns the reading for that cause (or `def`),
+   so useful tests show evidence and irrelevant tests show real but
+   unhelpful data. Unsafe choices are charged but never performed. */
+var SERVICE_CALL = {
+  budget: 10,
+  history: [
+    ['1st period', 'The station was checked: 2 cm in, 2 cm out.'],
+    ['2nd period', 'A group refilled it from a nearly empty cup.'],
+    ['Lunch', 'The syringe bin was restocked with look-alike syringes.'],
+    ['3rd period', 'The output tubing slipped off and was pushed back on.'],
+  ],
+  title: 'Station 2: Equal Syringes',
+  overview: 'Two water-filled syringes joined by clear tubing. It should act almost like a solid rod.',
+  npHead: 'Station setup',
+  nameplate: [['Input syringe', '20 mL'], ['Output syringe', '20 mL'], ['Fluid', 'Water'], ['Tubing', '30 cm, clear']],
+  symptom: 'When you push the input 2 cm, the output moves only about 1.4 cm. The last class reported the same thing.',
+  causes: {
+    air: { name: 'Trapped air bubble', key: ['tap', 'release'], why: 'Air squeezes, so part of every push compresses the bubble instead of moving water. The bubble stores that energy like a spring and pushes the input back when you let go. It is the Station 1 air result hiding inside a water system.' },
+    leak: { name: 'Leak at the output joint', key: ['towel', 'hold'], why: 'Water escapes at the joint, so some of the volume you push never reaches the output, and the output keeps sinking under a load. On real hydraulic machines, find leaks with cardboard or a paper towel, never your hand.' },
+    size: { name: 'Mismatched output syringe', key: ['measure'], why: 'The output barrel is wider, so the same volume of water fills it to a shorter height: 2 cm &times; (19.1 &divide; 22.5)&sup2; &asymp; 1.4 cm. Nothing is wrong with the water; this is the Station 3 trade-off. A wider output pushes harder but moves less.' },
+  },
+  tests: [
+    { id: 'look', min: 1, name: 'Tubing', label: 'Look along the tubing against a white card',
+      proc: 'Tubing held against a white card:',
+      r: { def: 'A few <span class="rd">pinhead bubbles</span> cling to the tubing wall. Every water setup has a few of these.' } },
+    { id: 'feel', min: 1, name: 'Feel', label: 'Push slowly and feel the input plunger',
+      proc: 'Slow 2 cm push on the input:',
+      r: { def: 'It slides <span class="rd">smoothly</span> with steady resistance the whole way.',
+           air: 'The first part of the push feels <span class="rd">soft</span>, like squeezing a spring, then it firms up. It slides smoothly.' } },
+    { id: 'release', min: 1, name: 'Release', label: 'Push the input 2 cm, then let go and watch it',
+      proc: 'Pushed 2 cm, then released:',
+      r: { def: 'The input plunger <span class="rd">stays where you left it</span>.',
+           air: 'The input plunger <span class="rd">springs back about 0.4 cm</span> on its own.' } },
+    { id: 'finger', min: 1, unsafe: true, label: 'Run a finger along the joints while pushing hard',
+      warn: 'This habit injures people on real hydraulic machines, where a pinhole leak can inject oil through skin. Check for leaks with a paper towel or cardboard instead.' },
+    { id: 'tap', min: 2, name: 'Tap', label: 'Point the output tip up, tap it, and watch for bubbles',
+      proc: 'Output syringe tip up, tapped 5 times:',
+      r: { def: 'Only <span class="rd">pinhead bubbles</span> rise. Nothing larger collects at the tip.',
+           air: 'A bubble about <span class="rd">the size of a pea</span> rises and collects at the tip.' } },
+    { id: 'hold', min: 2, name: 'Hold', label: 'Put a small load on the output and hold the input still',
+      proc: 'Washer stack on the output plunger, input held still for 10 s:',
+      r: { def: 'The output <span class="rd">holds its height</span>.',
+           air: 'The output <span class="rd">dips about 0.2 cm</span> when the load goes on, then holds.',
+           leak: 'The output <span class="rd">sinks steadily</span>, about 0.3 cm in 10 s.' } },
+    { id: 'towel', min: 3, name: 'Towel', label: 'Wrap a dry paper towel around each joint, then push 5 times',
+      proc: 'Dry paper towels on both joints, five 2 cm pushes:',
+      r: { def: 'Both towels <span class="rd">stay dry</span>.',
+           leak: 'The towel at the output joint has a <span class="rd">wet spot</span> about the size of a coin.' } },
+    { id: 'measure', min: 3, name: 'Barrels', label: 'Measure the inside width of each barrel with calipers',
+      proc: 'Calipers, inside diameter:',
+      r: { def: 'Input <span class="rd">19.1 mm</span>, output <span class="rd">19.1 mm</span>.',
+           size: 'Input <span class="rd">19.1 mm</span>, output <span class="rd">22.5 mm</span>.' } },
+  ],
+  diagnoses: [
+    { text: 'Leak at the output joint', cause: 'leak', hint: 'Expect water on a towel at the joint, and an output that sinks under a load.' },
+    { text: 'Mismatched output syringe', cause: 'size', hint: 'Expect the two barrels to measure different widths.' },
+    { text: 'Trapped air bubble', cause: 'air', hint: 'Expect a springy push, an input that springs back, and a bubble at the tip.' },
+  ],
+  repairs: [
+    { text: 'Mark the output ruler so 1.4 cm reads as 2 cm', note: 'This hides the symptom; the system is still faulty.' },
+    { text: 'Push the tubing fully onto the tip, dry the joint, and top up the water', fixes: 'leak' },
+    { text: 'Tap the bubble out through the tip and refill without air', fixes: 'air' },
+    { text: 'Swap the output syringe for one that matches the input', fixes: 'size' },
+  ],
+};
+
+function buildServiceCall(root) {
+  function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
+  var w = SERVICE_CALL;
+  var deck = [];
+  function pickCause(avoid) {
+    if (!deck.length) {
+      var ids = Object.keys(w.causes);
+      for (var i = ids.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1)), t = ids[i];
+        ids[i] = ids[j]; ids[j] = t;
+      }
+      if (ids[0] === avoid) ids.push(ids.shift());
+      Array.prototype.push.apply(deck, ids);
+    }
+    return deck.shift();
+  }
+  function fresh(avoid) {
+    return { cause: pickCause(avoid), run: [], unsafe: [], stage: 'investigate', view: null, diag: -1, repair: -1,
+             used: 0, struck: [], tags: [], tab: 'ticket' };
+  }
+  var s = fresh();
+  function test(id) { return w.tests.filter(function (t) { return t.id === id; })[0]; }
+  function reading(t, cause) { return t.r[cause] || t.r.def; }
+  function relevant(t) {
+    var seen = {};
+    Object.keys(w.causes).forEach(function (c) { seen[reading(t, c)] = 1; });
+    return Object.keys(seen).length > 1;
+  }
+  function left() { return w.budget - s.used; }
+  function tried(id) { return s.run.indexOf(id) >= 0 || s.unsafe.indexOf(id) >= 0; }
+  function outOfTime() {
+    return !w.tests.some(function (t) { return !tried(t.id) && t.min <= left(); });
+  }
+
+  function renderInfo() {
+    var el = q('info'), html;
+    html = '<span class="seg info-tabs" aria-label="Ticket information">' +
+      [['ticket', 'Ticket'], ['history', 'Station log'], ['causes', 'Causes']].map(function (p) {
+        return '<button class="seg-btn" type="button" data-tab="' + p[0] + '" aria-pressed="' + (s.tab === p[0]) + '">' + p[1] + '</button>';
+      }).join('') + '</span>';
+    if (s.tab === 'ticket') {
+      html += '<div class="wo-title">' + w.title + '</div>' +
+        '<p class="wo-over">' + w.overview + '</p>' +
+        '<div class="np"><span class="np-head">' + w.npHead + '</span><div class="np-grid">' +
+        w.nameplate.map(function (p) { return '<div><span class="np-k">' + p[0] + '</span><span class="np-v">' + p[1] + '</span></div>'; }).join('') +
+        '</div></div>' +
+        '<div class="sym"><span class="sym-head">Reported problem</span><p class="sym-text">' + w.symptom + '</p></div>';
+    } else if (s.tab === 'history') {
+      html += '<div class="wo-title">Station log</div>' +
+        '<p class="wo-over">Some entries may not matter.</p>' +
+        '<div class="hist">' + w.history.map(function (h) {
+          return '<div class="hist-row"><span class="hist-when">' + h[0] + '</span><span class="hist-text">' + h[1] + '</span></div>';
+        }).join('') + '</div>';
+    } else {
+      html += '<div class="wo-title">Possible causes</div>' +
+        '<p class="cause-note">Strike out a cause only when a reading rules it out. Your record checks each strike against your readings.</p>' +
+        '<div class="cause-list">' + w.diagnoses.map(function (d, i) {
+          var out = s.struck.indexOf(i) >= 0;
+          return '<button class="cause-btn" type="button" data-cause="' + i + '" aria-pressed="' + out + '"' + (s.stage === 'record' ? ' disabled' : '') + '>' +
+            '<span class="wt-mark">' + (out ? '✗' : '○') + '</span><span class="cb-body"><span class="cb-text">' + d.text + '</span>' +
+            (d.hint ? '<span class="cb-hint">' + d.hint + '</span>' : '') + '</span></button>';
+        }).join('') + '</div>';
+    }
+    el.innerHTML = html;
+    el.querySelectorAll('[data-tab]').forEach(function (b) {
+      b.addEventListener('click', function () { s.tab = b.dataset.tab; renderInfo(); el.querySelector('[data-tab="' + s.tab + '"]').focus(); });
+    });
+    el.querySelectorAll('[data-cause]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var i = +b.dataset.cause, k = s.struck.indexOf(i);
+        if (k >= 0) s.struck.splice(k, 1); else s.struck.push(i);
+        renderInfo();
+        el.querySelector('[data-cause="' + i + '"]').focus();
+      });
+    });
+  }
+
+  function testButton(t, onClick) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'wo-test';
+    b.dataset.id = t.id;
+    b.innerHTML = '<span class="wt-mark"></span><span class="wt-text">' + t.label + '</span><span class="wt-cost"></span>';
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function renderWork() {
+    var el = q('work');
+    if (s.stage === 'investigate') {
+      el.innerHTML = '<div class="sim-head"><span>Choose a test</span><span class="sim-note">Read each one before you run it.</span></div><div class="test-grid"></div>';
+      var g = el.querySelector('.test-grid');
+      w.tests.forEach(function (t) { g.appendChild(testButton(t, function () { runTest(t); })); });
+      syncTests();
+    } else if (s.stage === 'diagnose') {
+      el.innerHTML = '<div class="diag-grid">' +
+        '<div><div class="sim-head"><span>Most likely cause</span></div><div class="opt-list" data-k="diag"></div></div>' +
+        '<div><div class="sim-head"><span>Recommended fix</span></div><div class="opt-list" data-k="repair"></div></div></div>';
+      [['diag', w.diagnoses], ['repair', w.repairs]].forEach(function (pair) {
+        var list = el.querySelector('[data-k="' + pair[0] + '"]');
+        pair[1].forEach(function (o, i) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'wo-opt';
+          b.innerHTML = '<span class="wt-mark"></span><span>' + o.text + '</span>';
+          b.addEventListener('click', function () { s[pair[0]] = i; syncOpts(); renderBar(); });
+          list.appendChild(b);
+        });
+      });
+      syncOpts();
+    } else if (s.stage === 'defend') {
+      el.innerHTML = '<div class="sim-head"><span>Defend your diagnosis</span></div>' +
+        '<p class="defend-q">You chose <b>' + w.diagnoses[s.diag].text + '</b>. Tag every reading that supports it.</p><div class="test-grid"></div>';
+      var g2 = el.querySelector('.test-grid');
+      s.run.forEach(function (id) {
+        g2.appendChild(testButton(test(id), function () {
+          var k = s.tags.indexOf(id);
+          if (k >= 0) s.tags.splice(k, 1); else s.tags.push(id);
+          s.view = { id: id };
+          syncTags(); renderEvidence(); renderBar();
+        }));
+      });
+      syncTags();
+    } else {
+      renderRecord(el);
+    }
+  }
+
+  function syncTests() {
+    var rem = left();
+    q('work').querySelectorAll('.wo-test').forEach(function (b) {
+      var t = test(b.dataset.id), run = s.run.indexOf(t.id) >= 0, bad = s.unsafe.indexOf(t.id) >= 0;
+      b.classList.toggle('is-run', run);
+      b.classList.toggle('is-unsafe', bad);
+      b.classList.toggle('is-view', !!s.view && s.view.id === t.id);
+      b.disabled = !run && !bad && t.min > rem;
+      b.querySelector('.wt-mark').textContent = run ? '✓' : bad ? '⚠' : '';
+      b.querySelector('.wt-cost').textContent = run ? 'done' : bad ? 'stopped' : t.min + ' min';
+    });
+  }
+
+  function syncTags() {
+    q('work').querySelectorAll('.wo-test').forEach(function (b) {
+      var tagged = s.tags.indexOf(b.dataset.id) >= 0;
+      b.classList.toggle('is-tag', tagged);
+      b.setAttribute('aria-pressed', tagged);
+      b.querySelector('.wt-mark').textContent = tagged ? '☑' : '☐';
+      b.querySelector('.wt-cost').textContent = '';
+    });
+  }
+
+  function syncOpts() {
+    ['diag', 'repair'].forEach(function (k) {
+      q('work').querySelectorAll('[data-k="' + k + '"] .wo-opt').forEach(function (b, i) {
+        b.setAttribute('aria-pressed', s[k] === i ? 'true' : 'false');
+        b.querySelector('.wt-mark').textContent = s[k] === i ? '●' : '○';
+      });
+    });
+  }
+
+  function runTest(t) {
+    if (!tried(t.id)) {
+      if (t.min > left()) return;
+      (t.unsafe ? s.unsafe : s.run).push(t.id);
+      s.used += t.min;
+    }
+    s.view = { id: t.id, unsafe: !!t.unsafe };
+    syncTests();
+    renderEvidence();
+    renderBar();
+  }
+
+  function renderEvidence() {
+    var chips = q('chips'), body = q('ev-body');
+    var hadFocus = document.activeElement && document.activeElement.classList.contains('ev-chip') ? document.activeElement.dataset.id : null;
+    chips.innerHTML = '';
+    if (!s.run.length) chips.innerHTML = '<span class="ev-none">No tests run yet</span>';
+    s.run.forEach(function (id) {
+      var c = document.createElement('button');
+      c.type = 'button';
+      c.className = 'ev-chip';
+      c.dataset.id = id;
+      c.textContent = test(id).name;
+      c.setAttribute('aria-pressed', s.view && s.view.id === id ? 'true' : 'false');
+      c.addEventListener('click', function () {
+        s.view = { id: id };
+        renderEvidence();
+        if (s.stage === 'investigate') syncTests();
+      });
+      chips.appendChild(c);
+      if (hadFocus === id) c.focus();
+    });
+    var t = s.view && test(s.view.id);
+    q('ev').classList.toggle('bad', !!(s.view && s.view.unsafe));
+    if (!t) body.innerHTML = '<span class="ev-proc">Choose a test. Its result appears here, and you can reopen it from the chips above.</span>';
+    else if (s.view.unsafe) body.innerHTML = '<span class="ev-warn">⚠ NOT SAFE PRACTICE · NOT PERFORMED</span>' + t.warn;
+    else body.innerHTML = '<span class="ev-proc">' + t.proc + '</span>' + reading(t, s.cause);
+  }
+
+  function renderBar() {
+    var show = { back: s.stage === 'diagnose' || s.stage === 'defend', 'to-diag': s.stage === 'investigate',
+                 'to-defend': s.stage === 'diagnose', submit: s.stage === 'defend' };
+    Object.keys(show).forEach(function (k) { q(k).style.display = show[k] ? '' : 'none'; });
+    q('to-diag').disabled = !s.run.length;
+    q('to-defend').disabled = s.diag < 0 || s.repair < 0;
+    q('submit').disabled = !s.tags.length;
+    var count = 'Tests run: ' + s.run.length + ' · Unsafe choices: ' + s.unsafe.length;
+    if (s.stage === 'investigate' && !s.run.length) count = 'Run at least one test to unlock Diagnose.';
+    else if (s.stage === 'investigate' && outOfTime()) count = 'Out of time: diagnose with what you have.';
+    if (s.stage === 'defend') count = s.tags.length ? s.tags.length + ' reading' + (s.tags.length > 1 ? 's' : '') + ' tagged' : 'Tag at least one reading to submit.';
+    if (s.stage === 'record') count = 'Press New case to solve a different cause.';
+    q('count').textContent = count;
+    var rem = left(), pct = Math.min(100, s.used / w.budget * 100);
+    q('dt-val').textContent = s.used + ' / ' + w.budget + ' min';
+    var fill = q('dt-fill');
+    fill.style.width = pct + '%';
+    fill.className = 'dt-fill' + (outOfTime() ? ' out' : rem <= w.budget / 4 ? ' low' : '');
+    var chip = q('status');
+    var name = { investigate: 'INVESTIGATE', diagnose: 'DIAGNOSE', defend: 'DEFEND', record: 'RECORDED' }[s.stage];
+    if (s.stage === 'investigate' && s.run.length && outOfTime()) name = 'OUT OF TIME';
+    chip.className = 'status-chip ' + (name === 'OUT OF TIME' ? 'bad' : { investigate: 'busy', diagnose: 'caution', defend: 'caution', record: 'ok' }[s.stage]);
+    chip.textContent = name;
+  }
+
+  function renderRecord(el) {
+    var c = w.causes[s.cause];
+    var ranKeys = c.key.filter(function (k) { return s.run.indexOf(k) >= 0; });
+    var keyRan = ranKeys.length > 0;
+    function names(ids, join) { return ids.map(function (k) { return test(k).name; }).join(join); }
+    var nRel = s.run.filter(function (id) { return relevant(test(id)); }).length;
+    var d = w.diagnoses[s.diag], r = w.repairs[s.repair];
+    var dOK = d.cause === s.cause, rOK = r.fixes === s.cause, safe = !s.unsafe.length && !r.unsafe;
+    // Ruling out: the actual cause is never struck, and every struck cause
+    // is ruled out by a reading the student took.
+    var trueIdx = w.diagnoses.map(function (o) { return o.cause; }).indexOf(s.cause);
+    var struckTrue = s.struck.indexOf(trueIdx) >= 0;
+    function justified(i) {
+      var o = w.diagnoses[i];
+      if (!o.cause) return o.ruledBy.every(function (id) { return s.run.indexOf(id) >= 0; });
+      return s.run.some(function (id) { var t = test(id); return reading(t, o.cause) !== reading(t, s.cause); });
+    }
+    var unjust = s.struck.filter(function (i) { return i !== trueIdx && !justified(i); });
+    var elimOK = s.struck.length > 0 && !struckTrue && !unjust.length;
+    var tagKeys = c.key.filter(function (k) { return s.tags.indexOf(k) >= 0; });
+    var defOK = dOK && tagKeys.length > 0;
+    var score = [keyRan, safe, elimOK, dOK, rOK, defOK].filter(Boolean).length;
+    function mark(ok) { return ok ? '<span class="ok">✓</span> ' : '<span class="no">✗</span> '; }
+    var rows = [
+      ['Key evidence', mark(keyRan) + (keyRan ? 'You checked the ' + names(ranKeys, ' and ') + ' result' + (ranKeys.length > 1 ? 's.' : '.') : 'Not checked: the ' + names(c.key, ' or ') + ' result.')],
+      ['Safety', mark(safe) + (safe ? 'No unsafe choices.' : [
+        s.unsafe.length ? s.unsafe.length + ' unsafe choice' + (s.unsafe.length > 1 ? 's' : '') + ' made.' : '',
+        r.unsafe ? 'The fix you chose is unsafe.' : ''].join(' ').trim())],
+      ['Ruled out', mark(elimOK) + (struckTrue ? 'You struck out the actual cause (see the ' + names(c.key, ' or ') + ' result).'
+        : unjust.length ? 'No result you took rules out “' + w.diagnoses[unjust[0]].text + '” yet.'
+        : s.struck.length ? (s.struck.length > 1 ? s.struck.length + ' causes struck out, each ruled out by your evidence.' : '1 cause struck out, ruled out by your evidence.') : 'You did not strike out any causes.')],
+      ['Diagnosis', mark(dOK) + (dOK ? c.name + '.' : 'Actual cause: ' + c.name + '.')],
+      ['Fix', mark(rOK) + (rOK ? r.text + '.' : (r.unsafe ? 'Unsafe: ' : '') + (r.note || 'It does not fix the actual cause.'))],
+      ['Defended', mark(defOK) + (defOK ? 'You backed it with the ' + names(tagKeys, ' and ') + ' result' + (tagKeys.length > 1 ? 's.' : '.')
+        : tagKeys.length ? 'The ' + names(tagKeys, ' and ') + ' result you tagged points to the actual cause, not your diagnosis.'
+        : 'No key result tagged (the ' + names(c.key, ' or ') + ' result).')],
+    ];
+    var stats = s.used + ' of ' + w.budget + ' min · ' + s.run.length + ' test' + (s.run.length === 1 ? '' : 's') + ', ' + nRel + ' useful';
+    el.innerHTML = '<div class="sim-head"><span>Record <span class="sim-note">' + stats + '</span></span><span class="rec-score">Score ' + score + ' / 6</span></div>' +
+      '<table class="rec-table">' + rows.map(function (row) { return '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td></tr>'; }).join('') + '</table>' +
+      '<div class="rec-why"><b>Why:</b> ' + c.why + '</div>';
+  }
+
+  function renderAll() {
+    renderInfo();
+    renderWork();
+    renderEvidence();
+    renderBar();
+  }
+
+  function go(stage) { s.stage = stage; renderAll(); }
+  q('to-diag').addEventListener('click', function () { go('diagnose'); });
+  q('to-defend').addEventListener('click', function () { if (s.diag >= 0 && s.repair >= 0) go('defend'); });
+  q('back').addEventListener('click', function () { go(s.stage === 'defend' ? 'diagnose' : 'investigate'); });
+  q('submit').addEventListener('click', function () {
+    if (!s.tags.length) return;
+    s.stage = 'record';
+    renderAll();
+  });
+  q('new').addEventListener('click', function () {
+    s = fresh(s.cause);
+    renderAll();
+  });
+  renderAll();
+}
+
+/* ── Repeating rotation countdown (slide 10) ───────────────────────
+   Adapted from makeRepeatingCountdown in CSP 3.9. At zero it chimes,
+   holds 00:00 for one second, then restarts from the selected length.
+   The length pills stop and reset the clock. It keeps running if you
+   change slides. */
+var rotateChime = new Audio('times-up.mp3');
+
+function makeRepeatingCountdown(id, defaultSecs) {
+  var wrap      = getLiveElementById(id);
+  var displayEl = getLiveElementById(id + '-display');
+  var startBtn  = getLiveElementById(id + '-start');
+  var stopBtn   = getLiveElementById(id + '-stop');
+  var resetBtn  = getLiveElementById(id + '-reset');
+  if (!wrap || !displayEl || !startBtn) return;
+
+  var durBtns  = Array.prototype.slice.call(wrap.querySelectorAll('.timer-dur-btn'));
+  var labelEl  = wrap.querySelector('.timer-label');
+  var totalSecs = defaultSecs;
+  var secsLeft  = totalSecs;
+  var running   = false;
+  var interval  = null;
+  var loopPending = false;
+  var flashTimer = null;
+
+  function clearFlash() {
+    if (labelEl) labelEl.classList.remove('is-flashing');
+    if (flashTimer) { clearTimeout(flashTimer); flashTimer = null; }
+  }
+  function flashLabel() {
+    if (!labelEl) return;
+    labelEl.classList.add('is-flashing');
+    if (flashTimer) clearTimeout(flashTimer);
+    flashTimer = setTimeout(clearFlash, 3000);
+  }
+  rotateChime.addEventListener('ended', clearFlash);
+
+  function renderTime() {
+    var m = Math.floor(secsLeft / 60);
+    var sec = secsLeft % 60;
+    displayEl.textContent = String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+    displayEl.classList.toggle('warning', secsLeft > 0 && secsLeft <= 60);
+    displayEl.classList.toggle('expired', secsLeft === 0);
+  }
+  function syncButtons() {
+    startBtn.disabled = running;
+    stopBtn.disabled  = !running;
+    durBtns.forEach(function (b) { b.disabled = running; });
+  }
+  function stop() {
+    running = false;
+    loopPending = false;
+    clearInterval(interval);
+    interval = null;
+    clearFlash();
+    syncButtons();
+  }
+  function tick() {
+    if (loopPending) {
+      loopPending = false;
+      secsLeft = totalSecs;
+      renderTime();
+      return;
+    }
+    if (secsLeft <= 0) { stop(); return; }
+    secsLeft--;
+    renderTime();
+    if (secsLeft === 0) {
+      rotateChime.currentTime = 0;
+      rotateChime.play().catch(function () {});
+      flashLabel();
+      loopPending = true;
+    }
+  }
+
+  startBtn.addEventListener('click', function () {
+    if (running) return;
+    if (secsLeft === 0) secsLeft = totalSecs;
+    running = true;
+    interval = setInterval(tick, 1000);
+    renderTime();
+    syncButtons();
+  });
+  stopBtn.addEventListener('click', stop);
+  resetBtn.addEventListener('click', function () {
+    stop();
+    secsLeft = totalSecs;
+    renderTime();
+  });
+  durBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var next = parseInt(btn.dataset.dur, 10);
+      if (!next || next === totalSecs) return;
+      totalSecs = next;
+      stop();
+      secsLeft = totalSecs;
+      durBtns.forEach(function (b) { b.classList.toggle('is-active', b === btn); });
+      renderTime();
+    });
+  });
+
+  renderTime();
+  syncButtons();
+}
+
+initSyncDeckReveal({
+  deckId: 'pushing-on-fluids',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    var wo = getLiveElementById('service-call');
+    if (wo) buildServiceCall(wo);
+    makeRepeatingCountdown('rotate-timer', 8 * 60);
+  },
+});
+</script>
+</body>
+</html>

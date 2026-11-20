@@ -1,0 +1,385 @@
+/* ============================================================
+   AR1 FLUID POWER UNIT THEME
+   Loaded after ../theme.css by every deck in Decks/AR1/Fluid Power/.
+   Fonts (DM Sans, JetBrains Mono) are loaded by each deck.
+
+   Color semantics used throughout the unit:
+     --accent  (blue)   → pneumatics: air, gas, compressor, tank
+     --hyd     (amber)  → hydraulics: liquid, oil, water, pump
+     --result  (green)  → general key terms (fluid power, pressure, actuator)
+     --warn    (yellow) → cautions and limits of a simple model
+     --bad     (coral)  → faults, unsafe choices, wrong answers
+
+   SECTIONS
+   1. Unit tokens and color helpers
+   2. Text blocks (.lead, .prose, .ask, .credit)
+   3. Cards and photos (.sys-card, .side-photo)
+   4. Simulator widgets (.sim-panel, .seg, .sim-btn, .status-chip)
+   5. Troubleshooting work orders (.wo), adapted from AR2 AC Motors Day 5
+   6. Repeating countdown timer (.timer-*), adapted from CSP 3.9
+   ============================================================ */
+
+/* ─── 1. Unit tokens and color helpers ───────────────────── */
+
+:root {
+  --hyd: #ffab5e;
+  --hyd-dim: rgba(255,171,94,0.10);
+  --hyd-border: rgba(255,171,94,0.40);
+  --bad: #ff8a80;
+}
+
+.pneu { color: var(--accent); }
+.hyd  { color: var(--hyd); }
+.term { color: var(--result); }
+.bad-color { color: var(--bad); }
+
+/* ─── 2. Text blocks ─────────────────────────────────────── */
+
+.lead {
+  font-size: 34px;
+  line-height: 1.45;
+  color: var(--text-muted);
+  max-width: 1300px;
+}
+.lead + .lead { margin-top: var(--gap); }
+
+.prose {
+  font-size: var(--body);
+  line-height: 1.55;
+  color: var(--text-muted);
+  max-width: 1300px;
+}
+.prose + .prose { margin-top: var(--gap); }
+
+/* Discussion / instruction prompt card */
+.ask {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  padding: 20px 26px;
+  margin-top: var(--gap);
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text);
+  max-width: 1300px;
+}
+
+/* Photo credits (captions) */
+.credit {
+  font-size: var(--small);
+  line-height: 1.4;
+  color: var(--text-dim);
+  margin-top: var(--gap-sm);
+}
+.credit a { color: inherit; }
+
+/* ─── 3. Cards and photos ────────────────────────────────── */
+
+/* Pneumatic (blue) / hydraulic (amber) cards */
+.sys-card {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-top: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 26px 30px;
+  height: 100%;
+}
+.sys-card.hyd-card {
+  border-color: var(--hyd-border);
+  border-top-color: var(--hyd);
+}
+.sys-card.term-card { border-color: rgba(77,255,176,0.30); border-top-color: var(--result); }
+.sys-card h3 { font-size: var(--h3); margin-bottom: var(--gap-sm); }
+.sys-card p {
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.sys-card .byline {
+  font-size: var(--small);
+  color: var(--text-dim);
+  margin-top: var(--gap-sm);
+}
+
+/* Photo beside text */
+.side-photo {
+  display: block;
+  width: 100%;
+  max-height: 560px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--accent-border), 0 6px 24px rgba(0,0,0,0.5);
+}
+
+/* ─── 4. Simulator widgets ───────────────────────────────── */
+
+.sim-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.sim-panel svg { display: block; width: 100%; height: auto; }
+.sim-head {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sim-head .sim-note { color: var(--text-muted); font-weight: 400; letter-spacing: 0.02em; text-transform: none; }
+.seg { display: inline-flex; border: 1px solid var(--accent-border); border-radius: 8px; overflow: hidden; }
+.seg-btn {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--accent-border);
+  padding: 8px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.seg-btn:first-child { border-left: none; }
+.seg-btn[aria-pressed="true"] { background: var(--accent); color: var(--bg); }
+.seg-btn:disabled { opacity: 0.6; cursor: default; }
+.sim-btn {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  color: var(--bg);
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sim-btn.alt { background: transparent; color: var(--text); border: 1px solid var(--accent-border); }
+.sim-btn:disabled { opacity: 0.6; cursor: default; }
+.sim-btn:active:not(:disabled) { transform: translateY(1px); }
+.reveal button:focus-visible, .reveal input:focus-visible, .reveal select:focus-visible {
+  outline: 3px solid var(--warn);
+  outline-offset: 2px;
+}
+.status-chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-border);
+  color: var(--text);
+  min-width: 14ch;
+  text-align: center;
+}
+.status-chip.ok      { border-color: var(--accent); color: var(--accent); }
+.status-chip.busy    { border-color: var(--result); color: var(--result); }
+.status-chip.caution { border-color: var(--warn); color: var(--warn); }
+.status-chip.bad     { border-color: var(--bad); color: var(--bad); background: rgba(255,138,128,0.08); }
+
+/* ─── 5. Troubleshooting work orders ─────────────────────────
+   Hidden-cause diagnosis with a time budget. Adapted from the
+   AR2 AC Motors Day 5 Work Orders (see html5-activities-index.md).
+   All panels have fixed heights so nothing jumps between stages.
+   ──────────────────────────────────────────────────────────── */
+.wo .wo-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.wo .wo-grid { display: grid; grid-template-columns: 470px 1fr; gap: 18px; align-items: start; }
+.wo .wo-info { height: 720px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.wo .wo-info > * { flex-shrink: 0; }
+.wo .wo-title { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.wo .wo-over { font-size: 24px; line-height: 1.4; color: var(--text-muted); margin: 0; }
+.wo .np { border: 1px solid var(--accent-border); border-radius: 6px; padding: 8px 12px; background: var(--accent-dim); }
+.wo .np-head, .wo .sym-head {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.wo .np-head { color: var(--accent); }
+.wo .np-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+.wo .np-k { display: block; font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted); }
+.wo .np-v { display: block; font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--text); }
+.wo .sym { border-left: 4px solid var(--warn); background: rgba(255,209,102,0.07); padding: 8px 14px; border-radius: 0 6px 6px 0; }
+.wo .sym-head { color: var(--warn); }
+.wo .sym-text { font-size: 24px; line-height: 1.4; color: var(--text); margin: 0; }
+.wo .wo-right { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.wo .wo-work { height: 452px; box-sizing: border-box; overflow: hidden; }
+.wo .test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.wo .wo-test, .wo .wo-opt {
+  font-family: var(--font-ui);
+  font-size: var(--small);
+  line-height: 1.3;
+  text-align: left;
+  color: var(--text);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wo .wo-test { min-height: 74px; padding: 8px 12px; }
+.wo .wo-opt { width: 100%; padding: 6px 10px; }
+.wo .wt-mark { font-family: var(--font-mono); font-weight: 700; flex: 0 0 24px; text-align: center; color: var(--accent); }
+.wo .wo-test.is-run { border-color: var(--accent); background: rgba(42,143,255,0.20); }
+.wo .wo-test.is-unsafe { border-color: rgba(255,138,128,0.75); background: rgba(255,138,128,0.08); }
+.wo .wo-test.is-unsafe .wt-mark { color: var(--bad); }
+.wo .wo-test.is-view { box-shadow: inset 0 0 0 2px var(--result); }
+.wo .wo-opt[aria-pressed="true"] { border-color: var(--result); background: rgba(77,255,176,0.12); }
+.wo .wo-opt[aria-pressed="true"] .wt-mark { color: var(--result); }
+.wo .diag-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 14px; }
+.wo .opt-list { display: flex; flex-direction: column; gap: 6px; }
+.wo .ev { height: 196px; box-sizing: border-box; overflow: hidden; }
+.wo .ev.bad { border-color: rgba(255,138,128,0.7); background: rgba(255,138,128,0.07); }
+.wo .ev-top { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow: hidden; }
+.wo .ev-label { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; letter-spacing: 0.08em; color: var(--accent); margin-right: 4px; }
+.wo .ev-none { font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted); }
+.wo .ev-chip {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--result);
+  border-radius: 999px;
+  padding: 3px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.wo .ev-chip[aria-pressed="true"] { background: var(--result); color: var(--bg); }
+.wo .ev-body { font-size: 24px; line-height: 1.4; color: var(--text); margin-top: 8px; }
+.wo .ev-proc { display: block; color: var(--text-muted); }
+.wo .ev-warn { display: block; font-family: var(--font-mono); font-weight: 700; color: var(--bad); }
+.wo .ev-body .rd { color: var(--result); font-weight: 700; }
+.wo .wo-bar { display: flex; align-items: center; gap: 12px; height: 48px; }
+.wo .sim-btn:disabled { opacity: 1; background: transparent; color: var(--text-muted); border: 1px dashed var(--accent-border); }
+.wo .wo-count { font-family: var(--font-mono); font-size: var(--small); color: var(--text); margin-left: auto; text-align: right; }
+.wo .rec-table { width: 100%; border-collapse: collapse; font-size: var(--small); line-height: 1.35; }
+.wo .rec-table td { padding: 5px 8px; border-bottom: 1px solid rgba(42,143,255,0.15); vertical-align: top; color: var(--text); }
+.wo .rec-table td:first-child { font-family: var(--font-mono); color: var(--text-muted); white-space: nowrap; width: 1%; }
+.wo .rec-table .ok { color: var(--result); font-weight: 700; }
+.wo .rec-table .no { color: var(--bad); font-weight: 700; }
+.wo .rec-score { color: var(--warn); }
+.wo .rec-why { font-size: var(--small); line-height: 1.4; color: var(--text); margin-top: 10px; padding: 8px 12px; border-left: 4px solid var(--result); background: rgba(77,255,176,0.07); border-radius: 0 6px 6px 0; }
+.wo .rec-why b { color: var(--result); }
+/* Time meter (top bar) */
+.wo .dt { display: flex; align-items: center; gap: 10px; margin-left: auto; flex: 0 0 auto; }
+.wo .dt-label { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+.wo .dt-bar { width: 130px; height: 16px; background: rgba(232,242,255,0.08); border: 1px solid var(--accent-border); border-radius: 4px; overflow: hidden; }
+.wo .dt-fill { display: block; height: 100%; width: 0; background: var(--result); }
+.wo .dt-fill.low { background: var(--warn); }
+.wo .dt-fill.out { background: var(--bad); }
+.wo .dt-val { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--text); min-width: 11ch; }
+.wo .wo-top .status-chip { box-sizing: border-box; min-width: 0; width: 200px; flex: 0 0 auto; }
+/* Test cost, and tests the remaining time cannot cover */
+.wo .wt-text { flex: 1; }
+.wo .wt-cost { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--text); white-space: nowrap; }
+.wo .wo-test.is-unsafe .wt-cost { color: var(--bad); }
+.wo .wo-test:disabled { cursor: default; border-style: dashed; color: var(--text-muted); background: transparent; }
+/* Info panel tabs: ticket, history, causes */
+.wo .info-tabs { align-self: flex-start; }
+.wo .hist { display: flex; flex-direction: column; gap: 10px; }
+.wo .hist-row { border-left: 4px solid var(--accent-border); padding: 2px 0 2px 12px; }
+.wo .hist-when { display: block; font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--warn); }
+.wo .hist-text { font-size: 24px; line-height: 1.35; color: var(--text); }
+.wo .cause-note { font-size: 24px; line-height: 1.4; color: var(--text); margin: 0; }
+.wo .cause-list { display: flex; flex-direction: column; gap: 8px; }
+.wo .cause-btn { font-family: var(--font-ui); font-size: 24px; line-height: 1.3; text-align: left; color: var(--text); background: var(--accent-dim); border: 1px solid var(--accent-border); border-radius: 6px; padding: 8px 12px; cursor: pointer; display: flex; gap: 10px; align-items: center; }
+.wo .cause-btn .wt-mark { color: var(--text); }
+.wo .cause-btn[aria-pressed="true"] { border-style: dashed; background: transparent; }
+.wo .cause-btn[aria-pressed="true"] .cb-text { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--text-muted); }
+.wo .cause-btn[aria-pressed="true"] .wt-mark { color: var(--bad); }
+/* Defend: tag the readings that support the diagnosis */
+.wo .defend-q { font-size: var(--small); line-height: 1.4; color: var(--text); margin: 0 0 10px; }
+.wo .defend-q b { color: var(--result); }
+.wo .wo-test.is-tag { border-color: var(--result); background: rgba(77,255,176,0.12); }
+.wo .wo-test.is-tag .wt-mark { color: var(--result); }
+
+/* ─── 6. Repeating countdown timer ───────────────────────────
+   Adapted from CSP 3.9 (makeRepeatingCountdown). Each deck that
+   uses it keeps its own copy of times-up.mp3.
+   ──────────────────────────────────────────────────────────── */
+.timer-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 520px;
+  flex: 0 0 auto;
+}
+.timer-label {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+}
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 120px;
+  font-weight: 700;
+  color: var(--result);
+  line-height: 1;
+  letter-spacing: -2px;
+  text-align: center;
+  padding: 6px 0;
+  text-shadow: 0 0 32px rgba(77,255,176,0.30);
+  transition: color 0.4s, text-shadow 0.4s;
+}
+.timer-display.warning { color: var(--warn); text-shadow: 0 0 32px rgba(255,209,102,0.4); }
+.timer-display.expired { color: var(--bad); text-shadow: 0 0 32px rgba(255,138,128,0.4); }
+.timer-controls { display: flex; gap: 12px; justify-content: center; }
+.timer-btn {
+  padding: 10px 24px;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  border-radius: 6px;
+  border: 2px solid;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  background: transparent;
+}
+.timer-btn:not(:disabled):active { transform: translateY(1px); }
+.timer-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.timer-btn-start { color: var(--result); border-color: var(--result); }
+.timer-btn-stop  { color: var(--warn); border-color: var(--warn); }
+.timer-btn-reset { color: var(--text-muted); border-color: var(--accent-border); }
+.timer-durations { display: flex; gap: 8px; justify-content: center; }
+.timer-dur-btn {
+  padding: 6px 18px;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid var(--accent-border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.timer-dur-btn.is-active { background: rgba(77,255,176,0.12); border-color: var(--result); color: var(--result); }
+.timer-dur-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.timer-hint { font-size: var(--small); color: var(--text-dim); text-align: center; }
+.timer-label.is-flashing { animation: timer-label-flash 0.44s steps(1, end) infinite; }
+@keyframes timer-label-flash {
+  0%, 100% { color: var(--warn); opacity: 1; }
+  50%      { color: var(--text-dim); opacity: 0.3; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .timer-label.is-flashing { animation: none; color: var(--warn); opacity: 1; }
+}
