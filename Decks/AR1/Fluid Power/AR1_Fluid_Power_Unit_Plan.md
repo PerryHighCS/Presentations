@@ -108,6 +108,8 @@ Investigate how a cylinder turns air pressure into linear movement. Identify bar
 
 **SyncDeck:** Label a cylinder diagram, choose a cylinder for a clamp or ejector, and predict movement when one port is pressurized. **Notebook:** labeled cylinder and short actuator-selection rationale.
 
+**If time allows: industry case study.** Use the "Fluid Power in the Real World" activity from the PHS Day 1 Student Guide (moved here from Day 1, where the reading fills the period). Each student picks an industry (aerospace, manufacturing, construction, medical, entertainment or transportation), researches one machine that uses fluid power, identifies whether it is hydraulic, pneumatic or both, explains what the fluid power system moves, and justifies why fluid power was chosen over electric motors using force, power, mass, density, inertia and pressure differences. This deepens ADE 7.1 and 7.2 evidence and builds on Deck 1's "Why Not Just Use an Electric Motor?" and factory-robot slides.
+
 ### Day 5: Directional control valves
 
 **Existing sources:** PHS *How Do We Turn Pressure Into Motion?*; CCHS *Pneumatic Control Valves: Ports, Positions, and Applications*.
@@ -179,7 +181,7 @@ Use multiple *interaction models*, not five versions of the same drag-the-slider
 ### Simulation B: VEX solenoid and cylinder explorer (Day 5; core)
 
 - **Form:** A labeled VEX-style double-acting solenoid with **two P openings, A and B cylinder connections, and two R exhaust openings that share an exhaust passage**, connected to a double-acting cylinder. Provide two toggled views: **hardware/port map** and **simplified industrial functional schematic**.
-- **Inputs:** Select commanded A or B state, swap A/B cylinder tube connections, and optionally reveal a transparent internal airflow diagram.
+- **Inputs:** Select commanded A or B state, swap A/B cylinder tube connections, swap the driver cable plugs, and optionally reveal a transparent internal airflow diagram.
 - **Behavior:** Highlight supply-to-A plus B-to-exhaust, or supply-to-B plus A-to-exhaust; show the correct cylinder response for the selected actual tube connections. Do not map motion direction from port letters alone. Distinguish a schematic's logical function from the physical external ports and internal passageways.
 - **Student challenge:** Predict which chamber receives pressure; find why a cylinder extends when the designer expected retraction; correct the tubing or interpretation.
 - **Evidence:** Actual VEX port map, two-state path table and one paragraph comparing VEX with the conventional industrial 5/2 **function**.
@@ -239,7 +241,9 @@ Use multiple *interaction models*, not five versions of the same drag-the-slider
 
 ### Safety
 
-Revisit safety before every physical investigation and build. Use only equipment-rated pressures and fittings, safety glasses, guarded pinch points and teacher-approved pressurization. Depressurize and verify stored energy is released before disconnecting lines or modifying components. Never assume switching off a solenoid has exhausted the system; some valves retain pressure or state. Avoid directing cylinders toward people. Do not ask students to create deliberate leaks or obstruct pressurized ports without an approved procedure.
+Revisit safety before every physical investigation and build. Use only equipment-rated pressures and fittings, safety glasses, guarded pinch points and teacher-approved pressurization. Depressurize and verify stored energy is released before disconnecting lines or modifying components. Never assume switching off a solenoid has exhausted the system. The VEX solenoid always powers either A or B, so the cylinder stays pressurized in its last position, and the tank stays charged.
+
+Teach the different failure hazards of the two systems. Compressed air stores energy like a spring, so a pneumatic failure can burst, snap or whip a loose line. Hydraulic fluid stores little energy, but a high-pressure pinhole leak can inject fluid through skin, causing a serious injury that may look minor at first. Never feel for a hydraulic leak with a hand. (This corrects the PHS Day 3 "When Things Go Wrong" slide, which presents leaking as the only hydraulic risk.) Avoid directing cylinders toward people. Do not ask students to create deliberate leaks or obstruct pressurized ports without an approved procedure.
 
 ### Standard 7.5: Simulated electro-pneumatic devices
 
@@ -278,6 +282,16 @@ For each deck, favor **predict → discuss → test/trace → explain**. Use vis
 
 **Source folder:** https://drive.google.com/drive/u/0/folders/16ZhxOeAFcfyFM8ZVgY-PdXKrsFhqQ4Dr
 
+## Decisions made (2026-11-20)
+
+- **VEX solenoid behavior:** The VEX double-acting solenoid always powers one side. Its driver circuit uses the on/off signal to choose whether A or B is pressurized; there is no "both off" or vented-center state. Simulations B and D model it as two states only, with the opposite side exhausting through R.
+- **PHS Day 4/5 NO/NC slides:** These are not wrong. They show a valve cross-section (open above, closed below), so their "position 1/2" numbering refers to the drawing, not the ISO symbol convention used later (rightmost box = default). Relabel the cross-section states when converting so they cannot be confused with ISO positions.
+- **CCHS valve slides:** Fix the normally closed P-to-A contradiction and drop the "5/2 is more powerful" claim.
+- **Hydraulic safety:** Add the high-pressure pinhole leak (fluid injection) hazard, while keeping the contrast that pneumatic failures release stored energy explosively. See Safety.
+- **E-stop in the Assembly Line brief:** Replace "E-Stop" with the VEX **shut-off valve fitting** as the operator's air shut-off. The fitting is directional (marked with a flow arrow), which suggests it vents the downstream side when closed, like an industrial lockout valve. VEX documentation does not say so, so confirm it on the bench: close the valve and check that you hear the exhaust and that the cylinder rod can be moved by hand. If it vents, the shut-off serves as both the stop and the depressurizing step in the operator manual. If not, the manual needs a separate venting procedure.
+- **Theme:** Every AR1 deck (DC Circuits, Engineering Communication, Final Project, Mechanical Linkages, Welcome) used `DCCircuits/theme.css`. **Done:** it is now promoted to `Decks/AR1/theme.css`, and fluid power decks in `Decks/AR1/Fluid Power/` link it as `../theme.css`.
+- **Activity name:** Use "VEXploration" for the Days 7–9 VEX exploration activity.
+
 ## Decisions to make before building decks
 
 1. **VEX kit identified:** 276-8750. Before implementing fitting-specific flow behavior, inspect the actual classroom fittings and verify orientation/directionality against VEX documentation. Confirm the available method of commanding the solenoids and follow manufacturer wiring guidance.
@@ -291,7 +305,18 @@ For each deck, favor **predict → discuss → test/trace → explain**. Use vis
 - VEX V5 Pneumatics Kit (276-8750): https://www.vexrobotics.com/276-8750.html
 - VEX, *Understanding the V5 Pneumatics Kit Components*: https://kb.vex.com/hc/en-us/articles/17126345547156-Understanding-the-V5-Pneumatics-Kit-Components
 - VEX, *Example V5 Pneumatics Kit Configurations*: https://kb.vex.com/hc/en-us/articles/17193212326036-Example-V5-Pneumatics-Kit-Configurations
+- VEX, *Coding the V5 Pneumatics Kit* (not yet reviewed): https://kb.vex.com/hc/en-us/articles/17202683259540-Coding-the-V5-Pneumatics-Kit
 - ADE Automation and Robotics Technical Standards 14.4201.00 (uploaded project standards, 2025 validation), Standard 7.0.
+
+### VEX hardware notes from the documentation (checked 2026-11-20)
+
+- **Supply side:** A tee at the tank outlet feeds the pressure gauge. The shut-off valve and an optional regulator sit on the supply line before the solenoid. The text does not give their order, so take it from the diagram or the classroom kits.
+- **Air flow valve fittings go on the cylinder ports only.** VEX says not to put them on the solenoid. The only feasible positions in Simulation D are therefore the cylinder's two ports. The documentation does not say whether they restrict flow in one direction (meter-out on exhaust versus meter-in on supply), so test that on the bench before building the model.
+- **Driver cable orientation sets the logic.** The green/white plug goes on the B side. Reversing the plugs "will flip the logic, causing the cylinder to extend when you want it to retract." Swapped A/B tubing produces the same symptom, so this makes a good pair of hidden faults for Simulation B and the 7.10 troubleshooting evidence: students need a test that tells the two causes apart.
+- **Second P port:** It ships with a 4 mm plug. The two-cylinder example chains a second solenoid from the supply line.
+- **Fittings are hand-tightened only.** Tools can damage the O-ring seals and break the delicate threads on the fittings. Add this to the Day 7 safety and handling rules.
+- **Maximum pressure is 100 psi** (teacher-confirmed). Never pressurize the tank above it. Use 100 psi as the upper limit of the supply-pressure setting in Simulation D.
+- **Not stated in the documentation:** a depressurizing procedure, and whether the shut-off valve vents downstream when closed.
 
 ### Unit boundary: VEX now, MecLab later
 
