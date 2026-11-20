@@ -310,6 +310,7 @@ For each deck, favor **predict → discuss → test/trace → explain**. Use vis
 
 ### VEX hardware notes from the documentation (checked 2026-11-20)
 
+- **Filling the tank:** Students charge the tank from the classroom compressor through the tank's brass fill valve (teacher-confirmed). The robot carries no compressor and runs on stored air, so cylinder force drops as the tank empties.
 - **Supply side:** A tee at the tank outlet feeds the pressure gauge. The shut-off valve and an optional regulator sit on the supply line before the solenoid. The text does not give their order, so take it from the diagram or the classroom kits.
 - **Air flow valve fittings go on the cylinder ports only.** VEX says not to put them on the solenoid. The only feasible positions in Simulation D are therefore the cylinder's two ports. The documentation does not say whether they restrict flow in one direction (meter-out on exhaust versus meter-in on supply), so test that on the bench before building the model.
 - **Driver cable orientation sets the logic.** The green/white plug goes on the B side. Reversing the plugs "will flip the logic, causing the cylinder to extend when you want it to retract." Swapped A/B tubing produces the same symptom, so this makes a good pair of hidden faults for Simulation B and the 7.10 troubleshooting evidence: students need a test that tells the two causes apart.

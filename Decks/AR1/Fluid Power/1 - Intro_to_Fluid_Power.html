@@ -171,6 +171,12 @@
   background: rgba(255,209,102,0.10);
   color: var(--warn);
 }
+.classify-earned { cursor: pointer; animation: badge-pulse-glow 1.6s ease-in-out infinite; }
+.classify-earned[hidden] { display: none; }
+@keyframes badge-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(77,255,176,0.5); }
+  50%      { box-shadow: 0 0 16px 5px rgba(77,255,176,0.45); }
+}
 .badge-pulse-complete {
   border-color: var(--result);
   background: rgba(77,255,176,0.14);
@@ -530,6 +536,7 @@
         <span class="badge badge-amber" data-classify-score style="display:none;">0 of 12 correct</span>
         <button type="button" class="classify-btn" data-classify-check disabled>Check My Answers</button>
         <button type="button" class="classify-btn classify-btn-secondary" data-classify-reset style="display:none;">Try Again</button>
+        <button type="button" class="badge badge-pulse-complete classify-earned" data-classify-earned hidden title="Show the perfect-score check again">&#10003; Perfect on the first try</button>
       </div>
       <div class="classify-tray" data-classify-tray data-bin="tray" tabindex="0" aria-label="Unplaced machines"></div>
       <div class="classify-board">
@@ -551,7 +558,7 @@
       <span class="classify-perfect-hint">Click to keep exploring the board</span>
     </div>
   </div>
-  <aside class="notes">Pneumatic: air-powered grinder, dentist&rsquo;s drill, nail gun, truck air brakes, robot paint sprayer, milking machine suction cups. Hydraulic: hedge-cutter arm, car brakes, crane boom, garage jack, garbage truck tipper, small elevator ram. Car brakes versus truck air brakes is the most useful pair to discuss: both stop vehicles, but they use different fluids.</aside>
+  <aside class="notes">Pneumatic: air-powered grinder, dentist&rsquo;s drill, nail gun, truck air brakes, robot paint sprayer, milking machine suction cups. Hydraulic: hedge-cutter arm, car brakes, crane boom, garage jack, garbage truck tipper, small elevator ram. A perfect first run shows a big check mark and leaves a pulsing &ldquo;Perfect on the first try&rdquo; badge that stays through Try Again and a reload until the browser tab closes; any missed check rules it out. Car brakes versus truck air brakes is the most useful pair to discuss: both stop vehicles, but they use different fluids.</aside>
 </section>
 
 <!-- SLIDE 13 · Squeezing a Fluid -->
@@ -733,11 +740,19 @@ function initClassifyFluid(Reveal) {
   var checkBtn = root.querySelector('[data-classify-check]');
   var resetBtn = root.querySelector('[data-classify-reset]');
   var overlayEl = section ? section.querySelector('[data-classify-overlay]') : null;
+  var earnedEl = root.querySelector('[data-classify-earned]');
   var zones = Array.prototype.slice.call(root.querySelectorAll('[data-bin]'));
 
   var MISSED_KEY = 'intro-to-fluid-power:classify-fluid-missed';
   var everMissed = false;
   try { everMissed = sessionStorage.getItem(MISSED_KEY) === '1'; } catch (e) { /* storage unavailable */ }
+  /* A perfect first run is saved too, so its badge survives closing the
+     overlay, Try Again, leaving the slide and a reload (until the tab closes). */
+  var EARNED_KEY = 'intro-to-fluid-power:classify-fluid-perfect';
+  var earned = false;
+  try { earned = sessionStorage.getItem(EARNED_KEY) === '1'; } catch (e) { /* storage unavailable */ }
+  function showEarned() { if (earnedEl) earnedEl.hidden = !earned; }
+  showEarned();
 
   var state = { placement: {}, order: [], selected: null, locked: false };
 
@@ -798,6 +813,11 @@ function initClassifyFluid(Reveal) {
       try { sessionStorage.setItem(MISSED_KEY, '1'); } catch (e) { /* storage unavailable */ }
     }
     var perfect = correct === CLASSIFY_ITEMS.length && !everMissed;
+    if (perfect && !earned) {
+      earned = true;
+      try { sessionStorage.setItem(EARNED_KEY, '1'); } catch (e) { /* storage unavailable */ }
+    }
+    showEarned();
     render();
     placedBadge.style.display = 'none';
     scoreBadge.style.display = 'inline-flex';
@@ -868,6 +888,9 @@ function initClassifyFluid(Reveal) {
   resetBtn.addEventListener('click', tryAgain);
   if (overlayEl) {
     overlayEl.addEventListener('click', function() { overlayEl.classList.remove('visible'); });
+  }
+  if (earnedEl && overlayEl) {
+    earnedEl.addEventListener('click', function() { overlayEl.classList.add('visible'); });
   }
 
   render();

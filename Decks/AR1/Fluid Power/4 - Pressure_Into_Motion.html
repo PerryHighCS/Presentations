@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="cjhgel">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4 - Pressure Into Motion</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   Deck 4: Pressure Into Motion (Day 4)
+   Color meaning, as in the rest of the unit: blue = air and
+   pneumatic parts, amber = oil and hydraulic parts, green = key
+   terms, yellow = dimensions and cautions.
+   ============================================================ */
+
+/* Answer choices shown on question slides (for the room) */
+.opt-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: var(--gap); }
+.opt-list li { font-size: var(--body); line-height: 1.4; color: var(--text); display: flex; gap: 16px; align-items: baseline; }
+.mcq-letter { font-family: var(--font-mono); font-weight: 700; color: var(--accent); min-width: 28px; }
+.warn-color { color: var(--warn); }
+.q-head { font-size: var(--body); color: var(--text-muted); margin-top: var(--gap); }
+
+/* Power chain rows */
+.chain { display: grid; grid-template-columns: repeat(5, 1fr); column-gap: 46px; position: relative; }
+.chain-row-label { font-size: var(--small); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin: var(--gap) 0 10px; }
+.chain-box {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-top: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 14px;
+  min-height: 132px;
+}
+.chain.hyd-chain .chain-box { border-color: var(--hyd-border); border-top-color: var(--hyd); }
+.chain-box b { display: block; font-size: var(--body); color: var(--text); }
+.chain-box span { display: block; font-size: var(--small); color: var(--text-muted); line-height: 1.35; margin-top: 4px; }
+.chain-box + .chain-box::before {
+  content: '';
+  position: absolute;
+  left: -40px;
+  top: 50%;
+  width: 22px;
+  height: 4px;
+  background: var(--text-muted);
+}
+.chain-box + .chain-box::after {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: calc(50% - 8px);
+  border-left: 12px solid var(--text-muted);
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+}
+.chain-return {
+  grid-column: 1 / -1;
+  height: 46px;
+  margin: 0 60px;
+  border: 4px solid var(--hyd);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  position: relative;
+}
+.chain-return::after {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: -16px;
+  border-bottom: 18px solid var(--hyd);
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+}
+.chain-return-label { position: absolute; left: 50%; bottom: -14px; transform: translate(-50%, 50%); background: var(--bg); padding: 0 12px; font-size: var(--small); color: var(--hyd); white-space: nowrap; }
+
+/* Cylinder figures */
+.cyl-fig { display: block; width: 1360px; height: auto; margin-top: var(--gap); }
+.cyl-fig text, .cyl-small text, .dac-svg text, .vac-fig text, .fcb-stage text { font-family: 'DM Sans', sans-serif; }
+.cyl-lbl { font-size: 26px; font-weight: 700; fill: var(--text); }
+.cyl-sub { font-size: 22px; fill: var(--text-muted); }
+.cyl-lbl-lg { font-size: 30px; font-weight: 700; fill: var(--text); }
+.cyl-small { display: block; width: 100%; height: auto; }
+
+/* Interactive double-acting cylinder */
+.dac-svg { display: block; width: 1360px; height: 330px; }
+.dac-controls { display: flex; gap: 16px; align-items: center; margin-top: 6px; }
+.dac-controls .sim-btn { font-size: var(--small); }
+.dac-status {
+  margin-top: 14px;
+  box-sizing: border-box;
+  height: 112px;
+  font-size: var(--body);
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg-card);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 18px;
+}
+
+/* Formula steps (from Deck 3) */
+.calc { display: flex; flex-direction: column; gap: 14px; }
+.calc-line { font-family: var(--font-mono); font-size: 34px; color: var(--text); }
+.calc-line .ans { color: var(--result); font-weight: 700; }
+.calc-note { font-size: var(--body); color: var(--text-muted); line-height: 1.45; }
+.has-frac { display: flex; align-items: center; gap: 0.4em; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.15; }
+.frac > span { padding: 0 0.25em; }
+.frac > span:first-child { border-bottom: 4px solid currentColor; padding-bottom: 4px; }
+.frac > span:last-child { padding-top: 4px; }
+
+/* Piston face figure */
+.face-fig { display: block; width: 100%; height: auto; }
+.face-fig text { font-family: 'DM Sans', sans-serif; }
+
+/* Vacuum figure and use cards */
+.vac-fig { display: block; width: 100%; height: auto; }
+.vac-col { position: relative; }
+.vac-stage { width: 100%; height: 400px; }
+.vac-frame { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; box-shadow: 0 0 0 1px var(--accent-border); }
+.vac-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; }
+.vac-count { font-family: var(--font-mono); font-size: var(--small); color: var(--text-muted); }
+.vac-cap { height: 72px; margin-top: 8px; font-size: 24px; line-height: 1.4; color: var(--text); }
+.vac-diagram { position: absolute; inset: 0; display: flex; align-items: center; }
+.use-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-top: var(--gap); }
+.use-grid .sys-card { padding: 18px 24px; }
+.use-grid .sys-card h3 { margin-bottom: 6px; }
+.reveal .sys-card h3.pneu { color: var(--accent); }
+.reveal .sys-card h3.hyd { color: var(--hyd); }
+.use-grid .sys-card p { line-height: 1.4; }
+
+/* Photo with labels (VEX power chain) */
+.vex-fig { position: relative; margin: 0; }
+.vex-fig img { display: block; width: 100%; border-radius: 8px; box-shadow: 0 0 0 1px var(--accent-border), 0 6px 24px rgba(0,0,0,0.5); }
+.vex-chip { position: absolute; font-size: var(--small); font-weight: 700; color: var(--text); background: rgba(6,11,20,0.88); border: 1px solid var(--accent-border); border-radius: 6px; padding: 4px 10px; white-space: nowrap; }
+.vex-steps { counter-reset: vs; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.vex-steps li { counter-increment: vs; font-size: var(--body); line-height: 1.4; color: var(--text-muted); padding-left: 48px; position: relative; }
+.vex-steps li::before { content: counter(vs); position: absolute; left: 0; top: 2px; width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent); font-family: var(--font-mono); font-size: var(--small); font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+/* ─── Label-the-cylinder builder ───────────────────────────────
+   Adapted from the CSP 4.6 flowchart slot builder (see the
+   activities index). Drag a card onto a slot, or click a card
+   and then a slot. Correct cards fill the slot; wrong ones shake. */
+.fcb-stage { position: relative; width: 1360px; height: 345px; margin-top: 8px; }
+.fcb-stage svg { position: absolute; left: 0; top: 0; }
+.fcb-panel { display: flex; flex-direction: column; gap: 12px; margin-top: var(--gap); }
+.fcb-status { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: var(--small); color: var(--text-muted); }
+.fcb-status .fcb-count { font-family: var(--font-mono); font-weight: 700; color: var(--text); }
+.fcb-complete { color: var(--result); font-weight: 700; }
+.fcb-bank { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 12px; height: 116px; }
+.fcb-chip {
+  all: unset;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 2px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 6px 16px;
+}
+.fcb-chip:hover { border-color: var(--accent); }
+.fcb-chip.selected { border-color: var(--warn); background: rgba(255,209,102,0.12); transform: translateY(-2px); }
+.fcb-chip.used { display: none; }
+.fcb-chip.dragging { opacity: 0.35; }
+.fcb-ghost { position: fixed; z-index: 10000; pointer-events: none; transform-origin: 0 0; margin: 0; border-color: var(--warn); box-shadow: 0 12px 28px rgba(0,0,0,0.5); cursor: grabbing; }
+.fcb-slot {
+  all: unset;
+  position: absolute;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  border: 2px dashed rgba(255,209,102,0.7);
+  border-radius: 8px;
+  background: rgba(6,11,20,0.92);
+}
+.fcb-slot:hover:not(.filled), .fcb-slot.drag-over { border-color: var(--warn); background: rgba(40,34,14,0.95); }
+.fcb-ph { color: var(--warn); font-size: 26px; }
+.fcb-slot.filled { cursor: default; border: 2px solid var(--result); background: rgba(8,40,30,0.95); }
+.fcb-slot.wrong { border-color: var(--bad); background: rgba(60,16,16,0.95); animation: fcb-shake 0.4s ease; }
+.fcb-x { position: absolute; top: -12px; right: -12px; width: 28px; height: 28px; border-radius: 50%; background: var(--bad); color: #1a0505; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; }
+.fcb-perfect {
+  font-size: var(--small);
+  font-weight: 700;
+  color: var(--result);
+  background: rgba(77,255,176,0.14);
+  border: 1px solid rgba(77,255,176,0.6);
+  border-radius: 999px;
+  padding: 4px 14px;
+  cursor: pointer;
+  animation: badge-pulse-glow 1.6s ease-in-out infinite;
+}
+@keyframes badge-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(77,255,176,0.5); }
+  50%      { box-shadow: 0 0 16px 5px rgba(77,255,176,0.45); }
+}
+/* Perfect-score overlay, as in the CSP matching games */
+.match-perfect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6,11,20,0.92);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.match-perfect-overlay.visible { opacity: 1; pointer-events: auto; cursor: pointer; }
+.match-perfect-badge { display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0; }
+.match-perfect-overlay.visible .match-perfect-badge { animation: match-perfect-pop 0.7s ease both; }
+.match-perfect-check { font-size: 220px; line-height: 1; color: var(--result); filter: drop-shadow(0 0 46px rgba(77,255,176,0.55)); }
+.match-perfect-text { font-size: 84px; font-weight: 700; color: var(--text); text-shadow: 0 0 34px rgba(93,170,255,0.45); }
+.match-perfect-hint { font-family: var(--font-mono); font-size: var(--small); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+@keyframes match-perfect-pop {
+  0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  75%  { transform: scale(0.96) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes fcb-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+</style>
+</head>
+<body>
+
+<div class="reveal"><div class="slides">
+
+<!-- SLIDE 01 · Title -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 5 &nbsp;·&nbsp; Pressure Into Motion</span>
+    <h1 class="title-h1">How Does Pressure <span class="pneu">Become Motion?</span></h1>
+    <p class="lead" style="margin-top:var(--gap);text-align:center;">Every fluid power machine needs something that makes the pressure and something that turns it into movement. Today we follow that chain from start to finish.</p>
+  </div>
+  <div class="glow" style="width:620px;height:620px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(93,170,255,0.07),transparent 70%);"></div>
+  <div class="glow" style="width:560px;height:560px;right:-140px;bottom:-160px;background:radial-gradient(circle,rgba(255,171,94,0.05),transparent 70%);"></div>
+</section>
+
+<!-- SLIDE 02 · Resonance: Prediction (poll) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:1:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Predict: A cylinder uses the same 100 psi of air to push its rod out and to pull its rod back in. Which way does it push harder?", "responseTimeLimitMs": 45000, "options": [{"id": "q1a", "text": "Pushing the rod out", "isCorrect": false}, {"id": "q1b", "text": "Pulling the rod back in", "isCorrect": false}, {"id": "q1c", "text": "The same both ways", "isCorrect": false}, {"id": "q1d", "text": "It depends on how fast it moves", "isCorrect": false}], "order": 0}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict</span>
+    <h2>Make Your Prediction</h2>
+    <p class="lead">A cylinder uses the same <span class="pneu">100&nbsp;psi</span> of air to push its rod out and to pull its rod back in. Which way does it push harder?</p>
+    <ol class="opt-list">
+      <li><span class="mcq-letter">A</span>Pushing the rod out</li>
+      <li><span class="mcq-letter">B</span>Pulling the rod back in</li>
+      <li><span class="mcq-letter">C</span>The same both ways</li>
+      <li><span class="mcq-letter">D</span>It depends on how fast it moves</li>
+    </ol>
+  </div>
+  <aside class="notes">An ungraded poll. Most students pick &ldquo;the same both ways,&rdquo; because the pressure is the same. Do not give the answer yet; slide 11 shows that the rod covers part of the piston on the return side, so the cylinder pulls with less force than it pushes.</aside>
+</section>
+
+<!-- SLIDE 03 · The power chain -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Power Sources</span>
+    <h2>Where Does the Pressure Come From?</h2>
+    <p class="prose">A cylinder cannot make pressure by itself. A motor or engine first turns a machine that pushes fluid into the system. The path from that machine to the moving part is the <span class="term">power chain</span>.</p>
+    <div class="fragment fade-up">
+      <div class="chain-row-label pneu">Pneumatic</div>
+      <div class="chain">
+        <div class="chain-box"><b>Compressor</b><span>A motor drives it to squeeze air.</span></div>
+        <div class="chain-box"><b>Receiver tank</b><span>Stores the squeezed air.</span></div>
+        <div class="chain-box"><b>Valve</b><span>Sends air where it is needed.</span></div>
+        <div class="chain-box"><b>Cylinder</b><span>Turns pressure into motion.</span></div>
+        <div class="chain-box"><b>Exhaust</b><span>Used air escapes into the room.</span></div>
+      </div>
+    </div>
+    <div class="fragment fade-up">
+      <div class="chain-row-label hyd">Hydraulic</div>
+      <div class="chain hyd-chain">
+        <div class="chain-box"><b>Reservoir</b><span>A tank that holds the oil.</span></div>
+        <div class="chain-box"><b>Pump</b><span>A motor drives it to push oil.</span></div>
+        <div class="chain-box"><b>Valve</b><span>Sends oil where it is needed.</span></div>
+        <div class="chain-box"><b>Cylinder</b><span>Turns pressure into motion.</span></div>
+        <div class="chain-box"><b>Return line</b><span>Carries used oil back.</span></div>
+        <div class="chain-return"><span class="chain-return-label">Oil returns to the reservoir and is used again.</span></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.7, power supplies. Reveal the pneumatic chain, then the hydraulic one, and ask students what is different at each end. Air comes from the room and goes back to it, so a pneumatic system needs no return line. Oil is expensive and messy, so it circulates in a loop. Students will draw both chains in their notebooks on the exit ticket.</aside>
+</section>
+
+<!-- SLIDE 04 · Storing energy -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Power Sources</span>
+    <h2>Storing Air and Pumping Oil</h2>
+    <div class="split split-50" style="flex:none;margin-top:var(--gap);">
+      <div class="sys-card">
+        <h3 class="pneu">Pneumatic supply</h3>
+        <p>Air squeezes, so a <span class="pneu">receiver tank</span> can store it under pressure. The compressor fills the tank ahead of time, and the system can draw a burst of air faster than the compressor could make it.</p>
+      </div>
+      <div class="sys-card hyd-card fragment fade-up">
+        <h3 class="hyd">Hydraulic supply</h3>
+        <p>Oil barely squeezes, so most systems do not store it under pressure. The <span class="hyd">pump</span> makes flow while the machine works, and a <span class="term">relief valve</span> sends oil back to the reservoir if the pressure climbs too high.</p>
+      </div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">That is why a shop compressor kicks on only now and then, while the pump on an excavator runs the whole time the engine is on.</p>
+  </div>
+  <aside class="notes">Keep this short. The point is the source and storage difference for 7.7. Some hydraulic systems do use accumulators to store pressure; mention it only if a student asks. The relief valve is the hydraulic safety device students should remember.</aside>
+</section>
+
+<!-- SLIDE 05 · The VEX power chain -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">VEX Pneumatics</span>
+    <h2>The VEX Power Chain</h2>
+    <div class="split split-60 split-top" style="flex:none;">
+      <figure class="vex-fig">
+        <img src="Intro_to_Fluid_Power_Assets/vexCylinder.jpeg" alt="A VEX V5 pneumatic setup on a table: a red air tank with a brass fill valve on the right, a black solenoid valve in the middle and a thin red cylinder on the left, all joined by black tubing.">
+        <span class="vex-chip" style="left:62%;top:86%;">Fill valve</span>
+        <span class="vex-chip" style="left:57%;top:40%;">Tank</span>
+        <span class="vex-chip" style="left:26%;top:50%;">Solenoid valve</span>
+        <span class="vex-chip" style="left:10%;top:80%;">Cylinder</span>
+      </figure>
+      <ol class="vex-steps">
+        <li class="fragment fade-up">A <span class="pneu">compressor</span> fills the tank through its fill valve before you run.</li>
+        <li class="fragment fade-up">The <span class="pneu">tank</span> stores the air at up to 100&nbsp;psi.</li>
+        <li class="fragment fade-up">The <span class="term">solenoid valve</span> sends air to one end of the cylinder.</li>
+        <li class="fragment fade-up">The <span class="term">cylinder</span> moves, and the air from its other end exhausts.</li>
+      </ol>
+    </div>
+  </div>
+  <aside class="notes">The robot carries no compressor: the classroom compressor charges the tank before a run, and the robot runs on that stored air. That is why the cylinder weakens as the tank empties (Deck 3&rsquo;s worked example).</aside>
+</section>
+
+<!-- SLIDE 06 · Resonance: Power chain check -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:5:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "In a hydraulic system, where does the oil go after it leaves the cylinder?", "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "It escapes into the room as exhaust.", "isCorrect": false}, {"id": "q1b", "text": "It is stored under pressure in a receiver tank.", "isCorrect": false}, {"id": "q1c", "text": "It flows back to the reservoir to be used again.", "isCorrect": true}, {"id": "q1d", "text": "It is burned by the motor that drives the pump.", "isCorrect": false}], "order": 0}, {"id": "q2", "type": "multiple-choice", "text": "In a pneumatic system, which part stores compressed air so the compressor does not have to run every time a cylinder moves?", "responseTimeLimitMs": 60000, "options": [{"id": "q2a", "text": "The receiver tank", "isCorrect": true}, {"id": "q2b", "text": "The valve", "isCorrect": false}, {"id": "q2c", "text": "The cylinder", "isCorrect": false}, {"id": "q2d", "text": "The exhaust port", "isCorrect": false}], "order": 1}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check</span>
+    <h2>Check Your Power Chains</h2>
+    <p class="lead">1. In a hydraulic system, where does the oil go after it leaves the cylinder?</p>
+    <p class="lead">2. In a pneumatic system, which part stores compressed air so the compressor does not have to run every time a cylinder moves?</p>
+  </div>
+  <aside class="notes">Answers: the oil flows back to the reservoir; the receiver tank stores the air. If many students pick &ldquo;escapes as exhaust&rdquo; for oil, return to slide 3 and trace the return line.</aside>
+</section>
+
+<!-- SLIDE 07 · Parts of a cylinder -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Cylinders</span>
+    <h2>Parts of a Cylinder</h2>
+    <p class="prose">A cylinder turns pressure into straight-line motion. Air pushes on the <span class="term">piston</span>, and the <span class="term">rod</span> carries that push out to the machine.</p>
+<svg class="cyl-fig" viewBox="0 0 1360 345" width="1360" height="345" role="img" aria-label="Cutaway of a double-acting cylinder. A barrel with an end cap at each end holds a piston. A rod runs from the piston out through the right end cap. A port at each end lets air in or out. The bore is the inside diameter of the barrel, and the stroke is how far the rod can travel.">
+<rect x="196" y="120" width="520" height="140" fill="none" stroke="#c9d6e6" stroke-width="4"/>
+<rect x="160" y="108" width="36" height="164" rx="4" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="716" y="108" width="36" height="164" rx="4" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="228" y="175" width="600" height="30" fill="#b8c7d9"/>
+<rect x="828" y="163" width="20" height="54" rx="3" fill="#b8c7d9"/>
+<rect x="200" y="124" width="28" height="132" fill="#e8f2ff"/>
+<rect x="210" y="124" width="8" height="132" fill="#1b2a44"/>
+<rect x="216" y="70" width="20" height="50" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="676" y="70" width="20" height="50" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<g class="fragment fade-up" data-fragment-index="1">
+<line x1="456" y1="50" x2="456" y2="116" stroke="#ffd166" stroke-width="2"/>
+<text x="456" y="40" text-anchor="middle" class="cyl-lbl">Barrel</text>
+</g>
+<g class="fragment fade-up" data-fragment-index="2">
+<line x1="214" y1="260" x2="214" y2="308" stroke="#ffd166" stroke-width="2"/>
+<text x="214" y="336" text-anchor="middle" class="cyl-lbl">Piston</text>
+<line x1="790" y1="158" x2="790" y2="172" stroke="#ffd166" stroke-width="2"/>
+<text x="790" y="150" text-anchor="middle" class="cyl-lbl">Rod</text>
+</g>
+<g class="fragment fade-up" data-fragment-index="3">
+<text x="226" y="40" text-anchor="middle" class="cyl-lbl">Cap end port</text>
+<text x="686" y="40" text-anchor="middle" class="cyl-lbl">Rod end port</text>
+</g>
+<g class="fragment fade-up" data-fragment-index="4">
+<rect x="848" y="175" width="464" height="30" fill="none" stroke="#c9d6e6" stroke-width="2" stroke-dasharray="8 6"/>
+<rect x="1312" y="163" width="20" height="54" fill="none" stroke="#c9d6e6" stroke-width="2" stroke-dasharray="8 6"/>
+<line x1="848" y1="221" x2="848" y2="264" stroke="#ffd166" stroke-width="2"/>
+<line x1="1332" y1="221" x2="1332" y2="264" stroke="#ffd166" stroke-width="2"/>
+<line x1="860" y1="250" x2="1320" y2="250" stroke="#ffd166" stroke-width="3"/>
+<path d="M848 250 l14 -8 v16 z M1332 250 l-14 -8 v16 z" fill="#ffd166"/>
+<line x1="114" y1="124" x2="156" y2="124" stroke="#ffd166" stroke-width="2"/>
+<line x1="114" y1="256" x2="156" y2="256" stroke="#ffd166" stroke-width="2"/>
+<line x1="130" y1="136" x2="130" y2="244" stroke="#ffd166" stroke-width="3"/>
+<path d="M130 124 l-8 14 h16 z M130 256 l-8 -14 h16 z" fill="#ffd166"/>
+<text x="100" y="200" text-anchor="end" class="cyl-lbl">Bore</text>
+<text x="1090.0" y="300" text-anchor="middle" class="cyl-lbl">Stroke</text>
+</g>
+</svg>
+    <p class="prose fragment fade-up" data-fragment-index="4" style="margin-top:10px;">The <span class="warn-color">bore</span> sets how much area the air pushes on, so it sets the force. The <span class="warn-color">stroke</span> sets how far the rod can travel.</p>
+  </div>
+  <aside class="notes">Each click adds labels: the barrel, then the piston and rod, then the two ports, then bore and stroke. The cap end is the closed end; the rod end is where the rod comes out. Connect bore back to Deck 3: force = pressure &times; the area of a circle with that bore.</aside>
+</section>
+
+<!-- SLIDE 08 · Single- vs double-acting -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Cylinders</span>
+    <h2>Single-Acting and Double-Acting Cylinders</h2>
+    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+      <div>
+<svg class="cyl-small" viewBox="100 0 760 340" role="img" aria-label="A single-acting cylinder: one air port at the cap end, a small vent at the rod end, and a spring between the piston and the rod end cap.">
+<rect x="196" y="120" width="520" height="140" fill="none" stroke="#c9d6e6" stroke-width="4"/>
+<rect x="160" y="108" width="36" height="164" rx="4" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="716" y="108" width="36" height="164" rx="4" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<polyline points="232.0,134 258.7,246 285.3,134 312.0,246 338.7,134 365.3,246 392.0,134 418.7,246 445.3,134 472.0,246 498.7,134 525.3,246 552.0,134 578.7,246 605.3,134 632.0,246 658.7,134 685.3,246 712.0,134" fill="none" stroke="#ffd166" stroke-width="4" stroke-linejoin="round"/>
+<rect x="228" y="175" width="600" height="30" fill="#b8c7d9"/>
+<rect x="828" y="163" width="20" height="54" rx="3" fill="#b8c7d9"/>
+<rect x="200" y="124" width="28" height="132" fill="#e8f2ff"/>
+<rect x="210" y="124" width="8" height="132" fill="#1b2a44"/>
+<rect x="216" y="70" width="20" height="50" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<circle cx="686" cy="120" r="7" fill="#060b14" stroke="#c9d6e6" stroke-width="3"/>
+<text x="226" y="36" text-anchor="middle" class="cyl-lbl-lg">Air in and out</text><text x="686" y="36" text-anchor="middle" class="cyl-lbl-lg">Vent</text><line x1="686" y1="46" x2="686" y2="108" stroke="#ffd166" stroke-width="2"/><text x="456" y="324" text-anchor="middle" class="cyl-lbl-lg" style="fill:#ffd166;">Spring pushes the piston back</text>
+</svg>
+        <p class="prose" style="margin-top:10px;">A <span class="term">single-acting</span> cylinder uses air to push one way only. A spring pushes it back when the air is let out.</p>
+      </div>
+      <div class="fragment fade-up">
+<svg class="cyl-small" viewBox="100 0 760 340" role="img" aria-label="A double-acting cylinder with an air port at each end and no spring.">
+<rect x="196" y="120" width="520" height="140" fill="none" stroke="#c9d6e6" stroke-width="4"/>
+<rect x="160" y="108" width="36" height="164" rx="4" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="716" y="108" width="36" height="164" rx="4" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="228" y="175" width="600" height="30" fill="#b8c7d9"/>
+<rect x="828" y="163" width="20" height="54" rx="3" fill="#b8c7d9"/>
+<rect x="200" y="124" width="28" height="132" fill="#e8f2ff"/>
+<rect x="210" y="124" width="8" height="132" fill="#1b2a44"/>
+<rect x="216" y="70" width="20" height="50" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="676" y="70" width="20" height="50" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<text x="226" y="36" text-anchor="middle" class="cyl-lbl-lg">Port A</text><text x="686" y="36" text-anchor="middle" class="cyl-lbl-lg">Port B</text><text x="456" y="324" text-anchor="middle" class="cyl-lbl-lg">Air pushes both ways</text>
+</svg>
+        <p class="prose" style="margin-top:10px;">A <span class="term">double-acting</span> cylinder has a port at each end, so air pushes it both ways. The VEX cylinder is double-acting.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Single-acting cylinders use less air and need only one air line, but the spring steals some of the push and the return is weak. Double-acting cylinders push and pull with force and stay where they are put while air is applied. Ask: which would you want for a door that must close firmly?</aside>
+</section>
+
+<!-- SLIDE 09 · Resonance: Predict port behavior -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:8:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "A double-acting cylinder has a port at each end. Air flows into the port at the rod end, and the port at the other end (the cap end) is open to exhaust. What does the rod do?", "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "It pushes out, because air always pushes the rod outward.", "isCorrect": false}, {"id": "q1b", "text": "Nothing happens until both ports get air.", "isCorrect": false}, {"id": "q1c", "text": "It holds still while the air leaks out of the cap end port.", "isCorrect": false}, {"id": "q1d", "text": "It pulls back in, because the air pushes on the rod side of the piston.", "isCorrect": true}], "order": 0}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict</span>
+    <h2>Which Way Will It Move?</h2>
+    <p class="lead">A double-acting cylinder has a port at each end. Air flows into the port at the <span class="term">rod end</span>, and the port at the cap end is open to exhaust. What does the rod do?</p>
+    <ol class="opt-list">
+      <li><span class="mcq-letter">A</span>It pushes out, because air always pushes the rod outward.</li>
+      <li><span class="mcq-letter">B</span>Nothing happens until both ports get air.</li>
+      <li><span class="mcq-letter">C</span>It holds still while the air leaks out of the cap end port.</li>
+      <li><span class="mcq-letter">D</span>It pulls back in, because the air pushes on the rod side of the piston.</li>
+    </ol>
+  </div>
+  <aside class="notes">Graded. The air pushes on the rod side of the piston, so the piston and rod move toward the cap end: the rod pulls in. The next slide lets students check.</aside>
+</section>
+
+<!-- SLIDE 10 · Interactive double-acting cylinder -->
+<section data-prevent-swipe>
+  <div class="slide-inner">
+    <span class="slide-tag">Try It</span>
+    <h2>Drive a Double-Acting Cylinder</h2>
+    <div id="dac">
+<svg class="dac-svg" viewBox="0 0 1360 330" width="1360" height="330" role="img" aria-label="A double-acting cylinder. Buttons send air into the cap end port or the rod end port, and the piston moves away from the side with air." data-r="svg">
+<rect data-r="air-cap" x="196" y="124" width="0" height="132" fill="rgba(93,170,255,0.38)"/>
+<rect data-r="air-rod" x="716" y="124" width="0" height="132" fill="rgba(93,170,255,0.38)"/>
+<rect x="196" y="120" width="520" height="140" fill="none" stroke="#c9d6e6" stroke-width="4"/>
+<rect x="160" y="108" width="36" height="164" rx="4" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="716" y="108" width="36" height="164" rx="4" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="216" y="70" width="20" height="50" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="676" y="70" width="20" height="50" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<g data-r="mover">
+<rect x="228" y="175" width="600" height="30" fill="#b8c7d9"/>
+<rect x="828" y="163" width="20" height="54" rx="3" fill="#b8c7d9"/>
+<rect x="200" y="124" width="28" height="132" fill="#e8f2ff"/>
+<rect x="210" y="124" width="8" height="132" fill="#1b2a44"/>
+</g>
+<g data-r="in-cap" visibility="hidden"><line x1="226" y1="6" x2="226" y2="48" stroke="#5daaff" stroke-width="6"/><path d="M214 44 L238 44 L226 64 z" fill="#5daaff"/><text x="248" y="40" class="cyl-lbl" style="fill:#5daaff;">Air in</text></g>
+<g data-r="out-cap" visibility="hidden"><line x1="226" y1="64" x2="226" y2="22" stroke="#c9d6e6" stroke-width="5" stroke-dasharray="7 6"/><path d="M215 24 L237 24 L226 4 z" fill="#c9d6e6"/><text x="248" y="40" class="cyl-lbl">Exhaust</text></g>
+<g data-r="in-rod" visibility="hidden"><line x1="686" y1="6" x2="686" y2="48" stroke="#5daaff" stroke-width="6"/><path d="M674 44 L698 44 L686 64 z" fill="#5daaff"/><text x="708" y="40" class="cyl-lbl" style="fill:#5daaff;">Air in</text></g>
+<g data-r="out-rod" visibility="hidden"><line x1="686" y1="64" x2="686" y2="22" stroke="#c9d6e6" stroke-width="5" stroke-dasharray="7 6"/><path d="M675 24 L697 24 L686 4 z" fill="#c9d6e6"/><text x="708" y="40" class="cyl-lbl">Exhaust</text></g>
+</svg>
+      <div class="dac-controls">
+        <button type="button" class="sim-btn" data-r="cap">Air into the cap end</button>
+        <button type="button" class="sim-btn" data-r="rod">Air into the rod end</button>
+        <button type="button" class="sim-btn alt" data-r="reset" style="margin-left:auto;">Reset</button>
+      </div>
+      <div class="dac-status" data-r="status" aria-live="polite"></div>
+    </div>
+  </div>
+  <aside class="notes">The piston always moves away from the side with air, while the other side exhausts. Point out that the air on the rod side pushes on a ring around the rod, not the whole piston face. That sets up the next slide.</aside>
+</section>
+
+<!-- SLIDE 11 · Why pulling is weaker -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Cylinders</span>
+    <h2>Why a Cylinder Pulls With Less Force</h2>
+    <p class="prose">When the cylinder pulls back, the air pushes only on the <span class="term">ring around the rod</span>. The rod covers the middle of the piston, so there is less area to push on.</p>
+    <div class="split split-40 split-top" style="flex:none;margin-top:var(--gap);">
+      <svg class="face-fig" viewBox="0 0 560 300" role="img" aria-label="Two piston faces seen end-on. Pushing out, the air pushes on the whole circle. Pulling in, the air pushes only on a ring, because the rod covers the center.">
+        <circle cx="130" cy="130" r="110" fill="rgba(93,170,255,0.38)" stroke="#c9d6e6" stroke-width="4"/>
+        <text x="130" y="285" text-anchor="middle" class="cyl-lbl">Pushing out</text>
+        <circle cx="420" cy="130" r="110" fill="rgba(93,170,255,0.38)" stroke="#c9d6e6" stroke-width="4"/>
+        <circle cx="420" cy="130" r="43" fill="#b8c7d9" stroke="#c9d6e6" stroke-width="3"/>
+        <text x="420" y="139" text-anchor="middle" class="cyl-lbl" style="fill:#060b14;">Rod</text>
+        <text x="420" y="285" text-anchor="middle" class="cyl-lbl">Pulling in</text>
+      </svg>
+      <div class="calc">
+        <div class="calc-note fragment fade-up">The VEX cylinder has a 10&nbsp;mm bore (radius 0.197&nbsp;in) and a 3.95&nbsp;mm rod (radius 0.078&nbsp;in). At 100&nbsp;psi:</div>
+        <div class="calc-line fragment fade-up">Piston: 3.14 &times; 0.197&sup2; &asymp; 0.12&nbsp;in&sup2;</div>
+        <div class="calc-line fragment fade-up">Push: 0.12&nbsp;in&sup2; &times; 100 = <span class="ans">12&nbsp;lb</span></div>
+        <div class="calc-line fragment fade-up">Rod: 3.14 &times; 0.078&sup2; &asymp; 0.019&nbsp;in&sup2;</div>
+        <div class="calc-line fragment fade-up">Pull: (0.12 &minus; 0.019) &times; 100 &asymp; <span class="ans">10&nbsp;lb</span></div>
+      </div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">So the answer to the opening prediction is that it <span class="term">pushes harder</span> than it pulls, even at the same pressure.</p>
+  </div>
+  <aside class="notes">Areas use A = &pi; &times; r&sup2; from Deck 3. The piston area (0.12&nbsp;in&sup2;) matches Deck 3&rsquo;s VEX worked example. The 3.95&nbsp;mm rod has a radius of about 0.078&nbsp;in, so it covers about 0.019&nbsp;in&sup2;, and the ring left over is about 0.10&nbsp;in&sup2;. The VEX cylinder pushes with about 12&nbsp;lb but pulls with only about 10&nbsp;lb. Engineers mount a cylinder so the hard work happens while it pushes.</aside>
+</section>
+
+<!-- SLIDE 12 · Pressure vs speed -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Cylinders</span>
+    <h2>Pressure Sets Force, Flow Sets Speed</h2>
+    <p class="prose">More pressure makes a cylinder push harder, but it does not decide how fast the rod moves. Speed depends on how fast fluid <span class="term">flows</span> into the cylinder to fill the space behind the piston.</p>
+    <div class="calc" style="margin-top:var(--gap);">
+      <div class="calc-line has-frac fragment fade-up"><span>speed =</span><span class="frac"><span>flow</span><span>area</span></span></div>
+      <div class="calc-note fragment fade-up">A pump sends 10&nbsp;in&sup3; of oil into the cylinder each second.</div>
+    </div>
+    <div class="split split-50 split-top" style="flex:none;margin-top:14px;">
+      <div class="calc fragment fade-up">
+        <div class="calc-note">Into a 2&nbsp;in&sup2; piston:</div>
+        <div class="calc-line has-frac"><span>speed =</span><span class="frac"><span>10&nbsp;in&sup3;/s</span><span>2&nbsp;in&sup2;</span></span><span>=</span><span class="ans">5&nbsp;in/s</span></div>
+      </div>
+      <div class="calc fragment fade-up">
+        <div class="calc-note">Into a 5&nbsp;in&sup2; piston:</div>
+        <div class="calc-line has-frac"><span>speed =</span><span class="frac"><span>10&nbsp;in&sup3;/s</span><span>5&nbsp;in&sup2;</span></span><span>=</span><span class="ans">2&nbsp;in/s</span></div>
+      </div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">A bigger piston pushes harder but moves slower on the same flow. Engineers intentionally slow down pistons with <span class="term">flow control fittings</span>, because a rod that moves too fast can slam into the end of its stroke, damage the machine or throw its load.</p>
+  </div>
+  <aside class="notes">This is the same idea as Deck 3&rsquo;s &ldquo;volume in = volume out.&rdquo; The hydraulic example is clean because oil does not squeeze. Air cylinders behave the same way in general, but a heavy load or a weak supply also slows them, because the air squeezes before it moves the piston.</aside>
+</section>
+
+<!-- SLIDE 13 · Label the cylinder -->
+<section id="fcb-cylinder" data-fcb data-prevent-swipe>
+  <div class="slide-inner">
+    <span class="slide-tag">Your Turn</span>
+    <h2>Label the Cylinder</h2>
+    <div class="fcb-stage" data-fcb-root>
+<svg viewBox="0 0 1360 345" width="1360" height="345" aria-hidden="true">
+<rect x="196" y="120" width="520" height="140" fill="none" stroke="#c9d6e6" stroke-width="4"/>
+<rect x="160" y="108" width="36" height="164" rx="4" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="716" y="108" width="36" height="164" rx="4" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="228" y="175" width="600" height="30" fill="#b8c7d9"/>
+<rect x="828" y="163" width="20" height="54" rx="3" fill="#b8c7d9"/>
+<rect x="200" y="124" width="28" height="132" fill="#e8f2ff"/>
+<rect x="210" y="124" width="8" height="132" fill="#1b2a44"/>
+<rect x="216" y="70" width="20" height="50" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="676" y="70" width="20" height="50" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+<rect x="848" y="175" width="464" height="30" fill="none" stroke="#c9d6e6" stroke-width="2" stroke-dasharray="8 6"/>
+<rect x="1312" y="163" width="20" height="54" fill="none" stroke="#c9d6e6" stroke-width="2" stroke-dasharray="8 6"/>
+<line x1="848" y1="221" x2="848" y2="264" stroke="#ffd166" stroke-width="2"/>
+<line x1="1332" y1="221" x2="1332" y2="264" stroke="#ffd166" stroke-width="2"/>
+<line x1="860" y1="250" x2="1320" y2="250" stroke="#ffd166" stroke-width="3"/>
+<path d="M848 250 l14 -8 v16 z M1332 250 l-14 -8 v16 z" fill="#ffd166"/>
+<line x1="114" y1="124" x2="156" y2="124" stroke="#ffd166" stroke-width="2"/>
+<line x1="114" y1="256" x2="156" y2="256" stroke="#ffd166" stroke-width="2"/>
+<line x1="130" y1="136" x2="130" y2="244" stroke="#ffd166" stroke-width="3"/>
+<path d="M130 124 l-8 14 h16 z M130 256 l-8 -14 h16 z" fill="#ffd166"/>
+<line x1="456" y1="54" x2="456" y2="116" stroke="#ffd166" stroke-width="2"/>
+<line x1="214" y1="260" x2="214" y2="298" stroke="#ffd166" stroke-width="2"/>
+<line x1="790" y1="158" x2="790" y2="172" stroke="#ffd166" stroke-width="2"/>
+</svg>
+<button type="button" class="fcb-slot" data-accept="barrel" style="left:371px;top:8px;width:170px;height:46px;" aria-label="Empty label slot"><span class="fcb-ph">?</span></button>
+<button type="button" class="fcb-slot" data-accept="capport" style="left:126px;top:8px;width:200px;height:46px;" aria-label="Empty label slot"><span class="fcb-ph">?</span></button>
+<button type="button" class="fcb-slot" data-accept="rodport" style="left:586px;top:8px;width:200px;height:46px;" aria-label="Empty label slot"><span class="fcb-ph">?</span></button>
+<button type="button" class="fcb-slot" data-accept="piston" style="left:129px;top:300px;width:170px;height:46px;" aria-label="Empty label slot"><span class="fcb-ph">?</span></button>
+<button type="button" class="fcb-slot" data-accept="rod" style="left:758px;top:112px;width:120px;height:46px;" aria-label="Empty label slot"><span class="fcb-ph">?</span></button>
+<button type="button" class="fcb-slot" data-accept="bore" style="left:0px;top:176px;width:112px;height:46px;" aria-label="Empty label slot"><span class="fcb-ph">?</span></button>
+<button type="button" class="fcb-slot" data-accept="stroke" style="left:1005px;top:276px;width:170px;height:46px;" aria-label="Empty label slot"><span class="fcb-ph">?</span></button>
+    </div>
+    <div class="fcb-panel">
+      <div class="fcb-status"><span class="fcb-count" data-fcb-score>0 of 7 placed</span><span data-fcb-attempts>0 tries</span><span class="fcb-complete" data-fcb-complete hidden></span><button type="button" class="fcb-perfect" data-fcb-perfect hidden title="Show the perfect-score check again">&#10003; Perfect on the first try</button><button type="button" class="sim-btn alt" data-fcb-reset style="margin-left:auto;">Start over</button></div>
+      <div class="fcb-bank" data-fcb-bank>
+<button type="button" class="fcb-chip" data-chip="capport">Cap end port</button>
+<button type="button" class="fcb-chip" data-chip="rodport">Rod end port</button>
+<button type="button" class="fcb-chip" data-chip="barrel">Barrel</button>
+<button type="button" class="fcb-chip" data-chip="piston">Piston</button>
+<button type="button" class="fcb-chip" data-chip="rod">Rod</button>
+<button type="button" class="fcb-chip" data-chip="bore">Bore</button>
+<button type="button" class="fcb-chip" data-chip="stroke">Stroke</button>
+<button type="button" class="fcb-chip" data-chip="spring">Spring</button>
+<button type="button" class="fcb-chip" data-chip="valve">Valve</button>
+<button type="button" class="fcb-chip" data-chip="exhaust">Exhaust</button>
+<button type="button" class="fcb-chip" data-chip="reservoir">Reservoir</button>
+      </div>
+    </div>
+  </div>
+  <div class="match-perfect-overlay" data-fcb-overlay aria-hidden="true">
+    <div class="match-perfect-badge">
+      <span class="match-perfect-check">&#10003;</span>
+      <span class="match-perfect-text">Perfect Labels!</span>
+      <span class="match-perfect-hint">Every card on the first try. Click to see your cylinder</span>
+    </div>
+  </div>
+  <aside class="notes">Students drag each card to its spot, or click a card and then a spot. Four cards are distractors (spring, valve, exhaust, reservoir). A perfect run (no wrong tries) shows a big check mark, and a pulsing &ldquo;Perfect on the first try&rdquo; badge stays in the status row after the check is closed, after Start over, and after a reload, until the browser tab is closed. Any wrong try before finishing rules it out for that tab. Then have students sketch and label a cylinder in their notebooks; this is the plan&rsquo;s notebook evidence for Day 4.</aside>
+</section>
+
+<!-- SLIDE 14 · Resonance: Choose a cylinder -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:13:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "A clamp cylinder must squeeze a part harder, but the air pressure cannot go any higher. Which change gives more clamping force?", "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "A cylinder with a longer stroke", "isCorrect": false}, {"id": "q1b", "text": "A cylinder with a larger bore", "isCorrect": true}, {"id": "q1c", "text": "A cylinder with a longer rod", "isCorrect": false}, {"id": "q1d", "text": "A cylinder with a smaller bore", "isCorrect": false}], "order": 0}, {"id": "q2", "type": "multiple-choice", "text": "An ejector cylinder must push a box off a conveyor belt and then pull back out of the way, and both moves need real force. Which type of cylinder fits best?", "responseTimeLimitMs": 60000, "options": [{"id": "q2a", "text": "Single-acting with a spring return", "isCorrect": false}, {"id": "q2b", "text": "Either type, because the type does not matter", "isCorrect": false}, {"id": "q2c", "text": "Double-acting", "isCorrect": true}, {"id": "q2d", "text": "Single-acting with no spring", "isCorrect": false}], "order": 1}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Choose a Cylinder</span>
+    <h2>Pick the Right Cylinder</h2>
+    <p class="q-head">1. A clamp cylinder must squeeze a part harder, but the air pressure cannot go any higher. Which change gives more clamping force?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>A cylinder with a longer stroke</li>
+      <li><span class="mcq-letter">B</span>A cylinder with a larger bore</li>
+      <li><span class="mcq-letter">C</span>A cylinder with a longer rod</li>
+      <li><span class="mcq-letter">D</span>A cylinder with a smaller bore</li>
+    </ol>
+    <p class="q-head">2. An ejector must push a box off a conveyor and then pull back out of the way, and both moves need force. Which type fits best?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>Single-acting with a spring return</li>
+      <li><span class="mcq-letter">B</span>Either type, because the type does not matter</li>
+      <li><span class="mcq-letter">C</span>Double-acting</li>
+      <li><span class="mcq-letter">D</span>Single-acting with no spring</li>
+    </ol>
+  </div>
+  <aside class="notes">Answers: a larger bore (more area at the same pressure), and a double-acting cylinder (air does both moves). In notebooks, students write one sentence explaining their choice for each job; this is the actuator-selection rationale in the plan.</aside>
+</section>
+
+<!-- SLIDE 15 · Vacuum -->
+<section data-prevent-swipe>
+  <div class="slide-inner">
+    <span class="slide-tag">Vacuum</span>
+    <h2>Vacuum: Letting the Air Push for You</h2>
+    <div class="split split-40 split-top" style="flex:none;margin-top:var(--gap);">
+<div class="vac-col">
+        <div class="vac-carousel fragment fade-out" data-fragment-index="1" id="pp-carousel">
+          <div class="vac-stage"><img class="vac-frame" data-pp-img src="Pressure_Into_Motion_Assets/pick-place-4.jpg" alt="A pneumatic pick-and-place machine. Its vacuum cup waits above a black workpiece."></div>
+          <div class="vac-nav">
+            <button type="button" class="sim-btn alt" data-pp-prev>&larr; Prev</button>
+            <span class="vac-count" data-pp-count>Step 1 of 5</span>
+            <button type="button" class="sim-btn" data-pp-next>Next &rarr;</button>
+          </div>
+          <p class="vac-cap" data-pp-cap aria-live="polite">The vacuum cup waits above the workpiece.</p>
+        </div>
+        <div class="vac-diagram fragment fade-in" data-fragment-index="1">
+<svg class="vac-fig" viewBox="0 0 560 470" role="img" aria-label="A suction cup holds a box. A vacuum line pulls air out of the cup, leaving 4.7 psi inside. The outside air at 14.7 psi presses the cup and box together.">
+  <defs><marker id="vac-arr" markerUnits="userSpaceOnUse" markerWidth="20" markerHeight="20" refX="10" refY="10" orient="auto"><path d="M0 0 L20 10 L0 20 z" fill="#5daaff"/></marker></defs>
+  <rect x="262" y="20" width="36" height="150" fill="#3a4a62" stroke="#c9d6e6" stroke-width="3"/>
+  <text x="312" y="62" class="cyl-lbl">To vacuum pump</text>
+  <path d="M150 300 Q160 180 280 170 Q400 180 410 300 Z" fill="#1b2a44" stroke="#c9d6e6" stroke-width="4"/>
+  <path d="M168 296 Q178 196 280 188 Q382 196 392 296 Z" fill="rgba(93,170,255,0.08)"/>
+  <text x="280" y="262" text-anchor="middle" class="cyl-lbl">4.7 psi</text>
+  <text x="280" y="290" text-anchor="middle" class="cyl-lbl">inside</text>
+  <rect x="90" y="300" width="380" height="110" rx="4" fill="#7a5a3a" stroke="#c9d6e6" stroke-width="3"/>
+  <text x="280" y="366" text-anchor="middle" class="cyl-lbl">Box</text>
+  <line x1="110" y1="182" x2="152" y2="226" stroke="#5daaff" stroke-width="5" marker-end="url(#vac-arr)"/>
+  <line x1="450" y1="182" x2="408" y2="226" stroke="#5daaff" stroke-width="5" marker-end="url(#vac-arr)"/>
+  <line x1="160" y1="462" x2="160" y2="420" stroke="#5daaff" stroke-width="5" marker-end="url(#vac-arr)"/>
+  <line x1="400" y1="462" x2="400" y2="420" stroke="#5daaff" stroke-width="5" marker-end="url(#vac-arr)"/>
+  <text x="20" y="150" class="cyl-lbl" style="fill:#5daaff;">14.7 psi outside</text>
+</svg>
+        </div>
+      </div>
+      <div>
+        <p class="prose">This <span class="term">pick-and-place machine</span> moves a part with a vacuum cup instead of fingers. Watch when the vacuum turns on and off.</p>
+        <p class="prose fragment fade-up" data-fragment-index="1" style="margin-top:var(--gap);">The air around us presses on everything at about <span class="pneu">14.7&nbsp;psi</span>. A vacuum pump pulls air out of a suction cup, and the outside air <span class="term">pushes</span> the cup and box together. Suction never pulls; the air pushes.</p>
+        <div class="calc fragment fade-up" data-fragment-index="2" style="margin-top:var(--gap);">
+          <div class="calc-note">A 2&nbsp;in cup (3.14&nbsp;in&sup2;) with 4.7&nbsp;psi left inside:</div>
+          <div class="calc-line">F &asymp; (14.7 &minus; 4.7) &times; 3.14 &asymp; <span class="ans">31&nbsp;lb</span></div>
+        </div>
+        <p class="prose fragment fade-up" data-fragment-index="3" style="margin-top:var(--gap);">The pressure difference can never be more than 14.7&nbsp;psi, and a <span class="bad-color">leak</span> lets air back in and shrinks it.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.6. Use the Prev and Next buttons under the photo to step the Festo MecLab pick-and-place machine (from the AR2 State Machines deck) through one cycle: down, vacuum on and lift, lower, vacuum off and release. Ask what is holding the part, since there are no fingers. The first click (fragment) swaps in the suction cup diagram that explains it. If you have a suction cup, stick it to a smooth desk and then to a piece of cardboard. Compare: this is the same F = P &times; A idea, but P is the pressure difference. Even a perfect vacuum gives only 14.7&nbsp;psi of difference, far less than the 100&nbsp;psi in a VEX tank.</aside>
+</section>
+
+<!-- SLIDE 16 · Vacuum uses -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Vacuum</span>
+    <h2>Where Industry Uses Vacuum</h2>
+    <div class="use-grid">
+      <div class="sys-card"><h3 class="pneu">Packaging</h3><p>Suction grippers pick up and place boxes and bags, and vacuum sealing pulls air out of food packages so the food lasts longer.</p></div>
+      <div class="sys-card fragment fade-up"><h3 class="pneu">Cleaning</h3><p>A vacuum cleaner lowers the pressure inside, and the outside air rushes in, carrying dust and dirt with it.</p></div>
+      <div class="sys-card fragment fade-up"><h3 class="pneu">Semiconductor manufacturing</h3><p>Vacuum holds thin silicon wafers flat without scratching them, and chips are made in vacuum chambers to keep out air and dust.</p></div>
+      <div class="sys-card fragment fade-up"><h3 class="pneu">Scientific research</h3><p>Vacuum chambers test parts in space-like conditions, and particle accelerators need a vacuum so particles do not hit air molecules.</p></div>
+    </div>
+  </div>
+  <aside class="notes">These are the four uses named in ADE 7.6. Ask students which ones use vacuum to hold something (packaging, wafers) and which use it to remove air (cleaning, sealing, chambers).</aside>
+</section>
+
+<!-- SLIDE 17 · Resonance: Vacuum troubleshooting -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:16:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "A suction gripper on a packaging line picks up plastic trays every time, but it drops cardboard boxes partway through the move. Its vacuum gauge shows a strong vacuum while it holds a tray and a weak vacuum while it holds a box. What is the most likely cause?", "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "The vacuum pump is broken.", "isCorrect": false}, {"id": "q1b", "text": "The boxes are too light for the gripper to feel.", "isCorrect": false}, {"id": "q1c", "text": "The gripper is moving too slowly.", "isCorrect": false}, {"id": "q1d", "text": "Air leaks through the cardboard into the cup.", "isCorrect": true}], "order": 0}, {"id": "q2", "type": "free-response", "text": "What evidence ruled out a broken vacuum pump? Suggest one way to fix the problem.", "responseTimeLimitMs": 150000, "order": 1}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Troubleshoot</span>
+    <h2>Why Does the Gripper Drop Boxes?</h2>
+    <p class="prose">A suction gripper on a packaging line picks up <span class="pneu">plastic trays</span> every time, but it drops <span class="hyd">cardboard boxes</span> partway through the move. Its vacuum gauge shows a strong vacuum while it holds a tray and a weak vacuum while it holds a box.</p>
+    <ol class="opt-list">
+      <li><span class="mcq-letter">A</span>The vacuum pump is broken.</li>
+      <li><span class="mcq-letter">B</span>The boxes are too light for the gripper to feel.</li>
+      <li><span class="mcq-letter">C</span>The gripper is moving too slowly.</li>
+      <li><span class="mcq-letter">D</span>Air leaks through the cardboard into the cup.</li>
+    </ol>
+  </div>
+  <aside class="notes">Answer: air leaks through the porous cardboard, so the pressure inside the cup rises and the holding force drops. The trays rule out a broken pump: the same pump holds them fine. Fixes: a larger cup or more cups, a higher-flow vacuum source, a foam-lipped cup, or gripping a smoother spot such as a label.</aside>
+</section>
+
+<!-- SLIDE 18 · Industry case study (optional) -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">If Time Allows</span>
+    <h2>Industry Case Study</h2>
+    <p class="prose">Pick one industry: aerospace, manufacturing, construction, medical, entertainment or transportation. Find one machine in it that uses fluid power.</p>
+    <div class="ask">In your notebook, name the machine and say whether it is <span class="pneu">pneumatic</span>, <span class="hyd">hydraulic</span> or both. Describe what the fluid power moves. Then explain why the designers chose fluid power instead of an electric motor, using force, power, weight or pressure in your reasoning.</div>
+  </div>
+  <aside class="notes">Moved here from Day 1. It deepens ADE 7.1 and 7.2 and builds on Deck 1&rsquo;s &ldquo;Why Not Just Use an Electric Motor?&rdquo; slide. Skip it if the vacuum discussion runs long.</aside>
+</section>
+
+<!-- SLIDE 19 · Resonance: Exit ticket -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:18:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "free-response", "text": "List the parts of a pneumatic power chain in order, from the motor to the cylinder. Then do the same for a hydraulic power chain. What happens to the air, and to the oil, after they leave the cylinder?", "responseTimeLimitMs": 180000, "order": 0}, {"id": "q2", "type": "free-response", "text": "Choose one industrial use of vacuum. Explain how the pressure difference does the work, and name one limitation.", "responseTimeLimitMs": 150000, "order": 1}, {"id": "q3", "type": "multiple-choice", "text": "A double-acting cylinder runs at the same pressure in both directions. Which statement about its force is true?", "responseTimeLimitMs": 60000, "options": [{"id": "q3a", "text": "The same both ways, because the pressure is the same", "isCorrect": false}, {"id": "q3b", "text": "Extending is stronger, because the rod covers part of the piston on the return side", "isCorrect": true}, {"id": "q3c", "text": "Retracting is stronger, because the rod makes the piston stiffer", "isCorrect": false}, {"id": "q3d", "text": "Retracting is stronger, because the air has less room", "isCorrect": false}], "order": 2}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Before You Go</h2>
+    <p class="prose">1. List a <span class="pneu">pneumatic</span> power chain in order from the motor to the cylinder, then a <span class="hyd">hydraulic</span> one. What happens to the air, and to the oil, after they leave the cylinder?</p>
+    <p class="prose">2. Choose one industrial use of vacuum. Explain how the pressure difference does the work, and name one limitation.</p>
+    <p class="prose">3. A double-acting cylinder runs at the same pressure both ways. Which statement about its force is true?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>The same both ways, because the pressure is the same</li>
+      <li><span class="mcq-letter">B</span>Extending is stronger, because the rod covers part of the piston on the return side</li>
+      <li><span class="mcq-letter">C</span>Retracting is stronger, because the rod makes the piston stiffer</li>
+      <li><span class="mcq-letter">D</span>Retracting is stronger, because the air has less room</li>
+    </ol>
+  </div>
+  <aside class="notes">Q1 and Q2 are the plan&rsquo;s power-source and vacuum checkpoint for ADE 7.6 and 7.7. Q3: extending is stronger, because the rod covers part of the piston on the return side.</aside>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function(element) { return !element.closest('#storyboard'); }
+  );
+}
+
+/* ── Double-acting cylinder (slide 10) ─────────────────────────────
+   Two buttons send air into the cap end or the rod end. The piston
+   moves away from the side with air while the other side exhausts.
+   The drawing matches the static cylinder figures on slides 7 and 13. */
+function initDoubleActing(root) {
+  var P_MIN = 200, P_MAX = 684, BX0 = 196, BX1 = 716, PW = 28;
+  var mover = root.querySelector('[data-r="mover"]');
+  var airCap = root.querySelector('[data-r="air-cap"]');
+  var airRod = root.querySelector('[data-r="air-rod"]');
+  var status = root.querySelector('[data-r="status"]');
+  var pos = P_MIN, target = P_MIN, side = null, raf = null;
+  var MSG = {
+    none: 'The cylinder is retracted and both ports are closed. Send air into one end and watch which way the piston moves.',
+    capMove: 'Air flows into the cap end and pushes on the whole face of the piston. The rod extends, and the air on the rod side is pushed out through the rod end port.',
+    capDone: 'Fully extended. As long as the cap end has air, the rod stays out and pushes with full force.',
+    rodMove: 'Air flows into the rod end and pushes on the ring around the rod. The rod retracts, and the air on the cap side is pushed out through the cap end port.',
+    rodDone: 'Fully retracted. As long as the rod end has air, the rod stays in.'
+  };
+  function show(name, on) { root.querySelector('[data-r="' + name + '"]').setAttribute('visibility', on ? 'visible' : 'hidden'); }
+  function draw() {
+    mover.setAttribute('transform', 'translate(' + (pos - P_MIN) + ',0)');
+    airCap.setAttribute('width', side === 'cap' ? pos - BX0 : 0);
+    airRod.setAttribute('x', pos + PW);
+    airRod.setAttribute('width', side === 'rod' ? BX1 - pos - PW : 0);
+    show('in-cap', side === 'cap'); show('out-rod', side === 'cap' && pos !== target);
+    show('in-rod', side === 'rod'); show('out-cap', side === 'rod' && pos !== target);
+    var moving = pos !== target;
+    status.textContent = side === null ? MSG.none : side === 'cap' ? (moving ? MSG.capMove : MSG.capDone) : (moving ? MSG.rodMove : MSG.rodDone);
+  }
+  function step() {
+    var d = target - pos;
+    pos = Math.abs(d) < 6 ? target : pos + Math.sign(d) * 6;
+    draw();
+    raf = pos !== target ? requestAnimationFrame(step) : null;
+  }
+  function send(s) {
+    side = s;
+    target = s === 'cap' ? P_MAX : P_MIN;
+    if (!raf) raf = requestAnimationFrame(step);
+    draw();
+  }
+  root.querySelector('[data-r="cap"]').addEventListener('click', function () { send('cap'); });
+  root.querySelector('[data-r="rod"]').addEventListener('click', function () { send('rod'); });
+  root.querySelector('[data-r="reset"]').addEventListener('click', function () {
+    if (raf) cancelAnimationFrame(raf);
+    raf = null; pos = target = P_MIN; side = null; draw();
+  });
+  draw();
+}
+
+/* ── Label-the-cylinder builder (slide 13) ─────────────────────────
+   Adapted from initFlowchartBuilder in CSP 4.6. Each .fcb-slot has
+   data-accept; each .fcb-chip has data-chip. Click a chip and then a
+   slot, or drag a chip onto a slot. Correct chips fill the slot, wrong
+   ones shake it. Tries persist in sessionStorage so Start over or a
+   reload cannot erase misses. */
+function shuffleChildren(host) {
+  var kids = Array.prototype.slice.call(host.children);
+  for (var i = kids.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = kids[i]; kids[i] = kids[j]; kids[j] = t;
+  }
+  kids.forEach(function (k) { host.appendChild(k); });
+}
+function initLabelBuilder(section) {
+  var root = section.querySelector('[data-fcb-root]');
+  var bankEl = section.querySelector('[data-fcb-bank]');
+  var slots = Array.prototype.slice.call(root.querySelectorAll('.fcb-slot'));
+  var chips = Array.prototype.slice.call(bankEl.querySelectorAll('.fcb-chip'));
+  var scoreEl = section.querySelector('[data-fcb-score]');
+  var attemptsEl = section.querySelector('[data-fcb-attempts]');
+  var completeEl = section.querySelector('[data-fcb-complete]');
+  var perfectEl = section.querySelector('[data-fcb-perfect]');
+  var overlayEl = section.querySelector('[data-fcb-overlay]');
+  var total = slots.length, placed = 0, attempts = 0, misses = 0, selected = null;
+  /* earned: finished with zero misses at least once in this tab. It is saved,
+     so the badge survives closing the overlay, Start over and a reload. */
+  var earned = false;
+  var STORE_KEY = 'pressure-into-motion:fcb:' + section.id;
+  function save() {
+    try {
+      sessionStorage.setItem(STORE_KEY, JSON.stringify({ attempts: attempts, misses: misses, earned: earned,
+        filled: slots.map(function (sl) { return sl.dataset.chipIdx || null; }) }));
+    } catch (e) {}
+  }
+  function load() { try { return JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } }
+  if (overlayEl) overlayEl.addEventListener('click', function () { overlayEl.classList.remove('visible'); });
+  if (perfectEl) perfectEl.addEventListener('click', function () { overlayEl.classList.add('visible'); });
+  function status(justFinished) {
+    var done = placed === total;
+    if (done && misses === 0 && !earned) { earned = true; save(); }
+    perfectEl.hidden = !earned;
+    if (overlayEl) overlayEl.classList.toggle('visible', !!justFinished && done && misses === 0);
+    scoreEl.textContent = placed + ' of ' + total + ' placed';
+    attemptsEl.textContent = attempts + (attempts === 1 ? ' try' : ' tries');
+    completeEl.hidden = !done;
+    completeEl.textContent = misses === 0 ? 'Perfect! Every label on the first try.'
+      : 'Labeled! ' + misses + (misses === 1 ? ' wrong try' : ' wrong tries') + ' along the way.';
+  }
+  function fill(slot, chip) {
+    slot.innerHTML = chip.innerHTML;
+    slot.classList.add('filled');
+    slot.dataset.chipIdx = String(chips.indexOf(chip));
+    slot.setAttribute('aria-label', 'Correct: ' + chip.textContent);
+    chip.classList.add('used');
+    placed++;
+  }
+  function select(chip) {
+    if (selected) selected.classList.remove('selected');
+    selected = (chip && chip !== selected) ? chip : null;
+    if (selected) selected.classList.add('selected');
+  }
+  function place(chip, slot) {
+    if (!chip || slot.classList.contains('filled') || chip.classList.contains('used')) return;
+    attempts++;
+    if (slot.dataset.accept.split(',').indexOf(chip.dataset.chip) !== -1) {
+      fill(slot, chip);
+    } else {
+      misses++;
+      slot.classList.remove('wrong'); void slot.offsetWidth; slot.classList.add('wrong');
+      var b = document.createElement('span');
+      b.className = 'fcb-x'; b.setAttribute('aria-hidden', 'true'); b.textContent = '✗';
+      slot.appendChild(b);
+      setTimeout(function () { slot.classList.remove('wrong'); if (b.parentNode) b.parentNode.removeChild(b); }, 650);
+    }
+    select(null); save(); status(placed === total);
+  }
+  var suppressClick = false;
+  function slotAt(x, y) {
+    var el = document.elementFromPoint(x, y);
+    var slot = el && el.closest ? el.closest('.fcb-slot') : null;
+    return slot && root.contains(slot) ? slot : null;
+  }
+  function startDrag(chip, e) {
+    if (chip.classList.contains('used') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    var startX = e.clientX, startY = e.clientY, rect = chip.getBoundingClientRect();
+    var offX = e.clientX - rect.left, offY = e.clientY - rect.top, ghost = null, hover = null;
+    try { chip.setPointerCapture(e.pointerId); } catch (err) {}
+    function move(ev) {
+      ev.stopPropagation();
+      if (!ghost) {
+        if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) < 6) return;
+        ghost = chip.cloneNode(true);
+        ghost.classList.add('fcb-ghost');
+        ghost.style.transform = 'scale(' + (Reveal.getScale ? Reveal.getScale() : 1) + ')';
+        document.body.appendChild(ghost);
+        chip.classList.add('dragging');
+        select(null);
+      }
+      ghost.style.left = (ev.clientX - offX) + 'px';
+      ghost.style.top = (ev.clientY - offY) + 'px';
+      var over = slotAt(ev.clientX, ev.clientY);
+      if (over !== hover) {
+        if (hover) hover.classList.remove('drag-over');
+        hover = over && !over.classList.contains('filled') ? over : null;
+        if (hover) hover.classList.add('drag-over');
+      }
+    }
+    function end(ev) {
+      ev.stopPropagation();
+      chip.removeEventListener('pointermove', move);
+      chip.removeEventListener('pointerup', end);
+      chip.removeEventListener('pointercancel', end);
+      if (hover) hover.classList.remove('drag-over');
+      if (!ghost) return;
+      ghost.parentNode.removeChild(ghost);
+      chip.classList.remove('dragging');
+      suppressClick = true;
+      var target = ev.type === 'pointerup' ? slotAt(ev.clientX, ev.clientY) : null;
+      if (target) place(chip, target);
+    }
+    chip.addEventListener('pointermove', move);
+    chip.addEventListener('pointerup', end);
+    chip.addEventListener('pointercancel', end);
+  }
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function () { if (suppressClick) { suppressClick = false; return; } select(chip); });
+    chip.addEventListener('pointerdown', function (e) { e.stopPropagation(); startDrag(chip, e); });
+    chip.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
+  });
+  slots.forEach(function (slot) {
+    slot.dataset.empty = slot.innerHTML;
+    slot.addEventListener('click', function () { if (selected) place(selected, slot); });
+  });
+  function clearBoard() {
+    slots.forEach(function (slot) { slot.innerHTML = slot.dataset.empty; slot.classList.remove('filled', 'wrong'); delete slot.dataset.chipIdx; });
+    chips.forEach(function (chip) { chip.classList.remove('used', 'selected'); });
+    placed = 0; selected = null;
+    shuffleChildren(bankEl);
+  }
+  section.querySelector('[data-fcb-reset]').addEventListener('click', function () { clearBoard(); save(); status(); });
+  clearBoard();
+  var saved = load();
+  if (saved) {
+    attempts = saved.attempts || 0; misses = saved.misses || 0; earned = !!saved.earned;
+    (saved.filled || []).forEach(function (idx, i) { if (idx !== null && chips[+idx] && slots[i]) fill(slots[i], chips[+idx]); });
+  }
+  status();
+}
+
+/* ── Pick-and-place photo carousel (slide 15) ──────────────────────
+   Prev / Next step through one vacuum pick-and-place cycle. Reveal's
+   only fragment on that side swaps the carousel for the diagram. */
+function initPickPlace(root) {
+  var A = 'Pressure_Into_Motion_Assets/pick-place-';
+  var STEPS = [
+    { n: 4, alt: 'A pneumatic pick-and-place machine. Its vacuum cup waits above a black workpiece.', cap: 'The vacuum cup waits above the workpiece.' },
+    { n: 1, alt: 'The vacuum cup has moved down onto the workpiece.', cap: 'The cup moves down onto the workpiece.' },
+    { n: 2, alt: 'The vacuum is on, and the cup has lifted the workpiece.', cap: 'The <span class="pneu">vacuum turns on</span>, and the cup lifts the workpiece.' },
+    { n: 3, alt: 'The vacuum stays on as the cup lowers the workpiece.', cap: 'The vacuum stays on as the cup lowers the workpiece.' },
+    { n: 4, alt: 'The cup has released the workpiece and risen again.', cap: 'The <span class="pneu">vacuum turns off</span>, and the cup lets go and rises.' }
+  ];
+  var img = root.querySelector('[data-pp-img]'), cap = root.querySelector('[data-pp-cap]');
+  var count = root.querySelector('[data-pp-count]');
+  var prev = root.querySelector('[data-pp-prev]'), next = root.querySelector('[data-pp-next]');
+  var k = 0;
+  STEPS.forEach(function (st) { var im = new Image(); im.src = A + st.n + '.jpg'; });
+  function show() {
+    var st = STEPS[k];
+    img.src = A + st.n + '.jpg';
+    img.alt = st.alt;
+    cap.innerHTML = st.cap;
+    count.textContent = 'Step ' + (k + 1) + ' of ' + STEPS.length;
+    prev.disabled = k === 0;
+    next.disabled = k === STEPS.length - 1;
+  }
+  prev.addEventListener('click', function () { if (k > 0) { k--; show(); } });
+  next.addEventListener('click', function () { if (k < STEPS.length - 1) { k++; show(); } });
+  show();
+}
+
+initSyncDeckReveal({
+  deckId: 'pressure-into-motion',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    var dac = getLiveElementById('dac');
+    if (dac) initDoubleActing(dac);
+    var pp = getLiveElementById('pp-carousel');
+    if (pp) initPickPlace(pp);
+    var fcb = getLiveElementById('fcb-cylinder');
+    if (fcb) initLabelBuilder(fcb);
+  },
+});
+</script>
+</body>
+</html>
