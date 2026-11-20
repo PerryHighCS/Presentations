@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1bdrkf9">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5 - Controlling Motion</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   Deck 5: Controlling Motion (Day 5)
+   Color meaning, as in the rest of the unit: blue = air and
+   pneumatic parts, green = key terms, yellow = signals and
+   cautions, coral = faults and exhaust warnings.
+   ============================================================ */
+
+.opt-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: var(--gap); }
+.opt-list li { font-size: var(--body); line-height: 1.4; color: var(--text); display: flex; gap: 16px; align-items: baseline; }
+.mcq-letter { font-family: var(--font-mono); font-weight: 700; color: var(--accent); min-width: 28px; }
+.q-head { font-size: var(--body); color: var(--text-muted); margin-top: var(--gap); }
+.warn-color { color: var(--warn); }
+.reveal .sys-card h3.pneu { color: var(--accent); }
+.reveal .sys-card h3.term { color: var(--result); }
+
+/* Port name cards */
+.port-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); margin-top: var(--gap); }
+.port-card { background: var(--bg-card); border: 1px solid var(--accent-border); border-top: 4px solid var(--accent); border-radius: 8px; padding: 16px 20px; }
+.port-card b { display: block; font-family: var(--font-mono); font-size: 34px; color: var(--accent); }
+.port-card span { display: block; font-size: var(--body); line-height: 1.4; color: var(--text-muted); margin-top: 4px; }
+
+/* Shared SVG text */
+.vsvg text { font-family: 'DM Sans', sans-serif; }
+.v-lbl { font-size: 26px; font-weight: 700; fill: var(--text); }
+.v-sub { font-size: 22px; fill: var(--text-muted); }
+
+/* 3/2 valve widget */
+.v32-svg { display: block; width: 1360px; height: 330px; }
+.v32-controls { display: flex; align-items: center; gap: 16px; margin-top: 8px; }
+.hold-btn {
+  font-family: var(--font-ui);
+  font-size: var(--body);
+  font-weight: 700;
+  color: var(--bg);
+  background: var(--warn);
+  border: none;
+  border-radius: 999px;
+  padding: 14px 30px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow: 0 6px 0 #a8862f;
+  transition: transform 0.05s, box-shadow 0.05s;
+}
+.hold-btn.is-down { transform: translateY(5px); box-shadow: 0 1px 0 #a8862f; }
+.v-status {
+  margin-top: 14px;
+  box-sizing: border-box;
+  height: 108px;
+  font-size: var(--body);
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg-card);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 18px;
+}
+
+/* 5/2 static figure and solenoid figure */
+.fig52 { display: block; width: 100%; height: auto; }
+
+/* VEX solenoid photo */
+.pp-photos { display: flex; gap: 20px; align-items: flex-start; }
+.pp-photos figure { margin: 0; background: #fff; border-radius: 10px; padding: 14px; box-shadow: 0 0 0 1px var(--accent-border); }
+.pp-photos img { display: block; height: 470px; width: auto; }
+.vex-fig { position: relative; margin: 0; }
+.vex-fig img { display: block; width: 100%; border-radius: 8px; box-shadow: 0 0 0 1px var(--accent-border), 0 6px 24px rgba(0,0,0,0.5); }
+.vex-chip { position: absolute; font-size: var(--small); font-weight: 700; color: var(--text); background: rgba(6,11,20,0.88); border: 1px solid var(--accent-border); border-radius: 6px; padding: 4px 10px; white-space: nowrap; }
+
+/* Simulation B: VEX solenoid explorer */
+.sb { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.sb-svg { display: block; width: 1360px; height: 420px; justify-self: center; }
+.sb-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.sb-row .ctl-name { font-size: var(--small); color: var(--text-muted); }
+.code-btn { font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--text); background: var(--bg-card); border: 2px solid var(--accent-border); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+.code-btn[aria-pressed="true"] { border-color: var(--warn); background: rgba(255,209,102,0.14); color: var(--warn); }
+.tog { font-size: var(--small); font-weight: 700; color: var(--text); background: var(--bg-card); border: 2px solid var(--accent-border); border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+.tog[aria-pressed="true"] { border-color: var(--bad); color: var(--bad); background: rgba(255,138,128,0.10); }
+.tog.view[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.sb-table { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.sb-cell { background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 6px 12px; height: 74px; box-sizing: border-box; }
+.sb-cell .k { display: block; font-size: var(--small); color: var(--text-muted); }
+.sb-cell .v { display: block; font-size: 26px; font-weight: 700; color: var(--text); white-space: nowrap; }
+
+/* Comparison cards */
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-top: var(--gap); }
+.cmp .sys-card p + p { margin-top: 10px; }
+.cmp-list { margin-top: 6px; }
+.cmp-list b { color: var(--text); font-weight: 700; }
+
+/* Service call: each cause card lists what you would expect to see,
+   and striking a cause strikes its hint too (from Deck 2). */
+.wo .cause-btn { align-items: flex-start; }
+.wo .cb-body { display: flex; flex-direction: column; gap: 2px; }
+.wo .cb-hint { font-size: var(--small); line-height: 1.3; color: var(--text-muted); }
+.wo .cause-btn[aria-pressed="true"] .cb-hint { text-decoration: line-through; }
+.station-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); margin-top: var(--gap); }
+.station-card { background: var(--bg-card); border: 1px solid var(--accent-border); border-top: 4px solid var(--accent); border-radius: 8px; padding: 22px 26px; }
+.station-num { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; }
+.station-card h3 { font-size: var(--h3); margin: 6px 0 var(--gap-sm); }
+.station-card p { font-size: var(--body); line-height: 1.45; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="reveal"><div class="slides">
+
+<!-- SLIDE 01 · Title -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 5 &nbsp;·&nbsp; Controlling Motion</span>
+    <h1 class="title-h1">How Do We <span class="pneu">Control Motion?</span></h1>
+    <p class="lead" style="margin-top:var(--gap);text-align:center;">Last lesson, air pushed a cylinder. Now we decide when it moves and which way it goes.</p>
+  </div>
+  <div class="glow" style="width:620px;height:620px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(93,170,255,0.07),transparent 70%);"></div>
+  <div class="glow" style="width:560px;height:560px;right:-140px;bottom:-160px;background:radial-gradient(circle,rgba(255,209,102,0.05),transparent 70%);"></div>
+</section>
+
+<!-- SLIDE 02 · The real-world problem -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Problem</span>
+    <h2>A Tailgate That Opens With Air</h2>
+    <p class="lead">A dump truck&rsquo;s tailgate is opened and closed by an air cylinder. The driver pushes a knob in the cab to <span class="term">open</span> the tailgate and pulls the knob to <span class="term">close</span> it. The tailgate must stay open while the bed dumps, even after the driver lets go.</p>
+    <p class="lead">Nobody pushes on a syringe in the cab. Something has to decide which end of the cylinder gets air, where the used air goes, and how the choice stays put.</p>
+    <div class="ask">In your notebook, sketch an idea for how this could work. What part would decide where the air goes?</div>
+  </div>
+  <aside class="notes">Give students two or three minutes to sketch before the next slide collects their ideas. Any answer that controls where the air flows is a good start; the tailgate control valve comes two slides later.</aside>
+</section>
+
+<!-- SLIDE 03 · Resonance: Your idea -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:2:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"A dump truck&#39;s tailgate is opened and closed by an air cylinder. The driver pushes a knob in the cab to open it and pulls the knob to close it, and the tailgate must stay open after the driver lets go. Describe your idea: what part would decide where the air goes, and how would it stay in place?","order":0,"responseTimeLimitMs":150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Your Idea</span>
+    <h2>How Would You Build It?</h2>
+    <p class="lead">A dump truck driver pushes a knob to <span class="term">open</span> the tailgate and pulls it to <span class="term">close</span> it, and the tailgate must stay open after the driver lets go.</p>
+    <p class="lead">Describe your idea: what part would decide where the air goes, and how would it <span class="term">stay in place</span>?</p>
+  </div>
+  <aside class="notes">Share two or three responses. Look for ideas about switching the air between the two ends of the cylinder, letting the used air out, and something that holds the setting, like a latch or a detent.</aside>
+</section>
+
+<!-- SLIDE 04 · A push-pull valve -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Valves</span>
+    <h2>The Tailgate Control Valve</h2>
+    <div class="split split-40 split-top" style="flex:none;margin-top:var(--gap);">
+      <div class="pp-photos">
+        <figure><img src="Controlling_Motion_Assets/pushpull-knob.jpg" alt="A black push-pull air valve with a round knob on top labeled Tailgate Control, and two brass exhaust mufflers on its front."></figure>
+        <figure><img src="Controlling_Motion_Assets/pushpull-ports.jpg" alt="The same style of valve from the side. Its ports are labeled Pressure Knob In, Pressure Knob Out, Exhaust, Inlet and Exhaust."></figure>
+      </div>
+      <div>
+        <p class="prose">Here is a real answer: a <span class="term">tailgate control valve</span>. Its labels name the ports: an <span class="term">inlet</span> for supply air, two <span class="term">exhausts</span> with brass mufflers to quiet the used air, and two cylinder ports marked &ldquo;pressure knob in&rdquo; and &ldquo;pressure knob out.&rdquo;</p>
+        <p class="prose fragment fade-up" style="margin-top:var(--gap);">Push the knob in and air goes to one cylinder port; pull it out and air goes to the other. That is <span class="pneu">5 ports and 2 positions</span>, so it is a 5/2 valve.</p>
+        <p class="prose fragment fade-up" style="margin-top:var(--gap);">It <span class="warn-color">stays wherever you leave it</span>, which is what the tailgate needs: the gate stays open after the driver lets go. Other jobs need the opposite, a button that springs back the moment you release it.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Photos from the PHS Day 4/5 slides. Have students count the ports on the labels before the second click. The push-pull knob is a detented control: it holds its position, which is why it suits the tailgate. After the ports slide, the 3/2 push-button slide shows the opposite kind of control, one that springs back.</aside>
+</section>
+
+<!-- SLIDE 05 · Ports and positions -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Valves</span>
+    <h2>Ports and Positions</h2>
+    <p class="prose">A <span class="term">valve</span> is a traffic controller for air. Its <span class="term">ports</span> are the openings where tubes connect, and its <span class="term">positions</span> are the flow patterns it can switch between. A valve&rsquo;s name gives both numbers: a <span class="pneu">3/2 valve</span> has 3 ports and 2 positions.</p>
+    <div class="port-grid">
+      <div class="port-card fragment fade-up"><b>P &nbsp;·&nbsp; 1</b><span>The supply port, where pressurized air comes in.</span></div>
+      <div class="port-card fragment fade-up"><b>A, B &nbsp;·&nbsp; 2, 4</b><span>The working ports, where tubes run to the cylinder.</span></div>
+      <div class="port-card fragment fade-up"><b>R &nbsp;·&nbsp; 3, 5</b><span>The exhaust ports, where used air leaves.</span></div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">Industrial valves usually number their ports, and VEX letters them. Either way, you must trace the tubes to know what each port actually feeds.</p>
+  </div>
+  <aside class="notes">From the PHS Day 4/5 slides. Students will see both the numbers and the letters today; Day 6 uses the numbers on schematics.</aside>
+</section>
+
+<!-- SLIDE 06 · 3/2 valve, normally closed and open -->
+<section data-prevent-swipe>
+  <div class="slide-inner">
+    <span class="slide-tag">Try It</span>
+    <h2>A 3/2 Valve and a Push Button</h2>
+    <div id="v32">
+      <svg class="v32-svg vsvg" viewBox="0 0 1360 330" width="1360" height="330" role="img" aria-label="A 3/2 valve with ports P, A and R feeds a single-acting cylinder with a spring return. The valve box shows which ports connect while the button is at rest or pressed." data-r="svg"></svg>
+      <div class="v32-controls">
+        <span class="seg" role="group" aria-label="Valve type">
+          <button type="button" class="seg-btn" data-type="nc" aria-pressed="true">Normally closed</button>
+          <button type="button" class="seg-btn" data-type="no" aria-pressed="false">Normally open</button>
+        </span>
+        <button type="button" class="hold-btn" data-r="hold" style="margin-left:auto;">Press and hold the button</button>
+      </div>
+      <div class="v-status" data-r="status" aria-live="polite"></div>
+    </div>
+  </div>
+  <aside class="notes">Hold the button (mouse, touch, or Space/Enter) and let go. &ldquo;Normally closed&rdquo; and &ldquo;normally open&rdquo; always describe one path, from P to A, while nobody is pressing the button. The PHS cross-section slides call the two states position 1 and position 2; here they are named &ldquo;at rest&rdquo; and &ldquo;pressed&rdquo; so they do not clash with the symbol conventions on Day 6. Contrast it with the tailgate valve, which holds its position: this push button springs back the moment it is released.</aside>
+</section>
+
+<!-- SLIDE 07 · Resonance: NC / NO check -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:6:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A normally closed 3/2 valve feeds a single-acting cylinder with a spring return. Nobody is pressing the valve&#39;s button. What is the cylinder doing?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Extended, held out by air from the supply","isCorrect":false},{"id":"q1b","text":"Retracted, because the valve blocks the supply and lets the cylinder vent","isCorrect":true},{"id":"q1c","text":"Stopped halfway, because the air is trapped","isCorrect":false},{"id":"q1d","text":"Moving back and forth on its own","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"Which valve keeps a single-acting cylinder extended until someone presses the button?","order":1,"responseTimeLimitMs":60000,"options":[{"id":"q2a","text":"A normally closed 3/2 valve","isCorrect":false},{"id":"q2b","text":"Any valve, because valves stay where they are","isCorrect":false},{"id":"q2c","text":"A normally open 3/2 valve","isCorrect":true},{"id":"q2d","text":"A 3/2 valve with its exhaust port plugged","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check</span>
+    <h2>Normally Closed or Normally Open?</h2>
+    <p class="q-head">1. A normally closed 3/2 valve feeds a single-acting cylinder with a spring return. Nobody is pressing the button. What is the cylinder doing?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>Extended, held out by air from the supply</li>
+      <li><span class="mcq-letter">B</span>Retracted, because the valve blocks the supply and lets the cylinder vent</li>
+      <li><span class="mcq-letter">C</span>Stopped halfway, because the air is trapped</li>
+      <li><span class="mcq-letter">D</span>Moving back and forth on its own</li>
+    </ol>
+    <p class="q-head">2. Which valve keeps a single-acting cylinder extended until someone presses the button?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>A normally closed 3/2 valve</li>
+      <li><span class="mcq-letter">B</span>Any valve, because valves stay where they are</li>
+      <li><span class="mcq-letter">C</span>A normally open 3/2 valve</li>
+      <li><span class="mcq-letter">D</span>A 3/2 valve with its exhaust port plugged</li>
+    </ol>
+  </div>
+  <aside class="notes">Answers: retracted (the closed P port and open A-to-R path let the spring push the piston back), and normally open. A plugged exhaust is a hazard worth naming: the cylinder could never vent.</aside>
+</section>
+
+<!-- SLIDE 08 · 5/2 for double-acting -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Valves</span>
+    <h2>A 5/2 Valve for a Double-Acting Cylinder</h2>
+    <p class="prose">A double-acting cylinder needs air in one end while the other end exhausts, and then the reverse. A <span class="pneu">5/2 valve</span> does both jobs at once: one supply port, two working ports, two exhausts, and two positions.</p>
+    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+      <svg class="fig52 vsvg" viewBox="0 0 640 300" role="img" aria-label="A 5/2 valve drawn as two boxes. In the left box, air flows from P to B while A exhausts to R. In the right box, air flows from P to A while B exhausts to R.">
+        <defs><marker id="f52a" markerUnits="userSpaceOnUse" markerWidth="18" markerHeight="18" refX="9" refY="9" orient="auto"><path d="M0 0 L18 9 L0 18 z" fill="#5daaff"/></marker>
+              <marker id="f52x" markerUnits="userSpaceOnUse" markerWidth="18" markerHeight="18" refX="9" refY="9" orient="auto"><path d="M0 0 L18 9 L0 18 z" fill="#c9d6e6"/></marker></defs>
+        <rect x="100" y="80" width="200" height="150" fill="#0a1120" stroke="#c9d6e6" stroke-width="4"/>
+        <rect x="300" y="80" width="200" height="150" fill="#0a1120" stroke="#c9d6e6" stroke-width="4"/>
+        <line x1="200" y1="228" x2="245" y2="96" stroke="#5daaff" stroke-width="5" marker-end="url(#f52a)"/>
+        <line x1="155" y1="84" x2="125" y2="212" stroke="#c9d6e6" stroke-width="4" stroke-dasharray="8 6" marker-end="url(#f52x)"/>
+        <line x1="400" y1="228" x2="355" y2="96" stroke="#5daaff" stroke-width="5" marker-end="url(#f52a)"/>
+        <line x1="445" y1="84" x2="475" y2="212" stroke="#c9d6e6" stroke-width="4" stroke-dasharray="8 6" marker-end="url(#f52x)"/>
+        <text x="150" y="60" text-anchor="middle" class="v-lbl">A</text>
+        <text x="250" y="60" text-anchor="middle" class="v-lbl" style="fill:#5daaff;">B</text>
+        <text x="350" y="60" text-anchor="middle" class="v-lbl" style="fill:#5daaff;">A</text>
+        <text x="450" y="60" text-anchor="middle" class="v-lbl">B</text>
+        <text x="120" y="262" text-anchor="middle" class="v-lbl">R</text>
+        <text x="200" y="262" text-anchor="middle" class="v-lbl">P</text>
+        <text x="400" y="262" text-anchor="middle" class="v-lbl">P</text>
+        <text x="480" y="262" text-anchor="middle" class="v-lbl">R</text>
+        <text x="200" y="296" text-anchor="middle" class="v-sub">Air to B</text>
+        <text x="400" y="296" text-anchor="middle" class="v-sub">Air to A</text>
+      </svg>
+      <div>
+        <p class="prose fragment fade-up">Each box shows one position. A <span class="pneu">solid arrow</span> is supply air flowing to a working port; a dashed arrow is used air leaving through an exhaust.</p>
+        <p class="prose fragment fade-up" style="margin-top:var(--gap);">A 5/2 valve is not more powerful than a 3/2 valve. It controls two cylinder ports at once, so air can push the piston both ways.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Day 6 draws these boxes as standard ISO symbols, with the ports attached to the box for the valve&rsquo;s resting position. For today, students only need to read the two flow patterns. This corrects the CCHS claim that a 5/2 valve is &ldquo;more powerful.&rdquo;</aside>
+</section>
+
+<!-- SLIDE 09 · Solenoids -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Solenoids</span>
+    <h2>Shifting a Valve With Electricity</h2>
+    <p class="prose">A <span class="term">solenoid</span> is a coil of wire that becomes an electromagnet when current flows through it. Its magnetic pull shifts the parts inside the valve into the other position.</p>
+    <p class="prose fragment fade-up">When the solenoid turns off, a spring pushes the valve back, or a <span class="term">second solenoid</span> on the other side pulls it back.</p>
+    <p class="prose fragment fade-up">That means a controller, such as a factory PLC or the VEX Brain, only has to switch a small <span class="warn-color">electrical signal</span> on or off. The valve handles the large flow of air.</p>
+  </div>
+  <aside class="notes">Keep this conceptual; there is no PLC logic in this unit. The point is the chain: code or a switch sends a signal, the solenoid shifts the valve, and the valve sends air to the cylinder.</aside>
+</section>
+
+<!-- SLIDE 10 · The VEX solenoid -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">VEX Pneumatics</span>
+    <h2>The VEX Double-Acting Solenoid</h2>
+    <div class="split split-40 split-top" style="flex:none;">
+      <figure class="vex-fig" style="max-width:420px;">
+        <img src="Controlling_Motion_Assets/vex-solenoid.jpg" alt="The VEX double-acting solenoid: a black valve body with tubes on ports marked A and B, a supply tube on top, a plugged port on the bottom, and two white coil modules on the side.">
+        <span class="vex-chip" style="left:58%;top:3%;">P (supply)</span>
+        <span class="vex-chip" style="left:2%;top:84%;">P (plugged)</span>
+        <span class="vex-chip" style="left:63%;top:62%;">Two coils</span>
+      </figure>
+      <div>
+        <p class="prose">It has <span class="term">two P ports</span> (plug the spare, or use it to pass air on to a second solenoid), outlets <span class="term">A</span> and <span class="term">B</span>, and two <span class="term">R</span> exhaust ports joined by one passage through the body.</p>
+        <p class="prose fragment fade-up" style="margin-top:var(--gap);">A driver cable runs from a 3-wire port on the Brain. Its <span class="warn-color">red and black</span> plug goes on the A side, and its <span class="warn-color">green and white</span> plug goes on the B side.</p>
+        <p class="prose fragment fade-up" style="margin-top:var(--gap);">The Brain&rsquo;s signal picks the side: <span class="warn-color">low</span>, the default, sends air to A, and <span class="warn-color">high</span> sends air to B. It always sends air to one of them, and when the robot stops, it returns to low.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">From the VEX Library: two P ports, outlets A and B, two R exhausts that are one through-hole; red/black plug on the A side, green/white on the B side; digital out low sends air to A and high sends air to B; stopping the program returns the solenoid to low. In Blocks the commands are &ldquo;set DigitalOutA low/high.&rdquo; VEX&rsquo;s own example tubes A to the rod end, so low means retracted. Which end A feeds depends on the tubing, not the letter.</aside>
+</section>
+
+<!-- SLIDE 11 · Resonance: Predict the path -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:10:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"On a VEX robot, the A tube runs to the rod end of a double-acting cylinder, and the B tube runs to the cap end. The robot sends a high signal, so air goes to B. What does the cylinder do?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"It retracts, because high always means retract","isCorrect":false},{"id":"q1b","text":"Nothing, because air must reach both ends","isCorrect":false},{"id":"q1c","text":"It retracts, because B is the second port","isCorrect":false},{"id":"q1d","text":"It extends, because air fills the cap end","isCorrect":true}]},{"id":"q2","type":"multiple-choice","text":"In that same move, where does the air from the rod end go?","order":1,"responseTimeLimitMs":60000,"options":[{"id":"q2a","text":"Back into the tank","isCorrect":false},{"id":"q2b","text":"Through the A tube and out the R exhaust","isCorrect":true},{"id":"q2c","text":"It stays trapped in the rod end","isCorrect":false},{"id":"q2d","text":"Out through the plugged P port","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict</span>
+    <h2>Trace the Air</h2>
+    <p class="q-head">On a VEX robot, the <span class="term">A tube</span> runs to the rod end, and the <span class="term">B tube</span> runs to the cap end. The robot sends a high signal, so air goes to B.</p>
+    <p class="q-head">1. What does the cylinder do?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>It retracts, because high always means retract</li>
+      <li><span class="mcq-letter">B</span>Nothing, because air must reach both ends</li>
+      <li><span class="mcq-letter">C</span>It retracts, because B is the second port</li>
+      <li><span class="mcq-letter">D</span>It extends, because air fills the cap end</li>
+    </ol>
+    <p class="q-head">2. Where does the air from the rod end go?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>Back into the tank</li>
+      <li><span class="mcq-letter">B</span>Through the A tube and out the R exhaust</li>
+      <li><span class="mcq-letter">C</span>It stays trapped in the rod end</li>
+      <li><span class="mcq-letter">D</span>Out through the plugged P port</li>
+    </ol>
+  </div>
+  <aside class="notes">Answers: it extends (the cap end fills), and the rod-end air leaves through the A tube and out R. The distractors in question 1 map motion from the port letter or the signal alone, which is exactly the habit to break. Students check their answers on the next slide.</aside>
+</section>
+
+<!-- SLIDE 12 · Simulation B -->
+<section data-prevent-swipe>
+  <div class="slide-inner" style="max-width:1600px;padding:36px 56px 24px;justify-content:center;">
+    <span class="slide-tag" style="margin-bottom:6px;">VEX Solenoid Explorer &nbsp;·&nbsp; Switch the signal, swap the tubes or plugs, and trace the air</span>
+    <div class="sb" id="sim-b">
+      <div class="sb-table" data-r="table"></div>
+      <svg class="sb-svg vsvg" viewBox="-28 0 1360 420" width="1360" height="420" role="img" aria-label="A VEX double-acting solenoid connected to a double-acting cylinder. Air from the tank flows through the valve to A or B and into one end of the cylinder, while the other end exhausts." data-r="svg"></svg>
+      <div class="sb-row">
+        <span class="ctl-name">Signal</span>
+        <button type="button" class="code-btn" data-sig="low" aria-pressed="true">Low</button>
+        <button type="button" class="code-btn" data-sig="high" aria-pressed="false">High</button>
+        <span class="ctl-name" style="margin-left:12px;">Faults</span>
+        <button type="button" class="tog" data-flip="tubes" aria-pressed="false">Swap A/B tubes</button>
+        <button type="button" class="tog" data-flip="plugs" aria-pressed="false">Swap driver plugs</button>
+      </div>
+      <div class="sb-row">
+        <span class="ctl-name">View</span>
+        <button type="button" class="tog view" data-view="vex" aria-pressed="true">VEX ports</button>
+        <button type="button" class="tog view" data-view="sym" aria-pressed="false">5/2 symbol</button>
+        <button type="button" class="tog view" data-flip="inside" aria-pressed="false">Show inside</button>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Simulation B (ADE 7.3, 7.9; prepares 7.5 and 7.10). Start in the standard setup (A tube to the rod end), switch low and high, then turn on one fault at a time. Both faults make the cylinder extend on low, the same symptom, but the evidence differs: with swapped tubes the explorer still shows the A coil powered, and with swapped plugs it shows the B coil powered on low. On a real robot, students tell them apart by tracing the tubes and checking the plug colors (slide 15). Switch to the 5/2 symbol view to show that the VEX valve does the same job as an industrial 5/2 with a solenoid on each end, even though its ports are laid out differently. The symbol shows function, not the parts inside; the right box is the default (low). With Show inside on in the symbol view, the symbol becomes a cutaway of an industrial 5/2 spool valve (redrawn from the PHS cross-section): the red lands slide to join P to one working port and the other working port to an exhaust. The VEX valve&rsquo;s internals may differ, but the job is the same.</aside>
+</section>
+
+<!-- SLIDE 13 · VEX vs industrial 5/2 -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Compare</span>
+    <h2>Comparing the VEX Valve With an Industrial 5/2 Valve</h2>
+    <div class="cmp">
+      <div class="sys-card">
+        <h3 class="term">Industrial 5/2 valve</h3>
+        <ul class="bullets cmp-list">
+          <li><b>Supply:</b> one port&nbsp;(1)</li>
+          <li><b>Working ports:</b> 2&nbsp;and&nbsp;4</li>
+          <li><b>Exhausts:</b> two separate ports (3&nbsp;and&nbsp;5)</li>
+          <li><b>Switching:</b> a solenoid shifts it, and a spring or a second solenoid shifts it back</li>
+        </ul>
+      </div>
+      <div class="sys-card fragment fade-up">
+        <h3 class="pneu">VEX double-acting solenoid</h3>
+        <ul class="bullets cmp-list">
+          <li><b>Supply:</b> two P&nbsp;ports; the spare is plugged or feeds a second solenoid</li>
+          <li><b>Working ports:</b> A&nbsp;and&nbsp;B</li>
+          <li><b>Exhausts:</b> two R&nbsp;ports, joined inside</li>
+          <li><b>Switching:</b> the driver always powers one coil; low sends air to A, and high sends air to B</li>
+        </ul>
+      </div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">Both valves always send air to one end of the cylinder and exhaust the other. That shared <span class="term">function</span> is why either one can drive a double-acting cylinder, even though the ports look different from the outside.</p>
+  </div>
+  <aside class="notes">Do not tell students the VEX unit is physically identical to a five-port 5/2 valve. The comparison is about what it does, which is what a schematic shows.</aside>
+</section>
+
+<!-- SLIDE 14 · Service call briefing -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Troubleshooting</span>
+    <h2>The Cylinder That Starts Backwards</h2>
+    <p class="prose">A team&rsquo;s VEX robot is acting up. It is supposed to send a <span class="warn-color">low signal</span> when it starts, so the cylinder should start retracted, but the cylinder extends as soon as the robot starts. Find out why without guessing.</p>
+    <div class="station-row">
+      <div class="station-card"><span class="station-num">Step 1</span><h3>Investigate</h3><p>Read the ticket, the robot log, and what each cause would look like. Tests cost <span class="term">build time</span>.</p></div>
+      <div class="station-card"><span class="station-num">Step 2</span><h3>Diagnose</h3><p>Strike out the causes your evidence rules out, then pick the cause and a fix.</p></div>
+      <div class="station-card"><span class="station-num">Step 3</span><h3>Defend</h3><p>Tag the readings that back your diagnosis. Your record scores six things, including safety.</p></div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.10, pneumatic troubleshooting. The three causes all give the same symptom, which is the point: the motion alone cannot tell them apart, so students need tests that do. New case deals a different hidden cause.</aside>
+</section>
+
+<!-- SLIDE 15 · Service call simulator -->
+<section data-prevent-swipe>
+  <div class="slide-inner" style="max-width:1600px;padding:40px 36px 36px;justify-content:flex-start;">
+    <span class="slide-tag" style="margin-bottom:10px;">Troubleshooting &nbsp;·&nbsp; The Cylinder That Starts Backwards</span>
+    <div class="wo" id="service-call">
+      <div class="wo-top">
+        <button class="sim-btn alt" data-role="new" type="button">New case</button>
+        <span class="dt" aria-live="polite"><span class="dt-label">Build time</span><span class="dt-bar"><span class="dt-fill" data-role="dt-fill"></span></span><span class="dt-val" data-role="dt-val"></span></span>
+        <span class="status-chip" data-role="status">INVESTIGATE</span>
+      </div>
+      <div class="wo-grid">
+        <div class="sim-panel wo-info" data-role="info"></div>
+        <div class="wo-right">
+          <div class="sim-panel wo-work" data-role="work"></div>
+          <div class="sim-panel ev" data-role="ev" aria-live="polite">
+            <div class="ev-top"><span class="ev-label">EVIDENCE</span><span data-role="chips"></span></div>
+            <div class="ev-body" data-role="ev-body"></div>
+          </div>
+          <div class="wo-bar">
+            <button class="sim-btn alt" data-role="back" type="button">&#9664; Back</button>
+            <button class="sim-btn" data-role="to-diag" type="button">Diagnose &#9654;</button>
+            <button class="sim-btn" data-role="to-defend" type="button">Defend &#9654;</button>
+            <button class="sim-btn" data-role="submit" type="button">Submit record</button>
+            <span class="wo-count" data-role="count"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Causes: A and B tubes swapped at the cylinder (key test: trace the tubes), driver plugs swapped (check the plug colors), or a robot that sends a high signal first (check the signal). Watching the cylinder, the gauge and the exhaust hiss read the same for every cause. The unsafe choices (pulling a charged tube, tightening fittings with pliers) are charged but never carried out. Changing every low to high hides the symptom without fixing the cause.</aside>
+</section>
+
+<!-- SLIDE 16 · Notebook -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Notebook</span>
+    <h2>Record the VEX Valve</h2>
+    <div class="ask">In your notebook, draw a <span class="term">VEX port map</span>: the solenoid with its P, A, B and R ports, the driver plug colors, and which cylinder end each tube feeds.</div>
+    <div class="ask fragment fade-up">Make a <span class="term">two-row table</span> for low and high. For each, list where the supply air goes, which cylinder end exhausts, and what the cylinder does.</div>
+    <div class="ask fragment fade-up">Draw an industrial <span class="term">5/2 valve</span> as two boxes, and label which box matches low and which matches high.</div>
+  </div>
+  <aside class="notes">This is the plan&rsquo;s Day 5 notebook evidence: a VEX port map, a two-state path table and one 5/2 comparison diagram. Students can use the explorer on slide 12 to check their tables.</aside>
+</section>
+
+<!-- SLIDE 17 · Resonance: Exit ticket -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:16:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A VEX robot sends a low signal when it starts, and the A tube is supposed to run to the rod end. Instead, the cylinder extends when the robot starts. Which of these could cause it?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"The tank is only half full","isCorrect":false},{"id":"q1b","text":"The cylinder is too small for the load","isCorrect":false},{"id":"q1c","text":"The A and B tubes are swapped at the cylinder","isCorrect":true},{"id":"q1d","text":"The unused P port is plugged","isCorrect":false}]},{"id":"q2","type":"free-response","text":"Explain why the VEX solenoid can control a double-acting cylinder even though its ports are laid out differently from an industrial 5/2 valve.","order":1,"responseTimeLimitMs":180000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Before You Go</h2>
+    <p class="q-head">1. A VEX robot sends a <span class="warn-color">low signal</span> when it starts, and the A tube is supposed to run to the rod end. Instead, the cylinder extends when the robot starts. Which of these could cause it?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>The tank is only half full</li>
+      <li><span class="mcq-letter">B</span>The cylinder is too small for the load</li>
+      <li><span class="mcq-letter">C</span>The A and B tubes are swapped at the cylinder</li>
+      <li><span class="mcq-letter">D</span>The unused P port is plugged</li>
+    </ol>
+    <p class="q-head">2. Explain why the VEX solenoid can control a double-acting cylinder even though its ports are laid out differently from an industrial 5/2 valve.</p>
+  </div>
+  <aside class="notes">Q1: swapped tubes (swapped driver plugs or a high first signal would also do it, but they are not options). Plugging the unused P port is correct practice. Q2 is the plan&rsquo;s Day 5 exit question: look for &ldquo;both send air to one end and exhaust the other,&rdquo; the shared function.</aside>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function(element) { return !element.closest('#storyboard'); }
+  );
+}
+
+var SVGNS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, text) {
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+var C = { line: '#c9d6e6', metal: '#e8f2ff', rod: '#b8c7d9', cap: '#3a4a62', air: 'rgba(93,170,255,0.40)',
+          blue: '#5daaff', warn: '#ffd166', bad: '#ff8a80', dim: 'rgba(232,242,255,0.35)' };
+function arrowDefs(svg, id, color, size) {
+  var d = el('defs', {});
+  var m = el('marker', { id: id, markerUnits: 'userSpaceOnUse', markerWidth: size, markerHeight: size, refX: size / 2, refY: size / 2, orient: 'auto' });
+  m.appendChild(el('path', { d: 'M0 0 L' + size + ' ' + size / 2 + ' L0 ' + size + ' z', fill: color }));
+  d.appendChild(m);
+  svg.appendChild(d);
+}
+
+/* Horizontal cylinder drawn at piston fraction p (0 = retracted, 1 =
+   extended). opts: x, y (barrel top-left), w, h, stroke (px of piston
+   travel), rod (rod length past the piston), spring, air ('cap' | 'rod'). */
+function drawCylinder(svg, o) {
+  var x0 = o.x, x1 = o.x + o.w, y0 = o.y, y1 = o.y + o.h, wall = 4;
+  var pw = 22, px = x0 + 6 + o.p * o.stroke;
+  var it = y0 + wall, ib = y1 - wall, rt = y0 + o.h / 2 - 13, rb = rt + 26;
+  if (o.air === 'cap') svg.appendChild(el('rect', { x: x0, y: it, width: px - x0, height: ib - it, fill: C.air }));
+  if (o.air === 'rod') svg.appendChild(el('rect', { x: px + pw, y: it, width: x1 - px - pw, height: ib - it, fill: C.air }));
+  if (o.spring) {
+    var a = px + pw + 4, b = x1 - 4, n = 7, pts = [];
+    for (var i = 0; i <= n * 2; i++) pts.push((a + (b - a) * i / (n * 2)).toFixed(1) + ',' + (i % 2 ? ib - 8 : it + 8));
+    svg.appendChild(el('polyline', { points: pts.join(' '), fill: 'none', stroke: C.warn, 'stroke-width': 4, 'stroke-linejoin': 'round' }));
+  }
+  svg.appendChild(el('rect', { x: x0, y: y0, width: o.w, height: o.h, fill: 'none', stroke: C.line, 'stroke-width': wall }));
+  svg.appendChild(el('rect', { x: x0 - 26, y: y0 - 10, width: 26, height: o.h + 20, rx: 4, fill: C.cap, stroke: C.line, 'stroke-width': 3 }));
+  svg.appendChild(el('rect', { x: x1, y: y0 - 10, width: 26, height: o.h + 20, rx: 4, fill: C.cap, stroke: C.line, 'stroke-width': 3 }));
+  var tip = px + pw + o.rod;
+  svg.appendChild(el('rect', { x: px + pw, y: rt, width: o.rod, height: rb - rt, fill: C.rod }));
+  svg.appendChild(el('rect', { x: tip, y: rt - 10, width: 16, height: rb - rt + 20, rx: 3, fill: C.rod }));
+  svg.appendChild(el('rect', { x: px, y: it, width: pw, height: ib - it, fill: C.metal }));
+  svg.appendChild(el('rect', { x: px + 8, y: it, width: 6, height: ib - it, fill: '#1b2a44' }));
+}
+
+/* ── 3/2 valve with a push button (slide 6) ────────────────────────
+   Hold the button to press the valve. Normally closed: at rest P is
+   blocked and A vents to R; pressed, P feeds A. Normally open is the
+   reverse. A single-acting, spring-return cylinder shows the result. */
+function initValve32(root) {
+  var svg = root.querySelector('[data-r="svg"]');
+  var status = root.querySelector('[data-r="status"]');
+  var hold = root.querySelector('[data-r="hold"]');
+  var type = 'nc', pressed = false, p = 0, raf = null;
+  var BX = 150, BY = 120, BW = 170, BH = 130;          // valve box
+  var AX = BX + 85, PX = BX + 40, RX = BX + 130;        // port x positions
+  var CYL = { x: 560, y: 120, w: 360, h: 100, stroke: 300, rod: 400 };
+  var CAPX = CYL.x + 40;
+  function feeding() { return (type === 'nc') === pressed; }  // P connected to A?
+  function draw() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    arrowDefs(svg, 'v32a', C.blue, 20);
+    arrowDefs(svg, 'v32x', C.line, 18);
+    var feed = feeding();
+    // supply line from the left into P, A line up and over to the cylinder
+    svg.appendChild(el('path', { d: 'M20 300 H' + PX + ' V' + (BY + BH), fill: 'none', stroke: C.blue, 'stroke-width': 6 }));
+    svg.appendChild(el('text', { x: 20, y: 290, class: 'v-sub' }, 'Air supply'));
+    svg.appendChild(el('path', { d: 'M' + AX + ' ' + BY + ' V60 H' + CAPX + ' V' + CYL.y, fill: 'none', stroke: feed ? C.blue : C.line, 'stroke-width': feed ? 6 : 4, 'stroke-dasharray': feed ? '' : '8 6' }));
+    // exhaust stub under R
+    svg.appendChild(el('line', { x1: RX, y1: BY + BH, x2: RX, y2: BY + BH + 30, stroke: C.line, 'stroke-width': 4 }));
+    svg.appendChild(el('path', { d: 'M' + (RX - 14) + ' ' + (BY + BH + 30) + ' h28 l-14 18 z', fill: 'none', stroke: C.line, 'stroke-width': 3 }));
+    // valve box with the current flow pattern
+    svg.appendChild(el('rect', { x: BX, y: BY, width: BW, height: BH, fill: '#0a1120', stroke: C.line, 'stroke-width': 4 }));
+    if (feed) {
+      svg.appendChild(el('line', { x1: PX, y1: BY + BH - 4, x2: AX - 4, y2: BY + 22, stroke: C.blue, 'stroke-width': 6, 'marker-end': 'url(#v32a)' }));
+      svg.appendChild(el('path', { d: 'M' + RX + ' ' + (BY + BH - 4) + ' V' + (BY + BH - 40) + ' M' + (RX - 18) + ' ' + (BY + BH - 40) + ' h36', stroke: C.line, 'stroke-width': 5, fill: 'none' }));
+    } else {
+      svg.appendChild(el('path', { d: 'M' + PX + ' ' + (BY + BH - 4) + ' V' + (BY + BH - 40) + ' M' + (PX - 18) + ' ' + (BY + BH - 40) + ' h36', stroke: C.line, 'stroke-width': 5, fill: 'none' }));
+      svg.appendChild(el('line', { x1: AX, y1: BY + 6, x2: RX - 6, y2: BY + BH - 22, stroke: C.line, 'stroke-width': 5, 'stroke-dasharray': '8 6', 'marker-end': 'url(#v32x)' }));
+    }
+    [['P', PX + 14, BY + BH + 34, 'start'], ['A', AX - 14, BY - 10, 'end'], ['R', RX + 24, BY + BH + 30, 'start']].forEach(function (t) {
+      svg.appendChild(el('text', { x: t[1], y: t[2], 'text-anchor': t[3], class: 'v-lbl' }, t[0]));
+    });
+    svg.appendChild(el('text', { x: BX + BW / 2, y: 30, 'text-anchor': 'middle', class: 'v-lbl', style: 'fill:' + (pressed ? C.warn : C.line) + ';' }, pressed ? 'Pressed' : 'At rest'));
+    // cylinder
+    drawCylinder(svg, { x: CYL.x, y: CYL.y, w: CYL.w, h: CYL.h, stroke: CYL.stroke, p: p, rod: CYL.rod, spring: true, air: feed ? 'cap' : null });
+    svg.appendChild(el('rect', { x: CAPX - 10, y: CYL.y - 30, width: 20, height: 30, fill: C.cap, stroke: C.line, 'stroke-width': 3 }));
+    svg.appendChild(el('text', { x: CYL.x + CYL.w / 2, y: CYL.y + CYL.h + 52, 'text-anchor': 'middle', class: 'v-sub' }, 'Single-acting cylinder with a spring return'));
+    var name = type === 'nc' ? 'normally closed' : 'normally open';
+    var msg;
+    if (feed) msg = (pressed ? 'Pressed: ' : 'At rest: ') + 'the ' + name + ' valve connects P to A. Air fills the cylinder and pushes the rod out against the spring.';
+    else msg = (pressed ? 'Pressed: ' : 'At rest: ') + 'the ' + name + ' valve blocks P and connects A to R. The cylinder vents, and the spring pushes the rod back in.';
+    status.textContent = msg;
+  }
+  function step() {
+    var target = feeding() ? 1 : 0, d = target - p;
+    p = Math.abs(d) < 0.04 ? target : p + Math.sign(d) * 0.04;
+    draw();
+    raf = p !== target ? requestAnimationFrame(step) : null;
+  }
+  function kick() { draw(); if (!raf) raf = requestAnimationFrame(step); }
+  function down(e) { if (e) e.preventDefault(); if (!pressed) { pressed = true; hold.classList.add('is-down'); kick(); } }
+  function up() { if (pressed) { pressed = false; hold.classList.remove('is-down'); kick(); } }
+  hold.addEventListener('pointerdown', function (e) { try { hold.setPointerCapture(e.pointerId); } catch (err) {} down(e); });
+  hold.addEventListener('pointerup', up);
+  hold.addEventListener('pointercancel', up);
+  hold.addEventListener('lostpointercapture', up);
+  hold.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); down(); } });
+  hold.addEventListener('keyup', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); up(); } });
+  root.querySelectorAll('[data-type]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      type = b.dataset.type;
+      root.querySelectorAll('[data-type]').forEach(function (o) { o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+      kick();
+    });
+  });
+  p = feeding() ? 1 : 0;
+  draw();
+}
+
+/* ── Simulation B: VEX solenoid explorer (slide 12) ───────────────
+   Model, from the VEX Library: digital out low sends air to A and high
+   sends air to B. The red/black driver plug belongs on the A side;
+   swapping the plugs flips which side a signal powers. The standard
+   build tubes A to the rod end (low = retracted, as in VEX's example);
+   swapping the tubes sends A to the cap end. The piston moves away from
+   whichever end has air while the other end exhausts through R. */
+function initSimB(root) {
+  var svg = root.querySelector('[data-r="svg"]');
+  var table = root.querySelector('[data-r="table"]');
+  var st = { sig: 'low', tubes: false, plugs: false, view: 'vex', inside: false };
+  var p = 0, raf = null;
+  var CYL = { x: 600, y: 250, w: 360, h: 90, stroke: 240, rod: 400 };
+  var CAP_PORT = CYL.x + 40, ROD_PORT = CYL.x + CYL.w - 40;
+  function outlet() {               // which outlet gets supply air
+    var side = st.sig === 'low' ? 'A' : 'B';
+    return st.plugs ? (side === 'A' ? 'B' : 'A') : side;
+  }
+  function endFor(port) {           // which cylinder end a valve outlet feeds
+    var aEnd = st.tubes ? 'cap' : 'rod';
+    return port === 'A' ? aEnd : (aEnd === 'cap' ? 'rod' : 'cap');
+  }
+  function target() { return endFor(outlet()) === 'cap' ? 1 : 0; }
+
+  function text(x, y, s, cls, anchor, fill) {
+    var a = { x: x, y: y, class: cls || 'v-lbl', 'text-anchor': anchor || 'middle' };
+    if (fill) a.style = 'fill:' + fill + ';';
+    svg.appendChild(el('text', a, s));
+  }
+  function tube(from, to, level, live) {
+    var d = 'M' + from[0] + ' ' + from[1] + ' H' + from[2] + ' V' + level + ' H' + to + ' V' + (CYL.y - 30);
+    svg.appendChild(el('path', { d: d, fill: 'none', stroke: live ? C.blue : C.line, 'stroke-width': live ? 6 : 4, 'stroke-dasharray': live ? '' : '9 7', 'stroke-linejoin': 'round' }));
+  }
+
+  function drawVex(out) {
+    // body, coils, ports (layout echoes the photo: A and B on the face, P top and bottom, coils on the side)
+    var bx = 250, by = 200, bw = 150, bh = 150;
+    svg.appendChild(el('rect', { x: bx, y: by, width: bw, height: bh, rx: 8, fill: '#151d2c', stroke: C.line, 'stroke-width': 3 }));
+    var coilA = out === 'A', coilB = out === 'B';
+    var plugA = st.plugs ? 'green/white' : 'red/black', plugB = st.plugs ? 'red/black' : 'green/white';
+    var wA = st.plugs ? '#7be38a' : '#ff6b6b', wB = st.plugs ? '#ff6b6b' : '#7be38a';
+    var cw = 130;
+    [['A', by + 4, coilA, plugA, wA], ['B', by + bh / 2 + 2, coilB, plugB, wB]].forEach(function (c) {
+      svg.appendChild(el('rect', { x: bx - cw, y: c[1], width: cw, height: bh / 2 - 6, rx: 6, fill: c[2] ? 'rgba(255,209,102,0.22)' : '#151d2c', stroke: c[2] ? C.warn : C.line, 'stroke-width': c[2] ? 4 : 2 }));
+      text(bx - cw / 2, c[1] + 30, c[0] + ' coil' + (c[2] ? ' (on)' : ''), 'v-sub', 'middle', c[2] ? C.warn : null);
+      text(bx - cw / 2, c[1] + 58, c[3], 'v-sub', 'middle', st.plugs ? C.bad : c[4]);
+      svg.appendChild(el('path', { d: 'M' + (bx - cw) + ' ' + (c[1] + 36) + ' H' + (c[0] === 'A' ? 70 : 50) + ' V130', fill: 'none', stroke: c[4], 'stroke-width': 4 }));
+    });
+    text(30, 118, 'To Brain port A', 'v-sub', 'start');
+    // supply on top P, plug on bottom P
+    var px = bx + 50;
+    svg.appendChild(el('path', { d: 'M' + px + ' ' + by + ' V40 H560', fill: 'none', stroke: C.blue, 'stroke-width': 6 }));
+    text(568, 48, 'From tank', 'v-sub', 'start');
+    text(px - 14, by - 12, 'P', 'v-lbl', 'end');
+    svg.appendChild(el('rect', { x: px - 9, y: by + bh, width: 18, height: 24, fill: C.cap, stroke: C.line, 'stroke-width': 2 }));
+    svg.appendChild(el('rect', { x: px - 13, y: by + bh + 24, width: 26, height: 12, rx: 3, fill: '#111' }));
+    text(px, by + bh + 64, 'P (plugged)', 'v-sub');
+    // outlets A and B on the right face, R exhaust hole on the face
+    var ay = by + 40, byy = by + 110, ox = bx + bw;
+    text(ox + 12, ay - 10, 'A', 'v-lbl', 'start');
+    text(ox + 12, byy + 32, 'B', 'v-lbl', 'start');
+    var rx = bx + 92, ry = by + 75;
+    svg.appendChild(el('circle', { cx: rx, cy: ry, r: 13, fill: '#060b14', stroke: C.line, 'stroke-width': 3 }));
+    text(rx + 20, ry + 9, 'R', 'v-lbl', 'start');
+    if (st.inside) {
+      var to = out === 'A' ? ay : byy, from = out === 'A' ? byy : ay;
+      svg.appendChild(el('path', { d: 'M' + px + ' ' + (by + 4) + ' V' + to + ' H' + (ox - 4), fill: 'none', stroke: C.blue, 'stroke-width': 5, 'marker-end': 'url(#sba)' }));
+      svg.appendChild(el('path', { d: 'M' + (ox - 4) + ' ' + from + ' H' + rx + ' V' + (from < ry ? ry - 22 : ry + 22), fill: 'none', stroke: C.line, 'stroke-width': 4, 'stroke-dasharray': '7 6', 'marker-end': 'url(#sbx)' }));
+    }
+    return { A: [ox, ay, ox + 40], B: [ox, byy, ox + 90] };
+  }
+
+  function drawSym(out) {
+    // 5/2 symbol with a solenoid on each end; the box for the powered side
+    // lines up with the ports.
+    var x0 = 230, y0 = 210, bw = 120, bh = 110;
+    // ISO convention: the right box is the default (low = air to A) and
+    // sits on the ports at rest; powering the B coil shifts the left box in.
+    var shift = out === 'A' ? -bw : 0, g = x0 + shift;     // left box = B, right box = A
+    var boxes = [['B', g], ['A', g + bw]];
+    boxes.forEach(function (b) {
+      var bx = b[1];
+      svg.appendChild(el('rect', { x: bx, y: y0, width: bw, height: bh, fill: '#0a1120', stroke: C.line, 'stroke-width': 4 }));
+      var aX = bx + 32, bX = bx + 88, pX = bx + 60, rL = bx + 16, rR = bx + 104;
+      if (b[0] === 'A') {
+        svg.appendChild(el('line', { x1: pX, y1: y0 + bh - 4, x2: aX + 2, y2: y0 + 20, stroke: b[0] === out ? C.blue : C.dim, 'stroke-width': 5, 'marker-end': b[0] === out ? 'url(#sba)' : 'url(#sbd)' }));
+        svg.appendChild(el('line', { x1: bX, y1: y0 + 4, x2: rR - 2, y2: y0 + bh - 20, stroke: b[0] === out ? C.line : C.dim, 'stroke-width': 4, 'stroke-dasharray': '7 6', 'marker-end': b[0] === out ? 'url(#sbx)' : 'url(#sbd)' }));
+      } else {
+        svg.appendChild(el('line', { x1: pX, y1: y0 + bh - 4, x2: bX - 2, y2: y0 + 20, stroke: b[0] === out ? C.blue : C.dim, 'stroke-width': 5, 'marker-end': b[0] === out ? 'url(#sba)' : 'url(#sbd)' }));
+        svg.appendChild(el('line', { x1: aX, y1: y0 + 4, x2: rL + 2, y2: y0 + bh - 20, stroke: b[0] === out ? C.line : C.dim, 'stroke-width': 4, 'stroke-dasharray': '7 6', 'marker-end': b[0] === out ? 'url(#sbx)' : 'url(#sbd)' }));
+      }
+    });
+    // solenoids on the ends
+    var lit = { A: out === 'A', B: out === 'B' };
+    [['B', g - 46], ['A', g + 2 * bw + 6]].forEach(function (s) {
+      svg.appendChild(el('rect', { x: s[1], y: y0 + 30, width: 40, height: 50, fill: lit[s[0]] ? 'rgba(255,209,102,0.25)' : 'none', stroke: lit[s[0]] ? C.warn : C.line, 'stroke-width': 3 }));
+      svg.appendChild(el('line', { x1: s[1] + 4, y1: y0 + 76, x2: s[1] + 36, y2: y0 + 34, stroke: lit[s[0]] ? C.warn : C.line, 'stroke-width': 3 }));
+      text(s[0] === 'B' ? s[1] + 40 : s[1], y0 + 106, s[0] + ' coil', 'v-sub', s[0] === 'B' ? 'end' : 'start', lit[s[0]] ? C.warn : null);
+    });
+    // fixed ports under/over the aligned box
+    var aX = x0 + 32, bX = x0 + 88, pX = x0 + 60, rL = x0 + 16, rR = x0 + 104;
+    [aX, bX].forEach(function (x) { svg.appendChild(el('line', { x1: x, y1: y0, x2: x, y2: y0 - 30, stroke: C.line, 'stroke-width': 4 })); });
+    text(aX - 14, y0 - 8, 'A', 'v-lbl', 'end');
+    text(bX + 14, y0 - 8, 'B', 'v-lbl', 'start');
+    svg.appendChild(el('path', { d: 'M' + pX + ' ' + (y0 + bh) + ' V' + (y0 + bh + 50) + ' H20', fill: 'none', stroke: C.blue, 'stroke-width': 6 }));
+    text(20, y0 + bh + 40, 'From tank', 'v-sub', 'start');
+    text(pX - 10, y0 + bh + 40, 'P', 'v-lbl', 'end');
+    [rL, rR].forEach(function (x) {
+      svg.appendChild(el('line', { x1: x, y1: y0 + bh, x2: x, y2: y0 + bh + 20, stroke: C.line, 'stroke-width': 4 }));
+      svg.appendChild(el('path', { d: 'M' + (x - 12) + ' ' + (y0 + bh + 20) + ' h24 l-12 16 z', fill: 'none', stroke: C.line, 'stroke-width': 3 }));
+    });
+    text(rR + 30, y0 + bh + 34, 'R', 'v-lbl', 'start');
+    text(330, 40, 'Functional symbol: what the valve does, not how it looks', 'v-sub', 'middle');
+    return { A: [aX, y0 - 30, aX], B: [bX, y0 - 30, bX] };
+  }
+
+  function drawSpool(out) {
+    // Cutaway of an industrial 5/2 spool valve (our own drawing, in the style
+    // of the PHS cross-section). Ports along the bore: R, A, P, B, R. Three red
+    // lands slide with the spool: at low (A coil) the spool sits right, joining
+    // P to A and B to the right R; at high it shifts left, joining P to B and
+    // A to the left R.
+    var X = { R1: 140, A: 200, P: 260, B: 320, R2: 380 };
+    var bx0 = 70, bx1 = 450, by0 = 220, by1 = 340, bt = 262, bb = 298, lw = 30;
+    var lands = (out === 'A' ? [170, 290, 410] : [110, 230, 350]);
+    svg.appendChild(el('rect', { x: bx0, y: by0, width: bx1 - bx0, height: by1 - by0, rx: 6, fill: '#3a4a62', stroke: C.line, 'stroke-width': 3 }));
+    // chambers between lands; the one holding P is supply, the other open one is exhaust
+    var edges = [bx0 + 4].concat(lands.reduce(function (a, c) { return a.concat([c - lw / 2, c + lw / 2]); }, [])).concat([bx1 - 4]);
+    var supPorts = out === 'A' ? ['P', 'A'] : ['P', 'B'], exPorts = out === 'A' ? ['B', 'R2'] : ['A', 'R1'];
+    for (var i = 0; i < edges.length; i += 2) {
+      var a = edges[i], b = edges[i + 1], mid = function (k) { return X[k] > a && X[k] < b; };
+      var fill = mid('P') ? C.air : (exPorts.some(mid) ? 'rgba(201,214,230,0.16)' : '#0d1420');
+      svg.appendChild(el('rect', { x: a, y: bt, width: b - a, height: bb - bt, fill: fill }));
+    }
+    // port channels (top: A, B; bottom: R, P, R)
+    function chan(k, up) {
+      var live = supPorts.indexOf(k) >= 0, ex = exPorts.indexOf(k) >= 0;
+      var fill = live ? C.air : ex ? 'rgba(201,214,230,0.16)' : '#0d1420';
+      svg.appendChild(el('rect', { x: X[k] - 10, y: up ? by0 : bb, width: 20, height: up ? bt - by0 : by1 - bb, fill: fill }));
+    }
+    chan('A', true); chan('B', true); chan('R1', false); chan('P', false); chan('R2', false);
+    // spool rod and lands
+    svg.appendChild(el('rect', { x: lands[0] - 40, y: bt + 14, width: lands[2] - lands[0] + 80, height: 8, fill: C.rod }));
+    lands.forEach(function (c) { svg.appendChild(el('rect', { x: c - lw / 2, y: bt - 2, width: lw, height: bb - bt + 4, rx: 3, fill: '#e0464f' })); });
+    // flow arrows: supply up through P to the working port, exhaust down through R
+    var w = out;
+    svg.appendChild(el('path', { d: 'M' + X.P + ' ' + (by1 - 6) + ' V' + (bt + 22) + ' H' + X[w] + ' V' + (by0 + 14), fill: 'none', stroke: C.blue, 'stroke-width': 4, 'marker-end': 'url(#sba)' }));
+    var e = out === 'A' ? 'B' : 'A', r = out === 'A' ? 'R2' : 'R1';
+    svg.appendChild(el('path', { d: 'M' + X[e] + ' ' + (by0 + 6) + ' V' + (bt + 10) + ' H' + X[r] + ' V' + (by1 - 14), fill: 'none', stroke: C.line, 'stroke-width': 3, 'stroke-dasharray': '7 6', 'marker-end': 'url(#sbx)' }));
+    // coils on the ends (B left, A right, like the symbol)
+    [['B', bx0 - 52], ['A', bx1 + 6]].forEach(function (c) {
+      var on = c[0] === out;
+      svg.appendChild(el('rect', { x: c[1], y: by0 + 25, width: 46, height: 70, rx: 4, fill: on ? 'rgba(255,209,102,0.25)' : '#151d2c', stroke: on ? C.warn : C.line, 'stroke-width': on ? 4 : 2 }));
+      text(c[0] === 'B' ? c[1] + 46 : c[1], by0 + 122, c[0] + ' coil', 'v-sub', c[0] === 'B' ? 'end' : 'start', on ? C.warn : null);
+    });
+    // stubs, labels, supply and exhausts
+    [['A', X.A], ['B', X.B]].forEach(function (t) {
+      svg.appendChild(el('line', { x1: t[1], y1: by0, x2: t[1], y2: by0 - 30, stroke: C.line, 'stroke-width': 4 }));
+    });
+    text(X.A - 14, by0 - 8, 'A', 'v-lbl', 'end');
+    text(X.B + 14, by0 - 8, 'B', 'v-lbl', 'start');
+    svg.appendChild(el('path', { d: 'M' + X.P + ' ' + by1 + ' V' + (by1 + 40) + ' H20', fill: 'none', stroke: C.blue, 'stroke-width': 6 }));
+    text(20, by1 + 70, 'From tank', 'v-sub', 'start');
+    text(X.P + 12, by1 + 30, 'P', 'v-lbl', 'start');
+    [X.R1, X.R2].forEach(function (x) {
+      svg.appendChild(el('line', { x1: x, y1: by1, x2: x, y2: by1 + 16, stroke: C.line, 'stroke-width': 4 }));
+      svg.appendChild(el('path', { d: 'M' + (x - 12) + ' ' + (by1 + 16) + ' h24 l-12 16 z', fill: 'none', stroke: C.line, 'stroke-width': 3 }));
+      text(x + 18, by1 + 32, 'R', 'v-lbl', 'start');
+    });
+    text(330, 40, 'Inside an industrial 5/2 spool valve (same job)', 'v-sub', 'middle');
+    return { A: [X.A, by0 - 30, X.A], B: [X.B, by0 - 30, X.B] };
+  }
+
+  function draw() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    arrowDefs(svg, 'sba', C.blue, 18);
+    arrowDefs(svg, 'sbx', C.line, 16);
+    arrowDefs(svg, 'sbd', C.dim, 16);
+    var out = outlet();
+    var ports = st.view === 'vex' ? drawVex(out) : (st.inside ? drawSpool(out) : drawSym(out));
+    // tubes: each outlet runs to the cylinder end it is plumbed to
+    var lv = { A: 100, B: 150 };
+    ['A', 'B'].forEach(function (k) {
+      var to = endFor(k) === 'cap' ? CAP_PORT : ROD_PORT;
+      var f = ports[k];
+      tube([f[0], f[1], f[2]], to, lv[k], k === out);
+      // label sits just after the tube turns toward the cylinder, before any
+      // other tube can cross it (it only runs right when the cylinder is right)
+      var right = to > f[2];
+      text(f[2] + (right ? 16 : -16), lv[k] - 10, k + ' tube', 'v-sub', right ? 'start' : 'end', k === out ? C.blue : null);
+    });
+    // cylinder ports and the cylinder
+    [CAP_PORT, ROD_PORT].forEach(function (x) { svg.appendChild(el('rect', { x: x - 10, y: CYL.y - 30, width: 20, height: 30, fill: C.cap, stroke: C.line, 'stroke-width': 3 })); });
+    drawCylinder(svg, { x: CYL.x, y: CYL.y, w: CYL.w, h: CYL.h, stroke: CYL.stroke, p: p, rod: CYL.rod, air: endFor(out) });
+    text(CAP_PORT, CYL.y + CYL.h + 46, 'Cap end', 'v-sub');
+    text(ROD_PORT, CYL.y + CYL.h + 46, 'Rod end', 'v-sub');
+    renderTable(out);
+  }
+
+  function renderTable(out) {
+    var end = endFor(out), other = end === 'cap' ? 'rod' : 'cap';
+    var moving = Math.abs(p - target()) > 0.001;
+    var motion = target() === 1 ? (moving ? 'Extending' : 'Extended') : (moving ? 'Retracting' : 'Retracted');
+    var cells = [
+      ['Signal', st.sig === 'low' ? 'Low' : 'High'],
+      ['Powered coil', out + ' side'],
+      ['Supply air to', 'Port ' + out + ' → ' + end + ' end'],
+      ['Exhausts', other + ' end → R'],
+      ['Cylinder', motion],
+    ];
+    table.innerHTML = cells.map(function (c) { return '<div class="sb-cell"><span class="k">' + c[0] + '</span><span class="v">' + c[1] + '</span></div>'; }).join('');
+  }
+
+  function step() {
+    var t = target(), d = t - p;
+    p = Math.abs(d) < 0.03 ? t : p + Math.sign(d) * 0.03;
+    draw();
+    raf = p !== t ? requestAnimationFrame(step) : null;
+  }
+  function kick() { draw(); if (!raf) raf = requestAnimationFrame(step); }
+  root.querySelectorAll('[data-sig]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      st.sig = b.dataset.sig;
+      root.querySelectorAll('[data-sig]').forEach(function (o) { o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+      kick();
+    });
+  });
+  root.querySelectorAll('[data-flip]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.dataset.flip;
+      st[k] = !st[k];
+      b.setAttribute('aria-pressed', st[k] ? 'true' : 'false');
+      kick();
+    });
+  });
+  root.querySelectorAll('[data-view]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      st.view = b.dataset.view;
+      root.querySelectorAll('[data-view]').forEach(function (o) { o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+      kick();
+    });
+  });
+  p = target();
+  draw();
+}
+
+/* ── Service call (slide 15) ───────────────────────────────────────
+   Copied from Deck 2's buildServiceCall (itself adapted from the AR2 AC
+   Motors Day 5 Work Orders): one ticket, a hidden cause dealt from a
+   shuffled deck, tests that return evidence, unsafe choices that are
+   charged but never performed, and a six-part scored record. */
+var SERVICE_CALL = {
+  budget: 8,
+  history: [
+    ['Monday', 'The team rebuilt the cylinder mount and re-ran its tubing.'],
+    ['Tuesday', 'The solenoid was unplugged to move the Brain, then plugged back in.'],
+    ['Wednesday', 'A teammate changed the robot&rsquo;s start-up steps to add a second cylinder.'],
+    ['Thursday', 'The tank was refilled to 80 psi from the classroom compressor.'],
+  ],
+  title: 'VEX Robot: Pusher Cylinder',
+  overview: 'One double-acting cylinder, driven by one VEX solenoid on 3-wire port A. The build sheet says the A tube runs to the rod end.',
+  npHead: 'Build sheet',
+  nameplate: [['Cylinder', '50 mm stroke'], ['Solenoid', 'Double-acting'], ['Driver', '3-wire port A'], ['Tank', '100 psi max']],
+  symptom: 'The robot should send a low signal when it starts, so the cylinder should start retracted. Instead it extends as soon as the robot starts.',
+  causes: {
+    tubes: { name: 'A and B tubes swapped at the cylinder', key: ['trace'], why: 'The valve did its job: low sent air to port A. But the A tube ran to the cap end, so low pushed the rod out. Motion depends on where each tube goes, not on the port letter. Swap the tubes at the cylinder so A feeds the rod end.' },
+    plugs: { name: 'Driver plugs swapped on the solenoid', key: ['plugs'], why: 'The red and black plug belongs on the A side. With the plugs reversed, a low signal powers the B side, so air goes to B and the cylinder extends. VEX warns that reversing the plugs flips the logic.' },
+    code: { name: 'Signal starts high', key: ['code'], why: 'The hardware was right, but the robot sent a high signal first, so the valve sent air to B and the cylinder extended right away. Fix the signal, not the wiring.' },
+  },
+  tests: [
+    { id: 'watch', min: 1, name: 'Watch', label: 'Start the robot and watch the cylinder',
+      proc: 'Robot started:',
+      r: { def: 'The cylinder <span class="rd">extends right away</span> and stays out.' } },
+    { id: 'gauge', min: 1, name: 'Gauge', label: 'Read the tank pressure gauge',
+      proc: 'Pressure gauge:',
+      r: { def: '<span class="rd">80 psi</span>.' } },
+    { id: 'pull', min: 1, unsafe: true, label: 'Pull the A tube off while the tank is charged to see if air comes out',
+      warn: 'A charged tube can whip and blow air or debris at your face. Close the shut-off valve first; it vents the air downstream so the tube is safe to remove.' },
+    { id: 'listen', min: 1, name: 'Listen', label: 'Listen at the solenoid as the robot starts',
+      proc: 'At start-up:',
+      r: { def: 'A short <span class="rd">hiss from the R exhaust</span> as the cylinder moves.' } },
+    { id: 'pliers', min: 1, unsafe: true, label: 'Tighten every fitting with pliers in case one is loose',
+      warn: 'Tools damage the O-ring seals and break the delicate threads on VEX fittings. Hand-tighten them only.' },
+    { id: 'trace', min: 2, name: 'Tubes', label: 'Trace each tube from the solenoid to the cylinder',
+      proc: 'Tubes traced by hand:',
+      r: { def: 'Port A runs to the <span class="rd">rod end</span>; port B runs to the <span class="rd">cap end</span>.',
+           tubes: 'Port A runs to the <span class="rd">cap end</span>; port B runs to the <span class="rd">rod end</span>.' } },
+    { id: 'plugs', min: 2, name: 'Plugs', label: 'Check which wire colors plug into each side of the solenoid',
+      proc: 'Driver plugs:',
+      r: { def: 'Red and black on the <span class="rd">A side</span>; green and white on the <span class="rd">B side</span>.',
+           plugs: 'Red and black on the <span class="rd">B side</span>; green and white on the <span class="rd">A side</span>.' } },
+    { id: 'code', min: 3, name: 'Signal', label: 'Check what signal the robot sends first',
+      proc: 'First signal to the solenoid:',
+      r: { def: '<span class="rd">Low</span>, then it waits.',
+           code: '<span class="rd">High</span>, then it waits.' } },
+  ],
+  diagnoses: [
+    { text: 'Driver plugs swapped on the solenoid', cause: 'plugs', hint: 'Symptom: the red and black plug is on the B side, where green and white belongs.' },
+    { text: 'Signal starts high', cause: 'code', hint: 'Symptom: the robot&rsquo;s first signal is high instead of low.' },
+    { text: 'A and B tubes swapped at the cylinder', cause: 'tubes', hint: 'Symptom: the tube from port A runs to the cap end instead of the rod end.' },
+  ],
+  repairs: [
+    { text: 'Flip every signal so high means retract', note: 'This hides the symptom; the robot no longer matches its build sheet, and the next person to work on it will be fooled.' },
+    { text: 'Swap the A and B tubes at the cylinder', fixes: 'tubes' },
+    { text: 'Make the robot send a low signal first', fixes: 'code' },
+    { text: 'Swap the two driver plugs on the solenoid', fixes: 'plugs' },
+  ],
+};
+
+function buildServiceCall(root) {
+  function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
+  var w = SERVICE_CALL;
+  var deck = [];
+  function pickCause(avoid) {
+    if (!deck.length) {
+      var ids = Object.keys(w.causes);
+      for (var i = ids.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1)), t = ids[i];
+        ids[i] = ids[j]; ids[j] = t;
+      }
+      if (ids[0] === avoid) ids.push(ids.shift());
+      Array.prototype.push.apply(deck, ids);
+    }
+    return deck.shift();
+  }
+  function fresh(avoid) {
+    return { cause: pickCause(avoid), run: [], unsafe: [], stage: 'investigate', view: null, diag: -1, repair: -1,
+             used: 0, struck: [], tags: [], tab: 'ticket' };
+  }
+  var s = fresh();
+  function test(id) { return w.tests.filter(function (t) { return t.id === id; })[0]; }
+  function reading(t, cause) { return t.r[cause] || t.r.def; }
+  function relevant(t) {
+    var seen = {};
+    Object.keys(w.causes).forEach(function (c) { seen[reading(t, c)] = 1; });
+    return Object.keys(seen).length > 1;
+  }
+  function left() { return w.budget - s.used; }
+  function tried(id) { return s.run.indexOf(id) >= 0 || s.unsafe.indexOf(id) >= 0; }
+  function outOfTime() {
+    return !w.tests.some(function (t) { return !tried(t.id) && t.min <= left(); });
+  }
+
+  function renderInfo() {
+    var el2 = q('info'), html;
+    html = '<span class="seg info-tabs" aria-label="Ticket information">' +
+      [['ticket', 'Ticket'], ['history', 'Robot log'], ['causes', 'Causes']].map(function (p) {
+        return '<button class="seg-btn" type="button" data-tab="' + p[0] + '" aria-pressed="' + (s.tab === p[0]) + '">' + p[1] + '</button>';
+      }).join('') + '</span>';
+    if (s.tab === 'ticket') {
+      html += '<div class="wo-title">' + w.title + '</div>' +
+        '<p class="wo-over">' + w.overview + '</p>' +
+        '<div class="np"><span class="np-head">' + w.npHead + '</span><div class="np-grid">' +
+        w.nameplate.map(function (p) { return '<div><span class="np-k">' + p[0] + '</span><span class="np-v">' + p[1] + '</span></div>'; }).join('') +
+        '</div></div>' +
+        '<div class="sym"><span class="sym-head">Reported problem</span><p class="sym-text">' + w.symptom + '</p></div>';
+    } else if (s.tab === 'history') {
+      html += '<div class="wo-title">Robot log</div>' +
+        '<p class="wo-over">Some entries may not matter.</p>' +
+        '<div class="hist">' + w.history.map(function (h) {
+          return '<div class="hist-row"><span class="hist-when">' + h[0] + '</span><span class="hist-text">' + h[1] + '</span></div>';
+        }).join('') + '</div>';
+    } else {
+      html += '<div class="wo-title">Possible causes</div>' +
+        '<p class="cause-note">Strike out a cause only when a reading rules it out. Your record checks each strike against your readings.</p>' +
+        '<div class="cause-list">' + w.diagnoses.map(function (d, i) {
+          var out = s.struck.indexOf(i) >= 0;
+          return '<button class="cause-btn" type="button" data-cause="' + i + '" aria-pressed="' + out + '"' + (s.stage === 'record' ? ' disabled' : '') + '>' +
+            '<span class="wt-mark">' + (out ? '✗' : '○') + '</span><span class="cb-body"><span class="cb-text">' + d.text + '</span>' +
+            (d.hint ? '<span class="cb-hint">' + d.hint + '</span>' : '') + '</span></button>';
+        }).join('') + '</div>';
+    }
+    el2.innerHTML = html;
+    el2.querySelectorAll('[data-tab]').forEach(function (b) {
+      b.addEventListener('click', function () { s.tab = b.dataset.tab; renderInfo(); el2.querySelector('[data-tab="' + s.tab + '"]').focus(); });
+    });
+    el2.querySelectorAll('[data-cause]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var i = +b.dataset.cause, k = s.struck.indexOf(i);
+        if (k >= 0) s.struck.splice(k, 1); else s.struck.push(i);
+        renderInfo();
+        el2.querySelector('[data-cause="' + i + '"]').focus();
+      });
+    });
+  }
+
+  function testButton(t, onClick) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'wo-test';
+    b.dataset.id = t.id;
+    b.innerHTML = '<span class="wt-mark"></span><span class="wt-text">' + t.label + '</span><span class="wt-cost"></span>';
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function renderWork() {
+    var el2 = q('work');
+    if (s.stage === 'investigate') {
+      el2.innerHTML = '<div class="sim-head"><span>Choose a test</span><span class="sim-note">Read each one before you run it.</span></div><div class="test-grid"></div>';
+      var g = el2.querySelector('.test-grid');
+      w.tests.forEach(function (t) { g.appendChild(testButton(t, function () { runTest(t); })); });
+      syncTests();
+    } else if (s.stage === 'diagnose') {
+      el2.innerHTML = '<div class="diag-grid">' +
+        '<div><div class="sim-head"><span>Most likely cause</span></div><div class="opt-list" data-k="diag"></div></div>' +
+        '<div><div class="sim-head"><span>Recommended fix</span></div><div class="opt-list" data-k="repair"></div></div></div>';
+      [['diag', w.diagnoses], ['repair', w.repairs]].forEach(function (pair) {
+        var list = el2.querySelector('[data-k="' + pair[0] + '"]');
+        pair[1].forEach(function (o, i) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'wo-opt';
+          b.innerHTML = '<span class="wt-mark"></span><span>' + o.text + '</span>';
+          b.addEventListener('click', function () { s[pair[0]] = i; syncOpts(); renderBar(); });
+          list.appendChild(b);
+        });
+      });
+      syncOpts();
+    } else if (s.stage === 'defend') {
+      el2.innerHTML = '<div class="sim-head"><span>Defend your diagnosis</span></div>' +
+        '<p class="defend-q">You chose <b>' + w.diagnoses[s.diag].text + '</b>. Tag every reading that supports it.</p><div class="test-grid"></div>';
+      var g2 = el2.querySelector('.test-grid');
+      s.run.forEach(function (id) {
+        g2.appendChild(testButton(test(id), function () {
+          var k = s.tags.indexOf(id);
+          if (k >= 0) s.tags.splice(k, 1); else s.tags.push(id);
+          s.view = { id: id };
+          syncTags(); renderEvidence(); renderBar();
+        }));
+      });
+      syncTags();
+    } else {
+      renderRecord(el2);
+    }
+  }
+
+  function syncTests() {
+    var rem = left();
+    q('work').querySelectorAll('.wo-test').forEach(function (b) {
+      var t = test(b.dataset.id), run = s.run.indexOf(t.id) >= 0, bad = s.unsafe.indexOf(t.id) >= 0;
+      b.classList.toggle('is-run', run);
+      b.classList.toggle('is-unsafe', bad);
+      b.classList.toggle('is-view', !!s.view && s.view.id === t.id);
+      b.disabled = !run && !bad && t.min > rem;
+      b.querySelector('.wt-mark').textContent = run ? '✓' : bad ? '⚠' : '';
+      b.querySelector('.wt-cost').textContent = run ? 'done' : bad ? 'stopped' : t.min + ' min';
+    });
+  }
+
+  function syncTags() {
+    q('work').querySelectorAll('.wo-test').forEach(function (b) {
+      var tagged = s.tags.indexOf(b.dataset.id) >= 0;
+      b.classList.toggle('is-tag', tagged);
+      b.setAttribute('aria-pressed', tagged);
+      b.querySelector('.wt-mark').textContent = tagged ? '☑' : '☐';
+      b.querySelector('.wt-cost').textContent = '';
+    });
+  }
+
+  function syncOpts() {
+    ['diag', 'repair'].forEach(function (k) {
+      q('work').querySelectorAll('[data-k="' + k + '"] .wo-opt').forEach(function (b, i) {
+        b.setAttribute('aria-pressed', s[k] === i ? 'true' : 'false');
+        b.querySelector('.wt-mark').textContent = s[k] === i ? '●' : '○';
+      });
+    });
+  }
+
+  function runTest(t) {
+    if (!tried(t.id)) {
+      if (t.min > left()) return;
+      (t.unsafe ? s.unsafe : s.run).push(t.id);
+      s.used += t.min;
+    }
+    s.view = { id: t.id, unsafe: !!t.unsafe };
+    syncTests();
+    renderEvidence();
+    renderBar();
+  }
+
+  function renderEvidence() {
+    var chips = q('chips'), body = q('ev-body');
+    var hadFocus = document.activeElement && document.activeElement.classList.contains('ev-chip') ? document.activeElement.dataset.id : null;
+    chips.innerHTML = '';
+    if (!s.run.length) chips.innerHTML = '<span class="ev-none">No tests run yet</span>';
+    s.run.forEach(function (id) {
+      var c = document.createElement('button');
+      c.type = 'button';
+      c.className = 'ev-chip';
+      c.dataset.id = id;
+      c.textContent = test(id).name;
+      c.setAttribute('aria-pressed', s.view && s.view.id === id ? 'true' : 'false');
+      c.addEventListener('click', function () {
+        s.view = { id: id };
+        renderEvidence();
+        if (s.stage === 'investigate') syncTests();
+      });
+      chips.appendChild(c);
+      if (hadFocus === id) c.focus();
+    });
+    var t = s.view && test(s.view.id);
+    q('ev').classList.toggle('bad', !!(s.view && s.view.unsafe));
+    if (!t) body.innerHTML = '<span class="ev-proc">Choose a test. Its result appears here, and you can reopen it from the chips above.</span>';
+    else if (s.view.unsafe) body.innerHTML = '<span class="ev-warn">⚠ NOT SAFE PRACTICE · NOT PERFORMED</span>' + t.warn;
+    else body.innerHTML = '<span class="ev-proc">' + t.proc + '</span>' + reading(t, s.cause);
+  }
+
+  function renderBar() {
+    var show = { back: s.stage === 'diagnose' || s.stage === 'defend', 'to-diag': s.stage === 'investigate',
+                 'to-defend': s.stage === 'diagnose', submit: s.stage === 'defend' };
+    Object.keys(show).forEach(function (k) { q(k).style.display = show[k] ? '' : 'none'; });
+    q('to-diag').disabled = !s.run.length;
+    q('to-defend').disabled = s.diag < 0 || s.repair < 0;
+    q('submit').disabled = !s.tags.length;
+    var count = 'Tests run: ' + s.run.length + ' · Unsafe choices: ' + s.unsafe.length;
+    if (s.stage === 'investigate' && !s.run.length) count = 'Run at least one test to unlock Diagnose.';
+    else if (s.stage === 'investigate' && outOfTime()) count = 'Out of time: diagnose with what you have.';
+    if (s.stage === 'defend') count = s.tags.length ? s.tags.length + ' reading' + (s.tags.length > 1 ? 's' : '') + ' tagged' : 'Tag at least one reading to submit.';
+    if (s.stage === 'record') count = 'Press New case to solve a different cause.';
+    q('count').textContent = count;
+    var rem = left(), pct = Math.min(100, s.used / w.budget * 100);
+    q('dt-val').textContent = s.used + ' / ' + w.budget + ' min';
+    var fill = q('dt-fill');
+    fill.style.width = pct + '%';
+    fill.className = 'dt-fill' + (outOfTime() ? ' out' : rem <= w.budget / 4 ? ' low' : '');
+    var chip = q('status');
+    var name = { investigate: 'INVESTIGATE', diagnose: 'DIAGNOSE', defend: 'DEFEND', record: 'RECORDED' }[s.stage];
+    if (s.stage === 'investigate' && s.run.length && outOfTime()) name = 'OUT OF TIME';
+    chip.className = 'status-chip ' + (name === 'OUT OF TIME' ? 'bad' : { investigate: 'busy', diagnose: 'caution', defend: 'caution', record: 'ok' }[s.stage]);
+    chip.textContent = name;
+  }
+
+  function renderRecord(el2) {
+    var c = w.causes[s.cause];
+    var ranKeys = c.key.filter(function (k) { return s.run.indexOf(k) >= 0; });
+    var keyRan = ranKeys.length > 0;
+    function names(ids, join) { return ids.map(function (k) { return test(k).name; }).join(join); }
+    var nRel = s.run.filter(function (id) { return relevant(test(id)); }).length;
+    var d = w.diagnoses[s.diag], r = w.repairs[s.repair];
+    var dOK = d.cause === s.cause, rOK = r.fixes === s.cause, safe = !s.unsafe.length && !r.unsafe;
+    var trueIdx = w.diagnoses.map(function (o) { return o.cause; }).indexOf(s.cause);
+    var struckTrue = s.struck.indexOf(trueIdx) >= 0;
+    function justified(i) {
+      var o = w.diagnoses[i];
+      return s.run.some(function (id) { var t = test(id); return reading(t, o.cause) !== reading(t, s.cause); });
+    }
+    var unjust = s.struck.filter(function (i) { return i !== trueIdx && !justified(i); });
+    var elimOK = s.struck.length > 0 && !struckTrue && !unjust.length;
+    var tagKeys = c.key.filter(function (k) { return s.tags.indexOf(k) >= 0; });
+    var defOK = dOK && tagKeys.length > 0;
+    var score = [keyRan, safe, elimOK, dOK, rOK, defOK].filter(Boolean).length;
+    function mark(ok) { return ok ? '<span class="ok">✓</span> ' : '<span class="no">✗</span> '; }
+    var rows = [
+      ['Key evidence', mark(keyRan) + (keyRan ? 'You checked the ' + names(ranKeys, ' and ') + ' result' + (ranKeys.length > 1 ? 's.' : '.') : 'Not checked: the ' + names(c.key, ' or ') + ' result.')],
+      ['Safety', mark(safe) + (safe ? 'No unsafe choices.' : s.unsafe.length + ' unsafe choice' + (s.unsafe.length > 1 ? 's' : '') + ' made.')],
+      ['Ruled out', mark(elimOK) + (struckTrue ? 'You struck out the actual cause (see the ' + names(c.key, ' or ') + ' result).'
+        : unjust.length ? 'No result you took rules out “' + w.diagnoses[unjust[0]].text + '” yet.'
+        : s.struck.length ? (s.struck.length > 1 ? s.struck.length + ' causes struck out, each ruled out by your evidence.' : '1 cause struck out, ruled out by your evidence.') : 'You did not strike out any causes.')],
+      ['Diagnosis', mark(dOK) + (dOK ? c.name + '.' : 'Actual cause: ' + c.name + '.')],
+      ['Fix', mark(rOK) + (rOK ? r.text + '.' : (r.note || 'It does not fix the actual cause.'))],
+      ['Defended', mark(defOK) + (defOK ? 'You backed it with the ' + names(tagKeys, ' and ') + ' result' + (tagKeys.length > 1 ? 's.' : '.')
+        : tagKeys.length ? 'The ' + names(tagKeys, ' and ') + ' result you tagged points to the actual cause, not your diagnosis.'
+        : 'No key result tagged (the ' + names(c.key, ' or ') + ' result).')],
+    ];
+    var stats = s.used + ' of ' + w.budget + ' min · ' + s.run.length + ' test' + (s.run.length === 1 ? '' : 's') + ', ' + nRel + ' useful';
+    el2.innerHTML = '<div class="sim-head"><span>Record <span class="sim-note">' + stats + '</span></span><span class="rec-score">Score ' + score + ' / 6</span></div>' +
+      '<table class="rec-table">' + rows.map(function (row) { return '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td></tr>'; }).join('') + '</table>' +
+      '<div class="rec-why"><b>Why:</b> ' + c.why + '</div>';
+  }
+
+  function renderAll() { renderInfo(); renderWork(); renderEvidence(); renderBar(); }
+  function go(stage) { s.stage = stage; renderAll(); }
+  q('to-diag').addEventListener('click', function () { go('diagnose'); });
+  q('to-defend').addEventListener('click', function () { if (s.diag >= 0 && s.repair >= 0) go('defend'); });
+  q('back').addEventListener('click', function () { go(s.stage === 'defend' ? 'diagnose' : 'investigate'); });
+  q('submit').addEventListener('click', function () { if (!s.tags.length) return; s.stage = 'record'; renderAll(); });
+  q('new').addEventListener('click', function () { s = fresh(s.cause); renderAll(); });
+  renderAll();
+}
+
+initSyncDeckReveal({
+  deckId: 'controlling-motion',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    var v32 = getLiveElementById('v32');
+    if (v32) initValve32(v32);
+    var sb = getLiveElementById('sim-b');
+    if (sb) initSimB(sb);
+    var wo = getLiveElementById('service-call');
+    if (wo) buildServiceCall(wo);
+  },
+});
+</script>
+</body>
+</html>

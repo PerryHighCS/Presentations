@@ -13,6 +13,11 @@ necessarily the code:
 - **A hidden cause among several plausible ones.** Each scenario has three or four causes that all
   fit the reported symptom. Deal them from a shuffled deck so that "new fault" shows every cause
   once before any repeats; plain random picks repeat too often.
+- **The briefing must be true for every hidden cause.** Check the briefing slide, the ticket
+  overview, the nameplate or setup panel, and the symptom against each cause in turn. Anything a
+  cause changes (a part value, a wire or tube route, an orientation, a signal) must be written as
+  the design or intent ("the build sheet calls for", "is supposed to", "nameplate (records)"),
+  never as the current state, or the ticket quietly rules that cause out.
 - **Tests return evidence, not answers.** A test shows a reading (a meter value, an error message,
   a log line, a variable's value), and only some tests read differently across the causes.
   Irrelevant tests return real but unhelpful data, so students learn to choose tests that tell
