@@ -288,7 +288,7 @@ For each deck, favor **predict → discuss → test/trace → explain**. Use vis
 - **PHS Day 4/5 NO/NC slides:** These are not wrong. They show a valve cross-section (open above, closed below), so their "position 1/2" numbering refers to the drawing, not the ISO symbol convention used later (rightmost box = default). Relabel the cross-section states when converting so they cannot be confused with ISO positions.
 - **CCHS valve slides:** Fix the normally closed P-to-A contradiction and drop the "5/2 is more powerful" claim.
 - **Hydraulic safety:** Add the high-pressure pinhole leak (fluid injection) hazard, while keeping the contrast that pneumatic failures release stored energy explosively. See Safety.
-- **E-stop in the Assembly Line brief:** Replace "E-Stop" with the VEX **shut-off valve fitting** as the operator's air shut-off. The fitting is directional (marked with a flow arrow), which suggests it vents the downstream side when closed, like an industrial lockout valve. VEX documentation does not say so, so confirm it on the bench: close the valve and check that you hear the exhaust and that the cylinder rod can be moved by hand. If it vents, the shut-off serves as both the stop and the depressurizing step in the operator manual. If not, the manual needs a separate venting procedure.
+- **E-stop in the Assembly Line brief:** Replace "E-Stop" with the VEX **shut-off valve fitting** as the operator's air shut-off. The fitting is directional (marked with a flow arrow) and **vents the downstream side when closed**, like an industrial lockout valve (teacher-confirmed; VEX documentation does not say so). Closing it is therefore both the operator's stop and the depressurizing step in the operator manual. The tank upstream of the valve stays charged, so the manual should still say how to empty the tank before storage or disassembly.
 - **Theme:** Every AR1 deck (DC Circuits, Engineering Communication, Final Project, Mechanical Linkages, Welcome) used `DCCircuits/theme.css`. **Done:** it is now promoted to `Decks/AR1/theme.css`, and fluid power decks in `Decks/AR1/Fluid Power/` link it as `../theme.css`.
 - **Activity name:** Use "VEXploration" for the Days 7–9 VEX exploration activity.
 
@@ -316,7 +316,7 @@ For each deck, favor **predict → discuss → test/trace → explain**. Use vis
 - **Second P port:** It ships with a 4 mm plug. The two-cylinder example chains a second solenoid from the supply line.
 - **Fittings are hand-tightened only.** Tools can damage the O-ring seals and break the delicate threads on the fittings. Add this to the Day 7 safety and handling rules.
 - **Maximum pressure is 100 psi** (teacher-confirmed). Never pressurize the tank above it. Use 100 psi as the upper limit of the supply-pressure setting in Simulation D.
-- **Not stated in the documentation:** a depressurizing procedure, and whether the shut-off valve vents downstream when closed.
+- **Not stated in the documentation:** a depressurizing procedure. Closing the shut-off valve vents everything downstream of it (teacher-confirmed), but the tank stays charged.
 
 ### Unit boundary: VEX now, MecLab later
 
