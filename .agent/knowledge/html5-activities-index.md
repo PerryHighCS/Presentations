@@ -355,3 +355,9 @@ mechanism.
 Line numbers are approximate — re-check with the file itself before copying.
 When you build a new substantial, reusable deck-local activity, add an entry
 here.*
+
+### Flip-card symbol hints and scratch-off schematic (hint stack)
+- **Where:** `Decks/AR1/Fluid Power/6 - Pneumatic_Schematics.html`, vertical stack under slide 17 (`initFlipCards` on `#flip-hint`, slide 18; `initScratch` on `#scratch-hint`, slide 19).
+- **Concept:** optional hints for a notebook drawing task. Hint 1 is a row of cards showing a part's name; clicking flips the card in 3D to show its schematic symbol. Hint 2 is the finished schematic with a gray scratch-off patch over each symbol; students drag to scratch off only the ones they are stuck on, and "Cover again" restores every patch.
+- **Mechanism:** flip cards are `<button aria-pressed>` with two `backface-visibility:hidden` faces inside a `preserve-3d` wrapper rotated 180° when pressed; no JS state beyond the attribute. Scratch patches are `<canvas>` elements absolutely positioned over the SVG in percentages of its viewBox (`PATCHES` lists each region in viewBox units). Pointer events (with `setPointerCapture`, `touch-action:none`, `stopPropagation`, and the section's `data-prevent-swipe`) draw round-capped strokes with `destination-out`. On pointerup the patch's cleared fraction is sampled with `getImageData` (every 7th pixel's alpha); past `REVEAL_AT` (60%) the canvas fades out (`.gone`, CSS opacity transition) and only its id is saved in `localStorage` (`pneumatic-schematics:scratch-revealed`, wrapped in try/catch). Partial scratches are not stored, so a reload shows revealed patches gone and every other patch fully covered.
+- **Reuse:** any "reveal on demand" hint over a diagram or image: change the SVG and the `PATCHES` list.

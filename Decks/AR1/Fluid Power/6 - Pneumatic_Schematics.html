@@ -174,6 +174,26 @@
 .sc-log th { text-align: left; color: var(--text-muted); font-weight: 700; padding: 2px 6px; }
 .sc-log td { color: var(--text); padding: 2px 6px; font-family: var(--font-mono); }
 .sc-log .empty td { color: var(--text-dim); font-family: var(--font-ui); }
+
+/* ── Hint 1: flip cards ── */
+.flip-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-top: var(--gap); }
+.flip-card { all: unset; cursor: pointer; perspective: 1200px; height: 320px; display: block; }
+.flip-card:focus-visible .flip-inner { outline: 3px solid var(--accent); outline-offset: 4px; border-radius: 12px; }
+.flip-inner { position: relative; display: block; width: 100%; height: 100%; transition: transform 0.5s ease; transform-style: preserve-3d; }
+.flip-card[aria-pressed="true"] .flip-inner { transform: rotateY(180deg); }
+.flip-face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px; box-sizing: border-box; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--accent-border); border-top: 4px solid var(--accent); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.flip-back { transform: rotateY(180deg); }
+.flip-name { font-size: 32px; font-weight: 700; color: var(--text); text-align: center; line-height: 1.2; }
+.flip-hint { font-size: 22px; color: var(--text-muted); }
+.flip-back svg { width: 100%; height: auto; }
+.flip-cap { font-size: 22px; color: var(--text-muted); text-align: center; }
+/* ── Hint 2: scratch-off schematic ── */
+.scratch-wrap { position: relative; margin-top: var(--gap); }
+.scratch-wrap svg.circuit { display: block; width: 100%; height: auto; }
+.scratch-patch { position: absolute; touch-action: none; cursor: crosshair; border-radius: 10px; }
+.scratch-patch.gone { opacity: 0; pointer-events: none; }
+.scratch-patch.fading { transition: opacity 0.6s ease; }
+.scratch-reset { position: absolute; right: 0; bottom: 0; }
 </style>
 </head>
 <body>
@@ -392,8 +412,8 @@
         </div>
       </div>
       <div>
-        <p class="prose">In a schematic, the shut-off valve is a <span class="pneu">3/2 valve</span> with a <span class="term">lever</span>. One box passes air from 1 to 2; the other blocks 1 and opens 2 to the exhaust.</p>
-        <p class="prose fragment fade-up" style="margin-top:var(--gap);">Closing it stops the supply and <span class="warn-color">vents the air already downstream</span>, so the solenoid valve and cylinder are safe to work on.</p>
+        <p class="prose">In a schematic, the shut-off valve is a <span class="pneu">3/2 valve</span> with a <span class="term">lever</span>. When it is <span class="warn-color">off</span> (closed or unactuated), it blocks port 1 and opens 2 to the exhaust. Turn the lever to actuate it, and air flows from 1 to 2 while the exhaust is blocked.</p>
+        <p class="prose fragment fade-up" style="margin-top:var(--gap);">That means that closing the shut-off valve stops the supply and <span class="warn-color">vents the air already downstream</span>, so the solenoid valve and cylinder are safe to work on.</p>
         <p class="prose fragment fade-up" style="margin-top:var(--gap);">The regulator and the tank <span class="pneu">stay charged</span>. Empty the tank before the kit is stored or taken apart.</p>
       </div>
     </div>
@@ -515,20 +535,79 @@
 
 <!-- SLIDE 17 · Notebook: draw the VEX circuit -->
 <section>
-  <div class="slide-inner">
-    <span class="slide-tag">Notebook</span>
-    <h2>Draw the VEX Circuit</h2>
-    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
-      <img class="img-zoomable side-photo" src="Pneumatic_Schematics_Assets/vexCircuitShutoff.jpeg" alt="A full VEX pneumatic circuit on a table, left to right: the air tank, a regulator with a gauge, the shut-off valve, the solenoid valve and a double-acting cylinder, joined by black tubing. Tubes from the solenoid&rsquo;s A and B ports run to the two ends of the cylinder.">
-      <div class="v-notes">
-        <div class="ask">Draw <span class="term">this VEX circuit</span> as a schematic: tank, regulator, shut-off valve, the VEX solenoid as a 5/2 with a coil on each end, and the cylinder. Label A, B, P and R.</div>
+  <section>
+    <div class="slide-inner">
+      <span class="slide-tag">Notebook</span>
+      <h2>Draw the VEX Circuit</h2>
+      <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+        <img class="img-zoomable side-photo" src="Pneumatic_Schematics_Assets/vexCircuitShutoff.jpeg" alt="A full VEX pneumatic circuit on a table, left to right: the air tank, a regulator with a gauge, the shut-off valve, the solenoid valve and a double-acting cylinder, joined by black tubing. Tubes from the solenoid&rsquo;s A and B ports run to the two ends of the cylinder.">
+        <div class="v-notes">
+          <div class="ask">Draw <span class="term">this VEX circuit</span> as a schematic: tank, regulator, shut-off valve, the VEX solenoid as a 5/2 with a coil on each end, and the cylinder. Label A, B, P and R.</div>
+          <p class="prose" style="margin-top:var(--gap);">Stuck? Press the <span class="pneu">down arrow</span> for two hints: the symbols you need, then the full schematic to scratch off.</p>
+        </div>
       </div>
     </div>
-  </div>
-  <aside class="notes">The plan&rsquo;s Day 6 notebook evidence: a VEX plumbing schematic. Click the photo to zoom in. Check that students follow the tubes in the photo for A and B rather than copying slide 12.</aside>
+    <aside class="notes">The plan&rsquo;s Day 6 notebook evidence: a VEX plumbing schematic. Click the photo to zoom in. Check that students follow the tubes in the photo for A and B rather than copying slide 12.</aside>
+  </section>
+
+  <!-- SLIDE 18 · Hint 1: flip cards -->
+  <section>
+    <div class="slide-inner">
+      <span class="slide-tag">Hint 1</span>
+      <h2>The Symbols You Need</h2>
+      <p class="prose">Click a card to flip between a part&rsquo;s <span class="term">name</span> and its <span class="pneu">symbol</span>. Try to picture the symbol before you flip.</p>
+      <div class="flip-row" id="flip-hint">
+        <button type="button" class="flip-card" aria-pressed="false" aria-label="Receiver tank: flip between name and symbol">
+          <span class="flip-inner">
+            <span class="flip-face flip-front"><span class="flip-name">Receiver tank</span><span class="flip-hint">Click to flip</span></span>
+            <span class="flip-face flip-back"><svg viewBox="0 0 200 150" aria-hidden="true"><rect x="45" y="50" width="110" height="56" rx="28" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M10 78 H45" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M155 78 H190" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><span class="flip-cap">Receiver tank</span></span>
+          </span>
+        </button>
+        <button type="button" class="flip-card" aria-pressed="false" aria-label="Pressure regulator: flip between name and symbol">
+          <span class="flip-inner">
+            <span class="flip-face flip-front"><span class="flip-name">Pressure regulator</span><span class="flip-hint">Click to flip</span></span>
+            <span class="flip-face flip-back"><svg viewBox="0 0 200 150" aria-hidden="true"><rect x="65" y="40" width="70" height="70" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M100 140 V110" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M100 40 V10" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M92 100 V56" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M92 50 l-7 12 h14 z" fill="#c9d6e6"/><path d="M135 75 l8 -8 l8 16 l8 -16 l8 16 l8 -8" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M100 25 H48 V75 H65" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" stroke-dasharray="6 5"/></svg><span class="flip-cap">Pressure regulator</span></span>
+          </span>
+        </button>
+        <button type="button" class="flip-card" aria-pressed="false" aria-label="Shut-off valve: flip between name and symbol">
+          <span class="flip-inner">
+            <span class="flip-face flip-front"><span class="flip-name">Shut-off valve</span><span class="flip-hint">Click to flip</span></span>
+            <span class="flip-face flip-back"><svg viewBox="0 0 200 150" aria-hidden="true"><rect x="30" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="100" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M45 100 L59.9 55.3" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M64 43 L65.6 57.2 L54.2 53.4 Z" fill="#c9d6e6"/><path d="M85 100 V86 M77 86 H93" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M135 40 L149.9 84.7" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M154 97 L144.2 86.6 L155.6 82.8 Z" fill="#c9d6e6"/><path d="M115 100 V86 M107 86 H123" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M30 70 H20 L10 50" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><circle cx="8" cy="45" r="4.5" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M135 40 V18" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M115 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M155 100 V114" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M147 114 h16 l-8 12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/></svg><span class="flip-cap">Shut-off valve</span></span>
+          </span>
+        </button>
+        <button type="button" class="flip-card" aria-pressed="false" aria-label="5/2 solenoid valve: flip between name and symbol">
+          <span class="flip-inner">
+            <span class="flip-face flip-front"><span class="flip-name">5/2 solenoid valve</span><span class="flip-hint">Click to flip</span></span>
+            <span class="flip-face flip-back"><svg viewBox="0 0 200 150" aria-hidden="true"><rect x="30" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="100" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M65 100 L53.3 55.6" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M50 43 L59.1 54.0 L47.5 57.1 Z" fill="#c9d6e6"/><path d="M80 40 L86.2 84.1" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M88 97 L80.3 85.0 L92.1 83.3 Z" fill="#c9d6e6"/><path d="M135 100 L146.7 55.6" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M150 43 L152.5 57.1 L140.9 54.0 Z" fill="#c9d6e6"/><path d="M120 40 L113.8 84.1" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M112 97 L107.9 83.3 L119.7 85.0 Z" fill="#c9d6e6"/><rect x="4" y="54" width="26" height="32" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M4 86 L30 54" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><rect x="170" y="54" width="26" height="32" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M170 86 L196 54" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M120 40 V18" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M150 40 V18" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M135 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M112 100 V114" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M104 114 h16 l-8 12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M158 100 V114" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M150 114 h16 l-8 12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/></svg><span class="flip-cap">5/2 solenoid valve</span></span>
+          </span>
+        </button>
+        <button type="button" class="flip-card" aria-pressed="false" aria-label="Double-acting cylinder: flip between name and symbol">
+          <span class="flip-inner">
+            <span class="flip-face flip-front"><span class="flip-name">Double-acting cylinder</span><span class="flip-hint">Click to flip</span></span>
+            <span class="flip-face flip-back"><svg viewBox="0 0 200 150" aria-hidden="true"><rect x="30" y="50" width="120" height="50" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M70 50 V100" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M70 75 H185" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M42 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M138 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><span class="flip-cap">Double-acting cylinder</span></span>
+          </span>
+        </button>
+      </div>
+    </div>
+    <aside class="notes">The five parts in the photo, in the order the air reaches them. The 5/2 solenoid valve card shows the VEX valve, with a coil on each end; the shut-off valve card is the lever 3/2. Cards flip back to names when the slide reloads.</aside>
+  </section>
+
+  <!-- SLIDE 19 · Hint 2: scratch-off schematic -->
+  <section data-prevent-swipe>
+    <div class="slide-inner">
+      <span class="slide-tag">Hint 2</span>
+      <h2>Scratch Off the Schematic</h2>
+      <p class="prose">Each patch hides one symbol. Scratch only the ones you are stuck on.</p>
+      <div class="scratch-wrap" id="scratch-hint">
+        <svg class="circuit" viewBox="170 0 1190 520" role="img" aria-label="The VEX circuit schematic with each symbol hidden under a scratch-off patch: tank, regulator, shut-off valve, 5/2 solenoid valve and double-acting cylinder."><rect x="190" y="350" width="120" height="60" rx="30" fill="none" stroke="#c9d6e6" stroke-width="3"/><text x="250" y="476" text-anchor="middle" class="c-lbl">Tank</text><path d="M310 380 H360" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><rect x="360" y="345" width="70" height="70" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M372 390 H412" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M420 390 l-12 -7 v14 z" fill="#c9d6e6"/><path d="M395 415 l-8 6 l16 8 l-16 8 l16 8 l-8 6" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M450 380 V325 H395 V345" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" stroke-dasharray="6 5"/><text x="395" y="476" text-anchor="middle" class="c-lbl">Regulator</text><path d="M430 380 H520" fill="none" stroke="#5daaff" stroke-width="5" stroke-linejoin="round"/><rect x="520" y="296" width="84" height="66" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="520" y="362" width="84" height="66" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M 520 314 L 590.2 326.8" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M 602 329 L 589.3 331.7 L 591.1 321.9 Z" fill="#c9d6e6"/><path d="M 520 347 H 531 M 531 341 V 353" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M 520 380 H 531 M 531 374 V 386" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M 604 395 L 533.7 410.5" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M 522 413 L 532.7 405.6 L 534.8 415.4 Z" fill="#c9d6e6"/><path d="M 520 413 H 495" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M 495 401 v 24 l -18 -12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M 562 296 V 284 L 578 270" fill="none" stroke="#c9d6e6" stroke-width="3"/><circle cx="581" cy="267" r="4.5" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M604 395 H855 V290" fill="none" stroke="#5daaff" stroke-width="5" stroke-linejoin="round"/><g transform="translate(100 0)"><text x="441" y="476" text-anchor="middle" class="c-lbl">Shut-off</text><text x="441" y="508" text-anchor="middle" class="c-lbl">valve</text><rect x="590" y="170" width="110" height="80" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="700" y="170" width="110" height="80" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M645 250 L617 182" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M613 174 l-4 14 l11 -4 z" fill="#c9d6e6"/><path d="M675 170 L685 236" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M686 244 l-7 -12 l11 -2 z" fill="#c9d6e6"/><path d="M755 250 L783 182" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M787 174 l-11 4 l11 8 z" fill="#c9d6e6"/><path d="M725 170 L715 236" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M714 244 l-4 -12 l11 2 z" fill="#c9d6e6"/><path d="M725 170 V150" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M785 170 V150" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M715 250 V266" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M795 250 V266" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M755 250 V290" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M703 266 h24 l-12 18 z" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M783 266 h24 l-12 18 z" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="550" y="190" width="38" height="40" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M550 230 L588 190" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><rect x="812" y="190" width="38" height="40" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M812 230 L850 190" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><text x="713" y="166" text-anchor="end" class="c-port">B</text><text x="797" y="166" text-anchor="start" class="c-port">A</text><text x="765" y="300" text-anchor="start" class="c-port">P</text><text x="805" y="300" text-anchor="start" class="c-sub">R (shared)</text><rect x="560" y="30" width="280" height="70" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M610 30 V100" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M610 65 H920" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M580 100 V112" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M820 100 V112" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M725 150 V132 H580 V112" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M785 150 V122 H820 V112" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><text x="970" y="220" text-anchor="start" class="c-lbl">5/2 solenoid valve</text><text x="950" y="60" text-anchor="start" class="c-lbl">Double-acting cylinder</text></g></svg>
+        <button type="button" class="sim-btn alt scratch-reset" data-r="reset">Cover again</button>
+      </div>
+    </div>
+    <aside class="notes">Drag across a patch with the mouse or a finger to scratch it off. Once about 60% of a patch is scratched away, the rest fades out and the patch is remembered as revealed in this browser (localStorage), so it stays uncovered after a reload. Partial scratches are not saved. Cover again restores every patch. The compressor is left out because it is not in the photo.</aside>
+  </section>
 </section>
 
-<!-- SLIDE 18 · Optional challenges -->
+<!-- SLIDE 20 · Optional challenges -->
 <section>
   <div class="slide-inner">
     <span class="slide-tag">If Time Allows</span>
@@ -540,26 +619,25 @@
   <aside class="notes">From the PHS Day 4/5 challenges. Challenge A is a concept extension with a push-button 3/2 valve and a spring-return cylinder; it is not a build instruction for the VEX kit.</aside>
 </section>
 
-<!-- SLIDE 19 · Resonance: Exit ticket -->
+<!-- SLIDE 21 · Resonance: Exit ticket -->
 <section
   data-activity-id="resonance"
   data-activity-trigger="slide-enter"
   data-activity-instance-key="resonance:18:0"
-  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "In a pneumatic schematic, a circle with a hollow triangle at the top, pointing out of the circle, stands for which part?", "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "A hydraulic pump", "isCorrect": false}, {"id": "q1b", "text": "An air motor", "isCorrect": false}, {"id": "q1c", "text": "A compressor", "isCorrect": true}, {"id": "q1d", "text": "A receiver tank", "isCorrect": false}], "order": 0}, {"id": "q2", "type": "free-response", "text": "In Simulation C, what was the lowest pressure that pushed 150 lb, and the lowest that pushed 250 lb? Explain the difference using force = pressure × area.", "responseTimeLimitMs": 180000, "order": 1}, {"id": "q3", "type": "free-response", "text": "The VEX circuit and the industrial circuit do the same job. Name one way their schematics look different, and one way they work the same.", "responseTimeLimitMs": 150000, "order": 2}]}'>
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Which part does this pneumatic schematic symbol stand for?\n\n![A pneumatic schematic symbol](https://perryhighcs.github.io/Presentations/AR1/Fluid%20Power/Pneumatic_Schematics_Assets/compressor-symbol-thumb.png)", "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "A hydraulic pump", "isCorrect": false}, {"id": "q1b", "text": "An air motor", "isCorrect": false}, {"id": "q1c", "text": "A compressor", "isCorrect": true}, {"id": "q1d", "text": "A receiver tank", "isCorrect": false}], "order": 0}, {"id": "q2", "type": "free-response", "text": "You close the shut-off valve on a VEX circuit before you touch any tubes. Which parts of the circuit are now safe to work on, and which parts still hold pressurized air? Explain why.", "responseTimeLimitMs": 120000, "order": 1}]}'>
   <div class="slide-inner">
     <span class="slide-tag">Exit Ticket</span>
     <h2>Before You Go</h2>
-    <p class="q-head">1. In a pneumatic schematic, a circle with a hollow triangle at the top, pointing out of the circle, stands for which part?</p>
+    <div style="display:flex;align-items:center;gap:24px;"><svg viewBox="40 0 120 140" style="width:84px;height:98px;flex:none;" role="img" aria-label="A pneumatic schematic symbol: a circle with a hollow triangle at the top, pointing out, and a line leaving the top"><circle cx="100" cy="85" r="40" fill="none" stroke="#c9d6e6" stroke-width="4"/><path d="M100 47 L86 69 H114 Z" fill="none" stroke="#c9d6e6" stroke-width="4" stroke-linejoin="round"/><path d="M100 45 V10" fill="none" stroke="#c9d6e6" stroke-width="4"/></svg><p class="q-head" style="margin:0;">1. Which part does this pneumatic schematic symbol stand for?</p></div>
     <ol class="opt-list" style="margin-top:8px;">
       <li><span class="mcq-letter">A</span>A hydraulic pump</li>
       <li><span class="mcq-letter">B</span>An air motor</li>
       <li><span class="mcq-letter">C</span>A compressor</li>
       <li><span class="mcq-letter">D</span>A receiver tank</li>
     </ol>
-    <p class="q-head">2. What was the lowest pressure that pushed 150&nbsp;lb, and the lowest that pushed 250&nbsp;lb? Explain the difference using force = pressure &times; area.</p>
-    <p class="q-head">3. Name one way the VEX and industrial schematics look different, and one way they work the same.</p>
+    <p class="q-head">2. You close the shut-off valve on a VEX circuit before you touch any tubes. Which parts of the circuit are now safe to work on, and which parts still hold pressurized air? Explain why.</p>
   </div>
-  <aside class="notes">Q1: a compressor (an air motor&rsquo;s triangle points in; a hydraulic pump&rsquo;s is filled). Q2 is the ADE 7.5 claim (expected: about 60 and 90 psi in the model). Q3 targets the plan&rsquo;s comparison of function and representation.</aside>
+  <aside class="notes">Q1: a compressor (an air motor&rsquo;s triangle points in; a hydraulic pump&rsquo;s is filled). Q2 is ADE 7.4: closing the shut-off valve blocks the supply and vents everything downstream, so the solenoid valve, cylinder and their tubes are safe. The tank and regulator, upstream of the valve, stay charged.</aside>
 </section>
 
 </div></div><!-- end .slides / .reveal -->
@@ -969,6 +1047,111 @@ function initShutoff(root) {
   draw();
 }
 
+/* ── Hint 1: flip cards (slide 18) ── */
+function initFlipCards(root) {
+  root.querySelectorAll('.flip-card').forEach(function (c) {
+    c.addEventListener('click', function () {
+      c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    });
+  });
+}
+
+/* ── Hint 2: scratch-off schematic (slide 19) ──────────────────────
+   Gray canvases sit over each symbol in the SVG (positions in viewBox
+   units). Dragging erases with destination-out. When a patch is more than
+   REVEAL_AT (60%) scratched off, it fades away and its id is saved in
+   localStorage, so revealed patches stay revealed after a reload. Partial
+   scratches are not saved. */
+function initScratch(root) {
+  var KEY = 'pneumatic-schematics:scratch-revealed';
+  var VB = { x: 170, y: 0, w: 1190, h: 520 };
+  var PATCHES = [
+    { id: 'tank', name: 'Tank', x: 180, y: 335, w: 140, h: 90 },
+    { id: 'reg', name: 'Regulator', x: 350, y: 315, w: 112, h: 137 },
+    { id: 'shut', name: 'Shut-off valve', x: 466, y: 255, w: 150, h: 180 },
+    { id: 'vex', name: 'VEX solenoid', x: 646, y: 148, w: 384, h: 158 },
+    { id: 'cyl', name: 'Cylinder', x: 652, y: 18, w: 378, h: 104 }
+  ];
+  var R = 22, REVEAL_AT = 0.6, revealed = {};
+  try { revealed = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { revealed = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(revealed)); } catch (e) {} }
+  var pads = PATCHES.map(function (p) {
+    var c = document.createElement('canvas');
+    c.className = 'scratch-patch';
+    c.width = p.w; c.height = p.h;
+    c.setAttribute('aria-label', 'Scratch-off patch over the ' + p.name + ' symbol');
+    c.style.left = ((p.x - VB.x) / VB.w * 100) + '%';
+    c.style.top = ((p.y - VB.y) / VB.h * 100) + '%';
+    c.style.width = (p.w / VB.w * 100) + '%';
+    c.style.height = (p.h / VB.h * 100) + '%';
+    root.appendChild(c);
+    var pad = { p: p, c: c, g: c.getContext('2d') };
+    if (revealed[p.id]) hide(pad, false); else cover(pad);
+    wire(pad);
+    return pad;
+  });
+  function cover(pad) {
+    var g = pad.g, p = pad.p;
+    pad.c.classList.remove('gone');
+    g.globalCompositeOperation = 'source-over';
+    g.clearRect(0, 0, p.w, p.h);
+    var grad = g.createLinearGradient(0, 0, p.w, p.h);
+    grad.addColorStop(0, '#8b97a8'); grad.addColorStop(0.5, '#c3ccd8'); grad.addColorStop(1, '#7d899a');
+    g.fillStyle = grad; g.fillRect(0, 0, p.w, p.h);
+    g.fillStyle = '#0a1120'; g.font = '700 48px "DM Sans", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('?', p.w / 2, p.h / 2);
+  }
+  function hide(pad, fade) {
+    pad.c.classList.toggle('fading', !!fade);
+    pad.c.classList.add('gone');
+  }
+  function cleared(pad) {
+    var d = pad.g.getImageData(0, 0, pad.p.w, pad.p.h).data, n = 0, t = 0;
+    for (var i = 3; i < d.length; i += 4 * 7) { t++; if (d[i] < 128) n++; }
+    return n / t;
+  }
+  function stroke(pad, pts) {
+    var g = pad.g;
+    g.globalCompositeOperation = 'destination-out';
+    g.lineWidth = R * 2; g.lineCap = 'round'; g.lineJoin = 'round';
+    g.beginPath(); g.moveTo(pts[0], pts[1]);
+    if (pts.length === 2) g.lineTo(pts[0] + 0.1, pts[1]);
+    for (var i = 2; i < pts.length; i += 2) g.lineTo(pts[i], pts[i + 1]);
+    g.stroke();
+  }
+  function wire(pad) {
+    var c = pad.c, last = null;
+    function pt(e) {
+      var r = c.getBoundingClientRect();
+      return [Math.round((e.clientX - r.left) / r.width * c.width), Math.round((e.clientY - r.top) / r.height * c.height)];
+    }
+    c.addEventListener('pointerdown', function (e) {
+      if (revealed[pad.p.id]) return;
+      e.preventDefault(); e.stopPropagation();
+      c.setPointerCapture(e.pointerId);
+      last = pt(e); stroke(pad, last);
+    });
+    c.addEventListener('pointermove', function (e) {
+      if (!last) return;
+      e.stopPropagation();
+      var q = pt(e);
+      if (Math.abs(q[0] - last[0]) + Math.abs(q[1] - last[1]) < 4) return;
+      stroke(pad, last.concat(q)); last = q;
+    });
+    function end() {
+      if (!last) return;
+      last = null;
+      if (cleared(pad) >= REVEAL_AT) { revealed[pad.p.id] = true; save(); hide(pad, true); }
+    }
+    c.addEventListener('pointerup', end);
+    c.addEventListener('pointercancel', end);
+  }
+  root.querySelector('[data-r="reset"]').addEventListener('click', function () {
+    revealed = {}; save();
+    pads.forEach(cover);
+  });
+}
+
 initSyncDeckReveal({
   deckId: 'pneumatic-schematics',
   standaloneHosting: {
@@ -999,6 +1182,10 @@ initSyncDeckReveal({
     if (fcb) initLabelBuilder(fcb);
     var so = getLiveElementById('shutoff');
     if (so) initShutoff(so);
+    var fh = getLiveElementById('flip-hint');
+    if (fh) initFlipCards(fh);
+    var sh = getLiveElementById('scratch-hint');
+    if (sh) initScratch(sh);
     var sc = getLiveElementById('sim-c');
     if (sc) initSimC(sc);
   },
