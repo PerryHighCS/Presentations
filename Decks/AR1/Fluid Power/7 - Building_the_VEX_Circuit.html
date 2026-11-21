@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1924e43">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7 - Building the VEX Circuit</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   Deck 7: VEXploration, building the circuit (Day 7)
+   Color meaning, as in the rest of the unit: blue = air and
+   pneumatic parts, green = key terms, yellow = signals and
+   cautions, coral = faults.
+   ============================================================ */
+
+.opt-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: var(--gap); }
+.opt-list li { font-size: var(--body); line-height: 1.4; color: var(--text); display: flex; gap: 16px; align-items: baseline; }
+.mcq-letter { font-family: var(--font-mono); font-weight: 700; color: var(--accent); min-width: 28px; }
+.q-head { font-size: var(--body); color: var(--text-muted); margin-top: var(--gap); }
+.warn-color { color: var(--warn); }
+.warn-color { color: var(--warn); }
+
+/* Power chain cards */
+.chain { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: var(--gap); }
+.chain-card { position: relative; background: var(--bg-card); border: 1px solid var(--accent-border); border-top: 4px solid var(--accent); border-radius: 8px; padding: 14px 16px; }
+.chain-card b { display: block; font-size: 28px; color: var(--accent); margin-bottom: 6px; }
+.chain-card span { display: block; font-size: 24px; line-height: 1.35; color: var(--text-muted); }
+.chain-card + .chain-card::before { content: '\25B6'; position: absolute; left: -15px; top: 18px; font-size: 16px; color: var(--accent); }
+
+/* Kit photo with label slots */
+.kit-grid { display: grid; grid-template-columns: 1040px 1fr; gap: 26px; margin-top: 8px; align-items: start; }
+.kit-stage { position: relative; }
+.kit-stage img { display: block; width: 100%; border-radius: 8px; box-shadow: 0 0 0 1px var(--accent-border); }
+.kit-side { display: flex; flex-direction: column; gap: 14px; }
+.kit-side .fcb-bank { height: auto; flex-direction: column; align-items: flex-start; }
+.kit-side .fcb-status { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+/* Steps */
+.steps { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; margin-top: var(--gap); }
+.step { display: flex; gap: 16px; align-items: flex-start; background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 14px 18px; }
+.step-n { font-family: var(--font-mono); font-size: 26px; font-weight: 700; color: var(--accent); min-width: 26px; }
+.step p { font-size: var(--body); line-height: 1.4; color: var(--text-muted); margin: 0; }
+.step.caution { border-color: rgba(255,209,102,0.45); }
+.step.caution .step-n { color: var(--warn); }
+
+/* ─── Match-the-symbols builder (from Deck 6) ───────────────────────────────
+   Adapted from the CSP 4.6 flowchart slot builder (see the
+   activities index). Drag a card onto a slot, or click a card
+   and then a slot. Correct cards fill the slot; wrong ones shake. */
+.fcb-stage { position: relative; width: 1360px; height: 345px; margin-top: 8px; }
+.fcb-stage svg { position: absolute; left: 0; top: 0; }
+.fcb-panel { display: flex; flex-direction: column; gap: 12px; margin-top: var(--gap); }
+.fcb-status { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: var(--small); color: var(--text-muted); }
+.fcb-status .fcb-count { font-family: var(--font-mono); font-weight: 700; color: var(--text); }
+.fcb-complete { color: var(--result); font-weight: 700; }
+.fcb-bank { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 12px; height: 116px; }
+.fcb-chip {
+  all: unset;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 2px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 6px 16px;
+}
+.fcb-chip:hover { border-color: var(--accent); }
+.fcb-chip.selected { border-color: var(--warn); background: rgba(255,209,102,0.12); transform: translateY(-2px); }
+.fcb-chip.used { display: none; }
+.fcb-chip.dragging { opacity: 0.35; }
+.fcb-ghost { position: fixed; z-index: 10000; pointer-events: none; transform-origin: 0 0; margin: 0; border-color: var(--warn); box-shadow: 0 12px 28px rgba(0,0,0,0.5); cursor: grabbing; }
+.fcb-slot {
+  all: unset;
+  position: absolute;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  border: 2px dashed rgba(255,209,102,0.7);
+  border-radius: 8px;
+  background: rgba(6,11,20,0.92);
+}
+.fcb-slot:hover:not(.filled), .fcb-slot.drag-over { border-color: var(--warn); background: rgba(40,34,14,0.95); }
+.fcb-ph { color: var(--warn); font-size: 26px; }
+.fcb-slot.filled { cursor: default; border: 2px solid var(--result); background: rgba(8,40,30,0.95); }
+.fcb-slot.wrong { border-color: var(--bad); background: rgba(60,16,16,0.95); animation: fcb-shake 0.4s ease; }
+.fcb-x { position: absolute; top: -12px; right: -12px; width: 28px; height: 28px; border-radius: 50%; background: var(--bad); color: #1a0505; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; }
+.fcb-perfect {
+  font-size: var(--small);
+  font-weight: 700;
+  color: var(--result);
+  background: rgba(77,255,176,0.14);
+  border: 1px solid rgba(77,255,176,0.6);
+  border-radius: 999px;
+  padding: 4px 14px;
+  cursor: pointer;
+  animation: badge-pulse-glow 1.6s ease-in-out infinite;
+}
+@keyframes badge-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(77,255,176,0.5); }
+  50%      { box-shadow: 0 0 16px 5px rgba(77,255,176,0.45); }
+}
+/* Perfect-score overlay, as in the CSP matching games */
+.match-perfect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6,11,20,0.92);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.match-perfect-overlay.visible { opacity: 1; pointer-events: auto; cursor: pointer; }
+.match-perfect-badge { display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0; }
+.match-perfect-overlay.visible .match-perfect-badge { animation: match-perfect-pop 0.7s ease both; }
+.match-perfect-check { font-size: 220px; line-height: 1; color: var(--result); filter: drop-shadow(0 0 46px rgba(77,255,176,0.55)); }
+.match-perfect-text { font-size: 84px; font-weight: 700; color: var(--text); text-shadow: 0 0 34px rgba(93,170,255,0.45); }
+.match-perfect-hint { font-family: var(--font-mono); font-size: var(--small); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+@keyframes match-perfect-pop {
+  0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  75%  { transform: scale(0.96) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes fcb-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+
+/* Service call: each cause card lists what you would expect to see,
+   and striking a cause strikes its hint too (from Deck 2). */
+.wo .cause-btn { align-items: flex-start; }
+.wo .cb-body { display: flex; flex-direction: column; gap: 2px; }
+.wo .cb-hint { font-size: var(--small); line-height: 1.3; color: var(--text-muted); }
+.wo .cause-btn[aria-pressed="true"] .cb-hint { text-decoration: line-through; }
+.station-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); margin-top: var(--gap); }
+.station-card { background: var(--bg-card); border: 1px solid var(--accent-border); border-top: 4px solid var(--accent); border-radius: 8px; padding: 22px 26px; }
+.station-num { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; }
+.station-card h3 { font-size: var(--h3); margin: 6px 0 var(--gap-sm); }
+.station-card p { font-size: var(--body); line-height: 1.45; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="reveal"><div class="slides">
+
+<!-- SLIDE 01 · Title -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 5 &nbsp;·&nbsp; VEXploration</span>
+    <h1 class="title-h1">Can We Make the <span class="pneu">VEX Cylinder</span> Move?</h1>
+    <p class="lead" style="margin-top:var(--gap);text-align:center;">Last lesson you drew the VEX circuit. Today your team builds it from loose parts, pressurizes it safely and makes the cylinder move.</p>
+  </div>
+  <div class="glow" style="width:620px;height:620px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(93,170,255,0.07),transparent 70%);"></div>
+  <div class="glow" style="width:560px;height:560px;right:-140px;bottom:-160px;background:radial-gradient(circle,rgba(255,209,102,0.05),transparent 70%);"></div>
+</section>
+
+<!-- SLIDE 02 · Today's plan -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">VEXploration</span>
+    <h2>Today&rsquo;s Plan</h2>
+    <p class="prose">This is the first of three VEXploration lessons. Today is about getting a <span class="term">safe, working circuit</span>; the next lessons control its speed and build a mechanism with it.</p>
+    <div class="station-row">
+      <div class="station-card"><span class="station-num">Part 1</span><h3>Inspect</h3><p>Name every part in the kit and the rules for handling it.</p></div>
+      <div class="station-card fragment fade-up"><span class="station-num">Part 2</span><h3>Build</h3><p>Plumb the circuit from your schematic, with the air off.</p></div>
+      <div class="station-card fragment fade-up"><span class="station-num">Part 3</span><h3>Test</h3><p>Pressurize with your teacher, switch the signal and record what the cylinder does.</p></div>
+    </div>
+  </div>
+  <aside class="notes">VEXploration Day 1 of 3 (plan Days 7&ndash;9). Standards: 7.4 safety, 7.7 power supply (the VEX source inspection), 7.9 build and examine a pneumatic circuit. Teams build from loose parts. Testing uses the classroom V5 program and the regulator at 50&nbsp;psi.</aside>
+</section>
+
+<!-- SLIDE 03 · Label the kit -->
+<section id="fcb-kit" data-fcb data-prevent-swipe>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+    <span class="slide-tag">Your Turn</span>
+    <h2 style="margin-bottom:6px;">Label the Kit</h2>
+    <div class="kit-grid">
+      <div class="kit-stage" data-fcb-root>
+        <img class="img-zoomable" src="Pneumatic_Schematics_Assets/vexCircuitShutoff.jpeg" alt="A VEX pneumatic circuit on a table, left to right: the air tank with a brass fill valve, a regulator with a gauge, the shut-off valve, the solenoid valve and a double-acting cylinder, joined by black tubing.">
+          <button type="button" class="fcb-slot" data-accept="fill" aria-label="Empty name slot" style="left:17%;top:4%;width:20%;height:48px;"><span class="fcb-ph">?</span></button>
+          <button type="button" class="fcb-slot" data-accept="tank" aria-label="Empty name slot" style="left:2%;top:44%;width:17%;height:48px;"><span class="fcb-ph">?</span></button>
+          <button type="button" class="fcb-slot" data-accept="reg" aria-label="Empty name slot" style="left:22%;top:76%;width:20%;height:48px;"><span class="fcb-ph">?</span></button>
+          <button type="button" class="fcb-slot" data-accept="shut" aria-label="Empty name slot" style="left:46%;top:14%;width:22%;height:48px;"><span class="fcb-ph">?</span></button>
+          <button type="button" class="fcb-slot" data-accept="sol" aria-label="Empty name slot" style="left:56%;top:74%;width:22%;height:48px;"><span class="fcb-ph">?</span></button>
+          <button type="button" class="fcb-slot" data-accept="cyl" aria-label="Empty name slot" style="left:67%;top:88%;width:31%;height:48px;"><span class="fcb-ph">?</span></button>
+      </div>
+      <div class="kit-side fcb-panel" style="margin-top:0;">
+        <div class="fcb-status"><span class="fcb-count" data-fcb-score>0 of 6 placed</span><span data-fcb-attempts>0 tries</span><span class="fcb-complete" data-fcb-complete hidden></span><button type="button" class="fcb-perfect" data-fcb-perfect hidden title="Show the perfect-score check again">&#10003; Perfect on the first try</button></div>
+        <div class="fcb-bank" data-fcb-bank>
+<button type="button" class="fcb-chip" data-chip="fill">Fill valve</button>
+<button type="button" class="fcb-chip" data-chip="tank">Air tank</button>
+<button type="button" class="fcb-chip" data-chip="reg">Regulator</button>
+<button type="button" class="fcb-chip" data-chip="shut">Shut-off valve</button>
+<button type="button" class="fcb-chip" data-chip="sol">Solenoid valve</button>
+<button type="button" class="fcb-chip" data-chip="cyl">Double-acting cylinder</button>
+<button type="button" class="fcb-chip" data-chip="comp">Compressor</button>
+<button type="button" class="fcb-chip" data-chip="flow">Flow control</button>
+<button type="button" class="fcb-chip" data-chip="motor">Air motor</button>
+        </div>
+        <button type="button" class="sim-btn alt" data-fcb-reset>Start over</button>
+      </div>
+    </div>
+  </div>
+  <div class="match-perfect-overlay" data-fcb-overlay aria-hidden="true">
+    <div class="match-perfect-badge">
+      <span class="match-perfect-check">&#10003;</span>
+      <span class="match-perfect-text">Perfect Kit!</span>
+      <span class="match-perfect-hint">Every part on the first try. Click to see your board</span>
+    </div>
+  </div>
+  <aside class="notes">Drag each name onto its part, or click a name and then a slot. Compressor, flow control and air motor are distractors: the compressor stays in the classroom and fills the tank before a run, and flow controls come next lesson. Have teams find each part in their own kit as they place it. A perfect first run leaves a pulsing badge, as on the Deck 6 symbol match.</aside>
+</section>
+
+<!-- SLIDE 04 · The power chain -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Power Supply</span>
+    <h2>Where the Air Comes From</h2>
+    <p class="prose">A VEX robot carries <span class="term">no compressor</span>. The classroom compressor fills the tank through its <span class="pneu">fill valve</span> before a run, and the robot runs on that stored air.</p>
+    <div class="chain">
+      <div class="chain-card fragment fade-up" data-fragment-index="1"><b>Tank</b><span>Stores the compressed air, up to 100&nbsp;psi.</span></div>
+      <div class="chain-card fragment fade-up" data-fragment-index="2"><b>Regulator</b><span>Sends out a steady, lower pressure; its gauge shows how much.</span></div>
+      <div class="chain-card fragment fade-up" data-fragment-index="3"><b>Shut-off valve</b><span>Opens or closes the supply by hand, and vents what is after it.</span></div>
+      <div class="chain-card fragment fade-up" data-fragment-index="4"><b>Solenoid valve</b><span>Sends air to A or B when the Brain switches its signal.</span></div>
+      <div class="chain-card fragment fade-up" data-fragment-index="5"><b>Cylinder</b><span>Turns the air&rsquo;s pressure into a push or a pull.</span></div>
+    </div>
+    <p class="prose fragment fade-up" data-fragment-index="6" style="margin-top:var(--gap);">Every push uses up some of the stored air, so the tank pressure <span class="warn-color">drops during a run</span>. The regulator keeps the cylinder&rsquo;s pressure steady until the tank falls below its setting.</p>
+  </div>
+  <aside class="notes">ADE 7.7, power supplies: compare with Deck 4&rsquo;s industrial chain (compressor, receiver, regulator) and the hydraulic pump and reservoir. The VEX chain is the same idea with the compressor left behind. Ask: what happens to the force near the end of a match? (The regulated pressure holds until the tank drops below 50&nbsp;psi, then force falls.)</aside>
+</section>
+
+<!-- SLIDE 05 · Safety rules: building -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Safety</span>
+    <h2>Rules for Building</h2>
+    <div class="steps" style="grid-template-columns:1fr;">
+      <div class="step caution"><span class="step-n">1</span><p>Wear <span class="warn-color">safety glasses</span> whenever the tank holds air, yours or a neighbor&rsquo;s.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">2</span><p>Build with the tank <span class="pneu">empty</span> and the shut-off valve <span class="pneu">closed</span>. Air goes in only when your teacher checks the circuit.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">3</span><p>Tighten fittings <span class="term">by hand only</span>. Tools crack the threads and damage the O-ring seals.</p></div>
+      <div class="step caution fragment fade-up"><span class="step-n">4</span><p>Never fill the tank above <span class="warn-color">100&nbsp;psi</span>. Today we test with the regulator at <span class="warn-color">50&nbsp;psi</span>.</p></div>
+      <div class="step caution fragment fade-up"><span class="step-n">5</span><p>Point the rod <span class="warn-color">away from people</span>, and keep fingers out of its path. A cylinder can move the moment air reaches it.</p></div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.4. Rule 3 comes from VEX&rsquo;s own documentation. Rule 5 matters at the first pressurization: the VEX solenoid always sends air to A or B, so the cylinder moves as soon as the shut-off valve opens, even before anyone touches the program.</aside>
+</section>
+
+<!-- SLIDE 06 · Safety rules: venting -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Safety</span>
+    <h2>Making the Circuit Safe to Touch</h2>
+    <p class="prose">Before you touch a tube or fitting on a charged circuit, <span class="term">close the shut-off valve</span>. Closing it blocks the supply and vents the air after it, so the solenoid valve, the cylinder and their tubes are safe.</p>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">Switching the signal is <span class="bad-color">not</span> enough. The VEX solenoid always sends air to A or B, so the cylinder stays pressurized in its last position. Stopping the program does not vent it either.</p>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">The tank and regulator, before the shut-off valve, <span class="pneu">stay charged</span>. Empty the tank with your teacher before you take the tank side apart or put the kit away.</p>
+  </div>
+  <aside class="notes">ADE 7.4, depressurizing. The plan&rsquo;s safety note: never assume switching off a solenoid has exhausted the system. Show your classroom procedure for emptying the tank (the plan records that VEX documentation does not give one).</aside>
+</section>
+
+<!-- SLIDE 07 · Resonance: safety check -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:6:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Your team needs to move a tube on a circuit that is already pressurized. What do you do first?", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "Pull the tube out quickly so the air escapes all at once", "isCorrect": false}, {"id": "q1b", "text": "Switch the signal to low so the valve exhausts the air", "isCorrect": false}, {"id": "q1c", "text": "Loosen the fitting with pliers", "isCorrect": false}, {"id": "q1d", "text": "Close the shut-off valve, which vents the air after it", "isCorrect": true}]}, {"id": "q2", "type": "multiple-choice", "text": "A VEX fitting is leaking a little. How should you tighten it?", "order": 1, "responseTimeLimitMs": 60000, "options": [{"id": "q2a", "text": "By hand only; tools can crack the threads and damage the seals", "isCorrect": true}, {"id": "q2b", "text": "With pliers, as tight as it will go", "isCorrect": false}, {"id": "q2c", "text": "With a wrench, then back it off a quarter turn", "isCorrect": false}, {"id": "q2d", "text": "Raise the pressure so the fitting seats itself", "isCorrect": false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Safety Check</span>
+    <h2>Before You Build</h2>
+    <p class="q-head">1. Your team needs to move a tube on a circuit that is already pressurized. What do you do first?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>Pull the tube out quickly so the air escapes all at once</li>
+      <li><span class="mcq-letter">B</span>Switch the signal to low so the valve exhausts the air</li>
+      <li><span class="mcq-letter">C</span>Loosen the fitting with pliers</li>
+      <li><span class="mcq-letter">D</span>Close the shut-off valve, which vents the air after it</li>
+    </ol>
+    <p class="q-head">2. A VEX fitting is leaking a little. How should you tighten it?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>By hand only; tools can crack the threads and damage the seals</li>
+      <li><span class="mcq-letter">B</span>With pliers, as tight as it will go</li>
+      <li><span class="mcq-letter">C</span>With a wrench, then back it off a quarter turn</li>
+      <li><span class="mcq-letter">D</span>Raise the pressure so the fitting seats itself</li>
+    </ol>
+  </div>
+  <aside class="notes">Q1: close the shut-off valve (switching the signal leaves the cylinder pressurized; pulling a charged tube can whip). Q2: by hand only. Every student should get both before teams get parts.</aside>
+</section>
+
+<!-- SLIDE 08 · Tubing and fittings -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Build</span>
+    <h2>Connecting Tubes</h2>
+    <p class="prose">VEX fittings are <span class="term">push-to-connect</span>: a tube pushed in far enough is gripped and sealed, with no tools.</p>
+    <div class="steps">
+      <div class="step fragment fade-up"><span class="step-n">1</span><p>Cut the tube <span class="pneu">straight across</span>, long enough to reach without kinking or pulling.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">2</span><p>Push it into the fitting <span class="pneu">until it stops</span>, then tug gently. It should not come out.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">3</span><p>To remove a tube, close the shut-off valve first. Then press the <span class="pneu">collar</span> in and pull the tube out.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">4</span><p>A steady <span class="bad-color">hiss</span> at a fitting means a leak. Close the shut-off valve, then push the tube in farther.</p></div>
+    </div>
+  </div>
+  <aside class="notes">Demonstrate on one fitting before teams start. An angled cut or a tube that stops short of the seal is the usual cause of a leak. The colored ring on each fitting is the release collar.</aside>
+</section>
+
+<!-- SLIDE 09 · Build steps -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Build</span>
+    <h2>Build the Circuit</h2>
+    <p class="prose">Follow your schematic from last lesson, in the order the air travels.</p>
+    <div class="steps">
+      <div class="step fragment fade-up"><span class="step-n">1</span><p>Tank outlet to the <span class="pneu">regulator</span>.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">2</span><p>Regulator to the <span class="pneu">shut-off valve</span>, its arrow pointing toward the solenoid, dial <span class="warn-color">closed</span>.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">3</span><p>Shut-off valve to solenoid port <span class="pneu">P</span>. Leave the spare P port plugged.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">4</span><p>Port <span class="pneu">A</span> to the rod end and port <span class="pneu">B</span> to the cap end.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">5</span><p>Driver cable: <span class="warn-color">red and black</span> on the A side, plugged into the Brain&rsquo;s 3-wire port.</p></div>
+      <div class="step caution fragment fade-up"><span class="step-n">6</span><p>Stop. Your <span class="warn-color">teacher checks</span> the circuit before any air goes in.</p></div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.9. The A-to-rod-end routing matches Deck 5 and the classroom program, so a low signal holds the cylinder retracted. Tell teams which 3-wire port the classroom program uses. Check every circuit for: shut-off arrow direction, the spare P plug, tubes fully seated, plug colors, and the rod pointed away from people.</aside>
+</section>
+
+<!-- SLIDE 10 · Resonance: predict -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:9:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Your team ran the A tube to the rod end and the B tube to the cap end. The classroom program starts with a low signal. When you open the shut-off valve, what will the cylinder do?", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "Extend, because the supply air pushes the piston out", "isCorrect": false}, {"id": "q1b", "text": "Retract, or stay retracted, because low sends air to A and the rod end", "isCorrect": true}, {"id": "q1c", "text": "Nothing until the program switches the signal", "isCorrect": false}, {"id": "q1d", "text": "Move halfway and stop", "isCorrect": false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict</span>
+    <h2>Before the Air Goes In</h2>
+    <p class="q-head">Your team ran the A tube to the rod end and the B tube to the cap end. The classroom program starts with a low signal. When you open the shut-off valve, what will the cylinder do?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>Extend, because the supply air pushes the piston out</li>
+      <li><span class="mcq-letter">B</span>Retract, or stay retracted, because low sends air to A and the rod end</li>
+      <li><span class="mcq-letter">C</span>Nothing until the program switches the signal</li>
+      <li><span class="mcq-letter">D</span>Move halfway and stop</li>
+    </ol>
+  </div>
+  <aside class="notes">Answer: it retracts, or stays retracted. The VEX solenoid always sends air to A or B; with a low signal, air goes to A and the rod end. &ldquo;Nothing until the program switches&rdquo; is the common wrong idea, and it is also why hands must be clear when the shut-off valve opens.</aside>
+</section>
+
+<!-- SLIDE 11 · Pressurize and test -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Test</span>
+    <h2>Pressurize and Test</h2>
+    <div class="steps">
+      <div class="step caution"><span class="step-n">1</span><p>Glasses on. Your teacher fills the tank, no higher than <span class="warn-color">100&nbsp;psi</span>.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">2</span><p>Set the regulator to <span class="pneu">50&nbsp;psi</span> on its gauge.</p></div>
+      <div class="step caution fragment fade-up"><span class="step-n">3</span><p>Hands clear, rod pointed away. <span class="warn-color">Open</span> the shut-off valve and watch the cylinder.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">4</span><p>Listen. A steady <span class="bad-color">hiss</span> is a leak: close the shut-off valve and fix it.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">5</span><p>Run the classroom program and switch the signal between <span class="warn-color">low</span> and <span class="warn-color">high</span>.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">6</span><p>Record each test in your notebook. Close the shut-off valve before any change.</p></div>
+    </div>
+  </div>
+  <aside class="notes">Step 3 is the prediction check: the cylinder should retract or stay retracted as soon as the shut-off valve opens. A short hiss from R when the signal switches is normal (the exhaust); a steady hiss with nothing moving is a leak.</aside>
+</section>
+
+<!-- SLIDE 12 · Notebook: test log -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Notebook</span>
+    <h2>Record Your Tests</h2>
+    <div class="ask">Make a <span class="term">test log</span> with a row for each signal you send: the signal, which cylinder end gets air, what the rod does, and what you hear at R.</div>
+    <div class="ask fragment fade-up">Compare your first row with your <span class="term">prediction</span>. Were you right? If not, what did the air actually do?</div>
+    <div class="ask fragment fade-up">Update your <span class="term">schematic</span> from last lesson so it matches your build: mark which port feeds which end.</div>
+  </div>
+  <aside class="notes">The plan&rsquo;s Day 7 notebook evidence: a test log and a schematic that matches the real build (ADE 7.9). Teams that finish early move on to the troubleshooting case.</aside>
+</section>
+
+<!-- SLIDE 13 · Service call briefing -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Troubleshooting</span>
+    <h2>The Cylinder That Won&rsquo;t Move</h2>
+    <p class="prose">Team 4 finished their build, but when they switch the signal from low to high, the cylinder does not move at all. Find out why without guessing, and without breaking a safety rule.</p>
+    <div class="station-row">
+      <div class="station-card"><span class="station-num">Step 1</span><h3>Investigate</h3><p>Read the ticket, the build log, and what each cause would look like. Tests cost <span class="term">build time</span>.</p></div>
+      <div class="station-card"><span class="station-num">Step 2</span><h3>Diagnose</h3><p>Strike out the causes your evidence rules out, then pick the cause and a fix.</p></div>
+      <div class="station-card"><span class="station-num">Step 3</span><h3>Defend</h3><p>Tag the readings that back your diagnosis. Your record scores six things, including safety.</p></div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.10, pneumatic troubleshooting, using the parts from today&rsquo;s build. All three causes leave the cylinder retracted and silent, so watching it, the Brain screen and listening at R cannot tell them apart. New case deals a different hidden cause.</aside>
+</section>
+
+<!-- SLIDE 14 · Service call simulator -->
+<section data-prevent-swipe>
+  <div class="slide-inner" style="max-width:1600px;padding:40px 36px 36px;justify-content:flex-start;">
+    <span class="slide-tag" style="margin-bottom:10px;">Troubleshooting &nbsp;·&nbsp; The Cylinder That Won&rsquo;t Move</span>
+    <div class="wo" id="service-call">
+      <div class="wo-top">
+        <button class="sim-btn alt" data-role="new" type="button">New case</button>
+        <span class="dt" aria-live="polite"><span class="dt-label">Build time</span><span class="dt-bar"><span class="dt-fill" data-role="dt-fill"></span></span><span class="dt-val" data-role="dt-val"></span></span>
+        <span class="status-chip" data-role="status">INVESTIGATE</span>
+      </div>
+      <div class="wo-grid">
+        <div class="sim-panel wo-info" data-role="info"></div>
+        <div class="wo-right">
+          <div class="sim-panel wo-work" data-role="work"></div>
+          <div class="sim-panel ev" data-role="ev" aria-live="polite">
+            <div class="ev-top"><span class="ev-label">EVIDENCE</span><span data-role="chips"></span></div>
+            <div class="ev-body" data-role="ev-body"></div>
+          </div>
+          <div class="wo-bar">
+            <button class="sim-btn alt" data-role="back" type="button">&#9664; Back</button>
+            <button class="sim-btn" data-role="to-diag" type="button">Diagnose &#9654;</button>
+            <button class="sim-btn" data-role="to-defend" type="button">Defend &#9654;</button>
+            <button class="sim-btn" data-role="submit" type="button">Submit record</button>
+            <span class="wo-count" data-role="count"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Causes: shut-off valve left closed (key test: look at the dial), regulator turned down to 0 (read the gauge), or the driver cable not seated in the Brain (trace the cable). The unsafe choices (over-filling the tank, pulling a charged tube) are charged but never carried out. If a real team hits this, the same three checks are the place to start.</aside>
+</section>
+
+<!-- SLIDE 15 · Shut down -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Safety</span>
+    <h2>Shutting Down</h2>
+    <div class="steps" style="grid-template-columns:1fr;">
+      <div class="step"><span class="step-n">1</span><p><span class="term">Close the shut-off valve.</span> The solenoid valve, cylinder and their tubes vent.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">2</span><p>Stop the program. The cylinder no longer holds any pressure, so it can be moved by hand.</p></div>
+      <div class="step caution fragment fade-up"><span class="step-n">3</span><p>The tank is <span class="warn-color">still charged</span>. Empty it with your teacher before you store the kit or open the tank side.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">4</span><p>Leave the circuit built for the next lesson, unless your teacher says to take it apart.</p></div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.4. Step 2 is safe only because step 1 vented the downstream side first. Decide whether teams keep their circuits built: the next lesson adds flow controls to the same circuit.</aside>
+</section>
+
+<!-- SLIDE 16 · Resonance: exit ticket -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:15:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Where does the pressure in a VEX pneumatic circuit come from?", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "The V5 Brain&#39;s battery", "isCorrect": false}, {"id": "q1b", "text": "The solenoid valve", "isCorrect": false}, {"id": "q1c", "text": "The tank, filled by the classroom compressor before the run", "isCorrect": true}, {"id": "q1d", "text": "The regulator", "isCorrect": false}]}, {"id": "q2", "type": "free-response", "text": "You need to move the A tube to a different port on the cylinder. Describe what you do first to make the circuit safe to work on, and explain why switching the signal is not enough.", "order": 1, "responseTimeLimitMs": 150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Before You Go</h2>
+    <p class="q-head">1. Where does the pressure in a VEX pneumatic circuit come from?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>The V5 Brain&rsquo;s battery</li>
+      <li><span class="mcq-letter">B</span>The solenoid valve</li>
+      <li><span class="mcq-letter">C</span>The tank, filled by the classroom compressor before the run</li>
+      <li><span class="mcq-letter">D</span>The regulator</li>
+    </ol>
+    <p class="q-head">2. You need to move the A tube to a different port on the cylinder. Describe what you do first to make the circuit safe to work on, and explain why switching the signal is not enough.</p>
+  </div>
+  <aside class="notes">Q1: the tank, filled by the classroom compressor (ADE 7.7; the worksheet&rsquo;s reflection question 1). Q2 (ADE 7.4): close the shut-off valve, which vents everything after it; switching the signal only moves the air from one end to the other, so the cylinder stays pressurized.</aside>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function(element) { return !element.closest('#storyboard'); }
+  );
+}
+
+var SVGNS = 'http://www.w3.org/2000/svg';
+
+/* ── Match-the-symbols builder (slide 3) ─────────────────────────
+   Adapted from initFlowchartBuilder in CSP 4.6. Each .fcb-slot has
+   data-accept; each .fcb-chip has data-chip. Click a chip and then a
+   slot, or drag a chip onto a slot. Correct chips fill the slot, wrong
+   ones shake it. Tries persist in sessionStorage so Start over or a
+   reload cannot erase misses. */
+function shuffleChildren(host) {
+  var kids = Array.prototype.slice.call(host.children);
+  for (var i = kids.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = kids[i]; kids[i] = kids[j]; kids[j] = t;
+  }
+  kids.forEach(function (k) { host.appendChild(k); });
+}
+function initLabelBuilder(section) {
+  var root = section.querySelector('[data-fcb-root]');
+  var bankEl = section.querySelector('[data-fcb-bank]');
+  var slots = Array.prototype.slice.call(root.querySelectorAll('.fcb-slot'));
+  var chips = Array.prototype.slice.call(bankEl.querySelectorAll('.fcb-chip'));
+  var scoreEl = section.querySelector('[data-fcb-score]');
+  var attemptsEl = section.querySelector('[data-fcb-attempts]');
+  var completeEl = section.querySelector('[data-fcb-complete]');
+  var perfectEl = section.querySelector('[data-fcb-perfect]');
+  var overlayEl = section.querySelector('[data-fcb-overlay]');
+  var total = slots.length, placed = 0, attempts = 0, misses = 0, selected = null;
+  /* earned: finished with zero misses at least once in this tab. It is saved,
+     so the badge survives closing the overlay, Start over and a reload. */
+  var earned = false;
+  var STORE_KEY = 'building-the-vex-circuit:fcb:' + section.id;
+  function save() {
+    try {
+      sessionStorage.setItem(STORE_KEY, JSON.stringify({ attempts: attempts, misses: misses, earned: earned,
+        filled: slots.map(function (sl) { return sl.dataset.chipIdx || null; }) }));
+    } catch (e) {}
+  }
+  function load() { try { return JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } }
+  if (overlayEl) overlayEl.addEventListener('click', function () { overlayEl.classList.remove('visible'); });
+  if (perfectEl) perfectEl.addEventListener('click', function () { overlayEl.classList.add('visible'); });
+  function status(justFinished) {
+    var done = placed === total;
+    if (done && misses === 0 && !earned) { earned = true; save(); }
+    perfectEl.hidden = !earned;
+    if (overlayEl) overlayEl.classList.toggle('visible', !!justFinished && done && misses === 0);
+    scoreEl.textContent = placed + ' of ' + total + ' placed';
+    attemptsEl.textContent = attempts + (attempts === 1 ? ' try' : ' tries');
+    completeEl.hidden = !done;
+    completeEl.textContent = misses === 0 ? 'Perfect! Every part on the first try.'
+      : 'Labeled! ' + misses + (misses === 1 ? ' wrong try' : ' wrong tries') + ' along the way.';
+  }
+  function fill(slot, chip) {
+    slot.innerHTML = chip.innerHTML;
+    slot.classList.add('filled');
+    slot.dataset.chipIdx = String(chips.indexOf(chip));
+    slot.setAttribute('aria-label', 'Correct: ' + chip.textContent);
+    chip.classList.add('used');
+    placed++;
+  }
+  function select(chip) {
+    if (selected) selected.classList.remove('selected');
+    selected = (chip && chip !== selected) ? chip : null;
+    if (selected) selected.classList.add('selected');
+  }
+  function place(chip, slot) {
+    if (!chip || slot.classList.contains('filled') || chip.classList.contains('used')) return;
+    attempts++;
+    if (slot.dataset.accept.split(',').indexOf(chip.dataset.chip) !== -1) {
+      fill(slot, chip);
+    } else {
+      misses++;
+      slot.classList.remove('wrong'); void slot.offsetWidth; slot.classList.add('wrong');
+      var b = document.createElement('span');
+      b.className = 'fcb-x'; b.setAttribute('aria-hidden', 'true'); b.textContent = '✗';
+      slot.appendChild(b);
+      setTimeout(function () { slot.classList.remove('wrong'); if (b.parentNode) b.parentNode.removeChild(b); }, 650);
+    }
+    select(null); save(); status(placed === total);
+  }
+  var suppressClick = false;
+  function slotAt(x, y) {
+    var el = document.elementFromPoint(x, y);
+    var slot = el && el.closest ? el.closest('.fcb-slot') : null;
+    return slot && root.contains(slot) ? slot : null;
+  }
+  function startDrag(chip, e) {
+    if (chip.classList.contains('used') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    var startX = e.clientX, startY = e.clientY, rect = chip.getBoundingClientRect();
+    var offX = e.clientX - rect.left, offY = e.clientY - rect.top, ghost = null, hover = null;
+    try { chip.setPointerCapture(e.pointerId); } catch (err) {}
+    function move(ev) {
+      ev.stopPropagation();
+      if (!ghost) {
+        if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) < 6) return;
+        ghost = chip.cloneNode(true);
+        ghost.classList.add('fcb-ghost');
+        ghost.style.transform = 'scale(' + (Reveal.getScale ? Reveal.getScale() : 1) + ')';
+        document.body.appendChild(ghost);
+        chip.classList.add('dragging');
+        select(null);
+      }
+      ghost.style.left = (ev.clientX - offX) + 'px';
+      ghost.style.top = (ev.clientY - offY) + 'px';
+      var over = slotAt(ev.clientX, ev.clientY);
+      if (over !== hover) {
+        if (hover) hover.classList.remove('drag-over');
+        hover = over && !over.classList.contains('filled') ? over : null;
+        if (hover) hover.classList.add('drag-over');
+      }
+    }
+    function end(ev) {
+      ev.stopPropagation();
+      chip.removeEventListener('pointermove', move);
+      chip.removeEventListener('pointerup', end);
+      chip.removeEventListener('pointercancel', end);
+      if (hover) hover.classList.remove('drag-over');
+      if (!ghost) return;
+      ghost.parentNode.removeChild(ghost);
+      chip.classList.remove('dragging');
+      suppressClick = true;
+      var target = ev.type === 'pointerup' ? slotAt(ev.clientX, ev.clientY) : null;
+      if (target) place(chip, target);
+    }
+    chip.addEventListener('pointermove', move);
+    chip.addEventListener('pointerup', end);
+    chip.addEventListener('pointercancel', end);
+  }
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function () { if (suppressClick) { suppressClick = false; return; } select(chip); });
+    chip.addEventListener('pointerdown', function (e) { e.stopPropagation(); startDrag(chip, e); });
+    chip.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
+  });
+  slots.forEach(function (slot) {
+    slot.dataset.empty = slot.innerHTML;
+    slot.addEventListener('click', function () { if (selected) place(selected, slot); });
+  });
+  function clearBoard() {
+    slots.forEach(function (slot) { slot.innerHTML = slot.dataset.empty; slot.classList.remove('filled', 'wrong'); delete slot.dataset.chipIdx; });
+    chips.forEach(function (chip) { chip.classList.remove('used', 'selected'); });
+    placed = 0; selected = null;
+    shuffleChildren(bankEl);
+  }
+  section.querySelector('[data-fcb-reset]').addEventListener('click', function () { clearBoard(); save(); status(); });
+  clearBoard();
+  var saved = load();
+  if (saved) {
+    attempts = saved.attempts || 0; misses = saved.misses || 0; earned = !!saved.earned;
+    (saved.filled || []).forEach(function (idx, i) { if (idx !== null && chips[+idx] && slots[i]) fill(slots[i], chips[+idx]); });
+  }
+  status();
+}
+
+/* ── Service call (slide 14) ───────────────────────────────────────
+   Same engine as Deck 5 (from Deck 2, from AR2 AC Motors Day 5). A new
+   case: a freshly built circuit whose cylinder will not move. */
+var SERVICE_CALL = {
+  budget: 7,
+  history: [
+    ['Step 1', 'The team plumbed the tank, regulator, shut-off valve and solenoid, and closed the shut-off valve while they worked.'],
+    ['Step 2', 'A teammate bumped the regulator knob while routing the tubes to the cylinder.'],
+    ['Step 3', 'The Brain was moved to make room, and its cables were unplugged and plugged back in.'],
+    ['Step 4', 'Your teacher filled the tank to 90 psi from the classroom compressor.'],
+  ],
+  title: 'VEX Circuit: Team 4 Test Bench',
+  overview: 'A freshly built circuit with one VEX solenoid and one double-acting cylinder, ready for its first test.',
+  npHead: 'Build sheet',
+  nameplate: [['Regulator', 'set to 50 psi'], ['Shut-off', 'open to test'], ['Driver', '3-wire port A'], ['Tubes', 'A to rod end']],
+  symptom: 'The team switches the signal from low to high, but the cylinder sits retracted and never moves.',
+  causes: {
+    shut: { name: 'Shut-off valve left closed', key: ['dial'], why: 'The shut-off valve was still closed from the build, so no air reached the solenoid. Closed, it blocks the supply and vents everything after it, which is exactly what you want while plumbing and exactly what stops a test. Turn the dial in line with the tube.' },
+    reg: { name: 'Regulator turned all the way down', key: ['gauge'], why: 'The regulator knob was bumped to 0 psi, so it let no air through even though the tank was full. A regulator sets the pressure that leaves it; turn it back up to 50 psi and watch the gauge.' },
+    cable: { name: 'Driver cable not plugged in', key: ['cable'], why: 'Air reached the solenoid, but the signal never did: the driver cable was not seated in the Brain&rsquo;s 3-wire port. The valve stayed on its low side, sending air to A and holding the cylinder retracted. Push the cable fully into port A.' },
+  },
+  tests: [
+    { id: 'watch', min: 1, name: 'Watch', label: 'Switch the signal and watch the cylinder',
+      proc: 'Signal switched low, then high:',
+      r: { def: 'The cylinder <span class="rd">stays retracted</span>.' } },
+    { id: 'screen', min: 1, name: 'Screen', label: 'Check the Brain screen while you switch the signal',
+      proc: 'Brain screen:',
+      r: { def: 'The program is running, and it shows the signal changing from <span class="rd">low to high</span>.' } },
+    { id: 'listen', min: 1, name: 'Listen', label: 'Listen at the solenoid as the signal switches',
+      proc: 'At the solenoid:',
+      r: { def: '<span class="rd">No hiss</span> from the R exhaust.' } },
+    { id: 'push', min: 1, unsafe: true, label: 'Refill the tank past 100 psi so it pushes harder',
+      warn: 'Never fill a VEX tank above 100 psi; it is the tank&rsquo;s maximum. More pressure will not move a cylinder that is getting no air or no signal.' },
+    { id: 'gauge', min: 1, name: 'Gauge', label: 'Read the regulator gauge',
+      proc: 'Regulator gauge:',
+      r: { def: '<span class="rd">50 psi</span>.', reg: '<span class="rd">0 psi</span>.' } },
+    { id: 'dial', min: 1, name: 'Shut-off', label: 'Look at the shut-off valve dial',
+      proc: 'Shut-off valve:',
+      r: { def: 'The dial is <span class="rd">in line with the tube</span>.', shut: 'The dial is <span class="rd">across the tube</span>.' } },
+    { id: 'pull', min: 1, unsafe: true, label: 'Pull the tube off solenoid port P to check for air',
+      warn: 'A charged tube can whip and blow air or debris at your face. Close the shut-off valve first; it vents the air downstream so the tube is safe to remove.' },
+    { id: 'cable', min: 2, name: 'Cable', label: 'Trace the driver cable from the solenoid to the Brain',
+      proc: 'Driver cable:',
+      r: { def: 'Seated in <span class="rd">3-wire port A</span>, red and black on the A side.', cable: 'Red and black on the A side, but the plug is <span class="rd">loose, not seated</span> in 3-wire port A.' } },
+  ],
+  diagnoses: [
+    { text: 'Driver cable not plugged in', cause: 'cable', hint: 'Symptom: the driver cable is loose at the Brain&rsquo;s 3-wire port.' },
+    { text: 'Shut-off valve left closed', cause: 'shut', hint: 'Symptom: the shut-off dial sits across the tube.' },
+    { text: 'Regulator turned all the way down', cause: 'reg', hint: 'Symptom: the regulator gauge reads 0 psi.' },
+  ],
+  repairs: [
+    { text: 'Turn the regulator up to 50 psi', fixes: 'reg' },
+    { text: 'Push the driver cable fully into 3-wire port A', fixes: 'cable' },
+    { text: 'Fill the tank past 100 psi', unsafe: true, note: 'Never fill a VEX tank above 100 psi. It also hides nothing: the cylinder still gets no air or no signal.' },
+    { text: 'Turn the shut-off dial in line with the tube', fixes: 'shut' },
+  ],
+};
+
+function buildServiceCall(root) {
+  function q(r) { return root.querySelector('[data-role="' + r + '"]'); }
+  var w = SERVICE_CALL;
+  var deck = [];
+  function pickCause(avoid) {
+    if (!deck.length) {
+      var ids = Object.keys(w.causes);
+      for (var i = ids.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1)), t = ids[i];
+        ids[i] = ids[j]; ids[j] = t;
+      }
+      if (ids[0] === avoid) ids.push(ids.shift());
+      Array.prototype.push.apply(deck, ids);
+    }
+    return deck.shift();
+  }
+  function fresh(avoid) {
+    return { cause: pickCause(avoid), run: [], unsafe: [], stage: 'investigate', view: null, diag: -1, repair: -1,
+             used: 0, struck: [], tags: [], tab: 'ticket' };
+  }
+  var s = fresh();
+  function test(id) { return w.tests.filter(function (t) { return t.id === id; })[0]; }
+  function reading(t, cause) { return t.r[cause] || t.r.def; }
+  function relevant(t) {
+    var seen = {};
+    Object.keys(w.causes).forEach(function (c) { seen[reading(t, c)] = 1; });
+    return Object.keys(seen).length > 1;
+  }
+  function left() { return w.budget - s.used; }
+  function tried(id) { return s.run.indexOf(id) >= 0 || s.unsafe.indexOf(id) >= 0; }
+  function outOfTime() {
+    return !w.tests.some(function (t) { return !tried(t.id) && t.min <= left(); });
+  }
+
+  function renderInfo() {
+    var el2 = q('info'), html;
+    html = '<span class="seg info-tabs" aria-label="Ticket information">' +
+      [['ticket', 'Ticket'], ['history', 'Build log'], ['causes', 'Causes']].map(function (p) {
+        return '<button class="seg-btn" type="button" data-tab="' + p[0] + '" aria-pressed="' + (s.tab === p[0]) + '">' + p[1] + '</button>';
+      }).join('') + '</span>';
+    if (s.tab === 'ticket') {
+      html += '<div class="wo-title">' + w.title + '</div>' +
+        '<p class="wo-over">' + w.overview + '</p>' +
+        '<div class="np"><span class="np-head">' + w.npHead + '</span><div class="np-grid">' +
+        w.nameplate.map(function (p) { return '<div><span class="np-k">' + p[0] + '</span><span class="np-v">' + p[1] + '</span></div>'; }).join('') +
+        '</div></div>' +
+        '<div class="sym"><span class="sym-head">Reported problem</span><p class="sym-text">' + w.symptom + '</p></div>';
+    } else if (s.tab === 'history') {
+      html += '<div class="wo-title">Build log</div>' +
+        '<p class="wo-over">Some entries may not matter.</p>' +
+        '<div class="hist">' + w.history.map(function (h) {
+          return '<div class="hist-row"><span class="hist-when">' + h[0] + '</span><span class="hist-text">' + h[1] + '</span></div>';
+        }).join('') + '</div>';
+    } else {
+      html += '<div class="wo-title">Possible causes</div>' +
+        '<p class="cause-note">Strike out a cause only when a reading rules it out. Your record checks each strike against your readings.</p>' +
+        '<div class="cause-list">' + w.diagnoses.map(function (d, i) {
+          var out = s.struck.indexOf(i) >= 0;
+          return '<button class="cause-btn" type="button" data-cause="' + i + '" aria-pressed="' + out + '"' + (s.stage === 'record' ? ' disabled' : '') + '>' +
+            '<span class="wt-mark">' + (out ? '✗' : '○') + '</span><span class="cb-body"><span class="cb-text">' + d.text + '</span>' +
+            (d.hint ? '<span class="cb-hint">' + d.hint + '</span>' : '') + '</span></button>';
+        }).join('') + '</div>';
+    }
+    el2.innerHTML = html;
+    el2.querySelectorAll('[data-tab]').forEach(function (b) {
+      b.addEventListener('click', function () { s.tab = b.dataset.tab; renderInfo(); el2.querySelector('[data-tab="' + s.tab + '"]').focus(); });
+    });
+    el2.querySelectorAll('[data-cause]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var i = +b.dataset.cause, k = s.struck.indexOf(i);
+        if (k >= 0) s.struck.splice(k, 1); else s.struck.push(i);
+        renderInfo();
+        el2.querySelector('[data-cause="' + i + '"]').focus();
+      });
+    });
+  }
+
+  function testButton(t, onClick) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'wo-test';
+    b.dataset.id = t.id;
+    b.innerHTML = '<span class="wt-mark"></span><span class="wt-text">' + t.label + '</span><span class="wt-cost"></span>';
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function renderWork() {
+    var el2 = q('work');
+    if (s.stage === 'investigate') {
+      el2.innerHTML = '<div class="sim-head"><span>Choose a test</span><span class="sim-note">Read each one before you run it.</span></div><div class="test-grid"></div>';
+      var g = el2.querySelector('.test-grid');
+      w.tests.forEach(function (t) { g.appendChild(testButton(t, function () { runTest(t); })); });
+      syncTests();
+    } else if (s.stage === 'diagnose') {
+      el2.innerHTML = '<div class="diag-grid">' +
+        '<div><div class="sim-head"><span>Most likely cause</span></div><div class="opt-list" data-k="diag"></div></div>' +
+        '<div><div class="sim-head"><span>Recommended fix</span></div><div class="opt-list" data-k="repair"></div></div></div>';
+      [['diag', w.diagnoses], ['repair', w.repairs]].forEach(function (pair) {
+        var list = el2.querySelector('[data-k="' + pair[0] + '"]');
+        pair[1].forEach(function (o, i) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'wo-opt';
+          b.innerHTML = '<span class="wt-mark"></span><span>' + o.text + '</span>';
+          b.addEventListener('click', function () { s[pair[0]] = i; syncOpts(); renderBar(); });
+          list.appendChild(b);
+        });
+      });
+      syncOpts();
+    } else if (s.stage === 'defend') {
+      el2.innerHTML = '<div class="sim-head"><span>Defend your diagnosis</span></div>' +
+        '<p class="defend-q">You chose <b>' + w.diagnoses[s.diag].text + '</b>. Tag every reading that supports it.</p><div class="test-grid"></div>';
+      var g2 = el2.querySelector('.test-grid');
+      s.run.forEach(function (id) {
+        g2.appendChild(testButton(test(id), function () {
+          var k = s.tags.indexOf(id);
+          if (k >= 0) s.tags.splice(k, 1); else s.tags.push(id);
+          s.view = { id: id };
+          syncTags(); renderEvidence(); renderBar();
+        }));
+      });
+      syncTags();
+    } else {
+      renderRecord(el2);
+    }
+  }
+
+  function syncTests() {
+    var rem = left();
+    q('work').querySelectorAll('.wo-test').forEach(function (b) {
+      var t = test(b.dataset.id), run = s.run.indexOf(t.id) >= 0, bad = s.unsafe.indexOf(t.id) >= 0;
+      b.classList.toggle('is-run', run);
+      b.classList.toggle('is-unsafe', bad);
+      b.classList.toggle('is-view', !!s.view && s.view.id === t.id);
+      b.disabled = !run && !bad && t.min > rem;
+      b.querySelector('.wt-mark').textContent = run ? '✓' : bad ? '⚠' : '';
+      b.querySelector('.wt-cost').textContent = run ? 'done' : bad ? 'stopped' : t.min + ' min';
+    });
+  }
+
+  function syncTags() {
+    q('work').querySelectorAll('.wo-test').forEach(function (b) {
+      var tagged = s.tags.indexOf(b.dataset.id) >= 0;
+      b.classList.toggle('is-tag', tagged);
+      b.setAttribute('aria-pressed', tagged);
+      b.querySelector('.wt-mark').textContent = tagged ? '☑' : '☐';
+      b.querySelector('.wt-cost').textContent = '';
+    });
+  }
+
+  function syncOpts() {
+    ['diag', 'repair'].forEach(function (k) {
+      q('work').querySelectorAll('[data-k="' + k + '"] .wo-opt').forEach(function (b, i) {
+        b.setAttribute('aria-pressed', s[k] === i ? 'true' : 'false');
+        b.querySelector('.wt-mark').textContent = s[k] === i ? '●' : '○';
+      });
+    });
+  }
+
+  function runTest(t) {
+    if (!tried(t.id)) {
+      if (t.min > left()) return;
+      (t.unsafe ? s.unsafe : s.run).push(t.id);
+      s.used += t.min;
+    }
+    s.view = { id: t.id, unsafe: !!t.unsafe };
+    syncTests();
+    renderEvidence();
+    renderBar();
+  }
+
+  function renderEvidence() {
+    var chips = q('chips'), body = q('ev-body');
+    var hadFocus = document.activeElement && document.activeElement.classList.contains('ev-chip') ? document.activeElement.dataset.id : null;
+    chips.innerHTML = '';
+    if (!s.run.length) chips.innerHTML = '<span class="ev-none">No tests run yet</span>';
+    s.run.forEach(function (id) {
+      var c = document.createElement('button');
+      c.type = 'button';
+      c.className = 'ev-chip';
+      c.dataset.id = id;
+      c.textContent = test(id).name;
+      c.setAttribute('aria-pressed', s.view && s.view.id === id ? 'true' : 'false');
+      c.addEventListener('click', function () {
+        s.view = { id: id };
+        renderEvidence();
+        if (s.stage === 'investigate') syncTests();
+      });
+      chips.appendChild(c);
+      if (hadFocus === id) c.focus();
+    });
+    var t = s.view && test(s.view.id);
+    q('ev').classList.toggle('bad', !!(s.view && s.view.unsafe));
+    if (!t) body.innerHTML = '<span class="ev-proc">Choose a test. Its result appears here, and you can reopen it from the chips above.</span>';
+    else if (s.view.unsafe) body.innerHTML = '<span class="ev-warn">⚠ NOT SAFE PRACTICE · NOT PERFORMED</span>' + t.warn;
+    else body.innerHTML = '<span class="ev-proc">' + t.proc + '</span>' + reading(t, s.cause);
+  }
+
+  function renderBar() {
+    var show = { back: s.stage === 'diagnose' || s.stage === 'defend', 'to-diag': s.stage === 'investigate',
+                 'to-defend': s.stage === 'diagnose', submit: s.stage === 'defend' };
+    Object.keys(show).forEach(function (k) { q(k).style.display = show[k] ? '' : 'none'; });
+    q('to-diag').disabled = !s.run.length;
+    q('to-defend').disabled = s.diag < 0 || s.repair < 0;
+    q('submit').disabled = !s.tags.length;
+    var count = 'Tests run: ' + s.run.length + ' · Unsafe choices: ' + s.unsafe.length;
+    if (s.stage === 'investigate' && !s.run.length) count = 'Run at least one test to unlock Diagnose.';
+    else if (s.stage === 'investigate' && outOfTime()) count = 'Out of time: diagnose with what you have.';
+    if (s.stage === 'defend') count = s.tags.length ? s.tags.length + ' reading' + (s.tags.length > 1 ? 's' : '') + ' tagged' : 'Tag at least one reading to submit.';
+    if (s.stage === 'record') count = 'Press New case to solve a different cause.';
+    q('count').textContent = count;
+    var rem = left(), pct = Math.min(100, s.used / w.budget * 100);
+    q('dt-val').textContent = s.used + ' / ' + w.budget + ' min';
+    var fill = q('dt-fill');
+    fill.style.width = pct + '%';
+    fill.className = 'dt-fill' + (outOfTime() ? ' out' : rem <= w.budget / 4 ? ' low' : '');
+    var chip = q('status');
+    var name = { investigate: 'INVESTIGATE', diagnose: 'DIAGNOSE', defend: 'DEFEND', record: 'RECORDED' }[s.stage];
+    if (s.stage === 'investigate' && s.run.length && outOfTime()) name = 'OUT OF TIME';
+    chip.className = 'status-chip ' + (name === 'OUT OF TIME' ? 'bad' : { investigate: 'busy', diagnose: 'caution', defend: 'caution', record: 'ok' }[s.stage]);
+    chip.textContent = name;
+  }
+
+  function renderRecord(el2) {
+    var c = w.causes[s.cause];
+    var ranKeys = c.key.filter(function (k) { return s.run.indexOf(k) >= 0; });
+    var keyRan = ranKeys.length > 0;
+    function names(ids, join) { return ids.map(function (k) { return test(k).name; }).join(join); }
+    var nRel = s.run.filter(function (id) { return relevant(test(id)); }).length;
+    var d = w.diagnoses[s.diag], r = w.repairs[s.repair];
+    var dOK = d.cause === s.cause, rOK = r.fixes === s.cause, safe = !s.unsafe.length && !r.unsafe;
+    var trueIdx = w.diagnoses.map(function (o) { return o.cause; }).indexOf(s.cause);
+    var struckTrue = s.struck.indexOf(trueIdx) >= 0;
+    function justified(i) {
+      var o = w.diagnoses[i];
+      return s.run.some(function (id) { var t = test(id); return reading(t, o.cause) !== reading(t, s.cause); });
+    }
+    var unjust = s.struck.filter(function (i) { return i !== trueIdx && !justified(i); });
+    var elimOK = s.struck.length > 0 && !struckTrue && !unjust.length;
+    var tagKeys = c.key.filter(function (k) { return s.tags.indexOf(k) >= 0; });
+    var defOK = dOK && tagKeys.length > 0;
+    var score = [keyRan, safe, elimOK, dOK, rOK, defOK].filter(Boolean).length;
+    function mark(ok) { return ok ? '<span class="ok">✓</span> ' : '<span class="no">✗</span> '; }
+    var rows = [
+      ['Key evidence', mark(keyRan) + (keyRan ? 'You checked the ' + names(ranKeys, ' and ') + ' result' + (ranKeys.length > 1 ? 's.' : '.') : 'Not checked: the ' + names(c.key, ' or ') + ' result.')],
+      ['Safety', mark(safe) + (safe ? 'No unsafe choices.' : s.unsafe.length + ' unsafe choice' + (s.unsafe.length > 1 ? 's' : '') + ' made.')],
+      ['Ruled out', mark(elimOK) + (struckTrue ? 'You struck out the actual cause (see the ' + names(c.key, ' or ') + ' result).'
+        : unjust.length ? 'No result you took rules out “' + w.diagnoses[unjust[0]].text + '” yet.'
+        : s.struck.length ? (s.struck.length > 1 ? s.struck.length + ' causes struck out, each ruled out by your evidence.' : '1 cause struck out, ruled out by your evidence.') : 'You did not strike out any causes.')],
+      ['Diagnosis', mark(dOK) + (dOK ? c.name + '.' : 'Actual cause: ' + c.name + '.')],
+      ['Fix', mark(rOK) + (rOK ? r.text + '.' : (r.note || 'It does not fix the actual cause.'))],
+      ['Defended', mark(defOK) + (defOK ? 'You backed it with the ' + names(tagKeys, ' and ') + ' result' + (tagKeys.length > 1 ? 's.' : '.')
+        : tagKeys.length ? 'The ' + names(tagKeys, ' and ') + ' result you tagged points to the actual cause, not your diagnosis.'
+        : 'No key result tagged (the ' + names(c.key, ' or ') + ' result).')],
+    ];
+    var stats = s.used + ' of ' + w.budget + ' min · ' + s.run.length + ' test' + (s.run.length === 1 ? '' : 's') + ', ' + nRel + ' useful';
+    el2.innerHTML = '<div class="sim-head"><span>Record <span class="sim-note">' + stats + '</span></span><span class="rec-score">Score ' + score + ' / 6</span></div>' +
+      '<table class="rec-table">' + rows.map(function (row) { return '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td></tr>'; }).join('') + '</table>' +
+      '<div class="rec-why"><b>Why:</b> ' + c.why + '</div>';
+  }
+
+  function renderAll() { renderInfo(); renderWork(); renderEvidence(); renderBar(); }
+  function go(stage) { s.stage = stage; renderAll(); }
+  q('to-diag').addEventListener('click', function () { go('diagnose'); });
+  q('to-defend').addEventListener('click', function () { if (s.diag >= 0 && s.repair >= 0) go('defend'); });
+  q('back').addEventListener('click', function () { go(s.stage === 'defend' ? 'diagnose' : 'investigate'); });
+  q('submit').addEventListener('click', function () { if (!s.tags.length) return; s.stage = 'record'; renderAll(); });
+  q('new').addEventListener('click', function () { s = fresh(s.cause); renderAll(); });
+  renderAll();
+}
+
+initSyncDeckReveal({
+  deckId: 'building-the-vex-circuit',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    var kit = getLiveElementById('fcb-kit');
+    if (kit) initLabelBuilder(kit);
+    var wo = getLiveElementById('service-call');
+    if (wo) buildServiceCall(wo);
+  },
+});
+</script>
+</body>
+</html>
