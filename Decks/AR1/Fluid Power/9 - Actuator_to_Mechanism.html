@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="14y3t8o">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9 - From Actuator to Mechanism</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   Deck 9: VEXploration, from actuator to mechanism (Day 9)
+   Color meaning, as in the rest of the unit: blue = air and
+   pneumatic parts, green = key terms, yellow = pins, pivots and
+   cautions, coral = faults.
+   ============================================================ */
+
+.opt-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: var(--gap); }
+.opt-list li { font-size: var(--body); line-height: 1.4; color: var(--text); display: flex; gap: 16px; align-items: baseline; }
+.mcq-letter { font-family: var(--font-mono); font-weight: 700; color: var(--accent); min-width: 28px; }
+.q-head { font-size: var(--body); color: var(--text-muted); margin-top: var(--gap); }
+.warn-color { color: var(--warn); }
+
+/* Steps */
+.steps { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; margin-top: var(--gap); }
+.step { display: flex; gap: 16px; align-items: flex-start; background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 14px 18px; }
+.step-n { font-family: var(--font-mono); font-size: 26px; font-weight: 700; color: var(--accent); min-width: 26px; }
+.step p { font-size: var(--body); line-height: 1.4; color: var(--text-muted); margin: 0; }
+.step.caution { border-color: rgba(255,209,102,0.45); }
+.step.caution .step-n { color: var(--warn); }
+
+/* Excavator photo */
+.ex-photo { display: block; width: 100%; border-radius: 10px; box-shadow: 0 0 0 1px var(--accent-border), 0 6px 24px rgba(0,0,0,0.5); }
+
+/* Pivot diagrams */
+.pv-fig { display: block; width: 100%; height: auto; }
+.pv-fig text, .arm-svg text { font-family: 'DM Sans', sans-serif; }
+.pv-lbl { font-size: 24px; font-weight: 700; fill: var(--text); }
+.pv-warn { font-size: 24px; font-weight: 700; fill: var(--warn); }
+.pv-bad { font-size: 24px; font-weight: 700; fill: var(--bad); }
+.pv-cap { font-size: var(--body); line-height: 1.4; color: var(--text-muted); margin-top: 6px; }
+.pv-card { background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 10px; padding: 14px 20px 18px; }
+.pv-card.bad { border-color: rgba(255,138,128,0.5); }
+.pv-card h3 { margin-bottom: 4px; }
+
+/* Lever math */
+.calc { display: flex; flex-direction: column; gap: 14px; }
+.calc-line { font-family: var(--font-mono); font-size: 32px; color: var(--text); }
+.calc-line .ans { color: var(--result); font-weight: 700; }
+.calc-note { font-size: var(--body); color: var(--text-muted); line-height: 1.45; }
+
+/* Pivot arm simulator */
+.arm-sim { display: grid; grid-template-columns: 700px 1fr; gap: 26px; align-items: start; }
+.arm-svg { display: block; width: 700px; height: 556px; background: rgba(10,17,32,0.6); border: 1px solid var(--accent-border); border-radius: 10px; }
+.arm-lbl { font-size: 22px; font-weight: 700; fill: var(--text); }
+.arm-ang { font-size: 26px; font-weight: 700; fill: var(--warn); }
+.arm-panel { display: flex; flex-direction: column; gap: 12px; }
+.arm-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.arm-row .ctl-name { font-size: var(--small); color: var(--text-muted); min-width: 150px; }
+.arm-row .ctl-val { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--text); min-width: 70px; }
+.arm-row .seg-btn { font-size: 22px; padding: 6px 12px; }
+.arm-range { width: 260px; accent-color: var(--warn); }
+.arm-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.arm-tile { background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 6px 10px; display: flex; flex-direction: column; gap: 2px; }
+.arm-tile .t-name { font-size: 22px; color: var(--text-muted); }
+.arm-tile .t-val { font-family: var(--font-mono); font-size: 26px; font-weight: 700; color: var(--text); }
+.arm-status { box-sizing: border-box; height: 156px; font-size: 24px; line-height: 1.4; color: var(--text); background: var(--bg-card); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; padding: 10px 16px; }
+.arm-status.bad { border-left-color: var(--bad); }
+.arm-status.warn { border-left-color: var(--warn); }
+.arm-log { box-sizing: border-box; height: 132px; overflow-y: auto; overscroll-behavior: contain; background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 0 12px 6px; scrollbar-color: rgba(93,170,255,0.6) transparent; }
+.arm-log table { width: 100%; border-collapse: collapse; font-size: 22px; }
+.arm-log th { box-shadow: 0 -8px 0 var(--bg-card); position: sticky; top: 0; background: var(--bg-card); text-align: left; color: var(--text-muted); font-weight: 700; padding: 6px 6px 2px; }
+.arm-log td { color: var(--text); padding: 2px 6px; font-family: var(--font-mono); }
+.arm-log .empty td { color: var(--text-muted); font-family: var(--font-ui); }
+.arm-btns { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* Matching pairs (adapted from CSP 2.4) */
+.match-wrap { display: flex; flex-direction: column; gap: 14px; width: 100%; margin-top: 10px; }
+.match-status { display: flex; align-items: center; gap: 14px; }
+.match-badge { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--text); border: 1px solid var(--accent-border); border-radius: 999px; padding: 4px 14px; }
+.match-badge.amber { border-color: rgba(255,209,102,0.6); color: var(--warn); }
+.match-badge.perfect { border-color: rgba(77,255,176,0.6); color: var(--result); animation: badge-pulse-glow 1.6s ease-in-out infinite; }
+.match-complete { font-size: var(--body); color: var(--result); font-weight: 700; }
+.match-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 18px; width: 100%; }
+.match-card {
+  all: unset;
+  position: relative;
+  cursor: pointer;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 150px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: var(--body);
+  line-height: 1.3;
+  color: var(--text);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.match-card.match-card-term { border-left: 5px solid var(--bad); font-weight: 700; }
+.match-card:hover:not(.mc-matched) { border-color: var(--accent); }
+.match-card.match-card-term:hover:not(.mc-matched) { border-left-color: var(--bad); }
+.match-card.mc-selected { border-color: var(--warn); background: rgba(255,209,102,0.10); }
+.match-card.mc-matched { cursor: default; border: 2px solid var(--result); background: rgba(77,255,176,0.10); }
+.match-card .mc-badge { position: absolute; top: -12px; right: -12px; width: 28px; height: 28px; border-radius: 50%; background: var(--result); color: #04150f; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; }
+.match-card.mc-wrong { border-color: var(--bad); background: rgba(255,138,128,0.10); animation: mc-shake 0.4s ease; }
+@keyframes mc-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@keyframes badge-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(77,255,176,0.5); }
+  50%      { box-shadow: 0 0 16px 5px rgba(77,255,176,0.45); }
+}
+.match-key { display: flex; gap: 24px; font-size: 22px; color: var(--text-muted); }
+.match-key b { color: var(--text); }
+.key-sym { border-left: 5px solid var(--bad); padding-left: 10px; }
+.key-cause { border-left: 1px solid var(--accent-border); padding-left: 10px; }
+.match-perfect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6,11,20,0.92);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.match-perfect-overlay.visible { opacity: 1; pointer-events: auto; cursor: pointer; }
+.match-perfect-badge { display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0; }
+.match-perfect-overlay.visible .match-perfect-badge { animation: match-perfect-pop 0.7s ease both; }
+.match-perfect-check { font-size: 220px; line-height: 1; color: var(--result); filter: drop-shadow(0 0 46px rgba(77,255,176,0.55)); }
+.match-perfect-text { font-size: 84px; font-weight: 700; color: var(--text); text-shadow: 0 0 34px rgba(93,170,255,0.45); }
+.match-perfect-hint { font-family: var(--font-mono); font-size: var(--small); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+@keyframes match-perfect-pop {
+  0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  75%  { transform: scale(0.96) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<div class="reveal"><div class="slides">
+
+<!-- SLIDE 01 · Title -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 5 &nbsp;·&nbsp; VEXploration</span>
+    <h1 class="title-h1">From Actuator to <span class="pneu">Mechanism</span></h1>
+    <p class="lead" style="margin-top:var(--gap);text-align:center;">Your cylinder pushes in a straight line. Today you make it swing an arm.</p>
+  </div>
+  <div class="glow" style="width:620px;height:620px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(93,170,255,0.07),transparent 70%);"></div>
+  <div class="glow" style="width:560px;height:560px;right:-140px;bottom:-160px;background:radial-gradient(circle,rgba(255,209,102,0.05),transparent 70%);"></div>
+</section>
+
+<!-- SLIDE 02 · Straight line to a swing -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">VEXploration</span>
+    <h2>From a Push to a Swing</h2>
+    <p class="prose">A cylinder is an <span class="term">actuator</span>: it makes motion, but only in a straight line. Most machines need something else, such as a flipper that knocks a part aside, a gate that lifts, or a bucket that tips.</p>
+    <p class="prose fragment fade-up">In Mechanical Linkages you joined links with pivots to change motion. A cylinder can be one of those links. Attach it to an arm on a pivot, and its straight push becomes a <span class="term">swing</span>.</p>
+    <p class="prose fragment fade-up">Today every team turns its cylinder into a <span class="pneu">pivoting arm</span>, then tests where the rod should attach.</p>
+  </div>
+  <aside class="notes">VEXploration lesson 3 of 3 (plan Day 9). Standards: 7.2 (fluid power in robotics), 7.9 (build a pneumatic circuit), 7.10 (troubleshooting), with 10.x linkages as a connection. Teams keep the circuit and flow fitting from last lesson. The frame, the arm and the cylinder form a triangle in which the cylinder is a link that changes length.</aside>
+</section>
+
+<!-- SLIDE 03 · Resonance: predict (poll) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:2:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Predict: A cylinder&#39;s rod can attach to an arm close to the arm&#39;s pivot or far from it. Which makes the arm swing farther?", "responseTimeLimitMs": 45000, "options": [{"id": "q1a", "text": "Attaching close to the pivot", "isCorrect": false}, {"id": "q1b", "text": "Attaching far from the pivot", "isCorrect": false}, {"id": "q1c", "text": "The swing is the same either way", "isCorrect": false}], "order": 0}, {"id": "q2", "type": "multiple-choice", "text": "Predict: Which lets the tip of the arm lift a heavier part?", "responseTimeLimitMs": 45000, "options": [{"id": "q2a", "text": "Attaching close to the pivot", "isCorrect": false}, {"id": "q2b", "text": "Attaching far from the pivot", "isCorrect": false}, {"id": "q2c", "text": "The lifting force is the same either way", "isCorrect": false}], "order": 1}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict</span>
+    <h2>Make Your Prediction</h2>
+    <p class="lead">A cylinder&rsquo;s rod can attach to an arm <span class="warn-color">close to the arm&rsquo;s pivot</span> or <span class="warn-color">far from it</span>.</p>
+    <p class="lead">1. Which makes the arm swing farther?</p>
+    <p class="lead">2. Which lets the tip of the arm lift a heavier part?</p>
+  </div>
+  <aside class="notes">An ungraded poll; every option is marked not correct so nobody is scored. Do not give the answers yet. Close to the pivot swings farther; far from the pivot lifts more. Slide 6 shows why, and the simulator lets teams test it.</aside>
+</section>
+
+<!-- SLIDE 04 · Excavator -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Real Machines</span>
+    <h2>Look for the Pins</h2>
+    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+      <img class="ex-photo img-zoomable" src="Intro_to_Fluid_Power_Assets/excavator.jpg" alt="A red excavator arm holds a large bucket over a trench. Metal rods and hoses run along the arm.">
+      <div>
+        <p class="prose">Every cylinder on an excavator arm is held by a <span class="warn-color">pin at each end</span>: one on the cylinder body and one on the rod.</p>
+        <p class="prose fragment fade-up">As a cylinder pushes, the part it drives swings on its own pivot, so the cylinder has to <span class="term">tilt</span> as it works. The pins let it tilt.</p>
+        <p class="prose fragment fade-up">Find three cylinders in the photo. For each one, what does it swing?</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Click the photo to zoom. The boom cylinder lifts the boom, the stick (arm) cylinder swings the stick, and the bucket cylinder curls the bucket through a short linkage. Every one is pinned at both ends. Hydraulic instead of pneumatic, but the mechanism idea is the same.</aside>
+</section>
+
+<!-- SLIDE 05 · Why both ends pivot -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Mounting</span>
+    <h2>Why Both Ends Must Pivot</h2>
+    <p class="prose">The rod pushes on a point that moves along a curve. If the cylinder cannot tilt to follow it, the rod gets pushed sideways.</p>
+    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+      <div class="pv-card">
+        <h3 style="color:var(--result);">Pivots at both ends</h3>
+        <svg class="pv-fig" viewBox="0 0 640 330" role="img" aria-label="An arm on a pivot, lifted 45 degrees by a cylinder. The cylinder is pinned at its base and at the rod, so it leans to follow the arm.">
+          <g transform="translate(60 0)">
+          <rect x="40" y="300" width="560" height="14" fill="#2a3a52"/>
+          <rect x="98" y="170" width="24" height="130" fill="#3b4d66" stroke="#8a9bb0" stroke-width="2"/>
+          <g transform="rotate(-45 110 170)">
+            <rect x="98" y="159" width="196" height="22" rx="6" fill="#c9d6e6"/>
+          </g>
+          <line x1="200" y1="290" x2="186.4" y2="195" stroke="#b8c7d9" stroke-width="22"/>
+          <line x1="186.4" y1="195" x2="173.6" y2="106.4" stroke="#e8f2ff" stroke-width="8"/>
+          <path d="M182 300 L218 300 L200 282 Z" fill="#3b4d66"/>
+          <circle cx="110" cy="170" r="8" fill="#ffd166"/>
+          <circle cx="173.6" cy="106.4" r="8" fill="#ffd166"/>
+          <circle cx="200" cy="290" r="8" fill="#ffd166"/>
+          <text x="80" y="210" text-anchor="end" class="pv-lbl">Arm pivot</text>
+          <text x="196" y="124" class="pv-warn">Rod pin</text>
+          <text x="222" y="280" class="pv-warn">Base pin</text>
+          <text x="232" y="196" class="pv-lbl">Cylinder leans</text>
+          </g>
+        </svg>
+        <p class="pv-cap">The cylinder leans to follow the arm, so it only pushes along its own length.</p>
+      </div>
+      <div class="pv-card bad fragment fade-up">
+        <h3 style="color:var(--bad);">Base bolted solid</h3>
+        <svg class="pv-fig" viewBox="0 0 640 330" role="img" aria-label="The same arm, but the cylinder base is bolted solid so the cylinder stays straight up. The rod is bent sideways to reach the arm.">
+          <g transform="translate(60 0)">
+          <rect x="40" y="300" width="560" height="14" fill="#2a3a52"/>
+          <rect x="98" y="170" width="24" height="130" fill="#3b4d66" stroke="#8a9bb0" stroke-width="2"/>
+          <g transform="rotate(-45 110 170)">
+            <rect x="98" y="159" width="196" height="22" rx="6" fill="#c9d6e6"/>
+          </g>
+          <line x1="200" y1="290" x2="200" y2="194" stroke="#b8c7d9" stroke-width="22"/>
+          <path d="M200 194 Q200 136 173.6 106.4" fill="none" stroke="#ff8a80" stroke-width="8"/>
+          <rect x="176" y="262" width="48" height="38" fill="#3b4d66" stroke="#8a9bb0" stroke-width="2"/>
+          <circle cx="188" cy="281" r="4" fill="#c9d6e6"/>
+          <circle cx="212" cy="281" r="4" fill="#c9d6e6"/>
+          <circle cx="110" cy="170" r="8" fill="#ffd166"/>
+          <circle cx="173.6" cy="106.4" r="8" fill="#ffd166"/>
+          <text x="80" y="210" text-anchor="end" class="pv-lbl">Arm pivot</text>
+          <text x="216" y="150" class="pv-bad">Rod bent sideways</text>
+          <text x="236" y="288" class="pv-lbl">Bolted, cannot tilt</text>
+          </g>
+        </svg>
+        <p class="pv-cap">The rod is forced sideways, so the arm <span class="bad-color">binds</span> and the rod or its seal can be damaged.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">On the VEX cylinder, the cap end has a hole for a screw or shaft at right angles to the cylinder, so the base can pivot. The rod has an #8-32 threaded end that takes standard VEX hardware; connect it to the arm through a joint that can turn. Show the hardware your kits use. A side load also wears the rod seal and can make the cylinder leak.</aside>
+</section>
+
+<!-- SLIDE 06 · Where the rod attaches -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">The Lever</span>
+    <h2>Where the Rod Attaches</h2>
+    <p class="prose">The arm is a <span class="term">lever</span>. The cylinder pushes close to the pivot, and the part sits at the tip. The <span class="warn-color">lever ratio</span> compares the two distances.</p>
+    <div class="calc" style="margin-top:var(--gap);">
+      <div class="calc-note fragment fade-up">The VEX cylinder pushes with about 6&nbsp;lb at 50&nbsp;psi, and its rod moves about 2&nbsp;in. Attach it 2&nbsp;in from the pivot of a 6&nbsp;in arm.</div>
+      <div class="calc-line fragment fade-up">Lever ratio: 6&nbsp;in &divide; 2&nbsp;in = <span class="ans">3</span></div>
+      <div class="calc-line fragment fade-up">Force at the tip: 6&nbsp;lb &divide; 3 &asymp; <span class="ans">2&nbsp;lb</span></div>
+      <div class="calc-line fragment fade-up">Tip travel: 2&nbsp;in &times; 3 &asymp; <span class="ans">6&nbsp;in</span></div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">Attach <span class="pneu">closer to the pivot</span> and the arm swings farther but pushes with less force. Attach <span class="pneu">farther out</span> and it pushes harder but swings less. As with mechanical advantage, you trade force for distance.</p>
+  </div>
+  <aside class="notes">This answers the opening poll. The numbers are the small-angle lever approximation: tip force = cylinder force &divide; lever ratio, tip travel = rod travel &times; lever ratio. The 6&nbsp;lb comes from Deck 8 (6.1&nbsp;lb on the 0.122&nbsp;in&sup2; bore at 50&nbsp;psi), and 2&nbsp;in is the 50&nbsp;mm stroke. The simulator next works out the real geometry, which changes as the arm swings. Same idea as the pulleys lesson: force times distance stays about the same.</aside>
+</section>
+
+<!-- SLIDE 07 · Resonance: lever check -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:6:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "A cylinder pushes with 6 lb. Its rod attaches to an arm 3 in from the arm&#39;s pivot, and the part sits at the tip, 6 in from the pivot. About how much force can the tip push with?", "responseTimeLimitMs": 90000, "options": [{"id": "q1a", "text": "About 12 lb", "isCorrect": false}, {"id": "q1b", "text": "About 3 lb", "isCorrect": true}, {"id": "q1c", "text": "About 6 lb", "isCorrect": false}, {"id": "q1d", "text": "About 18 lb", "isCorrect": false}], "order": 0}, {"id": "q2", "type": "multiple-choice", "text": "The team moves the rod to a hole 1.5 in from the pivot. What happens to the arm?", "responseTimeLimitMs": 60000, "options": [{"id": "q2a", "text": "It swings less and pushes harder", "isCorrect": false}, {"id": "q2b", "text": "It swings the same amount but pushes harder", "isCorrect": false}, {"id": "q2c", "text": "It swings farther and pushes with less force", "isCorrect": true}, {"id": "q2d", "text": "It swings farther and pushes harder", "isCorrect": false}], "order": 1}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check</span>
+    <h2>Check the Lever</h2>
+    <p class="lead">A cylinder pushes with 6&nbsp;lb. Its rod attaches to an arm 3&nbsp;in from the pivot, and the part sits at the tip, 6&nbsp;in from the pivot.</p>
+    <p class="lead">1. About how much force can the tip push with?</p>
+    <p class="lead">2. If the rod moves to a hole 1.5&nbsp;in from the pivot, what happens to the arm?</p>
+  </div>
+  <aside class="notes">1: the lever ratio is 6 &divide; 3 = 2, so the tip pushes with about 6 &divide; 2 = 3&nbsp;lb. 12&nbsp;lb multiplies by the ratio, 18&nbsp;lb multiplies by the distance, and 6&nbsp;lb ignores the lever. 2: closer to the pivot, the ratio rises to 4, so the arm swings farther and pushes with less force (about 1.5&nbsp;lb).</aside>
+</section>
+
+<!-- SLIDE 08 · Arm simulator briefing -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Pivot Arm Simulator</span>
+    <h2>Test It Before You Build</h2>
+    <p class="prose">The <span class="term">pivot arm simulator</span> has a 6&nbsp;in arm, a 50&nbsp;mm VEX cylinder at 50&nbsp;psi, and a stop that keeps the arm from flipping over. Choose the hole the rod attaches to, the load on the tip, and how the base is mounted.</p>
+    <div class="ask fragment fade-up"><b>1.</b> With no load, find a hole that swings the arm about <span class="warn-color">45&deg;</span>. Which holes slam it into the stop?</div>
+    <div class="ask fragment fade-up"><b>2.</b> Put <span class="warn-color">2&nbsp;lb</span> on the tip. Which holes can still lift it, and how far?</div>
+    <div class="ask fragment fade-up"><b>3.</b> Bolt the base solid and extend. What happens, and why? Record each trial in your notebook.</div>
+  </div>
+  <aside class="notes">The model: the cylinder base sits straight below the chosen hole, so the cylinder starts upright with a 4&nbsp;in pin-to-pin length and a 2&nbsp;in stroke. It solves the real geometry for the swing, checks the cylinder&rsquo;s torque against the load at every angle, and stops at 110&deg;. A bolted base binds once the attach point moves sideways about 0.05&nbsp;in (10&deg; to 18&deg;). Expected with no load: 2&nbsp;in swings about 67&deg;, 2.5&nbsp;in about 50&deg;, 3&nbsp;in about 40&deg;, 4&nbsp;in about 29&deg;; 1&nbsp;in and 1.5&nbsp;in hit the stop. With 2&nbsp;lb only the 2&nbsp;in hole and farther can lift it; 3&nbsp;lb needs 3&nbsp;in or farther; 4&nbsp;lb needs the 4&nbsp;in hole. In this model a load either lifts all the way or not at all, because the cylinder&rsquo;s leverage grows as the arm rises; real arms can still stall partway when the tank runs low.</aside>
+</section>
+
+<!-- SLIDE 09 · Arm simulator -->
+<section data-prevent-swipe>
+  <div class="slide-inner" style="max-width:1600px;padding:36px 36px 30px;justify-content:flex-start;">
+    <span class="slide-tag" style="margin-bottom:8px;">Pivot Arm Simulator &nbsp;·&nbsp; Simplified model</span>
+    <div class="arm-sim" id="arm-sim">
+      <svg class="arm-svg" viewBox="0 0 700 556" width="700" height="556" role="img" aria-label="Side view of a VEX arm on a pivot post. A cylinder below the arm pushes on it from a pin on the base plate. The arm swings up when the cylinder extends." data-r="svg"></svg>
+      <div class="arm-panel">
+        <div class="arm-row">
+          <span class="ctl-name">Signal</span>
+          <span class="seg"><button type="button" class="seg-btn" data-sig="0" aria-pressed="true">Low: retract</button><button type="button" class="seg-btn" data-sig="1" aria-pressed="false">High: extend</button></span>
+        </div>
+        <div class="arm-row">
+          <span class="ctl-name">Rod attaches</span>
+          <span class="seg" data-r="holes"></span>
+          <span class="ctl-name" style="min-width:0;">in from pivot</span>
+        </div>
+        <div class="arm-row">
+          <span class="ctl-name">Load at tip</span>
+          <input type="range" class="arm-range" data-r="load" min="0" max="4" step="0.5" value="0" aria-label="Load at the tip of the arm in pounds">
+          <span class="ctl-val" data-r="v-load"></span>
+        </div>
+        <div class="arm-row">
+          <span class="ctl-name">Cylinder base</span>
+          <span class="seg"><button type="button" class="seg-btn" data-mount="pivot" aria-pressed="true">Pivots</button><button type="button" class="seg-btn" data-mount="solid" aria-pressed="false">Bolted solid</button></span>
+        </div>
+        <div class="arm-tiles">
+          <div class="arm-tile"><span class="t-name">Lever ratio</span><span class="t-val" data-r="t-ratio"></span></div>
+          <div class="arm-tile"><span class="t-name">Tip force</span><span class="t-val" data-r="t-force"></span></div>
+          <div class="arm-tile"><span class="t-name">Swing</span><span class="t-val" data-r="t-swing"></span></div>
+          <div class="arm-tile"><span class="t-name">Tip travel</span><span class="t-val" data-r="t-travel"></span></div>
+        </div>
+        <div class="arm-status" data-r="status" aria-live="polite"></div>
+        <div class="arm-log"><table><thead><tr><th>#</th><th>Hole</th><th>Load</th><th>Base</th><th>Swing</th><th>Result</th></tr></thead><tbody data-r="log"></tbody></table></div>
+        <div class="arm-btns"><button type="button" class="sim-btn" data-r="rec">Record trial</button><button type="button" class="sim-btn alt" data-r="clear">Clear</button></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Tip force is the starting force at the tip (cylinder force &divide; lever ratio). Swing and tip travel fill in after an extension. Changing a setting lowers the arm and starts a new trial. Ask teams to predict before each High.</aside>
+</section>
+
+<!-- SLIDE 10 · Build it -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Build</span>
+    <h2>Build a Pivoting Arm</h2>
+    <div class="steps">
+      <div class="step caution"><span class="step-n">1</span><p><span class="warn-color">Glasses on.</span> Then close the shut-off valve so the cylinder is vented while you build.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">2</span><p>Mount a bar on a shaft through a bearing so it swings freely. That shaft is the <span class="term">arm pivot</span>.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">3</span><p>Attach the cylinder&rsquo;s cap end with a screw or shaft through its hole, so the <span class="warn-color">base can pivot</span>.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">4</span><p>Connect the rod&rsquo;s threaded end to a hole near the pivot with hardware that lets the <span class="warn-color">joint turn</span>.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">5</span><p>With the air off, move the arm by hand through the whole stroke. It must swing <span class="term">without forcing</span>.</p></div>
+      <div class="step caution fragment fade-up"><span class="step-n">6</span><p>Keep hands out of the arm&rsquo;s swing. Open the shut-off valve and test with last lesson&rsquo;s flow fitting.</p></div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.9 and 7.4. Step 5 is the important habit: a mechanism that binds by hand will bind under air, and it is much safer to find that with the air off. The arm is a pinch point at the pivot and where the rod meets it. Keep the flow fitting on the rod-end port so extension, the lifting stroke, is gentle.</aside>
+</section>
+
+<!-- SLIDE 11 · Test and record -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Bench Test</span>
+    <h2>Test Two Holes</h2>
+    <p class="prose">Run your arm with the rod in at least <span class="term">two different holes</span>. Close the shut-off valve every time you move the rod.</p>
+    <div class="ask fragment fade-up">For each hole, record the <span class="warn-color">distance from the pivot</span>, about how far the arm swings, and how long the swing takes.</div>
+    <div class="ask fragment fade-up">Find the heaviest load the tip can lift at each hole, using washers or another load your teacher provides.</div>
+    <div class="ask fragment fade-up">Note anything that <span class="bad-color">binds, rubs or slams</span>, and what you changed to fix it.</div>
+  </div>
+  <aside class="notes">A protractor held at the pivot, or a phone photo at each end of the swing, works for the angle. Compare the bench with the simulator: friction, the real base position and a tank that empties as you run all make the bench differ.</aside>
+</section>
+
+<!-- SLIDE 12 · Notebook -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Notebook</span>
+    <h2>Record Your Mechanism</h2>
+    <div class="ask">Sketch your arm from the side. Mark the <span class="warn-color">three pivots</span> and draw the tip&rsquo;s <span class="term">motion path</span> as an arc.</div>
+    <div class="ask fragment fade-up">Trace the air for the lifting stroke: which port fills, which empties, and where the flow fitting slows it.</div>
+    <div class="ask fragment fade-up">Your table from both holes, and one sentence on the <span class="term">trade-off</span> you found.</div>
+    <div class="ask fragment fade-up">Where would this arm be useful on a robot or a factory line? What would it move?</div>
+  </div>
+  <aside class="notes">The plan&rsquo;s Day 9 evidence: mechanism sketch with motion path, an energy and control chain (signal, valve, air, cylinder, arm), and a reflection on robot or factory use (ADE 7.2). The next lesson starts the Assembly Line project, which needs a mechanism like this.</aside>
+</section>
+
+<!-- SLIDE 13 · Diagnose the mechanism (matching) -->
+<section data-prevent-swipe>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+    <span class="slide-tag">Troubleshooting</span>
+    <h2>Diagnose the Mechanism</h2>
+    <p class="prose" style="margin-top:4px;">Each <span class="bad-color">symptom</span> has one cause. Click a symptom, then the cause that explains it.</p>
+    <div class="match-wrap" id="match-arm">
+      <div class="match-status">
+        <span class="match-badge" data-match-score>0 of 6 matched</span>
+        <span class="match-badge amber" data-match-attempts>0 attempts</span>
+        <span class="match-key"><span class="key-sym"><b>Symptom</b></span><span class="key-cause">Cause</span></span>
+        <span class="match-complete" data-match-complete style="display:none;">Every arm is fixed.</span>
+      </div>
+      <div class="match-grid" data-match-grid></div>
+    </div>
+  </div>
+  <div class="match-perfect-overlay" data-match-overlay aria-hidden="true">
+    <div class="match-perfect-badge">
+      <span class="match-perfect-check">&#10003;</span>
+      <span class="match-perfect-text">Perfect Diagnosis!</span>
+      <span class="match-perfect-hint">Click to see the board</span>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.10. Pairs: slams into the stop / attached very close to the pivot; strong but swings only a little / attached far from the pivot; jams with a bent rod / base bolted solid; stalls with a part at 20&nbsp;psi / regulator too low; throws the part / no flow fitting slowing extension; lifts when it should lower / A and B tubes swapped. Perfect means no wrong tries. Ask: which symptoms could you check with the air off?</aside>
+</section>
+
+<!-- SLIDE 14 · Before you leave -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Safety</span>
+    <h2>Before You Leave</h2>
+    <p class="prose">Close the shut-off valve, then stop the program. Lower the arm by hand only after the cylinder is vented.</p>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">The tank is <span class="warn-color">still charged</span>. Empty it with your teacher before the kit is stored. Keep your sketch: the next lesson starts the <span class="term">Assembly Line</span> project, and your station will need a mechanism like this one.</p>
+  </div>
+  <aside class="notes">Next lesson (plan Day 10) introduces the Assembly Line project brief.</aside>
+</section>
+
+<!-- SLIDE 15 · Resonance: exit ticket -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:14:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "A team&#39;s pivoting arm cannot lift a heavier part. Without changing the pressure, which change helps most?", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "Move the rod to a hole closer to the pivot", "isCorrect": false}, {"id": "q1b", "text": "Add a flow fitting to slow the extension", "isCorrect": false}, {"id": "q1c", "text": "Bolt the cylinder base solid so it cannot move", "isCorrect": false}, {"id": "q1d", "text": "Move the rod to a hole farther from the pivot", "isCorrect": true}]}, {"id": "q2", "type": "free-response", "text": "Name a place on a robot or a factory line where a cylinder-driven arm would be useful. Explain why the cylinder needs a pivot at both ends.", "order": 1, "responseTimeLimitMs": 150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Before You Go</h2>
+    <p class="q-head">1. A team&rsquo;s pivoting arm cannot lift a heavier part. Without changing the pressure, which change helps most?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>Move the rod to a hole closer to the pivot</li>
+      <li><span class="mcq-letter">B</span>Add a flow fitting to slow the extension</li>
+      <li><span class="mcq-letter">C</span>Bolt the cylinder base solid so it cannot move</li>
+      <li><span class="mcq-letter">D</span>Move the rod to a hole farther from the pivot</li>
+    </ol>
+    <p class="q-head">2. Name a place on a robot or a factory line where a cylinder-driven arm would be useful. Explain why the cylinder needs a pivot at both ends.</p>
+  </div>
+  <aside class="notes">Q1: farther from the pivot lowers the lever ratio, so the tip pushes harder (and swings less). Closer makes it weaker; a flow fitting changes speed, not force; a solid base binds. Q2: the arm&rsquo;s attach point moves on an arc, so the cylinder must tilt to follow it or the rod is pushed sideways and binds.</aside>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function (el) { return !el.closest('#storyboard'); }
+  );
+}
+
+/* ── Pivot arm simulator ─────────────────────────────────────────
+   Side view, inches. The arm pivots at O = (0, 0) and points along
+   +x at rest. The rod pin sits r inches out along the arm; the
+   cylinder base pin sits straight below it at (r, -L0), so the
+   cylinder starts upright. Extending lengthens the pin-to-pin
+   distance by STROKE. For each angle we check, in order: the
+   cylinder's torque against the load (stall), a bolted base that
+   cannot tilt (bind), reaching full stroke (done), going over
+   center (the arm runs to the stop), and the hard stop itself.
+   ─────────────────────────────────────────────────────────────── */
+function initArmSim(root) {
+  var NS = 'http://www.w3.org/2000/svg';
+  var svg = root.querySelector('[data-r="svg"]');
+  var SC = 46, OX = 200, OY = 300;
+  var L0 = 4.0, STROKE = 1.97, R = 6, F = 6.1, STOP = 110, SLOP = 0.05, BARREL = 3.0;
+  var HOLES = [1, 1.5, 2, 2.5, 3, 3.5, 4];
+  var st = { r: 2, load: 0, mount: 'pivot', sig: 0, th: 0, res: null, raf: 0 };
+  var log = [];
+
+  function $(k) { return root.querySelector('[data-r="' + k + '"]'); }
+  function rad(d) { return d * Math.PI / 180; }
+  function P(x, y) { return [OX + x * SC, OY - y * SC]; }
+  function fmt(n, d) { return n.toFixed(d === undefined ? 1 : d); }
+
+  function solve() {
+    var C = [st.r, -L0], L = L0 + STROKE, prev = L0;
+    var bindTh = st.mount === 'solid' ? Math.acos(1 - SLOP / st.r) * 180 / Math.PI : 1e9;
+    for (var th = 0; th <= STOP + 1e-9; th += 0.25) {
+      var A = [st.r * Math.cos(rad(th)), st.r * Math.sin(rad(th))];
+      var d = Math.hypot(A[0] - C[0], A[1] - C[1]);
+      var arm = Math.abs(C[0] * A[1] - C[1] * A[0]) / d;
+      if (st.load * R * Math.cos(rad(th)) > F * arm) return { th: th, why: th < 1 ? 'nomove' : 'stall' };
+      if (th >= bindTh) return { th: bindTh, why: 'bind' };
+      if (d >= L) return { th: th, why: 'full' };
+      if (d < prev - 1e-9) return { th: STOP, why: 'stop' };
+      prev = d;
+    }
+    return { th: STOP, why: 'stop' };
+  }
+
+  function el(tag, attrs, text) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  function draw() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var th = st.th, r = st.r;
+    var O = P(0, 0), C = P(r, -L0), A = P(r * Math.cos(rad(th)), r * Math.sin(rad(th)));
+    var gy = C[1] + 16;
+    var bound = st.res && st.res.why === 'bind' && st.sig === 1;
+
+    /* tip path from the last extension */
+    if (st.res && st.res.th > 0.5) {
+      var t = st.res.th, s0 = P(R, 0), s1 = P(R * Math.cos(rad(t)), R * Math.sin(rad(t)));
+      svg.appendChild(el('path', { d: 'M' + s0[0] + ' ' + s0[1] + ' A ' + (R * SC) + ' ' + (R * SC) + ' 0 0 0 ' + s1[0] + ' ' + s1[1], fill: 'none', stroke: '#ffd166', 'stroke-width': 3, 'stroke-dasharray': '8 8', opacity: 0.8 }));
+    }
+    /* base plate, post and stop */
+    svg.appendChild(el('rect', { x: 40, y: gy, width: 620, height: 14, fill: '#2a3a52' }));
+    svg.appendChild(el('rect', { x: O[0] - 13, y: O[1], width: 26, height: gy - O[1], fill: '#3b4d66', stroke: '#8a9bb0', 'stroke-width': 2 }));
+    var sp = P(1.25 * Math.cos(rad(STOP + 11)), 1.25 * Math.sin(rad(STOP + 11)));
+    svg.appendChild(el('line', { x1: O[0], y1: O[1], x2: sp[0], y2: sp[1], stroke: '#3b4d66', 'stroke-width': 10 }));
+    svg.appendChild(el('rect', { x: sp[0] - 13, y: sp[1] - 13, width: 26, height: 26, rx: 4, fill: '#8a9bb0' }));
+    svg.appendChild(el('text', { x: sp[0] - 22, y: sp[1] + 8, 'text-anchor': 'end', class: 'arm-lbl' }, 'Stop'));
+
+    /* cylinder base */
+    if (st.mount === 'solid') {
+      svg.appendChild(el('rect', { x: C[0] - 26, y: C[1] - 34, width: 52, height: gy - C[1] + 34, fill: '#3b4d66', stroke: '#8a9bb0', 'stroke-width': 2 }));
+      svg.appendChild(el('circle', { cx: C[0] - 13, cy: C[1] - 14, r: 4, fill: '#c9d6e6' }));
+      svg.appendChild(el('circle', { cx: C[0] + 13, cy: C[1] - 14, r: 4, fill: '#c9d6e6' }));
+    } else {
+      svg.appendChild(el('path', { d: 'M' + (C[0] - 20) + ' ' + gy + ' L' + (C[0] + 20) + ' ' + gy + ' L' + C[0] + ' ' + (C[1] - 2) + ' Z', fill: '#3b4d66' }));
+    }
+
+    /* cylinder: barrel from the base, rod to the arm pin */
+    var ux, uy;
+    if (st.mount === 'solid') { ux = 0; uy = -1; }
+    else { var dx = A[0] - C[0], dy = A[1] - C[1], dl = Math.hypot(dx, dy); ux = dx / dl; uy = dy / dl; }
+    var B = [C[0] + ux * BARREL * SC, C[1] + uy * BARREL * SC];
+    svg.appendChild(el('line', { x1: C[0], y1: C[1], x2: B[0], y2: B[1], stroke: '#b8c7d9', 'stroke-width': 24 }));
+    svg.appendChild(el('line', { x1: C[0] + ux * 6, y1: C[1] + uy * 6, x2: B[0] - ux * 6, y2: B[1] - uy * 6, stroke: st.sig ? 'rgba(93,170,255,0.9)' : '#1a2638', 'stroke-width': 14 }));
+    if (st.mount === 'solid' && Math.abs(A[0] - B[0]) > 1) {
+      svg.appendChild(el('path', { d: 'M' + B[0] + ' ' + B[1] + ' Q' + B[0] + ' ' + (A[1] + (B[1] - A[1]) * 0.35) + ' ' + A[0] + ' ' + A[1], fill: 'none', stroke: bound ? '#ff8a80' : '#e8f2ff', 'stroke-width': 8 }));
+    } else {
+      svg.appendChild(el('line', { x1: B[0], y1: B[1], x2: A[0], y2: A[1], stroke: '#e8f2ff', 'stroke-width': 8 }));
+    }
+
+    /* arm with holes every 0.5 in, and the load at the tip */
+    var g = el('g', { transform: 'rotate(' + (-th) + ' ' + O[0] + ' ' + O[1] + ')' });
+    g.appendChild(el('rect', { x: O[0] - 0.45 * SC, y: O[1] - 11, width: 6.8 * SC, height: 22, rx: 6, fill: '#c9d6e6' }));
+    for (var h = 0.5; h <= 6.01; h += 0.5) g.appendChild(el('circle', { cx: O[0] + h * SC, cy: O[1], r: 4.5, fill: '#0a1120' }));
+    if (st.load > 0) {
+      var bw = 0.9 * SC;
+      g.appendChild(el('rect', { x: O[0] + R * SC - bw / 2, y: O[1] - 11 - bw, width: bw, height: bw, rx: 4, fill: 'rgba(255,209,102,0.28)', stroke: '#ffd166', 'stroke-width': 3 }));
+    }
+    svg.appendChild(g);
+    if (st.load > 0) {
+      var lp = P((R + 0.2) * Math.cos(rad(th)) - 0.9 * Math.sin(rad(th)), (R + 0.2) * Math.sin(rad(th)) + 0.9 * Math.cos(rad(th)));
+      svg.appendChild(el('text', { x: lp[0] + 30, y: lp[1] + 8, class: 'arm-lbl' }, fmt(st.load) + ' lb'));
+    }
+
+    /* pins */
+    svg.appendChild(el('circle', { cx: O[0], cy: O[1], r: 9, fill: '#ffd166' }));
+    svg.appendChild(el('circle', { cx: A[0], cy: A[1], r: 8, fill: bound ? '#ff8a80' : '#ffd166' }));
+    if (st.mount === 'pivot') svg.appendChild(el('circle', { cx: C[0], cy: C[1], r: 8, fill: '#ffd166' }));
+
+    /* labels */
+    svg.appendChild(el('text', { x: O[0] - 24, y: O[1] + 54, 'text-anchor': 'end', class: 'arm-lbl' }, 'Pivot'));
+    svg.appendChild(el('text', { x: C[0] + 34, y: C[1] - 40, class: 'arm-lbl' }, 'Cylinder'));
+    var aa = th >= 30 ? th / 2 : th + 22, ap = P(2.0 * Math.cos(rad(aa)), 2.0 * Math.sin(rad(aa)));
+    if (th > 3) svg.appendChild(el('text', { x: ap[0] + 4, y: ap[1] + 8, class: 'arm-ang' }, Math.round(th) + '°'));
+  }
+
+  function tiles() {
+    var ratio = R / st.r;
+    $('t-ratio').textContent = fmt(ratio);
+    $('t-force').textContent = fmt(F / ratio) + ' lb';
+    var done = st.res && st.sig === 1 && !st.raf;
+    $('t-swing').textContent = done ? Math.round(st.res.th) + '°' : '–';
+    $('t-travel').textContent = done ? fmt(R * rad(st.res.th)) + ' in' : '–';
+  }
+
+  function status(msg, kind) {
+    var s = $('status');
+    s.innerHTML = msg;
+    s.className = 'arm-status' + (kind ? ' ' + kind : '');
+  }
+
+  function result() {
+    var r = st.res, deg = Math.round(r.th);
+    if (r.why === 'full') status('The rod reached full stroke. The arm swung <b>' + deg + '&deg;</b> and the tip traveled about <b>' + fmt(R * rad(r.th)) + ' in</b>.');
+    else if (r.why === 'stop') status('The arm swung so far that it hit the <b>stop at ' + STOP + '&deg;</b>. Attached this close to the pivot, the rod moves the arm too far.', 'warn');
+    else if (r.why === 'stall') status('The arm <b>stalled at ' + deg + '&deg;</b>. With ' + fmt(st.load) + ' lb at the tip, the cylinder cannot make enough torque at this hole to lift any farther.', 'warn');
+    else if (r.why === 'nomove') status('The arm <b>did not move</b>. At this hole, ' + fmt(st.load) + ' lb at the tip needs more force than the cylinder can give it.', 'bad');
+    else status('The arm moved only <b>' + deg + '&deg;</b>, then <b>jammed</b>. The base is bolted solid, so the cylinder cannot tilt to follow the arm, and the rod is being bent sideways.', 'bad');
+  }
+
+  function animateTo(target, done) {
+    cancelAnimationFrame(st.raf);
+    var from = st.th, dur = Math.max(250, Math.abs(target - from) / 60 * 700), t0 = null;
+    function step(ts) {
+      if (t0 === null) t0 = ts;
+      var k = Math.min(1, (ts - t0) / dur);
+      st.th = from + (target - from) * (1 - Math.pow(1 - k, 2));
+      draw();
+      if (k < 1) st.raf = requestAnimationFrame(step);
+      else { st.raf = 0; st.th = target; draw(); if (done) done(); }
+    }
+    st.raf = requestAnimationFrame(step);
+    tiles();
+  }
+
+  function setSig(v) {
+    st.sig = v;
+    root.querySelectorAll('[data-sig]').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.sig === v)); });
+    if (v === 1) {
+      st.res = solve();
+      status('Extending&hellip;');
+      animateTo(st.res.th, function () { result(); tiles(); });
+    } else {
+      status('Retracting&hellip;');
+      animateTo(0, function () { status('The arm is down. Choose your settings, predict the swing, then switch the signal to High.'); tiles(); });
+    }
+  }
+
+  function reset(msg) {
+    cancelAnimationFrame(st.raf); st.raf = 0;
+    st.sig = 0; st.th = 0; st.res = null;
+    root.querySelectorAll('[data-sig]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.sig === '0')); });
+    draw(); tiles();
+    status(msg);
+  }
+
+  /* hole buttons */
+  var holes = $('holes');
+  HOLES.forEach(function (h) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'seg-btn'; b.textContent = String(h);
+    b.setAttribute('aria-pressed', String(h === st.r));
+    b.setAttribute('aria-label', h + ' inches from the pivot');
+    b.addEventListener('click', function () {
+      st.r = h;
+      holes.querySelectorAll('.seg-btn').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      reset('The rod now attaches <b>' + h + ' in</b> from the pivot. The arm is down for a new trial.');
+    });
+    holes.appendChild(b);
+  });
+  var load = $('load');
+  function showLoad() { $('v-load').textContent = fmt(st.load) + ' lb'; }
+  load.addEventListener('input', function () {
+    st.load = parseFloat(load.value); showLoad();
+    reset('The load at the tip is now <b>' + fmt(st.load) + ' lb</b>. The arm is down for a new trial.');
+  });
+  root.querySelectorAll('[data-mount]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      st.mount = b.dataset.mount;
+      root.querySelectorAll('[data-mount]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      reset(st.mount === 'solid' ? 'The cylinder base is now <b>bolted solid</b>. Predict what happens, then extend.' : 'The cylinder base <b>pivots</b> again.');
+    });
+  });
+  root.querySelectorAll('[data-sig]').forEach(function (b) {
+    b.addEventListener('click', function () { var v = +b.dataset.sig; if (v !== st.sig) setSig(v); });
+  });
+
+  var WHY = { full: 'Full stroke', stop: 'Hit stop', stall: 'Stalled', nomove: 'No lift', bind: 'Jammed' };
+  function renderLog() {
+    var tb = $('log');
+    if (!log.length) { tb.innerHTML = '<tr class="empty"><td colspan="6">Extend the arm, then record the trial.</td></tr>'; return; }
+    tb.innerHTML = log.map(function (t, i) {
+      return '<tr><td>' + (i + 1) + '</td><td>' + t.r + ' in</td><td>' + fmt(t.load) + ' lb</td><td>' + (t.mount === 'solid' ? 'Solid' : 'Pivot') + '</td><td>' + Math.round(t.th) + '&deg;</td><td>' + WHY[t.why] + '</td></tr>';
+    }).join('');
+    var box = tb.closest('.arm-log'); box.scrollTop = box.scrollHeight;
+  }
+  $('rec').addEventListener('click', function () {
+    if (!st.res || st.sig !== 1 || st.raf) { status('Extend the arm first (signal High), then record the trial.', 'warn'); return; }
+    log.push({ r: st.r, load: st.load, mount: st.mount, th: st.res.th, why: st.res.why });
+    renderLog();
+  });
+  $('clear').addEventListener('click', function () { log = []; renderLog(); });
+
+  showLoad(); renderLog(); draw(); tiles();
+  status('The arm is down. Choose your settings, predict the swing, then switch the signal to High.');
+}
+
+/* ── Diagnose the mechanism: matching pairs (from CSP 2.4) ───────
+   Six symptoms and their six causes on one shuffled 4-column board.
+   Click two cards to test a pair. Progress and attempts persist in
+   sessionStorage, so a reload restores the board; "perfect" means
+   every attempt was a correct match.
+   ─────────────────────────────────────────────────────────────── */
+var MATCH_PAIRS = [
+  { id: 'close', term: 'The arm swings so far that it slams into the stop.', def: 'The rod is attached very close to the pivot.' },
+  { id: 'far', term: 'The arm is strong, but it swings only a few degrees.', def: 'The rod is attached far from the pivot.' },
+  { id: 'solid', term: 'The arm moves a little, then jams, and the rod looks bent.', def: 'The cylinder base is bolted solid, so it cannot tilt.' },
+  { id: 'psi', term: 'The arm stalls with a part on it, and the gauge reads 20 psi.', def: 'The regulator is turned down too low.' },
+  { id: 'flow', term: 'The arm snaps up and throws the part off the tip.', def: 'No flow fitting is slowing the extension.' },
+  { id: 'tubes', term: 'The arm lifts when the program should lower it.', def: 'The A and B tubes are swapped at the cylinder.' },
+];
+var MATCH_KEY = 'actuator-to-mechanism:match-arm';
+
+function shuffled(a) {
+  var c = a.slice();
+  for (var i = c.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = c[i]; c[i] = c[j]; c[j] = t; }
+  return c;
+}
+
+function initMatchingPairs(Reveal) {
+  var root = getLiveElementById('match-arm');
+  if (!root) return;
+  var grid = root.querySelector('[data-match-grid]');
+  var scoreEl = root.querySelector('[data-match-score]');
+  var attemptsEl = root.querySelector('[data-match-attempts]');
+  var completeEl = root.querySelector('[data-match-complete]');
+  var section = root.closest('section');
+  var overlay = section.querySelector('[data-match-overlay]');
+  overlay.addEventListener('click', function () { overlay.classList.remove('visible'); });
+  var tiles = [], attempts = 0, matched = 0, selected = null;
+
+  function save() {
+    try { sessionStorage.setItem(MATCH_KEY, JSON.stringify({ tiles: tiles, attempts: attempts })); } catch (e) {}
+  }
+  function load() {
+    try {
+      var s = JSON.parse(sessionStorage.getItem(MATCH_KEY));
+      if (s && Array.isArray(s.tiles) && s.tiles.length === MATCH_PAIRS.length * 2) return s;
+    } catch (e) {}
+    return null;
+  }
+  function label(t) {
+    var p = MATCH_PAIRS.filter(function (x) { return x.id === t.id; })[0];
+    return p ? (t.isTerm ? p.term : p.def) : '';
+  }
+  function update() {
+    scoreEl.textContent = matched + ' of ' + MATCH_PAIRS.length + ' matched';
+    attemptsEl.textContent = attempts + (attempts === 1 ? ' attempt' : ' attempts');
+    var complete = matched === MATCH_PAIRS.length, perfect = complete && attempts === MATCH_PAIRS.length;
+    completeEl.style.display = complete ? 'inline' : 'none';
+    overlay.classList.toggle('visible', perfect);
+    attemptsEl.classList.toggle('amber', !perfect);
+    attemptsEl.classList.toggle('perfect', perfect);
+  }
+  function markMatched(btn, t) {
+    t.matched = true;
+    btn.classList.remove('mc-selected');
+    btn.classList.add('mc-matched');
+    btn.setAttribute('aria-disabled', 'true');
+    var b = document.createElement('span'); b.className = 'mc-badge'; b.setAttribute('aria-hidden', 'true'); b.textContent = '✓';
+    btn.appendChild(b);
+  }
+  function attempt(a, b) {
+    attempts++;
+    if (a.dataset.matchId === b.dataset.matchId) {
+      markMatched(a, tiles[a.dataset.idx]); markMatched(b, tiles[b.dataset.idx]); matched++;
+    } else {
+      a.classList.add('mc-wrong'); b.classList.add('mc-wrong');
+      setTimeout(function () { a.classList.remove('mc-wrong', 'mc-selected'); b.classList.remove('mc-wrong', 'mc-selected'); }, 400);
+    }
+    selected = null; update(); save();
+  }
+  function paint() {
+    grid.innerHTML = ''; selected = null; var m = 0;
+    tiles.forEach(function (t, idx) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'match-card' + (t.isTerm ? ' match-card-term' : '');
+      btn.dataset.matchId = t.id; btn.dataset.idx = idx;
+      btn.textContent = label(t);
+      btn.setAttribute('aria-label', (t.isTerm ? 'Symptom: ' : 'Cause: ') + label(t));
+      if (t.matched) { markMatched(btn, t); m++; }
+      btn.addEventListener('click', function () {
+        if (btn.classList.contains('mc-matched')) return;
+        if (selected === btn) { btn.classList.remove('mc-selected'); selected = null; return; }
+        btn.classList.add('mc-selected');
+        if (selected) attempt(selected, btn); else selected = btn;
+      });
+      grid.appendChild(btn);
+    });
+    matched = m / 2; update();
+  }
+  function fresh() {
+    tiles = [];
+    MATCH_PAIRS.forEach(function (p) { tiles.push({ id: p.id, isTerm: true, matched: false }); tiles.push({ id: p.id, isTerm: false, matched: false }); });
+    tiles = shuffled(tiles); attempts = 0; paint(); save();
+  }
+  function restore() { var s = load(); if (s) { tiles = s.tiles; attempts = s.attempts || 0; paint(); } else fresh(); }
+  restore();
+  Reveal.on('slidechanged', function (e) { if (e.currentSlide === section) restore(); });
+}
+
+initSyncDeckReveal({
+  deckId: 'actuator-to-mechanism',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    var arm = getLiveElementById('arm-sim');
+    if (arm) initArmSim(arm);
+    initMatchingPairs(Reveal);
+  },
+});
+</script>
+</body>
+</html>

@@ -140,6 +140,8 @@ Teach a small reusable symbol vocabulary: pressure source, receiver/tank, single
 
 **Day 9:** Build a simple VEX mechanism using the circuit. Sketch the linkage, document its purpose and trace air movement during operation. Reflect on where the same arrangement would be useful on a robot or factory line.
 
+**Day 9 as built (Deck 9, 2026-11-22):** every team builds the same pivoting arm, so the class can compare attach points. The deck covers why the cylinder needs a pivot at both ends (the VEX cap end takes a screw or shaft; the rod end is #8-32 threaded), the lever ratio (closer to the pivot swings farther but pushes less), a pivot arm simulator, a two-hole bench test, and a symptom-to-cause matching game for troubleshooting, a format the unit had not used yet.
+
 **SyncDeck:** Short safety check before handling equipment, predictions of actuator behavior, comparison of speed-control trials, photo/diagram review. **Notebook:** original and revised schematics, trial log, mechanism sketch, and reflection.
 
 ### Days 10–15: Fluid Power in the Assembly Line
