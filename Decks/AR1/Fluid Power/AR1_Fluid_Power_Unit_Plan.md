@@ -167,6 +167,8 @@ Teach a small reusable symbol vocabulary: pressure source, receiver/tank, single
 - **Day 14:** Commission station against test criteria, revise documentation, conduct a peer operator test using the draft manual.
 - **Day 15:** Demonstration and technical handoff, including explanation of airflow, control, safety and troubleshooting.
 
+**Project decks as built (2026-11-22):** four decks cover Days 10 to 15. Deck 10 (*Fluid Power in the Assembly Line*) introduces the brief, constraints and rubric, sorts printed-part ideas, and runs brainstorming, a decision matrix and peer critique. Deck 11 (*Layout, Schematic and Design Review*) covers the base-plate layout, pinch points, the ISO schematic, the teacher design review and starting the part in Onshape. Deck 12 (*Build Days*) is reused on every build day: standup, checkpoints, the teacher print queue, the pre-air checklist, a test log, a short troubleshooting reference and a clean-up timer. Deck 13 (*Commission and Hand Off*) covers Day 14 (commissioning checklist, user manual, depressurizing steps, peer operator test) and Day 15 (demonstration, individual oral check, turn-in, reflection). Classroom decisions: students use Onshape; the teacher runs the print queue; the trigger stays general because it varies by team; the VEX shut-off valve replaces the brief's "E-Stop" in the manual.
+
 **Assessment:** Preserve the PHS project rubric weighting: functional prototype and mechanism **40%**, functional printed component and CAD **20%**, engineering notebook and schematic **20%**, user manual **20%**. Consider a brief individual oral check during demonstrations so each student can explain the pneumatic path and a failure mode.
 
 ## HTML5 simulation specifications for SyncDeck

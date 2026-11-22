@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1110j5q">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10 - Fluid Power in the Assembly Line</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   Deck 10: Assembly Line project, the brief and concept selection (Day 10)
+   Color meaning, as in the rest of the unit: blue = air and
+   pneumatic parts, green = key terms and points, yellow =
+   cautions and limits, coral = faults and rule breaks.
+   ============================================================ */
+
+.opt-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: var(--gap); }
+.opt-list li { font-size: var(--body); line-height: 1.4; color: var(--text); display: flex; gap: 16px; align-items: baseline; }
+.mcq-letter { font-family: var(--font-mono); font-weight: 700; color: var(--accent); min-width: 28px; }
+.q-head { font-size: var(--body); color: var(--text-muted); margin-top: var(--gap); }
+.warn-color { color: var(--warn); }
+.steps { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; margin-top: var(--gap); }
+.step { display: flex; gap: 16px; align-items: flex-start; background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 14px 18px; }
+.step-n { font-family: var(--font-mono); font-size: 26px; font-weight: 700; color: var(--accent); min-width: 26px; }
+.step p { font-size: var(--body); line-height: 1.4; color: var(--text-muted); margin: 0; }
+.step.caution { border-color: rgba(255,209,102,0.45); }
+.step.caution .step-n { color: var(--warn); }
+.card-grid { display: grid; gap: 16px 20px; margin-top: var(--gap); }
+.card-grid.c2 { grid-template-columns: 1fr 1fr; }
+.card-grid.c3 { grid-template-columns: 1fr 1fr 1fr; }
+.card-grid.c4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.card-grid .sys-card { padding: 16px 22px; }
+.card-grid .sys-card h3 { margin-bottom: 6px; }
+.card-grid .sys-card p { font-size: var(--body); line-height: 1.4; color: var(--text-muted); }
+.card-grid .sys-card .pts { font-family: var(--font-mono); font-weight: 700; color: var(--result); }
+.chk { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: var(--gap); }
+.chk li { font-size: var(--body); line-height: 1.4; color: var(--text); padding-left: 46px; position: relative; }
+.chk li::before { content: ''; position: absolute; left: 0; top: 6px; width: 26px; height: 26px; border: 2px solid var(--accent); border-radius: 5px; }
+.chk.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 36px; }
+.tbl { width: 100%; border-collapse: collapse; margin-top: var(--gap); font-size: var(--body); }
+.tbl th { text-align: left; color: var(--text-muted); font-weight: 700; padding: 8px 14px; border-bottom: 2px solid var(--accent-border); }
+.tbl td { color: var(--text); padding: 8px 14px; border-bottom: 1px solid var(--accent-border); vertical-align: top; line-height: 1.35; }
+.tbl td.num { font-family: var(--font-mono); text-align: center; }
+.tbl th.num { text-align: center; }
+.tbl .tot td { font-weight: 700; border-bottom: none; }
+.part-head { font-family: var(--font-mono); font-size: var(--small); letter-spacing: 0.14em; text-transform: uppercase; color: var(--warn); }
+
+/* Commit-then-check classifier (from Deck 1, initClassifyFluid) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.badge-amber {
+  border-color: rgba(255,209,102,0.45);
+  background: rgba(255,209,102,0.10);
+  color: var(--warn);
+}
+.classify-earned { cursor: pointer; animation: badge-pulse-glow 1.6s ease-in-out infinite; }
+.classify-earned[hidden] { display: none; }
+@keyframes badge-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(77,255,176,0.5); }
+  50%      { box-shadow: 0 0 16px 5px rgba(77,255,176,0.45); }
+}
+.badge-pulse-complete {
+  border-color: var(--result);
+  background: rgba(77,255,176,0.14);
+  color: var(--result);
+}
+.classify-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: 100%;
+}
+.classify-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.classify-btn {
+  font-family: var(--font-ui);
+  font-size: var(--small);
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--result);
+  background: rgba(77,255,176,0.10);
+  color: var(--result);
+}
+.classify-btn:disabled { opacity: 0.65; cursor: default; }
+.classify-btn-secondary {
+  border-color: rgba(255,209,102,0.5);
+  background: rgba(255,209,102,0.08);
+  color: var(--warn);
+}
+.classify-tray {
+  /* Fixed heights keep the bins from jumping as the tray empties and
+     check marks widen the chips. */
+  height: 200px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px dashed var(--accent-border);
+  border-radius: 6px;
+}
+.classify-empty {
+  font-size: var(--small);
+  color: var(--text-dim);
+  font-style: italic;
+}
+.classify-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  width: 100%;
+}
+.classify-bin { display: flex; flex-direction: column; gap: 10px; }
+.classify-bin-header {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 4px;
+  text-align: center;
+}
+.classify-bin-header-pneu {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+}
+.classify-bin-header-hyd {
+  background: var(--hyd-dim);
+  color: var(--hyd);
+  border: 1px solid var(--hyd-border);
+}
+.classify-bin-items {
+  height: 214px;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+}
+.classify-bin[data-bin="hyd"] .classify-bin-items { border-color: var(--hyd-border); }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(232,242,255,0.05);
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: var(--small);
+  font-weight: 500;
+  color: var(--text);
+  cursor: grab;
+  user-select: none;
+}
+.chip:hover { border-color: var(--accent); }
+.chip-selected {
+  border-color: var(--result);
+  background: rgba(77,255,176,0.10);
+  box-shadow: 0 0 0 1px rgba(77,255,176,0.35) inset;
+}
+.chip-correct {
+  border-color: var(--result);
+  background: rgba(77,255,176,0.12);
+  color: var(--result);
+  cursor: default;
+}
+.chip-incorrect {
+  border-color: var(--bad);
+  background: rgba(255,138,128,0.10);
+  color: var(--bad);
+  cursor: default;
+}
+.chip-mark { font-weight: 900; }
+.classify-perfect-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6,11,20,0.92);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease);
+}
+.classify-perfect-overlay.visible { opacity: 1; pointer-events: auto; cursor: pointer; }
+.classify-perfect-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+}
+.classify-perfect-overlay.visible .classify-perfect-badge {
+  animation: classify-perfect-pop 0.7s var(--ease) both;
+}
+.classify-perfect-check {
+  font-size: 220px;
+  line-height: 1;
+  color: var(--result);
+  filter: drop-shadow(0 0 46px rgba(77,255,176,0.5));
+}
+.classify-perfect-text {
+  font-size: 84px;
+  font-weight: 700;
+  color: var(--text);
+}
+.classify-perfect-hint {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+@keyframes classify-perfect-pop {
+  0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  55%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  75%  { transform: scale(0.96) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .classify-perfect-overlay.visible .classify-perfect-badge { animation: none; opacity: 1; }
+}
+
+.classify-bin-header-work { border-color: var(--result); color: var(--result); }
+.classify-bin-header-nope { border-color: var(--bad); color: var(--bad); }
+.classify-bin[data-bin="nope"] .classify-bin-items { border-color: rgba(255,138,128,0.4); }
+.idea-card h3 { color: var(--accent); }
+.idea-card p b { color: var(--text); }
+.dm td.num { width: 140px; }
+
+</style>
+</head>
+<body>
+
+<div class="reveal"><div class="slides">
+
+<!-- SLIDE 01 · Title -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 5 &nbsp;·&nbsp; Project</span>
+    <h1 class="title-h1">Fluid Power in the <span class="pneu">Assembly&nbsp;Line</span></h1>
+    <p class="lead" style="margin-top:var(--gap);text-align:center;">Your team will design, build and document one station on an automated assembly line.</p>
+  </div>
+  <div class="glow" style="width:620px;height:620px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(93,170,255,0.07),transparent 70%);"></div>
+  <div class="glow" style="width:560px;height:560px;right:-140px;bottom:-160px;background:radial-gradient(circle,rgba(255,209,102,0.05),transparent 70%);"></div>
+</section>
+
+<!-- SLIDE 02 · Real automation -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Project</span>
+    <h2>How Engineers Automate a Line</h2>
+    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+      <div>
+        <img class="side-photo img-zoomable" src="Intro_to_Fluid_Power_Assets/robot-gripper.jpg" alt="A white industrial robot arm in a fenced cell lifts a stack of white panels. Large flexible hoses run along the arm to the gripper at its end.">
+        <p class="credit">Photo: De Man Automation + Service, <a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>, via Wikimedia Commons.</p>
+      </div>
+      <div>
+        <p class="prose">Automation engineers rarely build a machine from one kind of part. They combine <span class="term">off-the-shelf parts</span>, <span class="pneu">fluid power</span> and <span class="term">custom parts</span> made for one job.</p>
+        <p class="prose fragment fade-up">Your station will do the same: a VEX structure, a pneumatic cylinder, and one part you design in Onshape and 3D print.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Plan Day 10. The robot from Deck 1 is a reminder that factory stations mix structure, air and custom tooling. Standards: 7.2 and 7.9, with 16.x design process connections.</aside>
+</section>
+
+<!-- SLIDE 03 · Mission -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Your Mission</span>
+    <h2>The Challenge</h2>
+    <p class="prose">Your team will design, build and document a small mechanism that works as a <span class="term">single station</span> on an automated assembly line.</p>
+    <div class="ask fragment fade-up">The core challenge: your station must use <span class="pneu">pneumatic power</span> to do a physical task, and it must include a <span class="term">custom 3D printed part</span> that helps it do that task.</div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">A station does one job well: it pushes, clamps, lifts, sorts or holds a product so the next station can work on it.</p>
+  </div>
+  <aside class="notes">Read the mission together. Teams are formed before this lesson. Over the next lessons teams plan, build, test, write an operator manual and demonstrate.</aside>
+</section>
+
+<!-- SLIDE 04 · Constraints -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Constraints</span>
+    <h2>What Your Station Must Do</h2>
+    <div class="card-grid c3">
+      <div class="sys-card"><h3 class="pneu">Mechanism</h3><p>Fits on <b style="color:var(--text);">one VEX base plate</b> and uses a linkage or movement system: a lever, hinge, rail, turntable or clamp frame.</p></div>
+      <div class="sys-card fragment fade-up"><h3 class="pneu">Pneumatics</h3><p>At least <b style="color:var(--text);">one cylinder</b> and <b style="color:var(--text);">one solenoid valve</b>, with <span class="warn-color">speed-controlled motion</span> from a flow fitting.</p></div>
+      <div class="sys-card fragment fade-up"><h3 class="pneu">Printed part</h3><p>One custom part that <span class="term">does work</span> and fits inside a <span class="warn-color">4&nbsp;in &times; 4&nbsp;in &times; 4&nbsp;in</span> box.</p></div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">The operator must be kept safe from <span class="bad-color">pinch points</span>. The station does not need to run itself: a manual trigger is fine.</p>
+  </div>
+  <aside class="notes">From the project brief, sections A to C. Speed control uses the flow fittings from Deck 8; the linkage can be the pivoting arm from Deck 9 or a rail, clamp or turntable. Breaking a constraint costs points.</aside>
+</section>
+
+<!-- SLIDE 05 · Resonance: constraint check -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:4:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "A team&#39;s station fits on one base plate and uses one cylinder, one solenoid valve and a flow fitting. Its only printed part is a nameplate with the team&#39;s name. What must the team change?", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "Add a second cylinder", "isCorrect": false}, {"id": "q1b", "text": "Replace the nameplate with a printed part that does work", "isCorrect": true}, {"id": "q1c", "text": "Remove the flow fitting", "isCorrect": false}, {"id": "q1d", "text": "Spread the station over two base plates", "isCorrect": false}]}, {"id": "q2", "type": "multiple-choice", "text": "Which printed part meets the project rules?", "order": 1, "responseTimeLimitMs": 60000, "options": [{"id": "q2a", "text": "A cover that hides the tubing", "isCorrect": false}, {"id": "q2b", "text": "A logo for the front of the base plate", "isCorrect": false}, {"id": "q2c", "text": "A pusher head shaped to fit the product", "isCorrect": true}, {"id": "q2d", "text": "A gate 5 in tall", "isCorrect": false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check</span>
+    <h2>Check the Rules</h2>
+    <p class="q-head">1. A team&rsquo;s station fits on one base plate and uses one cylinder, one solenoid valve and a flow fitting. Its only printed part is a nameplate with the team&rsquo;s name. What must the team change?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>Add a second cylinder</li>
+      <li><span class="mcq-letter">B</span>Replace the nameplate with a printed part that does work</li>
+      <li><span class="mcq-letter">C</span>Remove the flow fitting</li>
+      <li><span class="mcq-letter">D</span>Spread the station over two base plates</li>
+    </ol>
+    <p class="q-head">2. Which printed part meets the project rules?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>A cover that hides the tubing</li>
+      <li><span class="mcq-letter">B</span>A logo for the front of the base plate</li>
+      <li><span class="mcq-letter">C</span>A pusher head shaped to fit the product</li>
+      <li><span class="mcq-letter">D</span>A gate 5 in tall</li>
+    </ol>
+  </div>
+  <aside class="notes">Q1: the nameplate is decorative, so it does not count; everything else already meets the rules. Q2: the pusher head does work. The cover and logo are decorative, and the 5&nbsp;in gate does work but breaks the 4&nbsp;in size limit.</aside>
+</section>
+
+<!-- SLIDE 06 · Classify: does the part count? -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+    <span class="slide-tag">Printed Part</span>
+    <h2 style="margin-bottom:var(--gap-sm);">Does the Part Count?</h2>
+    <p class="prose" style="margin-bottom:var(--gap-sm);">A part counts if it does work and fits in a 4&nbsp;in cube. Drag or click each idea into a bin.</p>
+    <div class="classify-wrap" id="classify-part">
+      <div class="classify-status">
+        <span class="badge" data-classify-placed>0 of 12 placed</span>
+        <span class="badge badge-amber" data-classify-score style="display:none;">0 of 12 correct</span>
+        <button type="button" class="classify-btn" data-classify-check disabled>Check My Answers</button>
+        <button type="button" class="classify-btn classify-btn-secondary" data-classify-reset style="display:none;">Try Again</button>
+        <button type="button" class="badge badge-pulse-complete classify-earned" data-classify-earned hidden title="Show the perfect-score check again">&#10003; Perfect on the first try</button>
+      </div>
+      <div class="classify-tray" data-classify-tray data-bin="tray" tabindex="0" aria-label="Unplaced part ideas"></div>
+      <div class="classify-board">
+        <div class="classify-bin" data-bin="work">
+          <div class="classify-bin-header classify-bin-header-work">Counts: does work, fits</div>
+          <div class="classify-bin-items" data-classify-items="work" tabindex="0" aria-label="Parts that count"></div>
+        </div>
+        <div class="classify-bin" data-bin="nope">
+          <div class="classify-bin-header classify-bin-header-nope">Does not count</div>
+          <div class="classify-bin-items" data-classify-items="nope" tabindex="0" aria-label="Parts that do not count"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="classify-perfect-overlay" data-classify-overlay aria-hidden="true">
+    <div class="classify-perfect-badge">
+      <span class="classify-perfect-check">&#10003;</span>
+      <span class="classify-perfect-text">Perfect!</span>
+      <span class="classify-perfect-hint">Click to keep exploring the board</span>
+    </div>
+  </div>
+  <aside class="notes">Counts: gripper fingertips, V-block jaw, pusher head, slider carriage, hinge bracket, pin guide channel (the brief&rsquo;s acceptable examples). Does not count: nameplate, logo, a cover that only hides tubes, a hood ornament (decorative), and the 6&nbsp;in pusher arm and 5&nbsp;in tray (they do work but break the 4&nbsp;in limit). Ask: how could the oversized parts be redesigned to fit?</aside>
+</section>
+
+<!-- SLIDE 07 · Deliverables -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Grading</span>
+    <h2>What You Turn In</h2>
+    <table class="tbl">
+      <thead><tr><th>Deliverable</th><th>What it includes</th><th class="num">Points</th></tr></thead>
+      <tbody>
+        <tr><td>Working station</td><td>Mounted on the base plate, no leaks, speed control, safe, does a real task</td><td class="num">40</td></tr>
+        <tr class="fragment fade-up"><td>Printed part and CAD</td><td>STL or STEP file, a PDF drawing with major dimensions, a 3&ndash;4 sentence interface write-up</td><td class="num">20</td></tr>
+        <tr class="fragment fade-up"><td>Notebook and schematic</td><td>Ideas, sketches, failed attempts and fixes, final photos; an ISO schematic</td><td class="num">20</td></tr>
+        <tr class="fragment fade-up"><td>User manual</td><td>3&ndash;5 pages for an operator: overview, labeled diagram, steps, depressurizing, troubleshooting table</td><td class="num">20</td></tr>
+      </tbody>
+    </table>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">Your notebook earns points for <span class="term">failures and fixes</span>, so photograph what goes wrong.</p>
+  </div>
+  <aside class="notes">The rubric weighting from the brief: 40/20/20/20. The manual&rsquo;s labeled diagram should point to the shut-off valve, the trigger, the regulator and the gauge; the unit uses the shut-off valve as the operator&rsquo;s air shut-off in place of the brief&rsquo;s E-Stop. Hand out the brief and rubric now.</aside>
+</section>
+
+<!-- SLIDE 08 · Station ideas 1 -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Inspiration</span>
+    <h2>Station Ideas</h2>
+    <p class="prose">Stuck? Start from an idea like these, then make it your own.</p>
+    <div class="card-grid c2">
+      <div class="sys-card idea-card"><h3>The Box Pusher</h3><p>A cylinder pushes products off a conveyor. Printed part: <b>a pusher foot sized to the product</b>.</p></div>
+      <div class="sys-card idea-card fragment fade-up"><h3>Clamping Station</h3><p>A cylinder holds a part still for drilling or labeling. Printed part: <b>a V-block or curved jaw</b>.</p></div>
+      <div class="sys-card idea-card fragment fade-up"><h3>Ejector Gate</h3><p>A cylinder raises or lowers a gate to stop the flow. Printed part: <b>the gate frame or a hinge bracket</b>.</p></div>
+      <div class="sys-card idea-card fragment fade-up"><h3>Stamp Press</h3><p>A cylinder presses a design onto a product. Printed part: <b>the press head with a shape</b>.</p></div>
+    </div>
+  </div>
+  <aside class="notes">From the brief&rsquo;s inspiration table. Point out the movement system in each: a rail or straight push (pusher, press), a hinge (gate), a clamp frame (clamp).</aside>
+</section>
+
+<!-- SLIDE 09 · Station ideas 2 -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Inspiration</span>
+    <h2>More Station Ideas</h2>
+    <div class="card-grid c2">
+      <div class="sys-card idea-card"><h3>Alignment Slider</h3><p>A cylinder pushes a product along a rail. Printed part: <b>a carriage that fits the rail</b>.</p></div>
+      <div class="sys-card idea-card fragment fade-up"><h3>The Gripper</h3><p>A cylinder closes a claw to grab an object. Printed part: <b>fingertips with grooves or teeth</b>.</p></div>
+      <div class="sys-card idea-card fragment fade-up"><h3>Diverter Arm</h3><p>A cylinder swings an arm to sort items left or right. Printed part: <b>a curved paddle</b>.</p></div>
+      <div class="sys-card idea-card fragment fade-up"><h3>Safety Lock</h3><p>A cylinder slides a pin in to lock a gear. Printed part: <b>a guide channel for the pin</b>.</p></div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">The pivoting arm from the last lesson already works as a diverter or a gate.</p>
+  </div>
+  <aside class="notes">Slider: a rail; gripper: a linkage that turns a push into a squeeze; diverter: a pivoting arm (Deck 9); lock: a straight push into a channel.</aside>
+</section>
+
+<!-- SLIDE 10 · Brainstorm and sketch -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Notebook</span>
+    <h2>Brainstorm, Then Sketch Two</h2>
+    <div class="steps">
+      <div class="step"><span class="step-n">1</span><p>On your own, list at least <span class="term">five station ideas</span> in your notebook. Quantity first.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">2</span><p>Share as a team. Star the ideas that fit the constraints and could be built in three build days.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">3</span><p>Sketch <span class="term">two concepts</span> from the side: where the cylinder mounts, the motion path, and the printed part.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">4</span><p>Label each sketch with its <span class="warn-color">pinch points</span> and where the flow fitting goes.</p></div>
+    </div>
+  </div>
+  <aside class="notes">These pages are the notebook&rsquo;s ideation and sketch evidence. About 5 minutes for step 1, 15 to 20 for the sketches.</aside>
+</section>
+
+<!-- SLIDE 11 · Decision matrix -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Decide</span>
+    <h2>Choose One Concept</h2>
+    <p class="prose">Score each concept from <span class="term">1 to 3</span> on each row, then add the scores. A concept that breaks a constraint is out, whatever its score.</p>
+    <table class="tbl dm">
+      <thead><tr><th>Criterion</th><th class="num">Concept A</th><th class="num">Concept B</th></tr></thead>
+      <tbody>
+        <tr><td>The printed part clearly does work</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td></tr>
+        <tr><td>Pinch points are easy to guard</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td></tr>
+        <tr><td>We can build it in three build days</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td></tr>
+        <tr><td>Speed control is easy to show</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td></tr>
+        <tr class="tot"><td>Total</td><td class="num">&nbsp;</td><td class="num">&nbsp;</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <aside class="notes">Copy the matrix into the notebook. Teams may add a row of their own (looks impressive, uses a skill we have). The constraints are pass or fail, not scored.</aside>
+</section>
+
+<!-- SLIDE 12 · Peer critique -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Feedback</span>
+    <h2>Pitch It to Another Team</h2>
+    <p class="prose">Pair up with another team. Each team gets <span class="term">two minutes</span> to pitch its chosen concept. The listening team asks these questions, and the pitching team records the answers in its notebook.</p>
+    <div class="ask fragment fade-up">Where is the <span class="bad-color">pinch point</span>, and how will you keep the operator&rsquo;s hands out of it?</div>
+    <div class="ask fragment fade-up">What does your <span class="term">printed part</span> do that a VEX part cannot?</div>
+    <div class="ask fragment fade-up">Which stroke will you slow down, and where does the <span class="warn-color">flow fitting</span> go?</div>
+  </div>
+  <aside class="notes">Plan Day 10&rsquo;s peer critique. The third question checks Deck 8: the fitting goes on the port that empties during the stroke you want slow.</aside>
+</section>
+
+<!-- SLIDE 13 · Resonance: exit ticket -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:12:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Which deliverable is worth the most points?", "order": 0, "responseTimeLimitMs": 45000, "options": [{"id": "q1a", "text": "The printed part and CAD files", "isCorrect": false}, {"id": "q1b", "text": "The notebook and schematic", "isCorrect": false}, {"id": "q1c", "text": "The user manual", "isCorrect": false}, {"id": "q1d", "text": "The working station", "isCorrect": true}]}, {"id": "q2", "type": "free-response", "text": "In one or two sentences, describe your team&#39;s chosen station: what job it does, what moves it, and what your printed part does.", "order": 1, "responseTimeLimitMs": 150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Before You Go</h2>
+    <p class="q-head">1. Which deliverable is worth the most points?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>The printed part and CAD files</li>
+      <li><span class="mcq-letter">B</span>The notebook and schematic</li>
+      <li><span class="mcq-letter">C</span>The user manual</li>
+      <li><span class="mcq-letter">D</span>The working station</li>
+    </ol>
+    <p class="q-head">2. In one or two sentences, describe your team&rsquo;s chosen station: what job it does, what moves it, and what your printed part does.</p>
+  </div>
+  <aside class="notes">Q1: the working station is 40 of 100 points. Q2 tells you which teams still need to settle on a concept before the design review in the next lesson.</aside>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function (el) { return !el.closest('#storyboard'); }
+  );
+}
+var CLASSIFY_ITEMS = [
+  { id: 'fingers', label: 'Gripper fingertips', correct: 'work' },
+  { id: 'vblock',  label: 'V-block clamp jaw',         correct: 'work' },
+  { id: 'pusher',  label: 'Product pusher head', correct: 'work' },
+  { id: 'carriage',label: 'Rail slider carriage',      correct: 'work' },
+  { id: 'hinge',   label: 'Gate hinge bracket',        correct: 'work' },
+  { id: 'channel', label: 'Pin guide channel',  correct: 'work' },
+  { id: 'name',    label: 'Team nameplate',    correct: 'nope' },
+  { id: 'logo',    label: 'Logo badge',        correct: 'nope' },
+  { id: 'cover',   label: 'Cover to hide tubes', correct: 'nope' },
+  { id: 'arm6',    label: '6 in pusher arm',            correct: 'nope' },
+  { id: 'ornament',label: 'Hood ornament',                   correct: 'nope' },
+  { id: 'tray5',   label: '5 in wide tray',          correct: 'nope' },
+];
+function shuffled(array) {
+  var copy = array.slice();
+  for (var i = copy.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
+  }
+  return copy;
+}
+
+function initClassifyPart(Reveal) {
+  var root = getLiveElementById('classify-part');
+  if (!root) return;
+
+  var section = root.closest('section');
+  var trayEl = root.querySelector('[data-classify-tray]');
+  var binEls = {
+    work: root.querySelector('[data-classify-items="work"]'),
+    nope: root.querySelector('[data-classify-items="nope"]')
+  };
+  var placedBadge = root.querySelector('[data-classify-placed]');
+  var scoreBadge = root.querySelector('[data-classify-score]');
+  var checkBtn = root.querySelector('[data-classify-check]');
+  var resetBtn = root.querySelector('[data-classify-reset]');
+  var overlayEl = section ? section.querySelector('[data-classify-overlay]') : null;
+  var earnedEl = root.querySelector('[data-classify-earned]');
+  var zones = Array.prototype.slice.call(root.querySelectorAll('[data-bin]'));
+
+  var MISSED_KEY = 'assembly-line-challenge:classify-part-missed';
+  var everMissed = false;
+  try { everMissed = sessionStorage.getItem(MISSED_KEY) === '1'; } catch (e) { /* storage unavailable */ }
+  /* A perfect first run is saved too, so its badge survives closing the
+     overlay, Try Again, leaving the slide and a reload (until the tab closes). */
+  var EARNED_KEY = 'assembly-line-challenge:classify-part-perfect';
+  var earned = false;
+  try { earned = sessionStorage.getItem(EARNED_KEY) === '1'; } catch (e) { /* storage unavailable */ }
+  function showEarned() { if (earnedEl) earnedEl.hidden = !earned; }
+  showEarned();
+
+  var state = { placement: {}, order: [], selected: null, locked: false };
+
+  function resetState() {
+    CLASSIFY_ITEMS.forEach(function(item) { state.placement[item.id] = 'tray'; });
+    state.order = shuffled(CLASSIFY_ITEMS);
+    state.selected = null;
+    state.locked = false;
+  }
+  resetState();
+
+  function renderChip(item) {
+    var cls = 'chip';
+    if (state.selected === item.id) cls += ' chip-selected';
+    var mark = '';
+    if (state.locked && state.placement[item.id] !== 'tray') {
+      if (item.correct === state.placement[item.id]) {
+        cls += ' chip-correct';
+        mark = '<span class="chip-mark" aria-hidden="true">&#10003;</span>';
+      } else {
+        cls += ' chip-incorrect';
+        mark = '<span class="chip-mark" aria-hidden="true">&#10007;</span>';
+      }
+    }
+    return '<div class="' + cls + '" draggable="' + (!state.locked) + '" data-item="' + item.id +
+      '" tabindex="0" role="button" aria-label="' + item.label + '">' + item.label + mark + '</div>';
+  }
+
+  function render() {
+    function inBin(bin) {
+      return state.order.filter(function(i) { return state.placement[i.id] === bin; });
+    }
+    var tray = inBin('tray');
+    trayEl.innerHTML = tray.length
+      ? tray.map(renderChip).join('')
+      : '<span class="classify-empty">All parts placed</span>';
+    binEls.work.innerHTML = inBin('work').map(renderChip).join('');
+    binEls.nope.innerHTML = inBin('nope').map(renderChip).join('');
+
+    var placedCount = CLASSIFY_ITEMS.length - tray.length;
+    placedBadge.textContent = placedCount + ' of ' + CLASSIFY_ITEMS.length + ' placed';
+    checkBtn.disabled = state.locked || placedCount < CLASSIFY_ITEMS.length;
+  }
+
+  function place(itemId, bin) {
+    if (state.locked || !itemId) return;
+    state.placement[itemId] = bin;
+    state.selected = null;
+    render();
+  }
+
+  function evaluate() {
+    if (state.locked) return;
+    state.locked = true;
+    var correct = CLASSIFY_ITEMS.filter(function(i) { return state.placement[i.id] === i.correct; }).length;
+    if (correct < CLASSIFY_ITEMS.length) {
+      everMissed = true;
+      try { sessionStorage.setItem(MISSED_KEY, '1'); } catch (e) { /* storage unavailable */ }
+    }
+    var perfect = correct === CLASSIFY_ITEMS.length && !everMissed;
+    if (perfect && !earned) {
+      earned = true;
+      try { sessionStorage.setItem(EARNED_KEY, '1'); } catch (e) { /* storage unavailable */ }
+    }
+    showEarned();
+    render();
+    placedBadge.style.display = 'none';
+    scoreBadge.style.display = 'inline-flex';
+    scoreBadge.textContent = correct + ' of ' + CLASSIFY_ITEMS.length + ' correct';
+    scoreBadge.classList.toggle('badge-amber', !perfect);
+    scoreBadge.classList.toggle('badge-pulse-complete', perfect);
+    checkBtn.style.display = 'none';
+    resetBtn.style.display = 'inline-flex';
+    if (overlayEl) overlayEl.classList.toggle('visible', perfect);
+  }
+
+  function tryAgain() {
+    resetState();
+    placedBadge.style.display = 'inline-flex';
+    scoreBadge.style.display = 'none';
+    checkBtn.style.display = 'inline-flex';
+    resetBtn.style.display = 'none';
+    if (overlayEl) overlayEl.classList.remove('visible');
+    render();
+  }
+
+  function toggleSelect(chip) {
+    if (state.locked) return;
+    var id = chip.getAttribute('data-item');
+    state.selected = state.selected === id ? null : id;
+    render();
+  }
+
+  root.addEventListener('click', function(event) {
+    var chip = event.target.closest('.chip');
+    if (chip) { toggleSelect(chip); return; }
+    var zone = event.target.closest('[data-bin]');
+    if (zone && state.selected) place(state.selected, zone.getAttribute('data-bin'));
+  });
+
+  root.addEventListener('keydown', function(event) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    var chip = event.target.closest('.chip');
+    if (chip) { event.preventDefault(); toggleSelect(chip); return; }
+    var zone = event.target.closest('[data-bin]');
+    if (zone && state.selected) {
+      event.preventDefault();
+      place(state.selected, zone.getAttribute('data-bin'));
+    }
+  });
+
+  root.addEventListener('dragstart', function(event) {
+    var chip = event.target.closest('.chip');
+    if (!chip || state.locked) return;
+    event.dataTransfer.setData('text/plain', chip.getAttribute('data-item'));
+    state.selected = chip.getAttribute('data-item');
+  });
+
+  zones.forEach(function(zone) {
+    zone.addEventListener('dragover', function(event) {
+      if (state.locked) return;
+      event.preventDefault();
+    });
+    zone.addEventListener('drop', function(event) {
+      if (state.locked) return;
+      event.preventDefault();
+      var id = event.dataTransfer.getData('text/plain') || state.selected;
+      place(id, zone.getAttribute('data-bin'));
+    });
+  });
+
+  checkBtn.addEventListener('click', evaluate);
+  resetBtn.addEventListener('click', tryAgain);
+  if (overlayEl) {
+    overlayEl.addEventListener('click', function() { overlayEl.classList.remove('visible'); });
+  }
+  if (earnedEl && overlayEl) {
+    earnedEl.addEventListener('click', function() { overlayEl.classList.add('visible'); });
+  }
+
+  render();
+
+  Reveal.on('slidechanged', function(event) {
+    if (event.currentSlide === section) tryAgain();
+  });
+}
+
+
+initSyncDeckReveal({
+  deckId: 'assembly-line-challenge',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    initClassifyPart(Reveal);
+  },
+});
+</script>
+</body>
+</html>

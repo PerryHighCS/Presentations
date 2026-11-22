@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1rvrf17">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11 - Layout, Schematic and Design Review</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   Deck 11: Assembly Line project, layout, schematic and design review (Day 11)
+   Color meaning, as in the rest of the unit: blue = air and
+   pneumatic parts, green = key terms and points, yellow =
+   cautions and limits, coral = faults and rule breaks.
+   ============================================================ */
+
+.opt-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: var(--gap); }
+.opt-list li { font-size: var(--body); line-height: 1.4; color: var(--text); display: flex; gap: 16px; align-items: baseline; }
+.mcq-letter { font-family: var(--font-mono); font-weight: 700; color: var(--accent); min-width: 28px; }
+.q-head { font-size: var(--body); color: var(--text-muted); margin-top: var(--gap); }
+.warn-color { color: var(--warn); }
+.steps { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; margin-top: var(--gap); }
+.step { display: flex; gap: 16px; align-items: flex-start; background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 14px 18px; }
+.step-n { font-family: var(--font-mono); font-size: 26px; font-weight: 700; color: var(--accent); min-width: 26px; }
+.step p { font-size: var(--body); line-height: 1.4; color: var(--text-muted); margin: 0; }
+.step.caution { border-color: rgba(255,209,102,0.45); }
+.step.caution .step-n { color: var(--warn); }
+.card-grid { display: grid; gap: 16px 20px; margin-top: var(--gap); }
+.card-grid.c2 { grid-template-columns: 1fr 1fr; }
+.card-grid.c3 { grid-template-columns: 1fr 1fr 1fr; }
+.card-grid.c4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.card-grid .sys-card { padding: 16px 22px; }
+.card-grid .sys-card h3 { margin-bottom: 6px; }
+.card-grid .sys-card p { font-size: var(--body); line-height: 1.4; color: var(--text-muted); }
+.card-grid .sys-card .pts { font-family: var(--font-mono); font-weight: 700; color: var(--result); }
+.chk { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: var(--gap); }
+.chk li { font-size: var(--body); line-height: 1.4; color: var(--text); padding-left: 46px; position: relative; }
+.chk li::before { content: ''; position: absolute; left: 0; top: 6px; width: 26px; height: 26px; border: 2px solid var(--accent); border-radius: 5px; }
+.chk.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 36px; }
+.tbl { width: 100%; border-collapse: collapse; margin-top: var(--gap); font-size: var(--body); }
+.tbl th { text-align: left; color: var(--text-muted); font-weight: 700; padding: 8px 14px; border-bottom: 2px solid var(--accent-border); }
+.tbl td { color: var(--text); padding: 8px 14px; border-bottom: 1px solid var(--accent-border); vertical-align: top; line-height: 1.35; }
+.tbl td.num { font-family: var(--font-mono); text-align: center; }
+.tbl th.num { text-align: center; }
+.tbl .tot td { font-weight: 700; border-bottom: none; }
+.part-head { font-family: var(--font-mono); font-size: var(--small); letter-spacing: 0.14em; text-transform: uppercase; color: var(--warn); }
+
+.sym-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: var(--gap); }
+.sym-card { background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 12px 12px 14px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.sym-card .sym-svg { width: 100%; max-width: 220px; height: 150px; }
+.sym-card b { font-size: 24px; color: var(--text); margin-top: 4px; }
+.sym-card span { font-size: 22px; line-height: 1.35; color: var(--text-muted); margin-top: 4px; }
+.sign { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; margin-top: var(--gap); background: rgba(255,209,102,0.08); border-left: 4px solid var(--warn); border-radius: 0 8px 8px 0; padding: 14px 22px; font-size: var(--body); color: var(--text); }
+
+</style>
+</head>
+<body>
+
+<div class="reveal"><div class="slides">
+
+<!-- SLIDE 01 · Title -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 5 &nbsp;·&nbsp; Project</span>
+    <h1 class="title-h1">Layout, Schematic and <span class="pneu">Design Review</span></h1>
+    <p class="lead" style="margin-top:var(--gap);text-align:center;">Plan your station on paper, get it approved, and start your printed part.</p>
+  </div>
+  <div class="glow" style="width:620px;height:620px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(93,170,255,0.07),transparent 70%);"></div>
+  <div class="glow" style="width:560px;height:560px;right:-140px;bottom:-160px;background:radial-gradient(circle,rgba(255,209,102,0.05),transparent 70%);"></div>
+</section>
+
+<!-- SLIDE 02 · Goals -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Today</span>
+    <h2>By the End of Class</h2>
+    <div class="card-grid c3">
+      <div class="sys-card"><h3 class="pneu">A layout</h3><p>A top view of your station on the base plate, with real dimensions and both ends of the stroke.</p></div>
+      <div class="sys-card fragment fade-up"><h3 class="pneu">A schematic</h3><p>Your circuit in <span class="term">ISO symbols</span>, ready for your manual.</p></div>
+      <div class="sys-card fragment fade-up"><h3 class="pneu">Approval</h3><p>Your teacher&rsquo;s <span class="warn-color">safety sign-off</span>, then a start on the part in Onshape.</p></div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">No station gets air until its design is approved.</p>
+  </div>
+  <aside class="notes">Plan Day 11: mechanical layout, pneumatic schematic, teacher design review and safety approval before pressurization.</aside>
+</section>
+
+<!-- SLIDE 03 · Layout -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Layout</span>
+    <h2>Draw Your Station on the Base Plate</h2>
+    <p class="prose">Measure your base plate and draw its outline to scale from the top. Then add:</p>
+    <ul class="chk two">
+      <li class="fragment fade-up">The cylinder, <span class="term">retracted and extended</span></li>
+      <li class="fragment fade-up">Every <span class="warn-color">pivot</span> and the motion path</li>
+      <li class="fragment fade-up">The product&rsquo;s path through the station</li>
+      <li class="fragment fade-up">The printed part, with its size</li>
+      <li class="fragment fade-up">Tank, valves and tube routes</li>
+      <li class="fragment fade-up">Pinch zones, shaded <span class="bad-color">in red</span></li>
+    </ul>
+  </div>
+  <aside class="notes">Drawing both ends of the stroke catches the most common layout problem: a cylinder that hits the frame or the product before full stroke. VEX holes are on a 0.5&nbsp;in grid, which makes a scale drawing easy.</aside>
+</section>
+
+<!-- SLIDE 04 · Pinch points -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Safety</span>
+    <h2>Find and Guard the Pinch Points</h2>
+    <p class="prose">A <span class="bad-color">pinch point</span> is anywhere two parts close together and a finger could be caught: a rod end meeting the frame, an arm swinging past its post, or two clamp jaws.</p>
+    <div class="split split-50 split-top" style="flex:none;margin-top:var(--gap);">
+      <div class="ask fragment fade-up"><b>Design it out:</b> keep gaps too small for a finger or too big to trap one, and slow the stroke with the flow fitting.</div>
+      <div class="ask fragment fade-up"><b>Guard it:</b> add a shield or panel, and put the trigger and shut-off valve away from the moving parts.</div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.4 and the rubric&rsquo;s Safety and Operation row. A guard can be the printed part only if it also does work; usually guards are VEX plates or polycarbonate.</aside>
+</section>
+
+<!-- SLIDE 05 · Resonance: pinch point -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:4:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "A station uses a cylinder to swing an arm up and down on a pivot. Which spot is a pinch point?", "order": 0, "responseTimeLimitMs": 45000, "options": [{"id": "q1a", "text": "The middle of a straight tube", "isCorrect": false}, {"id": "q1b", "text": "The regulator knob", "isCorrect": false}, {"id": "q1c", "text": "The air tank", "isCorrect": false}, {"id": "q1d", "text": "The gap between the arm and the frame as the arm swings down", "isCorrect": true}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check</span>
+    <h2>Spot the Pinch Point</h2>
+    <p class="q-head">A station uses a cylinder to swing an arm up and down on a pivot. Which spot is a pinch point?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>The middle of a straight tube</li>
+      <li><span class="mcq-letter">B</span>The regulator knob</li>
+      <li><span class="mcq-letter">C</span>The air tank</li>
+      <li><span class="mcq-letter">D</span>The gap between the arm and the frame as the arm swings down</li>
+    </ol>
+  </div>
+  <aside class="notes">The arm closing toward the frame (and the rod joint near the pivot) can trap a finger. Tubes, the regulator and the tank do not close on anything.</aside>
+</section>
+
+<!-- SLIDE 06 · Schematic -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Schematic</span>
+    <h2>Draw Your Circuit in ISO Symbols</h2>
+    <p class="prose">Your schematic must show the <span class="pneu">tank</span>, the <span class="pneu">solenoid valve</span>, the <span class="pneu">cylinder</span> and the <span class="warn-color">flow control</span>. Add the shut-off valve too: the operator uses it.</p>
+    <div class="sym-row">
+      <div class="sym-card"><svg viewBox="0 0 200 150" class="sym-svg" role="img" aria-label="Receiver tank symbol"><rect x="45" y="50" width="110" height="56" rx="28" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M10 78 H45" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M155 78 H190" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><b>Receiver tank</b><span>The VEX air tank.</span></div>
+      <div class="sym-card fragment fade-up"><svg viewBox="0 0 200 150" class="sym-svg" role="img" aria-label="Shut-off valve symbol"><rect x="30" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="100" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M45 100 L59.9 55.3" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M64 43 L65.6 57.2 L54.2 53.4 Z" fill="#c9d6e6"/><path d="M85 100 V86 M77 86 H93" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M135 40 L149.9 84.7" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M154 97 L144.2 86.6 L155.6 82.8 Z" fill="#c9d6e6"/><path d="M115 100 V86 M107 86 H123" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M30 70 H20 L10 50" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><circle cx="8" cy="45" r="4.5" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M135 40 V18" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M115 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M155 100 V114" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M147 114 h16 l-8 12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/></svg><b>Shut-off valve</b><span>The operator&rsquo;s air shut-off.</span></div>
+      <div class="sym-card fragment fade-up"><svg viewBox="0 0 200 150" class="sym-svg" role="img" aria-label="5/2 solenoid valve symbol"><rect x="30" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="100" y="40" width="70" height="60" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M65 100 L53.3 55.6" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M50 43 L59.1 54.0 L47.5 57.1 Z" fill="#c9d6e6"/><path d="M80 40 L86.2 84.1" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M88 97 L80.3 85.0 L92.1 83.3 Z" fill="#c9d6e6"/><path d="M135 100 L146.7 55.6" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M150 43 L152.5 57.1 L140.9 54.0 Z" fill="#c9d6e6"/><path d="M120 40 L113.8 84.1" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M112 97 L107.9 83.3 L119.7 85.0 Z" fill="#c9d6e6"/><rect x="4" y="54" width="26" height="32" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M4 86 L30 54" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><rect x="170" y="54" width="26" height="32" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M170 86 L196 54" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M120 40 V18" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M150 40 V18" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M135 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M112 100 V114" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M104 114 h16 l-8 12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/><path d="M158 100 V114" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M150 114 h16 l-8 12 z" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round"/></svg><b>5/2 solenoid valve</b><span>Sends air to A or B.</span></div>
+      <div class="sym-card fragment fade-up"><svg viewBox="0 0 200 150" class="sym-svg" role="img" aria-label="Double-acting cylinder symbol"><rect x="30" y="50" width="120" height="50" fill="none" stroke="#c9d6e6" stroke-width="3"/><path d="M70 50 V100" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M70 75 H185" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M42 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /><path d="M138 100 V130" fill="none" stroke="#c9d6e6" stroke-width="3" stroke-linejoin="round" /></svg><b>Double-acting cylinder</b><span>Your actuator.</span></div>
+      <div class="sym-card fragment fade-up"><svg class="sym-svg" viewBox="0 0 290 190" role="img" aria-label="One-way flow control symbol: an adjustable restriction in parallel with a check valve, inside a dashed box."><path d="M110 8 V40 M110 150 V182" stroke="#c9d6e6" stroke-width="3" fill="none"/><path d="M60 40 H160 M60 150 H160" stroke="#c9d6e6" stroke-width="3" fill="none"/><path d="M60 40 V150" stroke="#c9d6e6" stroke-width="3" fill="none"/><path d="M46 70 Q60 95 46 120 M74 70 Q60 95 74 120" stroke="#c9d6e6" stroke-width="3" fill="none"/><path d="M34 132 L84 58" stroke="#ffd166" stroke-width="3" fill="none"/><path d="M88 52 l-13 5 l8 8 z" fill="#ffd166"/><path d="M160 40 V72 M160 112 V150" stroke="#c9d6e6" stroke-width="3" fill="none"/><path d="M142 84 L160 112 L178 84" stroke="#c9d6e6" stroke-width="3" fill="none"/><circle cx="160" cy="83" r="11" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="20" y="28" width="176" height="134" rx="6" fill="none" stroke="#c9d6e6" stroke-width="2" stroke-dasharray="7 6"/></svg><b>One-way flow control</b><span>On the port that empties.</span></div>
+    </div>
+  </div>
+  <aside class="notes">The rubric&rsquo;s Pneumatic Schematic row requires tank, solenoid, cylinder and flow control in ISO symbols. Symbols from Decks 6 and 8. A team with a regulator draws it after the shut-off valve, as in Deck 6.</aside>
+</section>
+
+<!-- SLIDE 07 · Check schematic -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Schematic</span>
+    <h2>Check Your Schematic</h2>
+    <ul class="chk">
+      <li class="fragment fade-up">Air flows from the tank, through the shut-off valve, to the solenoid valve&rsquo;s P port (1).</li>
+      <li class="fragment fade-up">The <span class="term">A and B ports</span> (2 and 4) run to the correct ends of the cylinder, matching your real tubes.</li>
+      <li class="fragment fade-up">The flow control sits on the port that <span class="warn-color">empties</span> during the stroke you want slow.</li>
+      <li class="fragment fade-up">Both exhausts are drawn, and every symbol is labeled.</li>
+    </ul>
+  </div>
+  <aside class="notes">This checklist doubles as the technician&rsquo;s view: the manual uses the schematic for troubleshooting, so it must match the real tubing.</aside>
+</section>
+
+<!-- SLIDE 08 · Resonance: flow control placement -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:7:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Your station should push out slowly and pull back quickly. Your VEX flow fitting slows air leaving the cylinder. Where does the flow control go in your schematic?", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "On the cap-end port", "isCorrect": false}, {"id": "q1b", "text": "Between the tank and the shut-off valve", "isCorrect": false}, {"id": "q1c", "text": "On the rod-end port", "isCorrect": true}, {"id": "q1d", "text": "On the solenoid valve exhaust", "isCorrect": false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check</span>
+    <h2>Where Does the Flow Control Go?</h2>
+    <p class="q-head">Your station should push out slowly and pull back quickly. Your VEX flow fitting slows air leaving the cylinder. Where does the flow control go in your schematic?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>On the cap-end port</li>
+      <li><span class="mcq-letter">B</span>Between the tank and the shut-off valve</li>
+      <li><span class="mcq-letter">C</span>On the rod-end port</li>
+      <li><span class="mcq-letter">D</span>On the solenoid valve exhaust</li>
+    </ol>
+  </div>
+  <aside class="notes">The rod end empties while the cylinder pushes out, so a meter-out fitting there slows extension only (Deck 8). VEX says not to put the fittings on the solenoid valve.</aside>
+</section>
+
+<!-- SLIDE 09 · Design review -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Design Review</span>
+    <h2>Get Your Design Approved</h2>
+    <p class="prose">Bring your layout, schematic and a sketch of your printed part with its dimensions. Your teacher checks:</p>
+    <ul class="chk two">
+      <li class="fragment fade-up">It fits on one base plate</li>
+      <li class="fragment fade-up">It has a linkage or movement system</li>
+      <li class="fragment fade-up">Pinch points are guarded</li>
+      <li class="fragment fade-up">The schematic is complete</li>
+      <li class="fragment fade-up">The printed part does work</li>
+      <li class="fragment fade-up">The part fits a 4&nbsp;in cube</li>
+    </ul>
+    <div class="sign fragment fade-up"><span>Approved? Your teacher initials your layout page. <span class="warn-color">No air until you have it.</span></span></div>
+  </div>
+  <aside class="notes">The plan&rsquo;s design review and safety approval before pressurization. Record approval in the notebook so later build days can check it. Send teams that are not approved back with one specific fix.</aside>
+</section>
+
+<!-- SLIDE 10 · Onshape -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">CAD</span>
+    <h2>Start Your Part in Onshape</h2>
+    <div class="steps">
+      <div class="step"><span class="step-n">1</span><p>Measure where your part meets VEX: hole spacing is <span class="term">0.5&nbsp;in</span>, and VEX screws are <span class="term">#8-32</span>.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">2</span><p>Make screw holes <span class="warn-color">a little larger</span> than the screw, about 0.19&nbsp;in, so a print still fits.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">3</span><p>Keep walls at least <span class="term">0.1&nbsp;in</span> thick, and check that the part fits inside a 4&nbsp;in cube.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">4</span><p>Name your Part Studio with your period and team. Prints take hours, so finish early.</p></div>
+    </div>
+  </div>
+  <aside class="notes">The #8-32 screw is 0.164&nbsp;in across; 0.19&nbsp;in gives room for printer shrink and tolerance. Adjust step 2 for your printers if test prints show otherwise. The print queue opens on the first build day; teams export STL then.</aside>
+</section>
+
+<!-- SLIDE 11 · Notebook -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Notebook</span>
+    <h2>Record the Review</h2>
+    <div class="ask">Your <span class="term">layout</span> and <span class="term">schematic</span>, with your teacher&rsquo;s initials.</div>
+    <div class="ask fragment fade-up">What the review changed, and why.</div>
+    <div class="ask fragment fade-up">A sketch of your printed part with its <span class="warn-color">major dimensions</span>. It becomes your PDF drawing later.</div>
+  </div>
+  <aside class="notes">Notebook and schematic are 20 of the 100 points. The dimensioned sketch is the start of the CAD deliverable&rsquo;s PDF drawing.</aside>
+</section>
+
+<!-- SLIDE 12 · Resonance: exit ticket -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:11:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "Your printed pusher head bolts to a VEX bar with #8-32 screws, which are about 0.164 in across. How big should you draw its screw holes in Onshape?", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "Exactly 0.164 in, so the screws fit tightly", "isCorrect": false}, {"id": "q1b", "text": "A little larger, about 0.19 in", "isCorrect": true}, {"id": "q1c", "text": "About 0.5 in, the same as the hole spacing", "isCorrect": false}, {"id": "q1d", "text": "Leave them out and drill them after printing", "isCorrect": false}]}, {"id": "q2", "type": "free-response", "text": "What did the design review change in your plan, or what does your team still need to fix before it is approved?", "order": 1, "responseTimeLimitMs": 150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Before You Go</h2>
+    <p class="q-head">1. Your printed pusher head bolts to a VEX bar with #8-32 screws, which are about 0.164 in across. How big should you draw its screw holes in Onshape?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>Exactly 0.164 in, so the screws fit tightly</li>
+      <li><span class="mcq-letter">B</span>A little larger, about 0.19 in</li>
+      <li><span class="mcq-letter">C</span>About 0.5 in, the same as the hole spacing</li>
+      <li><span class="mcq-letter">D</span>Leave them out and drill them after printing</li>
+    </ol>
+    <p class="q-head">2. What did the design review change in your plan, or what does your team still need to fix before it is approved?</p>
+  </div>
+  <aside class="notes">Q1: prints come out slightly small and rough, so holes need clearance. 0.5&nbsp;in is the spacing between holes, not their size. Q2 shows which teams still need approval before the first build day.</aside>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function (el) { return !el.closest('#storyboard'); }
+  );
+}
+
+initSyncDeckReveal({
+  deckId: 'design-review',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+
+  },
+});
+</script>
+</body>
+</html>
