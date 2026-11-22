@@ -98,13 +98,15 @@ Start with the syringe observations, introduce pressure as force divided by area
 
 **SyncDeck:** Reveal equations only after predictions; students calculate and justify the next step. Use a short paired design question and independent practice. **Notebook:** annotated system sketch and at least one complete calculation. **Exit:** What happens to force and travel if output piston area doubles?
 
-**Scope:** Keep the core math to P = F/A and F = PA. Use CCHS bore/area calculations as extension for students ready for circle geometry; Boyle's Law as an optional pneumatic extension rather than a required extra day.
+**Scope:** Keep the core math to P = F/A and F = PA. Use CCHS bore/area calculations as extension for students ready for circle geometry; Boyle's Law gets one slide at the end of the deck, before the exit ticket, looking back at the trapped-air challenge: P₁V₁ = P₂V₂ at constant temperature, with absolute versus gauge pressure. Day 4 applies it to the VEX tank. No extra day.
 
 ### Day 4: Cylinders as actuators
 
 **Existing sources:** CCHS *Pneumatic Pistons: Parts, How They Work, and Calculations*; PHS *Day 4/5 - How Do We Turn Pressure Into Motion?*.
 
 Investigate how a cylinder turns air pressure into linear movement. Identify barrel, piston, rod, bore, stroke and ports. Contrast single-acting/spring-return and double-acting cylinders. Discuss why pressure alone does not determine speed and why retraction force can differ when a rod reduces effective piston area.
+
+**Boyle's Law application (after the VEX power chain):** Recall Boyle's Law from Day 3. Students convert gauge to absolute pressure (+14.7 psi) and find that a full 100 psi VEX tank holds about 7.8 tanks' worth of room air. A check question follows with a 50 psi version (about 4.4).
 
 **SyncDeck:** Label a cylinder diagram, choose a cylinder for a clamp or ejector, and predict movement when one port is pressurized. **Notebook:** labeled cylinder and short actuator-selection rationale.
 
@@ -295,7 +297,7 @@ For each deck, favor **predict → discuss → test/trace → explain**. Use vis
 ## Decisions to make before building decks
 
 1. **VEX kit identified:** 276-8750. Before implementing fitting-specific flow behavior, inspect the actual classroom fittings and verify orientation/directionality against VEX documentation. Confirm the available method of commanding the solenoids and follow manufacturer wiring guidance.
-2. Decide whether Boyle's Law and piston bore calculations belong in required practice or extension work. This plan keeps them as extensions.
+2. Decide whether piston bore calculations belong in required practice or extension work. Boyle's Law is settled: introduced on Day 3, applied to the VEX tank on Day 4 (2026-11-22).
 3. Confirm printing throughput and whether the capstone should have more than three build periods.
 4. Review valve schematics and nomenclature against the actual symbols before reproducing slides, especially default-state conventions.
 5. Decide how to record each student's individual understanding alongside team construction and documentation.
