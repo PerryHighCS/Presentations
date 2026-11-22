@@ -312,11 +312,12 @@ For each deck, favor **predict → discuss → test/trace → explain**. Use vis
 
 - **Filling the tank:** Students charge the tank from the classroom compressor through the tank's brass fill valve (teacher-confirmed). The robot carries no compressor and runs on stored air, so cylinder force drops as the tank empties.
 - **Supply side:** A tee at the tank outlet feeds the pressure gauge. The shut-off valve and an optional regulator sit on the supply line before the solenoid. The text does not give their order, so take it from the diagram or the classroom kits.
-- **Air flow valve fittings go on the cylinder ports only.** VEX says not to put them on the solenoid. The only feasible positions in Simulation D are therefore the cylinder's two ports. The documentation does not say whether they restrict flow in one direction (meter-out on exhaust versus meter-in on supply), so test that on the bench before building the model.
+- **Air flow valve fittings go on the cylinder ports only.** VEX says not to put them on the solenoid. The only feasible positions in Simulation D are therefore the cylinder's two ports. The documentation does not say which direction they restrict, but the classroom fittings **meter out** (teacher-confirmed): air flows freely into the cylinder through a fitting and is squeezed on its way out, with a screw setting the restriction. A fitting on the rod-end port therefore slows extension only, which is the Day 8 answer and the model in Simulation D.
 - **Driver cable orientation sets the logic.** The green/white plug goes on the B side. Reversing the plugs "will flip the logic, causing the cylinder to extend when you want it to retract." Swapped A/B tubing produces the same symptom, so this makes a good pair of hidden faults for Simulation B and the 7.10 troubleshooting evidence: students need a test that tells the two causes apart.
 - **Second P port:** It ships with a 4 mm plug. The two-cylinder example chains a second solenoid from the supply line.
 - **Fittings are hand-tightened only.** Tools can damage the O-ring seals and break the delicate threads on the fittings. Add this to the Day 7 safety and handling rules.
 - **Maximum pressure is 100 psi** (teacher-confirmed). Never pressurize the tank above it. Use 100 psi as the upper limit of the supply-pressure setting in Simulation D.
+- **Classroom regulators are set to 50 psi by default** (teacher-confirmed). Decks 7 and 8 test at 50 psi, and Simulation D starts there.
 - **Not stated in the documentation:** a depressurizing procedure. Closing the shut-off valve vents everything downstream of it (teacher-confirmed), but the tank stays charged.
 
 ### Unit boundary: VEX now, MecLab later

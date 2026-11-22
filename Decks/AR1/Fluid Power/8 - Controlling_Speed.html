@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="djjuld">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8 - Controlling Speed</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   Deck 8: VEXploration, controlling speed (Day 8)
+   Color meaning, as in the rest of the unit: blue = air and
+   pneumatic parts, green = key terms, yellow = signals, cautions
+   and flow restrictions, coral = faults.
+   ============================================================ */
+
+.opt-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: var(--gap); }
+.opt-list li { font-size: var(--body); line-height: 1.4; color: var(--text); display: flex; gap: 16px; align-items: baseline; }
+.mcq-letter { font-family: var(--font-mono); font-weight: 700; color: var(--accent); min-width: 28px; }
+.q-head { font-size: var(--body); color: var(--text-muted); margin-top: var(--gap); }
+.warn-color { color: var(--warn); }
+
+/* Steps */
+.steps { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; margin-top: var(--gap); }
+.step { display: flex; gap: 16px; align-items: flex-start; background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 14px 18px; }
+.step-n { font-family: var(--font-mono); font-size: 26px; font-weight: 700; color: var(--accent); min-width: 26px; }
+.step p { font-size: var(--body); line-height: 1.4; color: var(--text-muted); margin: 0; }
+.step.caution { border-color: rgba(255,209,102,0.45); }
+.step.caution .step-n { color: var(--warn); }
+
+
+/* Pressure comparison cards */
+.cmp-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-top: var(--gap); }
+.cmp-row .sys-card p { font-size: var(--body); line-height: 1.4; color: var(--text-muted); }
+.cmp-row .sys-card b { color: var(--text); }
+
+/* Flow control symbol and meter-out figure */
+.fc-sym { display: block; width: 300px; height: auto; }
+.fc-pair { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.fc-row { display: flex; align-items: center; gap: 18px; }
+.fc-photo { margin: 0; background: #fff; border-radius: 10px; padding: 8px; box-shadow: 0 0 0 1px var(--accent-border); }
+.fc-photo img { display: block; width: 240px; height: auto; }
+.mo-fig { display: block; width: 100%; height: auto; }
+.mo-fig text { font-family: 'DM Sans', sans-serif; }
+
+/* Simulation D */
+.sd-svg { display: block; width: 1360px; height: 400px; margin: 0 auto; }
+.sc-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 6px; }
+.sc-row .ctl-name { font-size: var(--small); color: var(--text-muted); }
+.sc-row .ctl-val { font-family: var(--font-mono); font-size: var(--small); font-weight: 700; color: var(--text); min-width: 80px; }
+.sc-range { width: 230px; accent-color: var(--accent); }
+.s1-btn { font-size: var(--small); font-weight: 700; color: var(--text); background: var(--bg-card); border: 2px solid var(--warn); border-radius: 999px; padding: 8px 18px; cursor: pointer; }
+.s1-btn[aria-pressed="true"] { background: var(--warn); color: var(--bg); }
+.sc-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 10px; }
+.sc-status { box-sizing: border-box; height: 150px; font-size: 24px; line-height: 1.4; color: var(--text); background: var(--bg-card); border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; padding: 10px 16px; }
+.sc-status.stall { border-left-color: var(--bad); }
+.sc-log { box-sizing: border-box; height: 150px; overflow-y: auto; overscroll-behavior: contain; background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 0 12px 6px; }
+.sc-log th { position: sticky; top: 0; background: var(--bg-card); padding-top: 6px; }
+.sc-log { scrollbar-color: rgba(93,170,255,0.6) transparent; }
+.sc-log::-webkit-scrollbar { width: 12px; }
+.sc-log::-webkit-scrollbar-thumb { background: rgba(93,170,255,0.6); border-radius: 6px; }
+.sc-log table { width: 100%; border-collapse: collapse; font-size: 22px; }
+.sc-log th { text-align: left; color: var(--text-muted); font-weight: 700; padding: 2px 6px; }
+.sc-log td { color: var(--text); padding: 2px 6px; font-family: var(--font-mono); }
+.sc-log .empty td { color: var(--text-dim); font-family: var(--font-ui); }
+.sd-pair { display: flex; align-items: center; gap: 10px; }
+.sd-sep { width: 1px; height: 34px; background: var(--accent-border); margin: 0 6px; }
+.sd-tog { font-size: var(--small); font-weight: 700; color: var(--text); background: var(--bg-card); border: 2px solid var(--warn); border-radius: 999px; padding: 6px 14px; cursor: pointer; min-width: 100px; }
+.sd-tog[aria-pressed="true"] { background: rgba(255,209,102,0.16); }
+.sc-range.short { width: 150px; }
+.sc-range:disabled { opacity: 0.35; }
+.sd-sel { font-family: var(--font-ui); font-size: var(--small); font-weight: 700; color: var(--text); background: var(--bg-card); border: 2px solid var(--accent-border); border-radius: 8px; padding: 6px 10px; }
+.sd-sim .sc-bottom { grid-template-columns: 1fr 1.25fr; }
+.sd-sim .sc-status, .sd-sim .sc-log { height: 128px; }
+
+</style>
+</head>
+<body>
+
+<div class="reveal"><div class="slides">
+
+<!-- SLIDE 01 · Title -->
+<section>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR1 &nbsp;·&nbsp; Unit 5 &nbsp;·&nbsp; VEXploration</span>
+    <h1 class="title-h1">Can We Control the <span class="pneu">Speed?</span></h1>
+    <p class="lead" style="margin-top:var(--gap);text-align:center;">Last lesson your cylinder moved. Today you make it extend slowly but retract quickly.</p>
+  </div>
+  <div class="glow" style="width:620px;height:620px;left:-160px;top:-160px;background:radial-gradient(circle,rgba(93,170,255,0.07),transparent 70%);"></div>
+  <div class="glow" style="width:560px;height:560px;right:-140px;bottom:-160px;background:radial-gradient(circle,rgba(255,209,102,0.05),transparent 70%);"></div>
+</section>
+
+<!-- SLIDE 02 · The speed challenge -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">VEXploration</span>
+    <h2>The Speed Challenge</h2>
+    <p class="prose">A cylinder that slams out can knock a part over or crack it. Machines often need a <span class="term">gentle push</span> on the way out and a <span class="term">quick return</span>, so they are ready for the next part sooner.</p>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">Your challenge: make your VEX cylinder <span class="pneu">extend slowly</span> but <span class="pneu">retract quickly</span>. First you will try it with no extra parts. Then you will add a new part and try again.</p>
+  </div>
+  <aside class="notes">VEXploration lesson 2 of 3 (plan Day 8). Standards: 7.3, 7.9, 7.10, and Simulation D. Teams start from the circuit they built last lesson, regulator at 50&nbsp;psi.</aside>
+</section>
+
+<!-- SLIDE 03 · Resonance: predict -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:2:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "free-response", "text": "Your VEX cylinder extends and retracts in about half a second. Without adding any parts, how could you make it extend more slowly? Predict what your idea would also do to retraction and to how hard the cylinder pushes.", "order": 0, "responseTimeLimitMs": 150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict</span>
+    <h2>Slow It Down</h2>
+    <p class="q-head">Your VEX cylinder extends and retracts in about half a second. Without adding any parts, how could you make it extend more slowly? Predict what your idea would also do to retraction and to how hard the cylinder pushes.</p>
+  </div>
+  <aside class="notes">Expect: turn the regulator down, kink or pinch a tube, partly close the shut-off valve, add a load. Keep every idea; the bench test sorts them. Do not let teams pinch tubes on a charged circuit.</aside>
+</section>
+
+<!-- SLIDE 04 · Try it: no extra parts -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Bench Test</span>
+    <h2>Try It With No Extra Parts</h2>
+    <p class="prose">Test the most common idea: <span class="term">turn the regulator down</span>. Time each stroke by counting or with a phone video.</p>
+    <div class="steps">
+      <div class="step caution"><span class="step-n">1</span><p>Glasses on, rod pointed away. Turning the regulator is safe with the air on; changing a tube is not.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">2</span><p>At <span class="pneu">50&nbsp;psi</span>, time one extension and one retraction. With the rod <span class="warn-color">fully extended</span>, press gently on its tip to feel the push. <span class="bad-color">Never try to stop a moving rod.</span></p></div>
+      <div class="step fragment fade-up"><span class="step-n">3</span><p>Turn the regulator to <span class="pneu">25&nbsp;psi</span> and repeat both strokes and the push.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">4</span><p>Record both rows in your notebook: pressure, extend time, retract time and how the push felt.</p></div>
+    </div>
+  </div>
+  <aside class="notes">Use only the regulator: pinching tubes or half-closing the shut-off valve on a charged circuit is not an approved procedure. A 240&nbsp;fps phone video makes timing easy. Pushing on the rod tip with a finger is safe at these pressures (about 6&nbsp;lb at 50&nbsp;psi), but keep fingers off the rod&rsquo;s path at the barrel.</aside>
+</section>
+
+<!-- SLIDE 05 · Pressure is not speed -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">What We Found</span>
+    <h2>Pressure Sets the Force</h2>
+    <p class="prose">Lower pressure did slow the cylinder, but it slowed <span class="bad-color">both directions</span>, and the push got weaker. Force = pressure &times; area, so halving the pressure halves the push.</p>
+    <div class="cmp-row fragment fade-up">
+      <div class="sys-card"><h3 class="pneu">50 psi</h3><p>About <b>6.1&nbsp;lb</b> of push on the 10&nbsp;mm VEX bore (0.122&nbsp;in&sup2;).</p></div>
+      <div class="sys-card"><h3 class="pneu">25 psi</h3><p>About <b>3.1&nbsp;lb</b>: slower both ways, and half the push.</p></div>
+    </div>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">To change speed without losing force, control how fast the air <span class="warn-color">flows</span>, not how hard it pushes. The <span class="term">regulator sets force</span>; the flow sets speed.</p>
+  </div>
+  <aside class="notes">The plan&rsquo;s key distinction: pressure regulation sets available force, airflow restriction sets motion speed. The area comes from Deck 4 (radius 0.197&nbsp;in). If a team found that lower pressure barely changed speed, that is real too: with no load, a VEX cylinder is limited mostly by how fast air flows.</aside>
+</section>
+
+<!-- SLIDE 06 · The flow control valve -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">New Part</span>
+    <h2>The Flow Control Valve</h2>
+    <div class="split split-60 split-top" style="flex:none;margin-top:var(--gap);">
+      <div class="v-notes" style="display:flex;flex-direction:column;gap:18px;">
+        <p class="prose">The kit&rsquo;s <span class="term">air flow valve fittings</span> screw into the cylinder&rsquo;s ports. Each one is a <span class="term">one-way flow control valve</span>.</p>
+        <p class="prose fragment fade-up" data-fragment-index="1">Air flowing <span class="pneu">into</span> the cylinder pushes open a small <span class="pneu">check valve</span> and passes freely. Air flowing <span class="warn-color">out</span> has to squeeze through a narrow gap.</p>
+        <p class="prose fragment fade-up" data-fragment-index="2">A small <span class="warn-color">screw</span> sets the gap: turn it in to narrow it, out to open it. VEX says the fittings go on the cylinder ports only, not on the solenoid.</p>
+      </div>
+      <div class="fc-pair">
+        <div class="fc-row">
+          <figure class="fc-photo"><img class="img-zoomable" src="Controlling_Speed_Assets/vexFlowFitting.jpeg" alt="A VEX air flow valve fitting: a black elbow with a threaded end that screws into the cylinder port, a red push-to-connect collar for the tube, and a knurled metal knob on top that sets the restriction."></figure>
+          <div class="fragment fade-up" data-fragment-index="3"><svg class="fc-sym" viewBox="0 0 290 190" role="img" aria-label="One-way flow control symbol: an adjustable restriction in parallel with a check valve, inside a dashed box."><path d="M110 8 V40 M110 150 V182" stroke="#c9d6e6" stroke-width="3" fill="none"/><path d="M60 40 H160 M60 150 H160" stroke="#c9d6e6" stroke-width="3" fill="none"/><path d="M60 40 V150" stroke="#c9d6e6" stroke-width="3" fill="none"/><path d="M46 70 Q60 95 46 120 M74 70 Q60 95 74 120" stroke="#c9d6e6" stroke-width="3" fill="none"/><path d="M34 132 L84 58" stroke="#ffd166" stroke-width="3" fill="none"/><path d="M88 52 l-13 5 l8 8 z" fill="#ffd166"/><path d="M160 40 V72 M160 112 V150" stroke="#c9d6e6" stroke-width="3" fill="none"/><path d="M142 84 L160 112 L178 84" stroke="#c9d6e6" stroke-width="3" fill="none"/><circle cx="160" cy="83" r="11" fill="none" stroke="#c9d6e6" stroke-width="3"/><rect x="20" y="28" width="176" height="134" rx="6" fill="none" stroke="#c9d6e6" stroke-width="2" stroke-dasharray="7 6"/><text x="120" y="22" text-anchor="start" style="font:700 22px 'DM Sans',sans-serif;fill:#5daaff;">to cylinder</text></svg></div>
+        </div>
+        <p class="credit" style="text-align:center;">The knurled <span class="warn-color">knob</span> turns the screw that sets the gap. The threaded end screws into the cylinder port, and the tube pushes into the red collar.</p>
+        <p class="credit fragment fade-up" data-fragment-index="3" style="text-align:center;">The symbol: an adjustable restriction (the arrow) beside a check valve (the ball and seat), drawn in one dashed box.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Teacher-confirmed: the classroom fittings meter out (free flow into the cylinder, restricted flow out). The symbol extends Deck 6&rsquo;s flow control symbol with a check valve. Have teams find the knob on a fitting before anyone installs one. The fitting photo opens larger when clicked.</aside>
+</section>
+
+<!-- SLIDE 07 · Resonance: where does it go -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:6:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "A VEX flow fitting lets air flow freely into the cylinder through it, but squeezes air flowing out through it. You want the cylinder to extend slowly and retract fast. Which port should the fitting go on?", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "The cap-end port, where air enters to extend", "isCorrect": false}, {"id": "q1b", "text": "Both cylinder ports, with the screws wide open", "isCorrect": false}, {"id": "q1c", "text": "The rod-end port, where air leaves during extension", "isCorrect": true}, {"id": "q1d", "text": "The solenoid&#39;s B port", "isCorrect": false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict</span>
+    <h2>Where Does the Fitting Go?</h2>
+    <p class="q-head">A VEX flow fitting lets air flow freely into the cylinder through it, but squeezes air flowing out through it. You want the cylinder to extend slowly and retract fast. Which port should the fitting go on?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>The cap-end port, where air enters to extend</li>
+      <li><span class="mcq-letter">B</span>Both cylinder ports, with the screws wide open</li>
+      <li><span class="mcq-letter">C</span>The rod-end port, where air leaves during extension</li>
+      <li><span class="mcq-letter">D</span>The solenoid&rsquo;s B port</li>
+    </ol>
+  </div>
+  <aside class="notes">Answer: the rod-end port. During extension the rod end is the side that empties, and the fitting only squeezes air leaving through it. Do not confirm yet; the simulation on the next slides tests every prediction.</aside>
+</section>
+
+<!-- SLIDE 08 · Simulation D briefing -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Flow Simulator</span>
+    <h2>Test It in the Simulator</h2>
+    <p class="prose">The <span class="term">flow simulator</span> has the same circuit as your bench, with a flow fitting you can add to either cylinder port. It is a <span class="warn-color">simplified model</span>: it shows the trend, not your cylinder&rsquo;s exact times.</p>
+    <div class="ask fragment fade-up"><b>1.</b> Run both strokes with no fittings. Record the trial.</div>
+    <div class="ask fragment fade-up"><b>2.</b> Add one fitting where you predicted. Run both strokes and record. Did extension slow down? Did retraction?</div>
+    <div class="ask fragment fade-up"><b>3.</b> Find a setting that meets the goal: extension 2&nbsp;s or more, retraction 0.6&nbsp;s or less. Record it.</div>
+  </div>
+  <aside class="notes">ADE 7.3 and 7.9, with Simulation D. The model: a stroke&rsquo;s time depends only on the fitting on the port that is emptying; air entering passes the check valve freely. In the model, 1 turn open on the rod end just meets the goal (2.0&nbsp;s); half a turn gives about 2.9&nbsp;s. Changing the pressure changes both strokes, which revisits the last slide. A fully closed screw stalls the stroke.</aside>
+</section>
+
+<!-- SLIDE 09 · Simulation D -->
+<section data-prevent-swipe>
+  <div class="slide-inner" style="max-width:1600px;padding:36px 36px 30px;justify-content:flex-start;">
+    <span class="slide-tag" style="margin-bottom:4px;">Flow Simulator &nbsp;·&nbsp; Simplified model</span>
+    <div class="sd-sim" id="sim-d">
+      <svg class="sd-svg" viewBox="0 0 1360 400" width="1360" height="400" role="img" aria-label="A VEX circuit: tank, regulator and solenoid valve feed a double-acting cylinder. Port A runs to the rod end and port B to the cap end. A flow fitting can be added to either cylinder port. A graph shows the rod position against time for the last extension and retraction." data-r="svg"></svg>
+      <div class="sc-row">
+        <span class="ctl-name">Signal</span>
+        <span class="seg"><button type="button" class="seg-btn" data-sig="0" aria-pressed="true">Low</button><button type="button" class="seg-btn" data-sig="1" aria-pressed="false">High</button></span>
+        <span class="sd-sep"></span>
+        <span class="ctl-name">Regulator</span>
+        <input type="range" class="sc-range short" data-r="p" min="20" max="100" step="5" value="50" aria-label="Regulator pressure">
+        <span class="ctl-val" data-r="v-p"></span>
+        <span class="ctl-name">Push</span><span class="ctl-val" data-r="v-push"></span>
+        <span class="sd-sep"></span>
+        <span class="ctl-name">Extend</span><span class="ctl-val" data-r="v-ext"></span>
+        <span class="ctl-name">Retract</span><span class="ctl-val" data-r="v-ret"></span>
+      </div>
+      <div class="sc-row">
+        <span class="ctl-name">Cap-end fitting</span>
+        <button type="button" class="sd-tog" data-r="t-cap" aria-pressed="false">Add</button>
+        <input type="range" class="sc-range short" data-r="cap" min="0" max="4" step="0.5" value="2" aria-label="Cap-end fitting screw turns open">
+        <span class="ctl-val" data-r="v-cap"></span>
+        <span class="sd-sep"></span>
+        <span class="ctl-name">Rod-end fitting</span>
+        <button type="button" class="sd-tog" data-r="t-rod" aria-pressed="false">Add</button>
+        <input type="range" class="sc-range short" data-r="rod" min="0" max="4" step="0.5" value="2" aria-label="Rod-end fitting screw turns open">
+        <span class="ctl-val" data-r="v-rod"></span>
+        <span class="status-chip busy" data-r="goal" style="margin-left:auto;"></span>
+      </div>
+      <div class="sc-bottom">
+        <div class="sc-status" data-r="status" aria-live="polite"></div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div class="sc-log"><table><thead><tr><th>#</th><th>Pressure</th><th>Cap end</th><th>Rod end</th><th>Extend</th><th>Retract</th></tr></thead><tbody data-r="log"></tbody></table></div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;"><button type="button" class="sim-btn" data-r="rec">Record trial</button><button type="button" class="sim-btn alt" data-r="clear">Clear</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Low sends air to A (rod end), high to B (cap end), as on the real kit. Blue tubes are feeding, yellow dashed tubes are exhausting through R. A trial records only after both strokes have run with the current settings. Copy each trial into the notebook; the table resets on reload.</aside>
+</section>
+
+<!-- SLIDE 10 · How meter-out works -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">How It Works</span>
+    <h2>Metering Out</h2>
+    <svg class="mo-fig" viewBox="0 0 1300 250" role="img" aria-label="A cylinder extending. Air enters the cap end freely. Air leaving the rod end squeezes through the flow fitting on the rod-end port.">
+      <rect x="300" y="70" width="560" height="110" fill="none" stroke="#c9d6e6" stroke-width="3"/>
+      <rect x="302" y="72" width="246" height="106" fill="rgba(93,170,255,0.28)"/>
+      <rect x="548" y="73" width="18" height="104" fill="#c9d6e6"/>
+      <rect x="566" y="114" width="430" height="22" fill="#c9d6e6"/>
+      <path d="M1010 125 h60" stroke="#c9d6e6" stroke-width="4"/><path d="M1086 125 l-18 -10 v20 z" fill="#c9d6e6"/>
+      <path d="M200 30 H340 V70" stroke="#5daaff" stroke-width="6" fill="none"/>
+      <path d="M340 70 l-9 -14 h18 z" fill="#5daaff"/>
+      <rect x="793" y="24" width="54" height="34" rx="6" fill="#0a1120" stroke="#ffd166" stroke-width="3"/>
+      <path d="M811 30 Q820 41 811 52 M829 30 Q820 41 829 52" fill="none" stroke="#ffd166" stroke-width="2.5"/>
+      <path d="M820 58 V70" stroke="#c9d6e6" stroke-width="3"/>
+      <path d="M820 24 V10 H980" stroke="#ffd166" stroke-width="4" stroke-dasharray="10 7" fill="none"/>
+      <text x="200" y="20" style="font-size:24px;font-weight:700;fill:#5daaff;">Air in: free flow</text>
+      <text x="990" y="18" style="font-size:24px;font-weight:700;fill:#ffd166;">Air out: squeezed</text>
+      <text x="420" y="215" text-anchor="middle" style="font-size:24px;fill:rgba(232,242,255,0.66);">Cap end fills</text>
+      <text x="720" y="215" text-anchor="middle" style="font-size:24px;fill:rgba(232,242,255,0.66);">Rod end empties slowly</text>
+    </svg>
+    <p class="prose fragment fade-up">The piston can only move as fast as the air in front of it gets out. Squeezing the air <span class="warn-color">leaving</span> the rod end slows extension; on the way back, the rod end fills freely and retraction stays fast.</p>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">Controlling the air on its way out is called <span class="term">metering out</span>. Air stays packed on both sides of the piston, so the motion is smooth and steady, even if a load pulls on the rod.</p>
+  </div>
+  <aside class="notes">Answer to the prediction: the rod-end port. Meter-in (squeezing the air going in) is the other option on industrial valves; it tends to make light loads jerk, which is why speed-control fittings on cylinders are usually meter-out. Compare with each team&rsquo;s simulator trials.</aside>
+</section>
+
+<!-- SLIDE 11 · Bench: reproduce it -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Bench Test</span>
+    <h2>Make It Real</h2>
+    <div class="steps">
+      <div class="step caution"><span class="step-n">1</span><p><span class="warn-color">Glasses on.</span> Then <span class="warn-color">close the shut-off valve</span> before you touch a fitting; it vents the cylinder.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">2</span><p>Screw one flow fitting into the <span class="pneu">rod-end port</span> by hand, and move the A tube to it. Push the tube in until it stops.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">3</span><p>Turn the screw in all the way, then back it out <span class="warn-color">1 turn</span>.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">4</span><p>Point the rod away from people. Open the shut-off valve, then time both strokes.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">5</span><p>Adjust the screw a half turn at a time, closing the shut-off valve whenever you touch the fitting.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">6</span><p>Record every setting and both times. Compare them with the simulator.</p></div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.9 and 7.4. Real times will not match the model: tube length, friction, how full the tank is, and how far the screw really turned all change them. That comparison is part of the evidence. If a stroke stalls, the screw is closed too far.</aside>
+</section>
+
+<!-- SLIDE 12 · Notebook -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Notebook</span>
+    <h2>Record Your Evidence</h2>
+    <div class="ask">Your <span class="term">prediction</span>, then a table of at least <span class="term">two configurations</span>: pressure, fitting position, screw turns, extend time and retract time, from the bench and the simulator.</div>
+    <div class="ask fragment fade-up">Update your <span class="term">VEX schematic</span>: add the one-way flow control symbol at the rod-end port.</div>
+    <div class="ask fragment fade-up">One <span class="term">difference</span> between the simulator and your bench, and a reason it might happen.</div>
+  </div>
+  <aside class="notes">The plan&rsquo;s Day 8 evidence: prediction, two or more configurations, actual observations, a revised VEX schematic and a troubleshooting note (the mystery cylinder next: record the readings that solved it).</aside>
+</section>
+
+<!-- SLIDE 13 · Mystery cylinder briefing -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Troubleshooting</span>
+    <h2>The Mystery Cylinder</h2>
+    <p class="prose">Someone set flow fittings on this cylinder and <span class="warn-color">covered them up</span>. Work out which ports have a fitting and about how far each knob is open, using only how the cylinder moves.</p>
+    <div class="steps">
+      <div class="step fragment fade-up"><span class="step-n">1</span><p>Time both strokes. <span class="term">Which one is slow?</span> That tells you which end is squeezing its air out.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">2</span><p>Compare each time with the trials you recorded in the <span class="term">flow simulator</span> to estimate the knob setting.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">3</span><p>Does changing the pressure tell you which port has the fitting? Test it before you rely on it.</p></div>
+      <div class="step fragment fade-up"><span class="step-n">4</span><p>Submit your answer. Within <span class="pneu">half a turn</span> counts. Then try a new mystery.</p></div>
+    </div>
+  </div>
+  <aside class="notes">ADE 7.10 with flow control: diagnosing a hidden setup from evidence, here the motion itself. Each new mystery deals rod-only, cap-only or both before repeating, with knobs at 0.5 to 3 turns. A slow extension points to the rod end; a slow retraction points to the cap end. Pressure changes both strokes by the same factor, so it cannot tell the ports apart. In the model at 50&nbsp;psi: extension takes 0.5&nbsp;s &divide; (0.1 + 0.15 &times; turns), and retraction 0.4&nbsp;s &divide; (0.1 + 0.15 &times; turns); 1 turn on the rod end is 2.0&nbsp;s.</aside>
+</section>
+
+<!-- SLIDE 14 · Mystery cylinder simulator -->
+<section data-prevent-swipe>
+  <div class="slide-inner" style="max-width:1600px;padding:36px 36px 30px;justify-content:flex-start;">
+    <span class="slide-tag" style="margin-bottom:4px;">Troubleshooting &nbsp;·&nbsp; The Mystery Cylinder &nbsp;·&nbsp; Simplified model</span>
+    <div class="sd-sim" id="sim-mystery">
+      <svg class="sd-svg" viewBox="0 0 1360 400" width="1360" height="400" role="img" aria-label="The flow simulator circuit with both cylinder ports covered, so the flow fittings cannot be seen. A graph shows the rod position against time for the last extension and retraction." data-r="svg"></svg>
+      <div class="sc-row">
+        <span class="ctl-name">Signal</span>
+        <span class="seg"><button type="button" class="seg-btn" data-sig="0" aria-pressed="true">Low</button><button type="button" class="seg-btn" data-sig="1" aria-pressed="false">High</button></span>
+        <span class="sd-sep"></span>
+        <span class="ctl-name">Regulator</span>
+        <input type="range" class="sc-range short" data-r="p" min="20" max="100" step="5" value="50" aria-label="Regulator pressure">
+        <span class="ctl-val" data-r="v-p"></span>
+        <span class="ctl-name">Push</span><span class="ctl-val" data-r="v-push"></span>
+        <span class="sd-sep"></span>
+        <span class="ctl-name">Extend</span><span class="ctl-val" data-r="v-ext"></span>
+        <span class="ctl-name">Retract</span><span class="ctl-val" data-r="v-ret"></span>
+      </div>
+      <div class="sc-row">
+        <span class="ctl-name">Your answer: cap end</span>
+        <select class="sd-sel" data-r="a-cap" aria-label="Your answer for the cap-end port"><option value="">Choose&hellip;</option><option value="none">No fitting</option><option value="0.5">0.5 turns</option><option value="1">1 turn</option><option value="1.5">1.5 turns</option><option value="2">2 turns</option><option value="2.5">2.5 turns</option><option value="3">3 turns</option><option value="3.5">3.5 turns</option><option value="4">4 turns</option></select>
+        <span class="ctl-name">rod end</span>
+        <select class="sd-sel" data-r="a-rod" aria-label="Your answer for the rod-end port"><option value="">Choose&hellip;</option><option value="none">No fitting</option><option value="0.5">0.5 turns</option><option value="1">1 turn</option><option value="1.5">1.5 turns</option><option value="2">2 turns</option><option value="2.5">2.5 turns</option><option value="3">3 turns</option><option value="3.5">3.5 turns</option><option value="4">4 turns</option></select>
+        <button type="button" class="sim-btn" data-r="check">Check answer</button>
+        <button type="button" class="sim-btn alt" data-r="new" style="margin-left:auto;">New mystery</button>
+      </div>
+      <div class="sc-bottom">
+        <div class="sc-status" data-r="status" aria-live="polite"></div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div class="sc-log"><table><thead><tr><th>#</th><th>Pressure</th><th>Extend</th><th>Retract</th></tr></thead><tbody data-r="log"></tbody></table></div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;"><button type="button" class="sim-btn" data-r="rec">Record trial</button><button type="button" class="sim-btn alt" data-r="clear">Clear</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Same model and controls as Simulation D, with the fittings hidden. Check answer reveals the fittings and marks each port; New mystery deals another setup and clears the log. Ask teams to say which reading convinced them before they check.</aside>
+</section>
+
+<!-- SLIDE 15 · Shut down -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Safety</span>
+    <h2>Before You Leave</h2>
+    <p class="prose">Close the shut-off valve, then stop the program. Leave the flow fitting in place: next lesson your slow-out, fast-back circuit powers a <span class="term">mechanism</span>.</p>
+    <p class="prose fragment fade-up" style="margin-top:var(--gap);">The tank is <span class="warn-color">still charged</span>. Empty it with your teacher before the kit is stored.</p>
+  </div>
+  <aside class="notes">Next lesson (plan Day 9) builds a mechanism with this circuit, so teams keep the flow fitting set.</aside>
+</section>
+
+<!-- SLIDE 16 · Resonance: exit ticket -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:15:0"
+  data-activity-options='{"questions": [{"id": "q1", "type": "multiple-choice", "text": "A team turns its regulator down from 50 psi to 25 psi. What happens to its VEX cylinder?", "order": 0, "responseTimeLimitMs": 60000, "options": [{"id": "q1a", "text": "It moves more slowly both ways, and it pushes with about half the force", "isCorrect": true}, {"id": "q1b", "text": "Only extension slows down; retraction stays fast", "isCorrect": false}, {"id": "q1c", "text": "It moves at the same speed but pushes with half the force", "isCorrect": false}, {"id": "q1d", "text": "Nothing changes, because the tank still holds 100 psi", "isCorrect": false}]}, {"id": "q2", "type": "free-response", "text": "Explain why a flow fitting on the rod-end port slows extension but not retraction.", "order": 1, "responseTimeLimitMs": 150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Before You Go</h2>
+    <p class="q-head">1. A team turns its regulator down from 50 psi to 25 psi. What happens to its VEX cylinder?</p>
+    <ol class="opt-list" style="margin-top:8px;">
+      <li><span class="mcq-letter">A</span>It moves more slowly both ways, and it pushes with about half the force</li>
+      <li><span class="mcq-letter">B</span>Only extension slows down; retraction stays fast</li>
+      <li><span class="mcq-letter">C</span>It moves at the same speed but pushes with half the force</li>
+      <li><span class="mcq-letter">D</span>Nothing changes, because the tank still holds 100 psi</li>
+    </ol>
+    <p class="q-head">2. Explain why a flow fitting on the rod-end port slows extension but not retraction.</p>
+  </div>
+  <aside class="notes">Q1: slower both ways and about half the push (force = pressure &times; area). Q2: the fitting only squeezes air leaving through it; the rod end empties during extension and fills during retraction. The worksheet&rsquo;s reflection question 2, &ldquo;What actually controls the cylinder&rsquo;s speed?&rdquo;, is the same idea.</aside>
+</section>
+
+</div></div><!-- end .slides / .reveal -->
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script>
+function getLiveElementById(id) {
+  return Array.prototype.find.call(
+    document.querySelectorAll('#' + id),
+    function(element) { return !element.closest('#storyboard'); }
+  );
+}
+
+var SVGNS = 'http://www.w3.org/2000/svg';
+
+/* ── Simulation D: VEX flow-control explorer (slide 9) ─────────────
+   A simplified model, labeled as one on the slide. VEX flow fittings
+   meter out (teacher-confirmed): air entering the cylinder through a
+   fitting passes its check valve freely; air leaving is squeezed
+   through the screw-set restriction. So a stroke's time depends only on
+   the fitting on the EXHAUSTING port:
+     T = base * sqrt(50 / P) / k,  base 0.5 s extend, 0.4 s retract,
+     k = 1 with no fitting, else 0.1 + 0.15 * turns (0 turns = closed:
+     the trapped air cannot leave and the stroke stalls).
+   Push = P * 0.122 in^2 (10 mm VEX bore). Motion is drawn at constant
+   speed. Low sends air to A (rod end), high to B (cap end). */
+function initSimD(root, mystery) {
+  var NS = 'http://www.w3.org/2000/svg';
+  var svg = root.querySelector('[data-r="svg"]');
+  var statusEl = root.querySelector('[data-r="status"]');
+  var logEl = root.querySelector('[data-r="log"]');
+  var C = { line: '#c9d6e6', blue: '#5daaff', warn: '#ffd166', bad: '#ff8a80', ok: '#4dffb0',
+            dim: 'rgba(232,242,255,0.35)', muted: 'rgba(232,242,255,0.66)', fillB: 'rgba(93,170,255,0.28)' };
+  var AREA = 0.122;
+  var st = { sig: 0, p: 50, cap: { on: false, t: 2 }, rod: { on: false, t: 2 } };
+  var pos = 0, move = null, raf = null, meas = { ext: undefined, ret: undefined }, trials = [], note = '';
+  var revealed = !mystery, kinds = [];
+  // Mystery mode: fittings are dealt at random and hidden under a cover. Kinds come
+  // from a shuffled deck so rod-only, cap-only and both each appear before repeats.
+  function deal() {
+    if (!kinds.length) { kinds = ['rod', 'cap', 'both']; for (var i = 2; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = kinds[i]; kinds[i] = kinds[j]; kinds[j] = t; } }
+    var kind = kinds.shift(), opts = [0.5, 1, 1.5, 2, 3];
+    function pick() { return opts[Math.floor(Math.random() * opts.length)]; }
+    st = { sig: 0, p: 50, cap: { on: kind !== 'rod', t: pick() }, rod: { on: kind !== 'cap', t: pick() } };
+    pos = 0; move = null; meas = { ext: undefined, ret: undefined }; trials = []; revealed = false;
+    note = 'A new mystery is set. The cylinder is retracted and the regulator is at 50&nbsp;psi.';
+    q('p').value = 50; q('a-cap').value = ''; q('a-rod').value = '';
+  }
+  function q(r) { return root.querySelector('[data-r="' + r + '"]'); }
+  function add(tag, a, t) { var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); if (t !== undefined) e.textContent = t; svg.appendChild(e); return e; }
+  function txt(x, y, t, anchor, size, fill, weight) { return add('text', { x: x, y: y, 'text-anchor': anchor || 'middle', style: 'font-family:\'DM Sans\',sans-serif;font-size:' + (size || 22) + 'px;font-weight:' + (weight || 400) + ';fill:' + (fill || C.muted) + ';' }, t); }
+  function k(f) { return !f.on ? 1 : f.t <= 0 ? 0 : 0.1 + 0.15 * f.t; }
+  function strokeT(dir) { var kk = k(dir ? st.rod : st.cap); return kk === 0 ? null : (dir ? 0.5 : 0.4) * Math.sqrt(50 / st.p) / kk; }
+  function turns(f) { return !f.on ? 'no fitting' : f.t <= 0 ? 'closed' : (f.t === 1 ? '1 turn' : f.t + ' turns'); }
+  function fmt(v) { return v === undefined ? '—' : v === null ? 'stalls' : v.toFixed(1) + ' s'; }
+
+  function draw() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var ext = move ? move.dir === 1 : null;
+    var capFeed = move ? move.dir === 1 : st.sig === 1;          // which end is (or was last) fed
+    // supply chain
+    add('rect', { x: 30, y: 300, width: 150, height: 60, rx: 30, fill: 'none', stroke: C.line, 'stroke-width': 3 });
+    txt(105, 392, 'Tank');
+    add('path', { d: 'M180 330 H230', stroke: C.blue, 'stroke-width': 5, fill: 'none' });
+    add('rect', { x: 230, y: 300, width: 70, height: 60, fill: 'none', stroke: C.line, 'stroke-width': 3 });
+    add('path', { d: 'M244 336 H280', stroke: C.line, 'stroke-width': 3, fill: 'none' });
+    add('path', { d: 'M288 336 l-12 -7 v14 z', fill: C.line });
+    txt(265, 392, 'Regulator');
+    txt(265, 288, st.p + ' psi', 'middle', 24, C.blue, 700);
+    add('path', { d: 'M300 330 H360', stroke: C.blue, 'stroke-width': 5, fill: 'none' });
+    // solenoid valve block
+    add('rect', { x: 360, y: 290, width: 170, height: 80, rx: 6, fill: '#0a1120', stroke: C.line, 'stroke-width': 3 });
+    txt(445, 322, 'Solenoid', 'middle', 22, C.line, 700);
+    txt(445, 354, 'signal ' + (st.sig ? 'HIGH' : 'LOW'), 'middle', 22, C.warn, 700);
+    txt(400, 284, 'A', 'end', 22, C.blue, 700); txt(490, 284, 'B', 'start', 22, C.blue, 700);
+    // R exhaust
+    var exhausting = !!move;
+    add('path', { d: 'M530 330 H560', stroke: C.line, 'stroke-width': 3, fill: 'none' });
+    add('path', { d: 'M560 318 v24 l18 -12 z', fill: 'none', stroke: exhausting ? C.warn : C.line, 'stroke-width': 3 });
+    txt(586, 338, 'R', 'start', 22, exhausting ? C.warn : C.muted, 700);
+    // cylinder
+    var bx0 = 720, bx1 = 1040, by0 = 110, by1 = 190, px = 730 + pos * 260;
+    if (capFeed) add('rect', { x: bx0 + 2, y: by0 + 2, width: px - bx0 - 2, height: by1 - by0 - 4, fill: C.fillB });
+    else add('rect', { x: px + 14, y: by0 + 2, width: bx1 - px - 16, height: by1 - by0 - 4, fill: C.fillB });
+    add('rect', { x: bx0, y: by0, width: bx1 - bx0, height: by1 - by0, fill: 'none', stroke: C.line, 'stroke-width': 3 });
+    add('rect', { x: px, y: by0 + 3, width: 14, height: by1 - by0 - 6, fill: C.line });
+    add('rect', { x: px + 14, y: 141, width: 330, height: 18, fill: C.line });
+    txt(770, 220, 'Cap end'); txt(990, 220, 'Rod end');
+    // tubes: A to the rod end, B to the cap end; feeding side blue, exhausting side yellow dashed
+    function tube(d, role) {
+      var a = { d: d, fill: 'none', 'stroke-linejoin': 'round' };
+      if (role === 'feed') { a.stroke = C.blue; a['stroke-width'] = 5; }
+      else if (role === 'exh') { a.stroke = C.warn; a['stroke-width'] = 4; a['stroke-dasharray'] = '10 7'; }
+      else { a.stroke = C.line; a['stroke-width'] = 3; }
+      add('path', a);
+    }
+    var aRole = move ? (ext ? 'exh' : 'feed') : (capFeed ? 'idle' : 'feed');
+    var bRole = move ? (ext ? 'feed' : 'exh') : (capFeed ? 'feed' : 'idle');
+    tube('M410 290 V24 H1000 V' + (st.rod.on || !revealed ? 70 : 110), aRole);
+    tube('M480 290 V50 H740 V' + (st.cap.on || !revealed ? 70 : 110), bRole);
+    // fittings
+    function fitting(x, f, side) {
+      if (!f.on) return;
+      add('path', { d: 'M' + x + ' 104 V110', stroke: C.line, 'stroke-width': 3 });
+      add('rect', { x: x - 27, y: 70, width: 54, height: 34, rx: 6, fill: '#0a1120', stroke: C.warn, 'stroke-width': 3 });
+      add('path', { d: 'M' + (x - 9) + ' 76 Q' + x + ' 87 ' + (x - 9) + ' 98 M' + (x + 9) + ' 76 Q' + x + ' 87 ' + (x + 9) + ' 98', fill: 'none', stroke: C.warn, 'stroke-width': 2.5 });
+      add('path', { d: 'M' + (x - 14) + ' 100 L' + (x + 12) + ' 74', stroke: C.warn, 'stroke-width': 2.5 });
+      txt(side === 'cap' ? x - 36 : x + 36, 93, turns(f), side === 'cap' ? 'end' : 'start', 22, C.warn, 700);
+    }
+    if (revealed) { fitting(740, st.cap, 'cap'); fitting(1000, st.rod, 'rod'); }
+    else {
+      add('rect', { x: 690, y: 58, width: 370, height: 48, rx: 8, fill: '#3a4556', stroke: C.line, 'stroke-width': 2 });
+      txt(875, 89, 'Covered: what is on each port?', 'middle', 22, '#e8f2ff', 700);
+    }
+    // position-time trace
+    var gx0 = 720, gx1 = 1330, gy0 = 375, gy1 = 265, tmax = 4;
+    function X(t) { return gx0 + Math.min(t, tmax) / tmax * (gx1 - gx0); }
+    function Y(p) { return gy0 - p * (gy0 - gy1); }
+    add('path', { d: 'M' + gx0 + ' ' + gy1 + ' V' + gy0 + ' H' + gx1, fill: 'none', stroke: C.dim, 'stroke-width': 2 });
+    add('path', { d: 'M' + X(2) + ' ' + gy1 + ' V' + gy0, fill: 'none', stroke: C.dim, 'stroke-width': 2, 'stroke-dasharray': '6 6' });
+    if (!mystery) txt(X(2) + 6, gy0 - 10, 'goal: extend 2 s or more', 'start', 22, C.muted);
+    txt(gx0 - 8, gy1 + 8, 'out', 'end', 22); txt(gx0 - 8, gy0 - 4, 'in', 'end', 22);
+    txt(gx0, gy0 + 22, '0 s', 'middle', 22); txt(X(2), gy0 + 22, '2 s', 'middle', 22); txt(gx1, gy0 + 22, '4 s', 'end', 22);
+    function trace(T, dir, upto, col) {
+      if (T === undefined || T === null) return;
+      var t = Math.min(upto === undefined ? T : upto, T, tmax), p0 = dir ? 0 : 1, p1 = dir ? t / T : 1 - t / T;
+      add('path', { d: 'M' + X(0) + ' ' + Y(p0) + ' L' + X(t) + ' ' + Y(p1), stroke: col, 'stroke-width': 4, fill: 'none' });
+    }
+    if (move) trace(move.T, move.dir, move.el, move.dir ? C.blue : C.ok);
+    if (!move || move.dir !== 1) trace(meas.ext, 1, undefined, C.blue);
+    if (!move || move.dir !== 0) trace(meas.ret, 0, undefined, C.ok);
+  }
+
+  function status() {
+    var push = (st.p * AREA).toFixed(1);
+    q('v-p').textContent = st.p + ' psi';
+    q('v-push').textContent = push + ' lb';
+    q('v-ext').textContent = fmt(meas.ext); q('v-ret').textContent = fmt(meas.ret);
+    root.querySelectorAll('[data-sig]').forEach(function (b) { b.setAttribute('aria-pressed', +b.dataset.sig === st.sig ? 'true' : 'false'); });
+    if (!mystery) {
+      q('v-cap').textContent = turns(st.cap); q('v-rod').textContent = turns(st.rod);
+      q('t-cap').textContent = st.cap.on ? 'Remove' : 'Add'; q('t-rod').textContent = st.rod.on ? 'Remove' : 'Add';
+      q('t-cap').setAttribute('aria-pressed', st.cap.on); q('t-rod').setAttribute('aria-pressed', st.rod.on);
+      q('cap').disabled = !st.cap.on || !!move; q('rod').disabled = !st.rod.on || !!move;
+      var met = typeof meas.ext === 'number' && typeof meas.ret === 'number' && meas.ext >= 2 && meas.ret <= 0.6;
+      var goal = q('goal');
+      goal.textContent = met ? 'Challenge met' : 'Goal: extend ≥ 2 s, retract ≤ 0.6 s';
+      goal.className = 'status-chip ' + (met ? 'ok' : 'busy');
+    }
+    var m;
+    if (note) m = note;
+    else if (move && !revealed) m = (move.dir ? 'Extending: air from B fills the cap end, and air leaving the rod end goes out through R.' : 'Retracting: air from A fills the rod end, and air leaving the cap end goes out through R.') + ' Watch the time.';
+    else if (move) {
+      var f = move.dir ? st.rod : st.cap, inF = move.dir ? st.cap : st.rod;
+      m = (move.dir ? 'Extending: air from B fills the cap end' : 'Retracting: air from A fills the rod end') +
+        (inF.on ? ', passing its fitting&rsquo;s one-way check valve freely. ' : '. ') +
+        'Air leaving the ' + (move.dir ? 'rod' : 'cap') + ' end ' +
+        (f.on ? 'has to squeeze through that end&rsquo;s fitting (' + turns(f) + ') on its way to R.' : 'flows out freely to R.');
+    } else m = 'Switch the signal to move the cylinder. Low sends air to A and the rod end; high sends air to B and the cap end. Run both strokes, then record a trial.';
+    statusEl.innerHTML = m;
+    statusEl.classList.toggle('stall', /stall/.test(m));
+  }
+
+  function render() { draw(); status(); }
+  function reset() { meas = { ext: undefined, ret: undefined }; }
+
+  function setSig(s) {
+    if (move || s === st.sig) return;
+    st.sig = s; note = '';
+    var dir = s, T = strokeT(dir);
+    if ((dir === 1 && pos >= 1) || (dir === 0 && pos <= 0)) { render(); return; }
+    if (T === null) {
+      meas[dir ? 'ext' : 'ret'] = null;
+      note = 'The cylinder stalls. The ' + (dir ? 'rod' : 'cap') + '-end fitting&rsquo;s screw is closed, so the air trapped in that end cannot leave, and the piston cannot move into it.';
+      render(); return;
+    }
+    move = { dir: dir, T: T, el: 0, from: pos, t0: null };
+    function step(ts) {
+      if (move.t0 === null) move.t0 = ts;
+      move.el = (ts - move.t0) / 1000;
+      var p = move.from + (dir ? 1 : -1) * move.el / T;
+      pos = Math.max(0, Math.min(1, p));
+      if ((dir && pos >= 1) || (!dir && pos <= 0)) {
+        meas[dir ? 'ext' : 'ret'] = move.from === (dir ? 0 : 1) ? T : meas[dir ? 'ext' : 'ret'];
+        move = null; raf = null; render(); return;
+      }
+      render(); raf = requestAnimationFrame(step);
+    }
+    raf = requestAnimationFrame(step);
+  }
+
+  function changed(msg) {
+    reset();
+    note = msg || '';
+    render();
+  }
+
+  root.querySelectorAll('[data-sig]').forEach(function (b) { b.addEventListener('click', function () { setSig(+b.dataset.sig); }); });
+  q('p').addEventListener('input', function () { if (move) { q('p').value = st.p; return; } st.p = +q('p').value; changed(); });
+  if (!mystery) ['cap', 'rod'].forEach(function (side) {
+    q('t-' + side).addEventListener('click', function () {
+      if (move) return;
+      st[side].on = !st[side].on;
+      changed('Fitting ' + (st[side].on ? 'added to' : 'removed from') + ' the ' + side + '-end port. On the real circuit, close the shut-off valve before you touch a fitting. Run both strokes again.');
+    });
+    q(side).addEventListener('input', function () {
+      if (move) return;
+      st[side].t = +q(side).value;
+      changed('Screw set to ' + turns(st[side]) + '. Run both strokes again.');
+    });
+  });
+  q('rec').addEventListener('click', function () {
+    if (move) return;
+    if (meas.ext === undefined || meas.ret === undefined) { note = 'Run both strokes with these settings first: switch the signal to high, then back to low.'; render(); return; }
+    var met = typeof meas.ext === 'number' && typeof meas.ret === 'number' && meas.ext >= 2 && meas.ret <= 0.6;
+    trials.push(mystery ? [trials.length + 1, st.p + ' psi', fmt(meas.ext), fmt(meas.ret)]
+      : [trials.length + 1, st.p + ' psi', turns(st.cap), turns(st.rod), fmt(meas.ext), fmt(meas.ret) + (met ? ' ✓' : '')]);
+    renderLog();
+  });
+  q('clear').addEventListener('click', function () { trials = []; renderLog(); });
+  function renderLog() {
+    logEl.innerHTML = trials.length ? trials.map(function (r) { return '<tr><td>' + r.join('</td><td>') + '</td></tr>'; }).join('')
+      : '<tr class="empty"><td colspan="' + (mystery ? 4 : 6) + '">Run both strokes, then press Record trial.</td></tr>';
+    var box = logEl.closest('.sc-log'); box.scrollTop = box.scrollHeight;
+  }
+  if (mystery) {
+    function said(v) { return v === 'none' ? 'no fitting' : (+v === 1 ? '1 turn' : v + ' turns'); }
+    function judge(f, v) { return f.on ? v !== 'none' && Math.abs(+v - f.t) <= 0.5 : v === 'none'; }
+    q('check').addEventListener('click', function () {
+      if (move) return;
+      var a = q('a-cap').value, b = q('a-rod').value;
+      if (!a || !b) { note = 'Choose an answer for both ports first.'; render(); return; }
+      var okC = judge(st.cap, a), okR = judge(st.rod, b);
+      revealed = true;
+      note = '<b>' + (okC && okR ? '&#10003; Solved.' : 'Not quite.') + '</b> Cap end: you said ' + said(a) + '; it has ' + turns(st.cap) + (okC ? ' &#10003;' : ' &#10007;') +
+        '. Rod end: you said ' + said(b) + '; it has ' + turns(st.rod) + (okR ? ' &#10003;' : ' &#10007;') + '. Within half a turn counts.';
+      render();
+    });
+    q('new').addEventListener('click', function () { if (move) return; deal(); renderLog(); render(); });
+    deal();
+  }
+  renderLog();
+  render();
+}
+
+initSyncDeckReveal({
+  deckId: 'controlling-speed',
+  standaloneHosting: {
+    activeBitsOrigin: 'https://bits.mycode.run',
+  },
+  revealOverrides: {
+    hash: true,
+    hashOneBasedIndex: true,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    center: false,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: true,
+    slideNumber: 'c/t',
+    keyboard: true,
+    touch: true,
+    fragments: true,
+    width: 1600,
+    height: 900,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.5,
+  },
+  afterInit: function(Reveal) {
+    var sd = getLiveElementById('sim-d');
+    if (sd) initSimD(sd);
+    var sm = getLiveElementById('sim-mystery');
+    if (sm) initSimD(sm, true);
+  },
+});
+</script>
+</body>
+</html>
