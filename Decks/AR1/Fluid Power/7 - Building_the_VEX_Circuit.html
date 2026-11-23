@@ -575,7 +575,12 @@ function initLabelBuilder(section) {
     var startX = e.clientX, startY = e.clientY, rect = chip.getBoundingClientRect();
     var offX = e.clientX - rect.left, offY = e.clientY - rect.top, ghost = null, hover = null;
     try { chip.setPointerCapture(e.pointerId); } catch (err) {}
+    // Listen on the window, not the chip: if the browser drops pointer capture
+    // (zoom, an iframe host, a trackpad), pointerup would otherwise land on the
+    // slot, the drag would never end, and the ghost would stay stuck there.
+    var pid = e.pointerId;
     function move(ev) {
+      if (ev.pointerId !== pid) return;
       ev.stopPropagation();
       if (!ghost) {
         if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) < 6) return;
@@ -596,10 +601,12 @@ function initLabelBuilder(section) {
       }
     }
     function end(ev) {
+      if (ev.pointerId !== undefined && ev.pointerId !== pid) return;
       ev.stopPropagation();
-      chip.removeEventListener('pointermove', move);
-      chip.removeEventListener('pointerup', end);
-      chip.removeEventListener('pointercancel', end);
+      window.removeEventListener('pointermove', move, true);
+      window.removeEventListener('pointerup', end, true);
+      window.removeEventListener('pointercancel', end, true);
+      window.removeEventListener('blur', end);
       if (hover) hover.classList.remove('drag-over');
       if (!ghost) return;
       ghost.parentNode.removeChild(ghost);
@@ -608,9 +615,10 @@ function initLabelBuilder(section) {
       var target = ev.type === 'pointerup' ? slotAt(ev.clientX, ev.clientY) : null;
       if (target) place(chip, target);
     }
-    chip.addEventListener('pointermove', move);
-    chip.addEventListener('pointerup', end);
-    chip.addEventListener('pointercancel', end);
+    window.addEventListener('pointermove', move, true);
+    window.addEventListener('pointerup', end, true);
+    window.addEventListener('pointercancel', end, true);
+    window.addEventListener('blur', end);
   }
   chips.forEach(function (chip) {
     chip.addEventListener('click', function () { if (suppressClick) { suppressClick = false; return; } select(chip); });
