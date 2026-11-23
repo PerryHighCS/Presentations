@@ -557,7 +557,7 @@ Truth tables for the transistor gates and the LogiKIT modules side by side; a sc
 
 ### Presentation
 
-`Decks/AR2/Silicon in Control/Day7_Transistors_to_Logic_Gates.html`, 18 slides:
+`Decks/AR2/Silicon in Control/Day7_Transistors_to_Logic_Gates.html`, 19 slides:
 
 1. Title
 2. Today's question and objectives
@@ -568,15 +568,16 @@ Truth tables for the transistor gates and the LogiKIT modules side by side; a sc
 7. Parallel makes OR: the same switches side by side
 8. Series on the bottom makes NAND (and why chips build NAND and add a NOT for AND)
 9. Parallel on the bottom makes NOR
-10. Transistor Gate Builder simulator
-11. Resonance check: series and parallel transistor gates
-12. Bench lab: the NOT gate, then NAND or NOR, checked against the LogiKIT modules
-13. Record table: transistor gate and LogiKIT module side by side
-14. Billions of switches: from a breadboard gate to an integrated circuit
-15. How the faulty gate works: find the hidden fault in a transistor NAND
-16. The Faulty Gate simulator
-17. Resonance exit ticket: which fault fits a NAND whose lamp stays lit, and what most of a phone chip's transistors are doing
-18. Wrap up and a preview of semiconductor manufacturing
+10. The gate that flew to the Moon: resistor-transistor logic (RTL), the Apollo Guidance Computer built from about 2,800 chips of two NOR gates each, and NOT, OR, and AND made from NOR gates alone
+11. Transistor Gate Builder simulator
+12. Resonance check: series and parallel transistor gates
+13. Bench lab: the NOT gate, then NAND or NOR, checked against the LogiKIT modules
+14. Record table: transistor gate and LogiKIT module side by side
+15. Billions of switches: from a breadboard gate to an integrated circuit
+16. How the faulty gate works: find the hidden fault in a transistor NAND
+17. The Faulty Gate simulator
+18. Resonance exit ticket: which fault fits a NAND whose lamp stays lit, and what most of a phone chip's transistors are doing
+19. Wrap up and a preview of semiconductor manufacturing
 
 The LogiKIT board photo (`media/logikit-board.jpg`) comes from the Lab 2 presentation. The bench lab joins the LogiKIT ground to the breadboard ground and drives the transistor base from a LogiKIT switch through 10 kΩ, about 0.43 mA; confirm the switch output can supply that (see Open items).
 

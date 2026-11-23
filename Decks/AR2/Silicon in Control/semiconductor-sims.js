@@ -1816,12 +1816,12 @@
         }
         function swMos(x, y0, y1, label, parent, mirror) {
             if (asNpn) {
-                // an NPN at 80% scale: collector at the top, emitter at the bottom, both on x;
-                // the base input arrives at y0 + 35 from x - 40
-                var cy = y0 + 35, gq = el('g', { class: 'gb-q' }, parent);
-                wire('M' + x + ' ' + y0 + ' V' + (cy - 30) + ' M' + x + ' ' + (cy + 30) + ' V' + y1 + ' M' + (x - 40) + ' ' + cy + ' H' + (x - 32), gq);
-                transistor(0, 0, false, el('g', { transform: 'translate(' + (x - 16) + ' ' + cy + ') scale(0.8)' }, gq));
-                text(x + 32, cy + 9, label, 'sb-lbl-b', parent);
+                // an NPN scaled so its collector lead ends exactly at y0 and its emitter lead at y1;
+                // the base input arrives at y0 + 35 from x - 40 and meets the base bar
+                var cyIn = y0 + 35, cm = (y0 + y1) / 2, sc = (y1 - y0) / 84, gq = el('g', { class: 'gb-q' }, parent);
+                wire('M' + (x - 40) + ' ' + cyIn + ' H' + (x - 40 * sc), gq);
+                transistor(0, 0, false, el('g', { transform: 'translate(' + (x - 20 * sc) + ' ' + cm + ') scale(' + sc + ')' }, gq));
+                text(x + 32, cyIn + 9, label, 'sb-lbl-b', parent);
                 return { q: gq };
             }
             // a transistor drawn as a switch between y0 (top contact) and y1 (bottom contact);
