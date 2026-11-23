@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="13h1dlr">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 5: The Transistor as an Electronic Switch</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: Silicon in Control Day 5 · The Transistor Switch
+   ============================================================ */
+.fig-lbl { font-family: var(--font-mono); font-size: 26px; fill: var(--text); }
+.fig-lbl-b { font-family: var(--font-mono); font-size: 30px; font-weight: 700; fill: var(--text); }
+.fig-lbl-m { font-family: var(--font-mono); font-size: 24px; fill: var(--text-muted); }
+.p-reg { fill: rgba(249,168,212,0.18); stroke: var(--hole); stroke-width: 3; }
+.n-reg { fill: rgba(124,196,255,0.16); stroke: var(--electron); stroke-width: 3; }
+.wire { fill: none; stroke: rgba(230,247,234,0.6); stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
+.sym { fill: none; stroke: rgba(230,247,234,0.85); stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
+.e-dot { fill: var(--electron); }
+.flow-big { fill: none; stroke: var(--result); stroke-width: 10; stroke-linecap: round; }
+.flow-small { fill: none; stroke: var(--warn); stroke-width: 5; stroke-linecap: round; }
+.calc-line { font-family: var(--font-mono); font-size: 32px; color: var(--text); line-height: 1.6; white-space: nowrap; }
+.hole-c { color: var(--hole); font-weight: 600; }
+.mcq-2col { display: grid; grid-template-columns: 1fr 1fr; max-width: none; }
+.cmp-table td:nth-child(2) { font-family: var(--font-mono); color: var(--accent); }
+.cmp-table td.blank { color: var(--text-muted); text-align: center; }
+.static-circuit svg { display: block; width: 100%; height: auto; overflow: visible; }
+.switch-bench .sb-right .sim-panel svg { max-height: 210px; }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(124,196,255,0.10),transparent 70%);"></div>
+  <div class="glow" style="width:420px;height:420px;bottom:-90px;right:12%;background:radial-gradient(circle,rgba(57,211,83,0.08),transparent 70%);"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; Silicon in Control &nbsp;·&nbsp; Day 5</span>
+    <h1 class="title-h1">The Transistor as an <span class="accent">Electronic Switch</span></h1>
+    <p class="subtitle">// Inside the NPN &nbsp;·&nbsp; Current gain &nbsp;·&nbsp; NPN and PNP switches</p>
+    <svg viewBox="0 0 300 220" style="width:300px;margin-top:36px;" aria-hidden="true">
+      <circle cx="150" cy="110" r="78" fill="rgba(57,211,83,0.06)" stroke="#39d353" stroke-width="4"/>
+      <path d="M20 110 H118 M118 66 V154 M118 88 L190 40 V0 M118 132 L190 180 V220" fill="none" stroke="rgba(230,247,234,0.85)" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M190 180 L164 177 L176 158 Z" fill="#39d353"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · DAY QUESTION AND OBJECTIVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Today&#39;s Question &amp; Objectives</span>
+    <div class="eq-box" style="margin-bottom:var(--gap-lg);">
+      <span class="eq-label">Today&#39;s question</span>
+      How can a tiny current control a much larger one, with <span class="accent">no moving parts</span>?
+    </div>
+    <div class="split split-50 split-top" style="flex:0 0 auto;">
+      <div>
+        <h3>By the end of class you can <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Name the <strong>base, collector, and emitter</strong> and draw the NPN symbol.</li>
+          <li>Explain how a small <strong>base current</strong> lets a large <strong>collector current</strong> flow.</li>
+          <li>Build and measure an <strong>NPN switch</strong> and a <strong>PNP switch</strong>.</li>
+          <li>Compare a transistor switch with a <strong>relay</strong>.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today&#39;s <span class="accent">path</span></h3>
+        <div class="agenda-grid">
+          <a class="agenda-item" href="#/3"><span class="agenda-num">01</span><span class="agenda-text">A relay and a transistor, <strong>side by side</strong></span></a>
+          <a class="agenda-item" href="#/5"><span class="agenda-num">02</span><span class="agenda-text">Inside the <strong>NPN transistor</strong></span></a>
+          <a class="agenda-item" href="#/9"><span class="agenda-num">03</span><span class="agenda-text">Bench lab: the <strong>NPN switch</strong></span></a>
+          <a class="agenda-item" href="#/12"><span class="agenda-num">04</span><span class="agenda-text">The <strong>PNP</strong> mirror</span></a>
+          <a class="agenda-item" href="#/14"><span class="agenda-num">05</span><span class="agenda-text">Compare with the <strong>relay</strong></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · HOOK -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Hook · Two Ways to Switch a Load</span>
+    <h2>A Relay and a Transistor, <span class="accent">Side by Side</span></h2>
+    <p class="slide-intro">In both circuits, a <strong>small signal</strong> on the left turns on a <strong>larger load</strong> on the right. The relay does it with a coil and moving contacts. The transistor does it inside a crystal of silicon.</p>
+    <div class="row-2" style="margin-top:var(--gap);">
+      <figure class="fig card">
+        <span class="card-name">Relay</span>
+        <svg viewBox="0 0 640 300" role="img" aria-label="A relay: a small control circuit drives a coil, and the coil&#39;s magnet pulls a contact closed in a separate circuit that lights an LED.">
+          <path d="M40 60 H150 V90 M150 210 V240 H40" class="wire"/>
+          <path d="M150 90 c30 0 30 24 0 24 c30 0 30 24 0 24 c30 0 30 24 0 24 c30 0 30 24 0 24 V210" class="sym"/>
+          <text x="40" y="40" class="fig-lbl-m">small signal</text>
+          <text x="200" y="160" class="fig-lbl-m">coil</text>
+          <path d="M205 120 H320" class="sym" style="stroke-dasharray:8 8;stroke-width:3"/>
+          <path d="M360 60 H600 V140 M600 200 V240 H360 V170 M360 60 V120" class="wire"/>
+          <circle cx="360" cy="120" r="6" fill="#0d1117" stroke="rgba(230,247,234,0.85)" stroke-width="3"/>
+          <circle cx="360" cy="170" r="6" fill="#0d1117" stroke="rgba(230,247,234,0.85)" stroke-width="3"/>
+          <path d="M360 120 L330 162" class="sym"/>
+          <path d="M580 140 H620 L600 180 Z M580 180 H620" class="sym"/>
+          <text x="380" y="150" class="fig-lbl-m">contacts</text>
+          <text x="470" y="290" class="fig-lbl-m" text-anchor="middle">load: LED</text>
+        </svg>
+      </figure>
+      <figure class="fig card">
+        <span class="card-name">Transistor</span>
+        <svg viewBox="0 0 640 300" role="img" aria-label="A transistor: a small signal flows into the base, and the transistor lets a larger current flow through an LED from the collector to the emitter.">
+          <path d="M40 150 H250" class="wire"/>
+          <text x="40" y="130" class="fig-lbl-m">small signal</text>
+          <circle cx="290" cy="150" r="48" fill="rgba(230,247,234,0.04)" stroke="rgba(230,247,234,0.6)" stroke-width="3"/>
+          <path d="M250 150 H270 M270 122 V178 M270 136 L310 108 V40 H600 V110 M270 164 L310 192 V260 H600 V170" class="sym"/>
+          <path d="M310 192 L288 188 L298 172 Z" fill="rgba(230,247,234,0.85)"/>
+          <path d="M580 110 H620 L600 150 Z M580 150 H620" class="sym"/>
+          <path d="M600 150 V170" class="wire"/>
+          <text x="470" y="290" class="fig-lbl-m" text-anchor="middle">load: LED</text>
+        </svg>
+      </figure>
+    </div>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap);"><strong>Predict:</strong> name three ways these two switches might <strong>differ</strong>. Think about speed, wear, size, and power.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · PREDICTION (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:3:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"free-response","text":"A relay and a transistor can both let a small signal switch on a larger load, such as an LED or a motor. The relay uses a coil and moving contacts; the transistor has no moving parts. Predict three ways the two switches might differ. Think about speed, wear, size, and power.","order":0,"responseTimeLimitMs":150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict</span>
+    <h2>Three <span class="accent">Differences</span></h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>A relay and a transistor can both let a small signal switch on a larger load, such as an LED or a motor. The relay uses a coil and moving contacts; the transistor has no moving parts. <strong>Predict three ways</strong> the two switches might differ. Think about speed, wear, size, and power.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · INSIDE THE NPN TRANSISTOR -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Structure</span>
+    <h2>Inside the <span class="accent">NPN Transistor</span></h2>
+    <p class="slide-intro">An NPN transistor is a thin slice of <span class="hole-c">P-type</span> silicon, the <strong>base</strong>, between two pieces of <span class="elec">N-type</span> silicon: the <strong>emitter</strong> and the <strong>collector</strong>.</p>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.5fr 1fr;align-items:center;gap:var(--gap-lg);">
+      <figure class="fig">
+        <svg viewBox="0 0 760 300" role="img" aria-label="An NPN transistor drawn as three blocks: an N-type emitter on the left, a thin P-type base in the middle, and an N-type collector on the right. A lead comes out of each block. The two boundaries are marked as PN junctions.">
+          <rect x="40" y="90" width="300" height="140" class="n-reg"/>
+          <rect x="340" y="90" width="70" height="140" class="p-reg"/>
+          <rect x="410" y="90" width="310" height="140" class="n-reg"/>
+          <text x="190" y="172" class="fig-lbl-b" text-anchor="middle">N</text>
+          <text x="375" y="172" class="fig-lbl-b" text-anchor="middle">P</text>
+          <text x="565" y="172" class="fig-lbl-b" text-anchor="middle">N</text>
+          <path d="M0 160 H40 M720 160 H760 M375 90 V30" class="wire"/>
+          <text x="190" y="272" class="fig-lbl" text-anchor="middle">Emitter (E)</text>
+          <text x="392" y="34" class="fig-lbl">Base (B)</text>
+          <text x="565" y="272" class="fig-lbl" text-anchor="middle">Collector (C)</text>
+          <g class="fragment fade-in" data-fragment-index="1">
+            <path d="M340 80 V240 M410 80 V240" fill="none" stroke="#ffd166" stroke-width="4" stroke-dasharray="8 6"/>
+            <text x="330" y="70" class="fig-lbl-m" text-anchor="end" style="fill:#ffd166">junction</text>
+            <text x="420" y="70" class="fig-lbl-m" style="fill:#ffd166">junction</text>
+          </g>
+        </svg>
+      </figure>
+      <figure class="fig fragment fade-up" data-fragment-index="2">
+        <svg viewBox="0 0 300 260" role="img" aria-label="The NPN transistor symbol: the base enters from the left, the collector leaves at the top, and the emitter leaves at the bottom with an arrow pointing out.">
+          <circle cx="150" cy="130" r="78" fill="rgba(230,247,234,0.04)" stroke="rgba(230,247,234,0.6)" stroke-width="3"/>
+          <path d="M20 130 H118 M118 86 V174 M118 108 L190 60 V10 M118 152 L190 200 V250" class="sym" style="stroke-width:5"/>
+          <path d="M190 200 L164 197 L176 178 Z" fill="#39d353"/>
+          <text x="24" y="116" class="fig-lbl-b">B</text>
+          <text x="206" y="40" class="fig-lbl-b">C</text>
+          <text x="206" y="244" class="fig-lbl-b">E</text>
+        </svg>
+        <figcaption class="fig-caption">The <strong>arrow</strong> is on the emitter and points <strong>out</strong>.</figcaption>
+      </figure>
+    </div>
+    <p class="slide-intro fragment fade-up" data-fragment-index="1">Each boundary is a <span class="warn">PN junction</span>, so the transistor holds <strong>two diodes</strong> back to back: base to emitter, and base to collector.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · HOW A SMALL CURRENT CONTROLS A LARGE ONE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Transistor Action</span>
+    <h2>How a Small Current Controls a <span class="accent">Large One</span></h2>
+    <figure class="fig" style="margin-bottom:var(--gap);">
+      <svg viewBox="0 0 1300 300" role="img" aria-label="Electrons enter the N-type emitter and pour into the thin P-type base. A few leave through the base lead at the top; most sweep straight through into the N-type collector.">
+        <rect x="60" y="90" width="520" height="150" class="n-reg"/>
+        <rect x="580" y="90" width="90" height="150" class="p-reg"/>
+        <rect x="670" y="90" width="570" height="150" class="n-reg"/>
+        <path d="M0 165 H60 M1240 165 H1300 M625 90 V20" class="wire"/>
+        <text x="320" y="285" class="fig-lbl" text-anchor="middle">Emitter (N)</text>
+        <text x="645" y="40" class="fig-lbl">Base (P)</text>
+        <text x="955" y="285" class="fig-lbl" text-anchor="middle">Collector (N)</text>
+        <g class="fragment fade-in" data-fragment-index="1">
+          <circle cx="140" cy="130" r="9" class="e-dot"/><circle cx="210" cy="190" r="9" class="e-dot"/><circle cx="280" cy="140" r="9" class="e-dot"/>
+          <circle cx="350" cy="205" r="9" class="e-dot"/><circle cx="420" cy="120" r="9" class="e-dot"/><circle cx="490" cy="175" r="9" class="e-dot"/>
+          <circle cx="545" cy="130" r="9" class="e-dot"/><circle cx="610" cy="200" r="9" class="e-dot"/><circle cx="640" cy="140" r="9" class="e-dot"/>
+        </g>
+        <path class="flow-small fragment fade-in" data-fragment-index="2" d="M625 150 V44 M611 62 L625 44 L639 62"/>
+        <path class="flow-big fragment fade-in" data-fragment-index="3" d="M700 165 H1200 M1170 140 L1205 165 L1170 190"/>
+      </svg>
+    </figure>
+    <p class="slide-intro fragment fade-up" data-fragment-index="1">A small <strong>base current</strong> forward biases the base-emitter junction, and <span class="elec">electrons</span> pour from the emitter into the base.</p>
+    <p class="slide-intro fragment fade-up" data-fragment-index="2">The base is <strong>thin</strong> and lightly doped, so only a few electrons find a hole or leave through the base lead. That small flow is the <span class="warn">base current</span>.</p>
+    <p class="slide-intro fragment fade-up" data-fragment-index="3">Most electrons sweep straight through into the collector. That large flow is the <span class="res">collector current</span>. Conventional current runs the other way, from collector to emitter, which is why the symbol&#39;s arrow points <strong>out</strong> of the emitter.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · CURRENT GAIN -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Current Gain</span>
+    <h2>Current Gain, <span class="accent">&beta;</span></h2>
+    <p class="slide-intro">The <span class="key">current gain</span>, &beta; (beta), tells you how many times larger the collector current is than the base current. For a 2N3904, &beta; is between about <strong>100 and 300</strong>.</p>
+    <div class="row-2" style="margin-bottom:var(--gap);">
+      <div class="eq-box"><span class="eq-label">Current gain</span>&beta; = I<sub>C</sub> &divide; I<sub>B</sub></div>
+      <div class="eq-box"><span class="eq-label">Emitter current</span>I<sub>E</sub> = I<sub>B</sub> + I<sub>C</sub></div>
+    </div>
+    <p class="slide-intro"><strong>Example:</strong> a transistor with &beta; = 150 has a base current of 0.1 mA.</p>
+    <div class="calc-line fragment fade-up">I<sub>C</sub> = &beta; &times; I<sub>B</sub> = 150 &times; 0.1 mA = <span class="res">15 mA</span></div>
+    <div class="calc-line fragment fade-up">I<sub>E</sub> = I<sub>B</sub> + I<sub>C</sub> = 0.1 mA + 15 mA = <span class="res">15.1 mA</span></div>
+    <p class="slide-intro fragment fade-up" style="margin-top:var(--gap);">Every electron that leaves through the base or the collector came in through the emitter, so the <strong>emitter</strong> always carries the most current.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · CONCEPT CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:7:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"An NPN transistor is switched on. Which of its three terminals carries the most current?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"The base","isCorrect":false},{"id":"q1b","text":"The collector","isCorrect":false},{"id":"q1c","text":"The emitter","isCorrect":true},{"id":"q1d","text":"All three carry the same current","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"A transistor has a current gain (β) of 100 and a base current of 0.05 mA, and nothing else limits the current. What is the collector current?","order":1,"responseTimeLimitMs":60000,"options":[{"id":"q2a","text":"0.5 mA","isCorrect":false},{"id":"q2b","text":"5 mA","isCorrect":true},{"id":"q2c","text":"50 mA","isCorrect":false},{"id":"q2d","text":"100 mA","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · The NPN Transistor</span>
+    <h2>Currents in a <span class="accent">Transistor</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>An NPN transistor is switched on. Which of its three terminals carries the <strong>most current</strong>?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>The base</li>
+      <li><span class="opt-key">B</span>The collector</li>
+      <li><span class="opt-key">C</span>The emitter</li>
+      <li><span class="opt-key">D</span>All three carry the same current</li>
+    </ul>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">2</span>A transistor has a current gain (&beta;) of 100 and a base current of 0.05 mA, and nothing else limits the current. What is the <strong>collector current</strong>?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col">
+      <li><span class="opt-key">A</span>0.5 mA</li>
+      <li><span class="opt-key">B</span>5 mA</li>
+      <li><span class="opt-key">C</span>50 mA</li>
+      <li><span class="opt-key">D</span>100 mA</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · BENCH LAB: THE NPN SWITCH -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Build an NPN Switch</span>
+    <h2>The NPN <span class="accent">Switch</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.25fr 1fr;align-items:start;gap:var(--gap-lg);">
+      <div class="lab-steps">
+        <div class="step-card"><span class="sc-num">1</span><p class="sc-body"><strong>Checkpoint:</strong> wire the LED and its <strong>150 &Omega;</strong> resistor straight from +5 V to ground. It should light. Then take out the ground jumper.</p></div>
+        <div class="step-card"><span class="sc-num">2</span><p class="sc-body">Read the part number: it must say <strong>2N3904</strong>. Connect the LED path to the <strong>collector</strong> and the <strong>emitter</strong> to ground.</p></div>
+        <div class="step-card"><span class="sc-num">3</span><p class="sc-body">Add the <strong>4.7 k&Omega;</strong> base resistor. A jumper from it to +5 V is the switch.</p></div>
+        <div class="step-card"><span class="sc-num">4</span><p class="sc-body">With the switch open and then closed, measure the <strong>base current</strong> and the <strong>collector current</strong> with the meter <strong>in series</strong>.</p></div>
+      </div>
+      <div>
+        <figure class="fig static-circuit">
+          <div class="switch-bench" data-static="npn"><svg data-role="circuit" viewBox="0 0 640 520" role="img" aria-label="NPN switch schematic: +5 V through a 150 ohm resistor and an LED to the collector of a 2N3904, the emitter to ground, and the base through a 4.7 kilohm resistor and a switch to +5 V."></svg></div>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · WHAT TO RECORD -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Engineering Notebook</span>
+    <h2>Record Your <span class="accent">Measurements</span></h2>
+    <p class="slide-intro">Draw the circuit, then copy this table. Calculate the ratio I<sub>C</sub> &divide; I<sub>B</sub> for each row.</p>
+    <table class="data-table record-table">
+      <thead><tr><th>Switch</th><th>I<sub>B</sub> (mA)</th><th>I<sub>C</sub> (mA)</th><th>I<sub>C</sub> &divide; I<sub>B</sub></th><th>LED</th></tr></thead>
+      <tbody>
+        <tr><td>Open</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+        <tr><td>Closed</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+      </tbody>
+    </table>
+    <div class="card fragment fade-up" style="margin-top:var(--gap-lg);"><span class="card-name">Think</span><p class="card-body">A 2N3904 has a &beta; of at least 100. Is your ratio near 100? If not, what in the circuit could be holding the collector current back?</p></div>
+    <div class="callout-result fragment fade-up" style="margin-top:var(--gap);">The LED and the 150 &Omega; resistor allow only about <strong>19 mA</strong>, no matter how hard the base is driven. The transistor is <strong>fully on</strong>, and the load sets the current. The next lesson calls this <span class="key">saturation</span>.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · TRANSISTOR SWITCH BENCH (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+    <span class="slide-tag">Virtual Bench · For Absent Students or a Second Look</span>
+    <h2 style="margin-bottom:12px;">Transistor Switch <span class="accent">Bench</span></h2>
+    <div class="switch-bench">
+      <div class="sb-grid">
+        <div>
+          <div class="sim-panel">
+            <svg data-role="circuit" viewBox="0 0 640 520" role="img" aria-label="Interactive transistor switch: an NPN low-side switch or a PNP high-side switch driving an LED, with a base switch and a virtual meter. Wires light up when current flows."></svg>
+          </div>
+        </div>
+        <div class="sb-right">
+          <div class="ctl-row">
+            <span class="seg">
+              <button class="seg-btn" data-tr-type="npn" aria-pressed="true">NPN 2N3904</button>
+              <button class="seg-btn" data-tr-type="pnp" aria-pressed="false">PNP 2N3906</button>
+            </span>
+            <button class="sim-btn" data-role="sw">Close the switch</button>
+          </div>
+          <div class="ctl-row">
+            <span class="ctl-label">Measure:</span>
+            <span class="seg">
+              <button class="seg-btn" data-measure="ib" aria-pressed="false">I base</button>
+              <button class="seg-btn" data-measure="ic" aria-pressed="false">I collector</button>
+              <button class="seg-btn" data-measure="vbe" aria-pressed="false">V B&ndash;E</button>
+            </span>
+          </div>
+          <div class="dmm"><span class="dmm-name" data-role="dmm-name">DMM</span><span class="dmm-val" data-role="dmm">-.--</span></div>
+          <div class="sim-panel">
+            <div class="sim-head">Inside the transistor <span class="sim-note" data-role="xs-note">NPN · electrons</span></div>
+            <svg data-role="xsec" viewBox="0 0 560 236" role="img" aria-label="Cross-section of the transistor: emitter, thin base, and collector. While the transistor is on, carriers stream from the emitter; a few leave through the base and the rest reach the collector."></svg>
+          </div>
+          <div class="sim-feedback" data-role="feedback"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · THE PNP MIRROR -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · The PNP Transistor</span>
+    <h2>The PNP <span class="accent">Mirror</span></h2>
+    <p class="slide-intro">The <strong>2N3906</strong> is the PNP twin of the 2N3904: a thin <span class="elec">N-type</span> base between two <span class="hole-c">P-type</span> regions. Every current and voltage is <strong>reversed</strong>, and the symbol&#39;s arrow points <strong>in</strong>.</p>
+    <div class="row-2" style="margin-top:var(--gap);">
+      <div class="card is-key">
+        <span class="card-name">NPN: sinks current</span>
+        <p class="card-body">The transistor sits between the <strong>load and ground</strong>. Current flows <strong>into</strong> the base to turn it on, and the transistor <span class="key">sinks</span> the load current to ground.</p>
+      </div>
+      <div class="card is-key">
+        <span class="card-name">PNP: sources current</span>
+        <p class="card-body">The transistor sits between the <strong>supply and the load</strong>. Current flows <strong>out of</strong> the base to turn it on, and the transistor <span class="key">sources</span> current to the load.</p>
+      </div>
+    </div>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap);">Industrial sensors come in both types, <strong>NPN (sinking)</strong> and <strong>PNP (sourcing)</strong>. You will wire both in a later lesson.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · BENCH LAB: THE PNP SWITCH -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Build a PNP Switch</span>
+    <h2>The PNP <span class="accent">Switch</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.25fr 1fr;align-items:start;gap:var(--gap-lg);">
+      <div>
+        <div class="lab-steps">
+          <div class="step-card"><span class="sc-num">1</span><p class="sc-body">Read the part number: it must say <strong>2N3906</strong>. Put the <strong>emitter</strong> on +5 V.</p></div>
+          <div class="step-card"><span class="sc-num">2</span><p class="sc-body">Run the <strong>collector</strong> through the LED and the 150 &Omega; resistor to <strong>ground</strong>.</p></div>
+          <div class="step-card"><span class="sc-num">3</span><p class="sc-body">A jumper from the 4.7 k&Omega; base resistor to <strong>ground</strong> is the switch. Measure I<sub>B</sub> and I<sub>C</sub> as before.</p></div>
+        </div>
+        <div class="callout-warn" style="margin-top:var(--gap);">The 2N3904 and 2N3906 look <strong>identical</strong>. Only the printing tells them apart, so read it before you place any transistor.</div>
+      </div>
+      <div>
+        <figure class="fig static-circuit">
+          <div class="switch-bench" data-static="pnp"><svg data-role="circuit" viewBox="0 0 640 520" role="img" aria-label="PNP switch schematic: +5 V to the emitter of a 2N3906, the collector through an LED and a 150 ohm resistor to ground, and the base through a 4.7 kilohm resistor and a switch to ground."></svg></div>
+        </figure>
+        <figure class="fig" style="margin-top:var(--gap-sm);">
+          <svg viewBox="0 0 520 150" role="img" aria-label="TO-92 package seen from the flat face with the leads pointing down: emitter on the left, base in the middle, collector on the right.">
+            <path d="M40 20 H200 V80 H40 Z" fill="rgba(230,247,234,0.10)" stroke="rgba(230,247,234,0.8)" stroke-width="3"/>
+            <path d="M80 80 V140 M120 80 V140 M160 80 V140" class="sym" style="stroke-width:3"/>
+            <text x="120" y="58" class="fig-lbl-m" text-anchor="middle">flat face</text>
+            <text x="240" y="64" class="fig-lbl">Leads, left to right:</text>
+            <text x="240" y="110" class="fig-lbl-b">E &nbsp;B &nbsp;C</text>
+          </svg>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · COMPARE WITH THE RELAY -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Engineering Notebook · Comparison Chart</span>
+    <h2>Fill In the <span class="accent">Transistor</span> Column</h2>
+    <p class="slide-intro">Add today&#39;s evidence to the comparison chart you started in the first lesson. Fill in your own column first, then check it.</p>
+    <table class="data-table cmp-table">
+      <thead><tr><th></th><th>Transistor (2N3904)</th></tr></thead>
+      <tbody>
+        <tr><td>Moving parts</td><td class="fragment fade-in">None; electrons and holes move inside the crystal</td></tr>
+        <tr><td>Time to switch</td><td class="fragment fade-in">Under 1 &micro;s, thousands of times faster than a relay</td></tr>
+        <tr><td>Power just to be ready</td><td class="fragment fade-in">Almost none while off; a few mW while on</td></tr>
+        <tr><td>How it fails</td><td class="fragment fade-in">Overheats from too much current; nothing wears out</td></tr>
+        <tr><td>Size</td><td class="fragment fade-in">Smaller than a pea; billions fit on one chip</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · EXIT TICKET (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:14:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"In a 2N3904 switch that lights an LED, the base current is 1 mA and the collector current is 18 mA. A student says the transistor&#39;s β is 18. Is that right?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Yes. β is always the collector current divided by the base current","isCorrect":false},{"id":"q1b","text":"No. β is the emitter current divided by the base current","isCorrect":false},{"id":"q1c","text":"No. The base current is too small to measure β","isCorrect":false},{"id":"q1d","text":"No. The LED and its resistor limit the collector current, so the ratio is smaller than β","isCorrect":true}]},{"id":"q2","type":"multiple-choice","text":"An NPN switch sits between the load and ground. A PNP switch sits between the supply and the load. Which statement is true?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"The NPN switch sinks current, and the PNP switch sources current","isCorrect":true},{"id":"q2b","text":"The NPN switch sources current, and the PNP switch sinks current","isCorrect":false},{"id":"q2c","text":"Both switches source current","isCorrect":false},{"id":"q2d","text":"Both switches sink current","isCorrect":false}]},{"id":"q3","type":"free-response","text":"Name one advantage a transistor switch has over a relay, and one reason you might still choose a relay. Use evidence from your comparison chart.","order":2,"responseTimeLimitMs":150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Exit <span class="accent">Ticket</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>In a 2N3904 switch that lights an LED, I<sub>B</sub> = 1 mA and I<sub>C</sub> = 18 mA. A student says the transistor&#39;s &beta; is 18. Is that right?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap-sm);">
+      <li><span class="opt-key">A</span>Yes. &beta; is always I<sub>C</sub> &divide; I<sub>B</sub></li>
+      <li><span class="opt-key">B</span>No. &beta; is I<sub>E</sub> &divide; I<sub>B</sub></li>
+      <li><span class="opt-key">C</span>No. I<sub>B</sub> is too small to measure &beta;</li>
+      <li><span class="opt-key">D</span>No. The LED and resistor limit I<sub>C</sub></li>
+    </ul>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">2</span>An NPN switch sits between the load and ground. A PNP switch sits between the supply and the load. Which is true?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap-sm);">
+      <li><span class="opt-key">A</span>NPN sinks, PNP sources</li>
+      <li><span class="opt-key">B</span>NPN sources, PNP sinks</li>
+      <li><span class="opt-key">C</span>Both source current</li>
+      <li><span class="opt-key">D</span>Both sink current</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">3</span>Name one advantage of a transistor switch over a relay, and one reason you might still choose a relay.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 16 · WRAP UP -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Wrap Up</span>
+    <h2>What We Know, and What Comes <span class="accent">Next</span></h2>
+    <div class="row-2" style="margin-bottom:var(--gap-lg);">
+      <div class="card is-key"><span class="card-name">Transistor action</span><p class="card-body">A small <strong>base current</strong> lets a collector current up to <span class="res">&beta; times larger</span> flow, with no moving parts.</p></div>
+      <div class="card is-key"><span class="card-name">Two kinds of switch</span><p class="card-body">An <strong>NPN</strong> switch below the load <strong>sinks</strong> current. A <strong>PNP</strong> switch above the load <strong>sources</strong> it.</p></div>
+    </div>
+    <div class="callout fragment fade-up">
+      <strong>Next class:</strong> today the transistor was fully off or fully on. What happens in between, and how does that make a transistor an <span class="key">amplifier</span>?
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script src="semiconductor-sims.js"></script>
+<script>
+var SIMS = [];
+document.querySelectorAll('.switch-bench').forEach(function (r) {
+    if (r.closest('#storyboard')) return;
+    var s = SiliconSims.buildSwitchBench(r);
+    if (s) SIMS.push(s);
+});
+
+initSyncDeckReveal({
+    deckId: 'day5-the-transistor-switch',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        SiliconSims.startSimLoop(Reveal, SIMS);
+    },
+});
+</script>
+</body>
+</html>

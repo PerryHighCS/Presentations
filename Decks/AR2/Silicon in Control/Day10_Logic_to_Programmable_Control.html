@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="18q91mx">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 10: From Electronic Logic to Programmable Control</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: Silicon in Control Day 10 · From Electronic Logic to Programmable Control
+   ============================================================ */
+.fig-lbl { font-family: var(--font-mono); font-size: 26px; fill: var(--text); }
+.mcq-2col { display: grid; grid-template-columns: 1fr 1fr; max-width: none; }
+.photo-fig { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.photo-fig img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--accent-border); }
+.photo-fig figcaption { font-size: var(--small); color: var(--text-muted); line-height: 1.3; }
+.expr { font-family: var(--font-mono); font-size: 34px; color: var(--text); background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 8px; padding: 14px 20px; margin-bottom: var(--gap); }
+.map-card svg { display: block; height: 90px; margin: 8px auto 0; }
+.map-card .sym { fill: none; stroke: rgba(230,247,234,0.85); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.map-card .w { fill: none; stroke: rgba(230,247,234,0.55); stroke-width: 4; }
+.unit-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.unit-row .step-card { padding: 12px 14px; }
+.unit-row .sc-body { font-size: 28px; }
+.title-fig .w { fill: none; stroke: rgba(230,247,234,0.6); stroke-width: 5; stroke-linecap: round; }
+.title-fig .lit { fill: none; stroke: #5eead4; stroke-width: 5; stroke-linecap: round; }
+.title-fig .sym { fill: none; stroke: rgba(230,247,234,0.9); stroke-width: 5; stroke-linecap: round; }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(255,224,138,0.10),transparent 70%);"></div>
+  <div class="glow" style="width:420px;height:420px;bottom:-90px;right:12%;background:radial-gradient(circle,rgba(57,211,83,0.08),transparent 70%);"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; Silicon in Control &nbsp;·&nbsp; Day 10</span>
+    <h1 class="title-h1">From Electronic Logic to <span class="accent">Programmable Control</span></h1>
+    <p class="subtitle">// Inside the 555 &nbsp;·&nbsp; Gates and ladder logic &nbsp;·&nbsp; Sourcing and sinking sensors</p>
+    <svg class="title-fig" viewBox="0 0 640 170" style="width:640px;margin-top:40px;" aria-hidden="true">
+      <path class="sym" d="M20 10 V160 M620 10 V160" style="stroke-width:7"/>
+      <path class="lit" d="M20 60 H120 M164 60 H300 M344 60 H440 M500 60 H620 M240 60 V130 H300 M344 130 H400 V60"/>
+      <path class="sym" d="M120 38 V82 M164 38 V82 M300 38 V82 M344 38 V82 M300 108 V152 M344 108 V152 M294 154 L350 106"/>
+      <rect x="128" y="52" width="28" height="16" fill="#5eead4"/><rect x="308" y="52" width="28" height="16" fill="#5eead4"/><rect x="308" y="122" width="28" height="16" fill="#5eead4"/>
+      <circle cx="470" cy="60" r="30" fill="rgba(255,224,138,0.35)" stroke="#ffe08a" stroke-width="5"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · DAY QUESTION AND OBJECTIVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Today&#39;s Question &amp; Objectives</span>
+    <div class="eq-box" style="margin-bottom:var(--gap-lg);">
+      <span class="eq-label">Today&#39;s question</span>
+      If transistors can make decisions, why do factories use <span class="accent">PLCs</span>?
+    </div>
+    <div class="split split-50 split-top" style="flex:0 0 auto;">
+      <div>
+        <h3>By the end of class you can <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Name the blocks inside a <strong>555 timer</strong> and the transistor switches in each.</li>
+          <li>Translate a logic circuit into a <strong>ladder logic</strong> rung.</li>
+          <li>Tell a <strong>PNP (sourcing)</strong> sensor from an <strong>NPN (sinking)</strong> sensor and match each to a PLC input.</li>
+          <li>Compare <strong>hardwired</strong> logic with <strong>programmable</strong> control.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today&#39;s <span class="accent">path</span></h3>
+        <div class="agenda-grid">
+          <a class="agenda-item" href="#/3"><span class="agenda-num">01</span><span class="agenda-text">Inside the <strong>555 timer</strong></span></a>
+          <a class="agenda-item" href="#/6"><span class="agenda-num">02</span><span class="agenda-text">One alarm, <strong>gates and ladder</strong></span></a>
+          <a class="agenda-item" href="#/12"><span class="agenda-num">03</span><span class="agenda-text">Sourcing and <strong>sinking sensors</strong></span></a>
+          <a class="agenda-item" href="#/17"><span class="agenda-num">04</span><span class="agenda-text">Hardwired or <strong>programmable?</strong></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · THE 555 YOU ALREADY KNOW -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · The 555 Timer</span>
+    <h2>The 555 You Already <span class="accent">Know</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1fr 640px;align-items:center;gap:var(--gap-lg);">
+      <div>
+        <p class="slide-intro">In AR1 you built this <span class="key">555 flasher</span>. Two resistors and a capacitor set the timing, and the LED blinks on and off by itself.</p>
+        <p class="slide-intro fragment fade-up">Back then the chip was a <strong>black box</strong>. Today you open it. Every block inside is built from parts you have studied in this unit: resistors, transistor switches, and logic gates.</p>
+      </div>
+      <figure class="photo-fig">
+        <img class="img-zoomable" src="media/555-flasher.jpg" alt="A 555 flasher on a breadboard: the 8-pin 555 chip in the middle, two timing resistors, an electrolytic capacitor, and a lit red LED.">
+        <figcaption>The AR1 555 flasher.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · INSIDE THE 555 (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+    <span class="slide-tag">Investigate · Inside the 555</span>
+    <h2 style="margin-bottom:12px;">Inside the <span class="accent">555</span></h2>
+    <div class="timer-555">
+      <div class="t5-grid">
+        <div class="t5-left">
+          <div class="sim-panel">
+            <svg data-role="blocks" viewBox="0 0 940 495" role="img" aria-label="Block diagram of a 555 timer running as a flasher: a capacitor gauge with marks at one third and two thirds of 5 volts, an upper and a lower comparator, a voltage divider, a flip-flop, an output stage driving an LED, and a discharge transistor that empties the capacitor. Active blocks light up."></svg>
+          </div>
+          <div class="task-pager">
+            <div class="tp-head">
+              <span class="tp-count"></span>
+              <button class="tp-nav tp-prev" aria-label="Previous task">&lsaquo;</button>
+              <button class="tp-nav tp-next" aria-label="Next task">&rsaquo;</button>
+            </div>
+            <div class="tp-text"></div>
+            <ol hidden>
+              <li>Watch one cycle. Which block <b>turns the output off</b>, and when?</li>
+              <li>Switch to <b>What it&#39;s made of</b>. Which blocks use parts from this unit?</li>
+              <li>Make the timing resistor <b>larger</b>. What happens to the on and off times, and why?</li>
+            </ol>
+          </div>
+        </div>
+        <div class="t5-right">
+          <div class="sim-panel">
+            <svg data-role="scope" viewBox="0 0 460 244" role="img" aria-label="Scope traces over the last eight seconds: the capacitor voltage rising and falling between one third and two thirds of 5 volts, and the output switching on and off."></svg>
+          </div>
+          <div class="ctl-row">
+            <span class="seg">
+              <button class="seg-btn" data-view="does" aria-pressed="true">What it does</button>
+              <button class="seg-btn" data-view="made" aria-pressed="false">What it&#39;s made of</button>
+            </span>
+          </div>
+          <div class="ctl-row">
+            <span class="ctl-label">Timing resistor</span>
+            <span class="seg">
+              <button class="seg-btn" data-r2="10000" aria-pressed="true">Smaller</button>
+              <button class="seg-btn" data-r2="47000" aria-pressed="false">Larger</button>
+            </span>
+            <button class="sim-btn alt" data-role="restart">Restart</button>
+          </div>
+          <div class="t5-tiles">
+            <div class="tile"><span class="t-name">On</span><span class="t-val" data-role="ton">1.4 s</span></div>
+            <div class="tile"><span class="t-name">Off</span><span class="t-val" data-role="toff">0.7 s</span></div>
+            <div class="tile is-result"><span class="t-name">Capacitor</span><span class="t-val" data-role="vc">0.00 V</span></div>
+          </div>
+          <div class="sim-feedback" data-role="feedback" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · 555 CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:4:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"In a 555 flasher, the capacitor charges until it reaches 2/3 of the supply voltage. What happens then?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"The lower comparator sets the flip-flop, and the output turns on","isCorrect":false},{"id":"q1b","text":"The upper comparator resets the flip-flop: the output turns off and the discharge transistor turns on","isCorrect":true},{"id":"q1c","text":"The capacitor keeps charging until it reaches the full supply voltage","isCorrect":false},{"id":"q1d","text":"The voltage divider disconnects the capacitor","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"The discharge transistor inside a 555 connects the capacitor&#39;s circuit to ground when it turns on. Which circuit from this unit is it?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"A bridge rectifier","isCorrect":false},{"id":"q2b","text":"An optocoupler","isCorrect":false},{"id":"q2c","text":"A transistor amplifier in the active region","isCorrect":false},{"id":"q2d","text":"An NPN low-side switch","isCorrect":true}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · The 555</span>
+    <h2>Check the <span class="accent">555</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>The capacitor charges until it reaches <strong>2/3</strong> of the supply. What happens then?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>The lower comparator sets the flip-flop, and the output turns on</li>
+      <li><span class="opt-key">B</span>The upper comparator resets the flip-flop: the output turns off and the discharge transistor turns on</li>
+      <li><span class="opt-key">C</span>The capacitor keeps charging to the full supply voltage</li>
+      <li><span class="opt-key">D</span>The voltage divider disconnects the capacitor</li>
+    </ul>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">2</span>The <strong>discharge transistor</strong> connects the capacitor&#39;s circuit to ground when it turns on. Which circuit from this unit is it?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col">
+      <li><span class="opt-key">A</span>A bridge rectifier</li>
+      <li><span class="opt-key">B</span>An optocoupler</li>
+      <li><span class="opt-key">C</span>A transistor amplifier in the active region</li>
+      <li><span class="opt-key">D</span>An NPN low-side switch</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · A HOME ALARM IN LOGIC -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Hardwired Logic</span>
+    <h2>A Home Alarm in <span class="accent">Logic</span></h2>
+    <p class="slide-intro">A home alarm has three inputs. <strong>Armed</strong> is 1 when the owner turns the alarm on. <strong>Door closed</strong> and <strong>Window closed</strong> are 1 while each one is shut. The alarm should sound when it is armed and the door or the window is open.</p>
+    <div class="expr fragment fade-up">Alarm = Armed AND (NOT Door closed OR NOT Window closed)</div>
+    <div class="row-3">
+      <div class="card fragment fade-up"><span class="card-name">NOT</span><p class="card-body">Turns &quot;door closed&quot; into <strong>&quot;door open&quot;</strong>, one NOT for each sensor.</p></div>
+      <div class="card fragment fade-up"><span class="card-name">OR</span><p class="card-body">Either opening is enough: the door <strong>or</strong> the window.</p></div>
+      <div class="card fragment fade-up"><span class="card-name">AND</span><p class="card-body">Only when the alarm is <strong>armed</strong>. On the LogiKIT, that is four gate modules.</p></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · THE SAME ALARM AS A LADDER RUNG -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Ladder Logic</span>
+    <h2>The Same Alarm as a Ladder <span class="accent">Rung</span></h2>
+    <p class="slide-intro">A PLC is programmed in <span class="key">ladder logic</span>, drawn like the relay circuits from the AC Circuits unit. Each gate has a contact pattern, the same series and parallel idea as the transistor gates on Day 7.</p>
+    <div class="row-3">
+      <div class="card map-card">
+        <span class="card-name">AND = series</span>
+        <svg viewBox="0 0 300 90" aria-hidden="true"><path class="w" d="M0 45 H60 M104 45 H196 M240 45 H300"/><path class="sym" d="M60 23 V67 M104 23 V67 M196 23 V67 M240 23 V67"/></svg>
+        <p class="card-body">Current must pass <strong>both</strong> contacts.</p>
+      </div>
+      <div class="card map-card fragment fade-up">
+        <span class="card-name">OR = parallel</span>
+        <svg viewBox="0 0 300 90" aria-hidden="true"><path class="w" d="M0 25 H128 M172 25 H300 M60 25 V70 H128 M172 70 H240 V25"/><path class="sym" d="M128 8 V42 M172 8 V42 M128 53 V87 M172 53 V87"/></svg>
+        <p class="card-body"><strong>Either</strong> path will do.</p>
+      </div>
+      <div class="card map-card fragment fade-up">
+        <span class="card-name">NOT = normally closed</span>
+        <svg viewBox="0 0 300 90" aria-hidden="true"><path class="w" d="M0 45 H128 M172 45 H300"/><path class="sym" d="M128 23 V67 M172 23 V67 M122 69 L178 21"/></svg>
+        <p class="card-body">Passes current when its input is <strong>off</strong>.</p>
+      </div>
+    </div>
+    <p class="slide-intro fragment fade-up" style="margin-top:var(--gap);">The alarm rung: an <strong>Armed</strong> contact in series with a parallel pair of normally closed <strong>Door closed</strong> and <strong>Window closed</strong> contacts, driving the Alarm output.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · GATES AND LADDER (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+    <span class="slide-tag">Investigate · Gates and Ladder</span>
+    <h2 style="margin-bottom:12px;">Gates and Ladder, Side by <span class="accent">Side</span></h2>
+    <div class="alarm-ladder">
+      <div class="ctl-row" style="margin-bottom:10px;">
+        <button class="sim-btn alt" data-in="armed" aria-pressed="false">Disarmed</button>
+        <button class="sim-btn alt" data-in="door" aria-pressed="true">Door closed</button>
+        <button class="sim-btn alt" data-in="win" aria-pressed="true">Window closed</button>
+        <button class="sim-btn alt" data-in="motion" aria-pressed="false" style="visibility:hidden">No motion</button>
+        <span class="status-chip ok" data-role="alarm" aria-live="polite">Quiet</span>
+      </div>
+      <div class="al-grid">
+        <div class="sim-panel"><div class="sim-head">Logic gates (LogiKIT)</div><svg data-role="gates" viewBox="0 0 760 370" role="img" aria-label="The alarm as logic gates: Door closed and Window closed each pass through a NOT gate into an OR gate, and the OR output and Armed feed an AND gate that lights the alarm lamp. With a motion sensor added, a second OR gate joins the motion input."></svg></div>
+        <div class="sim-panel"><div class="sim-head">Ladder rung (PLC)</div><svg data-role="ladder" viewBox="0 0 760 380" role="img" aria-label="The alarm as a ladder rung: a normally open Armed contact in series with normally closed Door closed and Window closed contacts in parallel, driving the Alarm coil. With a motion sensor added, a normally open Motion contact joins the parallel branch."></svg></div>
+      </div>
+      <div class="ctl-row" style="margin-top:10px;">
+        <button class="sim-btn" data-role="add" aria-pressed="false">Add a motion sensor</button>
+        <button class="sim-btn warn-btn" data-role="cut" aria-pressed="false">Cut the door wire</button>
+      </div>
+      <div class="sim-feedback" data-role="feedback" aria-live="polite" style="margin-top:10px;"></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · WHY SENSORS REPORT CLOSED -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Fail-Safe Wiring</span>
+    <h2>Why the Sensors Report <span class="accent">Closed</span></h2>
+    <p class="slide-intro">The door sensor could have reported &quot;open&quot; instead. It reports <strong>&quot;closed&quot;</strong> on purpose: it holds its signal on while everything is safe.</p>
+    <div class="row-2">
+      <div class="card is-key"><span class="card-name">A broken wire</span><p class="card-body">The signal drops to 0, which reads exactly like an open door. The alarm sounds, so a fault can <strong>never hide</strong> a break-in.</p></div>
+      <div class="card is-warn fragment fade-up"><span class="card-name">In industry</span><p class="card-body">Stop buttons and safety switches are wired <strong>normally closed</strong> for the same reason: a broken wire stops the machine instead of disabling the stop.</p></div>
+    </div>
+    <p class="slide-intro fragment fade-up" style="margin-top:var(--gap);">This is called <span class="key">fail-safe</span> design: when something breaks, the system falls into its <strong>safe</strong> state.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · BUILD THE ALARM -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Build the Alarm</span>
+    <h2>Build It on the <span class="accent">LogiKIT</span>, Then Draw the Rung</h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.3fr 1fr;align-items:start;gap:var(--gap-lg);">
+      <div class="lab-steps">
+        <div class="step-card"><span class="sc-num">1</span><p class="sc-body">Use three <strong>switches</strong> for Armed, Door closed, and Window closed, and an <strong>LED</strong> for the alarm.</p></div>
+        <div class="step-card"><span class="sc-num">2</span><p class="sc-body">Wire two <strong>NOT</strong> modules into an <strong>OR</strong>, then the OR and Armed into an <strong>AND</strong>.</p></div>
+        <div class="step-card"><span class="sc-num">3</span><p class="sc-body">Test all eight input combinations and record when the LED lights.</p></div>
+        <div class="step-card"><span class="sc-num">4</span><p class="sc-body">In your notebook, draw the <strong>gate schematic</strong> and the matching <strong>ladder rung</strong> side by side.</p></div>
+      </div>
+      <div>
+        <div class="card"><span class="card-name">Check yourself</span><p class="card-body">With the alarm armed, the LED should be off <strong>only</strong> when the door and the window are both closed.</p></div>
+        <div class="card fragment fade-up" style="margin-top:var(--gap);"><span class="card-name">Finished early?</span><p class="card-body">Add a <strong>motion sensor</strong> input. How many modules and wires did it take?</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · LADDER CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:10:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"In ladder logic, which contact pattern acts like an OR gate?","order":0,"responseTimeLimitMs":40000,"options":[{"id":"q1a","text":"Two contacts in parallel","isCorrect":true},{"id":"q1b","text":"Two contacts in series","isCorrect":false},{"id":"q1c","text":"One normally closed contact","isCorrect":false},{"id":"q1d","text":"A contact in series with the coil","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"A machine&#39;s stop button is wired normally closed, so the machine may run only while the stop circuit is complete. The stop button&#39;s wire breaks. What happens?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"Nothing until someone presses stop","isCorrect":false},{"id":"q2b","text":"The machine can no longer be stopped","isCorrect":false},{"id":"q2c","text":"The machine stops, as if stop were pressed","isCorrect":true},{"id":"q2d","text":"The machine speeds up","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · Ladder Logic</span>
+    <h2>Check the <span class="accent">Rung</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>In ladder logic, which contact pattern acts like an <strong>OR</strong> gate?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>Two contacts in parallel</li>
+      <li><span class="opt-key">B</span>Two contacts in series</li>
+      <li><span class="opt-key">C</span>One normally closed contact</li>
+      <li><span class="opt-key">D</span>A contact in series with the coil</li>
+    </ul>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">2</span>A stop button is wired <strong>normally closed</strong>: the machine runs only while the stop circuit is complete. The button&#39;s wire breaks. What happens?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col">
+      <li><span class="opt-key">A</span>Nothing until someone presses stop</li>
+      <li><span class="opt-key">B</span>The machine can no longer be stopped</li>
+      <li><span class="opt-key">C</span>The machine stops, as if stop were pressed</li>
+      <li><span class="opt-key">D</span>The machine speeds up</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · SOURCING AND SINKING SENSORS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Industrial Sensors</span>
+    <h2>Sourcing and Sinking <span class="accent">Sensors</span></h2>
+    <p class="slide-intro">A 24 V proximity sensor has three wires: <span style="color:#d9a06f;font-weight:600;">brown</span> to +24 V, <span style="color:#7cb4ff;font-weight:600;">blue</span> to 0 V, and <strong>black</strong> for the signal. Inside is a transistor switch like the ones you built on Day 5.</p>
+    <div class="row-2">
+      <div class="card is-key"><span class="card-name">PNP: sourcing</span><p class="card-body">On detection, its transistor connects the signal to <strong>+24 V</strong>, like the 2N3906 high-side switch. Current flows <strong>out</strong> of the sensor into the PLC input.</p></div>
+      <div class="card is-key fragment fade-up"><span class="card-name">NPN: sinking</span><p class="card-body">On detection, its transistor connects the signal to <strong>0 V</strong>, like the 2N3904 low-side switch. Current flows from the PLC input <strong>into</strong> the sensor.</p></div>
+    </div>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);">The PLC input must be the matching type. A sourcing sensor needs an input whose other end goes to <strong>0 V</strong>; a sinking sensor needs one whose other end goes to <strong>+24 V</strong>.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · DEMONSTRATION -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Demonstration · Two Proximity Sensors</span>
+    <h2>Watch the <span class="accent">Signal Wire</span></h2>
+    <p class="slide-intro">Your teacher powers a PNP sensor and an NPN sensor from 24 V and brings a steel target up to each one. Watch the sensor&#39;s indicator light and the voltage on its black wire.</p>
+    <div class="row-2">
+      <div class="card"><span class="card-name">PNP sensor</span><p class="card-body">An LED and 4.7 k&Omega; from the black wire to <strong>0 V</strong> stand in for the PLC input. Predict: does the signal rise or fall on detection?</p></div>
+      <div class="card"><span class="card-name">NPN sensor</span><p class="card-body">An LED and 4.7 k&Omega; from <strong>+24 V</strong> to the black wire stand in for the PLC input. Predict: does the signal rise or fall on detection?</p></div>
+    </div>
+    <p class="slide-intro fragment fade-up" style="margin-top:var(--gap);">The PNP signal <span class="res">rises to +24 V</span>; the NPN signal <span class="res">falls to 0 V</span>. Both datasheets show this in their wiring diagrams.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · SENSOR MATCH (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+    <span class="slide-tag">Investigate · Sensor and Input</span>
+    <h2 style="margin-bottom:12px;">Match the Sensor to the <span class="accent">Input</span></h2>
+    <div class="sensor-match">
+      <div class="sm-grid">
+        <div class="sim-panel">
+          <svg data-role="circuit" viewBox="0 0 740 490" role="img" aria-label="A three-wire 24 volt sensor with a PNP or NPN output transistor, its brown, blue, and signal wires, and a PLC input drawn as a resistor and LED whose common terminal goes to 0 volts or to plus 24 volts. A steel target can be brought up to the sensor."></svg>
+        </div>
+        <div class="sm-right">
+          <div class="ctl-row">
+            <span class="ctl-label">Sensor</span>
+            <span class="seg">
+              <button class="seg-btn" data-type="PNP" aria-pressed="true">PNP</button>
+              <button class="seg-btn" data-type="NPN" aria-pressed="false">NPN</button>
+            </span>
+          </div>
+          <div class="ctl-row">
+            <span class="ctl-label">Input COM</span>
+            <span class="seg">
+              <button class="seg-btn" data-com="0" aria-pressed="true">to 0 V</button>
+              <button class="seg-btn" data-com="24" aria-pressed="false">to +24 V</button>
+            </span>
+          </div>
+          <div class="ctl-row">
+            <button class="sim-btn" data-role="target" aria-pressed="false">No target</button>
+            <span class="status-chip" data-role="input" aria-live="polite">Input off</span>
+          </div>
+          <div class="tile is-result"><span class="t-name">Signal wire to 0 V</span><span class="t-val" data-role="vsig">0.0 V</span></div>
+          <div class="sim-feedback" data-role="feedback" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · BENCH LAB: MODEL THE SENSORS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Model the Sensors at 5 V</span>
+    <h2>Build a Sourcing and a Sinking <span class="accent">Output</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.3fr 1fr;align-items:start;gap:var(--gap-lg);">
+      <div class="lab-steps">
+        <div class="step-card"><span class="sc-num">1</span><p class="sc-body"><strong>Sourcing:</strong> a 2N3906 with its emitter on +5 V. A push button pulls its base to ground through 4.7 k&Omega;. Its collector is the signal.</p></div>
+        <div class="step-card"><span class="sc-num">2</span><p class="sc-body">The &quot;PLC input&quot; is an LED and 1 k&Omega; from the signal to <strong>ground</strong>. Press the button: the LED lights.</p></div>
+        <div class="step-card"><span class="sc-num">3</span><p class="sc-body"><strong>Sinking:</strong> a 2N3904 with its emitter on ground. The button feeds its base from +5 V through 4.7 k&Omega;. The input is an LED and 1 k&Omega; from <strong>+5 V</strong> to the signal.</p></div>
+        <div class="step-card"><span class="sc-num">4</span><p class="sc-body">Swap each &quot;PLC input&quot; to the <strong>wrong</strong> type. Explain why the LED never lights.</p></div>
+      </div>
+      <div class="callout-warn">A mismatched sensor and input is a common <strong>commissioning fault</strong>: the sensor&#39;s own light comes on, but the PLC never sees the signal. You will meet it again in the PLC unit.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 16 · SENSOR CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:15:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A 24 V sensor&#39;s signal wire reads 0 V while it detects a part, and about 24 V when nothing is there. What kind of output does it have?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"PNP (sourcing)","isCorrect":false},{"id":"q1b","text":"An optocoupler output","isCorrect":false},{"id":"q1c","text":"A relay output","isCorrect":false},{"id":"q1d","text":"NPN (sinking)","isCorrect":true}]},{"id":"q2","type":"multiple-choice","text":"A PNP sensor is wired to a PLC input whose common terminal is connected to +24 V. The sensor&#39;s indicator light comes on when a part arrives. What does the PLC see?","order":1,"responseTimeLimitMs":60000,"options":[{"id":"q2a","text":"The input turns on normally","isCorrect":false},{"id":"q2b","text":"Nothing: both ends of the input are at 24 V, so no current flows","isCorrect":true},{"id":"q2c","text":"The input turns on, then the PLC faults","isCorrect":false},{"id":"q2d","text":"The input turns on when the part leaves","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · Sensors</span>
+    <h2>Check the <span class="accent">Sensors</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A sensor&#39;s signal wire reads <strong>0 V</strong> while it detects a part, and about <strong>24 V</strong> when nothing is there. What kind of output does it have?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>PNP (sourcing)</li>
+      <li><span class="opt-key">B</span>An optocoupler output</li>
+      <li><span class="opt-key">C</span>A relay output</li>
+      <li><span class="opt-key">D</span>NPN (sinking)</li>
+    </ul>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">2</span>A <strong>PNP</strong> sensor is wired to an input whose common goes to <strong>+24 V</strong>. Its indicator lights when a part arrives. What does the PLC see?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col">
+      <li><span class="opt-key">A</span>The input turns on normally</li>
+      <li><span class="opt-key">B</span>Nothing: both ends of the input are at 24 V</li>
+      <li><span class="opt-key">C</span>The input turns on, then the PLC faults</li>
+      <li><span class="opt-key">D</span>The input turns on when the part leaves</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 17 · HARDWIRED OR PROGRAMMABLE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Compare · Hardwired and Programmable</span>
+    <h2>Hardwired or <span class="accent">Programmable?</span></h2>
+    <p class="slide-intro">Compare your LogiKIT build with the ladder rung in the <a href="#/8">Gates and Ladder simulator</a> on slide 8. Which is easier to change, and which is easier to troubleshoot?</p>
+    <div class="row-3">
+      <div class="card is-key"><span class="card-name">Change it</span><p class="card-body">Adding a motion sensor took a new gate and new wires. In a PLC it is <strong>one contact</strong> in the program.</p></div>
+      <div class="card is-key fragment fade-up"><span class="card-name">Troubleshoot it</span><p class="card-body">A PLC shows every input and output on lights and on screen, and highlights the live path through each rung.</p></div>
+      <div class="card is-warn fragment fade-up"><span class="card-name">Keep it safe</span><p class="card-body">Emergency stops stay <strong>hardwired</strong> through safety relays, so a software mistake can never disable them.</p></div>
+    </div>
+    <p class="slide-intro fragment fade-up" style="margin-top:var(--gap);">A PLC is still made of what you studied: <strong>optocoupled</strong> inputs, a processor of <strong>billions of transistor switches</strong>, and <strong>transistor or relay</strong> outputs.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 18 · EXIT TICKET (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:17:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A factory adds a second door sensor to a machine guard. Why is this easier with a PLC than with hardwired logic gates?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"A PLC does not need sensors","isCorrect":false},{"id":"q1b","text":"PLC inputs need no wiring at all","isCorrect":false},{"id":"q1c","text":"The logic change is an edit to the program, not new gates and wires","isCorrect":true},{"id":"q1d","text":"A PLC runs on 5 V like the LogiKIT","isCorrect":false}]},{"id":"q2","type":"free-response","text":"Answer the unit question: how and why did semiconductors change electrical switching into the digital control systems used in automation? Use at least two devices from this unit.","order":1,"responseTimeLimitMs":240000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Exit <span class="accent">Ticket</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A factory adds a second door sensor to a machine guard. Why is this easier with a <strong>PLC</strong> than with hardwired logic gates?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>A PLC does not need sensors</li>
+      <li><span class="opt-key">B</span>PLC inputs need no wiring at all</li>
+      <li><span class="opt-key">C</span>The logic change is an edit to the program, not new gates and wires</li>
+      <li><span class="opt-key">D</span>A PLC runs on 5 V like the LogiKIT</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>Answer the unit question: how and why did semiconductors change electrical switching into <strong>digital control</strong>? Use at least two devices from this unit.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 19 · WRAP UP -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Wrap Up · Silicon in Control</span>
+    <h2>From Relay to <span class="accent">PLC</span></h2>
+    <p class="slide-intro">You followed one idea, the <span class="key">switch</span>, from a relay coil to a programmable controller.</p>
+    <div class="unit-row">
+      <div class="step-card"><span class="sc-num">1</span><p class="sc-body"><strong>Relay</strong>: a coil moves contacts</p></div>
+      <div class="step-card"><span class="sc-num">2</span><p class="sc-body"><strong>Diode</strong>: <span style="white-space:nowrap">one-way</span> current</p></div>
+      <div class="step-card"><span class="sc-num">3</span><p class="sc-body"><strong>Transistor</strong>: a small current controls a large one</p></div>
+      <div class="step-card"><span class="sc-num">4</span><p class="sc-body"><strong>Gates</strong>: switches in series and parallel</p></div>
+      <div class="step-card"><span class="sc-num">5</span><p class="sc-body"><strong>Interface</strong>: 5&nbsp;V commands 24&nbsp;V safely</p></div>
+      <div class="step-card"><span class="sc-num">6</span><p class="sc-body"><strong>PLC</strong>: logic you can reprogram</p></div>
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script src="semiconductor-sims.js"></script>
+<script>
+var SIMS = [];
+[['.timer-555', 'buildTimer555'], ['.alarm-ladder', 'buildAlarmLadder'], ['.sensor-match', 'buildSensorMatch']].forEach(function (p) {
+    document.querySelectorAll(p[0]).forEach(function (r) {
+        if (r.closest('#storyboard')) return;
+        SIMS.push(SiliconSims[p[1]](r));
+    });
+});
+
+initSyncDeckReveal({
+    deckId: 'day10-logic-to-programmable-control',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        SiliconSims.startSimLoop(Reveal, SIMS);
+    },
+});
+</script>
+</body>
+</html>

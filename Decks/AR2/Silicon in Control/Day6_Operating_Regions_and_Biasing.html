@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="e54mgl">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 6: Operating Regions and Biasing</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: Silicon in Control Day 6 · Operating Regions and Biasing
+   ============================================================ */
+.calc-line { display: grid; grid-template-columns: 400px 1fr; align-items: baseline; font-family: var(--font-mono); font-size: 30px; color: var(--text); line-height: 1.55; white-space: nowrap; }
+.calc-line .step { color: var(--text-muted); font-family: var(--font-ui); }
+.mcq-2col { display: grid; grid-template-columns: 1fr 1fr; max-width: none; }
+.stage-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap); }
+.region-card .card-name { font-size: 28px; }
+.region-card.is-cut { border-color: rgba(230,247,234,0.35); }
+.region-card.is-cut .card-name { color: var(--text); }
+.region-card.is-act { border-color: rgba(255,209,102,0.5); }
+.region-card.is-act .card-name { color: var(--warn); }
+.region-card.is-sat { border-color: rgba(94,234,212,0.5); }
+.region-card.is-sat .card-name { color: var(--result); }
+.region-stack { display: flex; flex-direction: column; gap: 12px; }
+.region-stack .card { padding: 12px 18px; }
+.region-fig .rg-body { fill: rgba(230,247,234,0.04); stroke: rgba(230,247,234,0.55); stroke-width: 3; }
+.region-fig .rg-sym { fill: none; stroke: rgba(230,247,234,0.85); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.region-fig .rg-arrowhead { fill: rgba(230,247,234,0.85); }
+.region-fig .rg-pin { font-family: var(--font-mono); font-size: 28px; font-weight: 700; fill: var(--text); }
+.region-fig .rg-vce { fill: none; stroke: var(--warn); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.region-fig .rg-vce-t { fill: var(--warn); }
+.region-fig .rg-band { stroke: none; }
+.region-fig .rg-cut { fill: rgba(230,247,234,0.07); }
+.region-fig .rg-act { fill: rgba(255,209,102,0.12); }
+.region-fig .rg-sat { fill: rgba(94,234,212,0.12); }
+.region-fig .rg-axis { fill: none; stroke: rgba(230,247,234,0.6); stroke-width: 3; }
+.region-fig .rg-curve { fill: none; stroke: var(--text); stroke-width: 6; stroke-linecap: round; }
+.region-fig .rg-limit { fill: none; stroke: var(--warn); stroke-width: 2; stroke-dasharray: 8 6; }
+.region-fig .rg-ax { font-family: var(--font-ui); font-size: 26px; fill: var(--text-muted); }
+.region-fig .rg-sub { font-size: 22px; }
+.region-fig .rg-name { font-family: var(--font-mono); font-size: 28px; font-weight: 700; }
+.region-fig .rg-cut-t { fill: var(--text); }
+.region-fig .rg-act-t { fill: var(--warn); }
+.region-fig .rg-sat-t { fill: var(--result); }
+.region-fig .rg-v { font-family: var(--font-mono); font-size: 24px; fill: var(--text); }
+.region-fig .rg-note { font-family: var(--font-ui); font-size: 24px; fill: var(--text-muted); }
+.fig-lbl-m { font-family: var(--font-mono); font-size: 24px; fill: var(--text-muted); }
+.heat-table td:nth-child(n+2), .heat-table th:nth-child(n+2) { text-align: center; }
+.down-hint { align-self: flex-end; }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(255,209,102,0.10),transparent 70%);"></div>
+  <div class="glow" style="width:420px;height:420px;bottom:-90px;right:12%;background:radial-gradient(circle,rgba(94,234,212,0.08),transparent 70%);"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; Silicon in Control &nbsp;·&nbsp; Day 6</span>
+    <h1 class="title-h1">Operating Regions and <span class="accent">Biasing</span></h1>
+    <p class="subtitle">// Cutoff, active, saturation &nbsp;·&nbsp; Choosing a base resistor &nbsp;·&nbsp; Troubleshooting</p>
+    <svg viewBox="0 0 700 200" style="width:700px;margin-top:40px;" aria-hidden="true">
+      <path d="M60 170 H660 M60 170 V20" fill="none" stroke="rgba(230,247,234,0.5)" stroke-width="3"/>
+      <path d="M60 170 L300 50 H660" fill="none" stroke="#5eead4" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M60 50 H660" fill="none" stroke="#ffd166" stroke-width="3" stroke-dasharray="10 8"/>
+      <circle cx="300" cy="50" r="12" fill="#ffe08a"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · DAY QUESTION AND OBJECTIVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Today&#39;s Question &amp; Objectives</span>
+    <div class="eq-box" style="margin-bottom:var(--gap-lg);">
+      <span class="eq-label">Today&#39;s question</span>
+      Why is a transistor sometimes a <span class="accent">switch</span> and sometimes an <span class="accent">amplifier</span>?
+    </div>
+    <div class="split split-50 split-top" style="flex:0 0 auto;">
+      <div>
+        <h3>By the end of class you can <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Name the <strong>region</strong> from I<sub>B</sub>, I<sub>C</sub>, and V<sub>CE</sub>.</li>
+          <li>Calculate a <strong>base resistor</strong> that saturates a transistor.</li>
+          <li>Explain why a switch avoids the <strong>active region</strong>.</li>
+          <li>Find a <strong>biasing fault</strong> from measurements.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today&#39;s <span class="accent">path</span></h3>
+        <div class="agenda-grid">
+          <a class="agenda-item" href="#/6"><span class="agenda-num">01</span><span class="agenda-text">The <strong>three regions</strong></span></a>
+          <a class="agenda-item" href="#/10"><span class="agenda-num">02</span><span class="agenda-text">Choosing a <strong>base resistor</strong></span></a>
+          <a class="agenda-item" href="#/12"><span class="agenda-num">03</span><span class="agenda-text">Bench lab: <strong>three base resistors</strong></span></a>
+          <a class="agenda-item" href="#/14"><span class="agenda-num">04</span><span class="agenda-text">Troubleshooting: <strong>the dim LED</strong></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · HOOK -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Hook · Between Off and On</span>
+    <h2>What If We Starve the <span class="accent">Base?</span></h2>
+    <p class="slide-intro">In the last lesson, the NPN switch with a <strong>4.7 k&Omega;</strong> base resistor gave these readings. The ratio was far below the 2N3904&#39;s &beta; of at least 100, because the LED and its resistor limit the collector current.</p>
+    <table class="data-table record-table" style="max-width:1100px;">
+      <thead><tr><th>Base resistor</th><th>I<sub>B</sub></th><th>I<sub>C</sub></th><th>I<sub>C</sub> &divide; I<sub>B</sub></th><th>LED</th></tr></thead>
+      <tbody>
+        <tr><td>4.7 k&Omega;</td><td>0.91 mA</td><td>19 mA</td><td>about 21</td><td>Bright</td></tr>
+        <tr class="fragment fade-up"><td>470 k&Omega;</td><td class="blank">?</td><td class="blank">?</td><td class="blank">?</td><td class="blank">?</td></tr>
+      </tbody>
+    </table>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);"><strong>Predict:</strong> the base resistor is now <strong>100 times larger</strong>. What happens to the base current, the collector current, and the LED?</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · PREDICTION (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:3:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A 2N3904 switch lights an LED through a 150 Ω resistor from 5 V. With a 4.7 kΩ base resistor, the base current is 0.91 mA and the collector current is 19 mA. The base resistor is changed to 470 kΩ, 100 times larger. What happens?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Nothing changes; the transistor is still on","isCorrect":false},{"id":"q1b","text":"The base current drops 100 times, and the collector current drops too, so the LED is dim","isCorrect":true},{"id":"q1c","text":"The LED goes completely dark, because any base resistor above 10 kΩ turns the transistor off","isCorrect":false},{"id":"q1d","text":"The base current drops, but the collector current stays at 19 mA","isCorrect":false}]},{"id":"q2","type":"free-response","text":"Explain your prediction. Use the current gain (β = collector current ÷ base current) in your answer.","order":1,"responseTimeLimitMs":150000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict</span>
+    <h2>A Starved <span class="accent">Base</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A 2N3904 switch lights an LED. With a 4.7 k&Omega; base resistor, I<sub>B</sub> = 0.91 mA and I<sub>C</sub> = 19 mA. The base resistor is changed to <strong>470 k&Omega;</strong>, 100 times larger. What happens?</div>
+    </div>
+    <ul class="mcq-opts" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>Nothing changes; the transistor is still on</li>
+      <li><span class="opt-key">B</span>The base current drops 100 times, and the collector current drops too, so the LED is dim</li>
+      <li><span class="opt-key">C</span>The LED goes completely dark, because any base resistor above 10 k&Omega; turns the transistor off</li>
+      <li><span class="opt-key">D</span>The base current drops, but the collector current stays at 19 mA</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span><strong>Explain</strong> your prediction. Use the current gain, &beta; = I<sub>C</sub> &divide; I<sub>B</sub>.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · WHAT IS AN AMPLIFIER? -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Amplifiers</span>
+    <h2>What Is an <span class="accent">Amplifier?</span></h2>
+    <p class="slide-intro">An <span class="key">amplifier</span> takes a small, changing signal and makes a <strong>larger copy</strong> of it. The output rises and falls in step with the input, just bigger.</p>
+    <figure class="fig" style="margin:6px 0 var(--gap);">
+      <svg viewBox="0 0 1260 240" role="img" aria-label="A small wave goes into an amplifier, drawn as a triangle, and a much taller wave with the same shape comes out.">
+        <path d="M20 120 H300 M560 120 H1000" stroke="rgba(230,247,234,0.25)" stroke-width="2" fill="none"/>
+        <path d="M20.0 120.0 L22.3 117.7 L24.7 115.4 L27.0 113.2 L29.3 111.1 L31.7 109.0 L34.0 107.1 L36.3 105.3 L38.7 103.7 L41.0 102.2 L43.3 100.9 L45.7 99.9 L48.0 99.1 L50.3 98.5 L52.7 98.1 L55.0 98.0 L57.3 98.1 L59.7 98.5 L62.0 99.1 L64.3 99.9 L66.7 100.9 L69.0 102.2 L71.3 103.7 L73.7 105.3 L76.0 107.1 L78.3 109.0 L80.7 111.1 L83.0 113.2 L85.3 115.4 L87.7 117.7 L90.0 120.0 L92.3 122.3 L94.7 124.6 L97.0 126.8 L99.3 128.9 L101.7 131.0 L104.0 132.9 L106.3 134.7 L108.7 136.3 L111.0 137.8 L113.3 139.1 L115.7 140.1 L118.0 140.9 L120.3 141.5 L122.7 141.9 L125.0 142.0 L127.3 141.9 L129.7 141.5 L132.0 140.9 L134.3 140.1 L136.7 139.1 L139.0 137.8 L141.3 136.3 L143.7 134.7 L146.0 132.9 L148.3 131.0 L150.7 128.9 L153.0 126.8 L155.3 124.6 L157.7 122.3 L160.0 120.0 L162.3 117.7 L164.7 115.4 L167.0 113.2 L169.3 111.1 L171.7 109.0 L174.0 107.1 L176.3 105.3 L178.7 103.7 L181.0 102.2 L183.3 100.9 L185.7 99.9 L188.0 99.1 L190.3 98.5 L192.7 98.1 L195.0 98.0 L197.3 98.1 L199.7 98.5 L202.0 99.1 L204.3 99.9 L206.7 100.9 L209.0 102.2 L211.3 103.7 L213.7 105.3 L216.0 107.1 L218.3 109.0 L220.7 111.1 L223.0 113.2 L225.3 115.4 L227.7 117.7 L230.0 120.0 L232.3 122.3 L234.7 124.6 L237.0 126.8 L239.3 128.9 L241.7 131.0 L244.0 132.9 L246.3 134.7 L248.7 136.3 L251.0 137.8 L253.3 139.1 L255.7 140.1 L258.0 140.9 L260.3 141.5 L262.7 141.9 L265.0 142.0 L267.3 141.9 L269.7 141.5 L272.0 140.9 L274.3 140.1 L276.7 139.1 L279.0 137.8 L281.3 136.3 L283.7 134.7 L286.0 132.9 L288.3 131.0 L290.7 128.9 L293.0 126.8 L295.3 124.6 L297.7 122.3 L300.0 120.0" fill="none" stroke="#7cc4ff" stroke-width="5"/>
+        <path d="M320 120 H380 M500 120 H545" stroke="rgba(230,247,234,0.6)" stroke-width="4" fill="none"/>
+        <path d="M380 50 L500 120 L380 190 Z" fill="rgba(57,211,83,0.10)" stroke="#39d353" stroke-width="4" stroke-linejoin="round"/>
+        <path class="amp-out" d="M560.0 120.0 L563.7 111.6 L567.3 103.4 L571.0 95.3 L574.7 87.5 L578.3 80.0 L582.0 73.0 L585.7 66.5 L589.3 60.5 L593.0 55.3 L596.7 50.7 L600.3 46.9 L604.0 43.9 L607.7 41.7 L611.3 40.4 L615.0 40.0 L618.7 40.4 L622.3 41.7 L626.0 43.9 L629.7 46.9 L633.3 50.7 L637.0 55.3 L640.7 60.5 L644.3 66.5 L648.0 73.0 L651.7 80.0 L655.3 87.5 L659.0 95.3 L662.7 103.4 L666.3 111.6 L670.0 120.0 L673.7 128.4 L677.3 136.6 L681.0 144.7 L684.7 152.5 L688.3 160.0 L692.0 167.0 L695.7 173.5 L699.3 179.5 L703.0 184.7 L706.7 189.3 L710.3 193.1 L714.0 196.1 L717.7 198.3 L721.3 199.6 L725.0 200.0 L728.7 199.6 L732.3 198.3 L736.0 196.1 L739.7 193.1 L743.3 189.3 L747.0 184.7 L750.7 179.5 L754.3 173.5 L758.0 167.0 L761.7 160.0 L765.3 152.5 L769.0 144.7 L772.7 136.6 L776.3 128.4 L780.0 120.0 L783.7 111.6 L787.3 103.4 L791.0 95.3 L794.7 87.5 L798.3 80.0 L802.0 73.0 L805.7 66.5 L809.3 60.5 L813.0 55.3 L816.7 50.7 L820.3 46.9 L824.0 43.9 L827.7 41.7 L831.3 40.4 L835.0 40.0 L838.7 40.4 L842.3 41.7 L846.0 43.9 L849.7 46.9 L853.3 50.7 L857.0 55.3 L860.7 60.5 L864.3 66.5 L868.0 73.0 L871.7 80.0 L875.3 87.5 L879.0 95.3 L882.7 103.4 L886.3 111.6 L890.0 120.0 L893.7 128.4 L897.3 136.6 L901.0 144.7 L904.7 152.5 L908.3 160.0 L912.0 167.0 L915.7 173.5 L919.3 179.5 L923.0 184.7 L926.7 189.3 L930.3 193.1 L934.0 196.1 L937.7 198.3 L941.3 199.6 L945.0 200.0 L948.7 199.6 L952.3 198.3 L956.0 196.1 L959.7 193.1 L963.3 189.3 L967.0 184.7 L970.7 179.5 L974.3 173.5 L978.0 167.0 L981.7 160.0 L985.3 152.5 L989.0 144.7 L992.7 136.6 L996.3 128.4 L1000.0 120.0" fill="none" stroke="#5eead4" stroke-width="5"/>
+        <g class="fragment fade-in" data-fragment-index="2"><path d="M560.0 120.0 L563.7 110.1 L567.3 100.2 L571.0 90.6 L574.7 81.4 L578.3 72.5 L582.0 65.0 L585.7 65.0 L589.3 65.0 L593.0 65.0 L596.7 65.0 L600.3 65.0 L604.0 65.0 L607.7 65.0 L611.3 65.0 L615.0 65.0 L618.7 65.0 L622.3 65.0 L626.0 65.0 L629.7 65.0 L633.3 65.0 L637.0 65.0 L640.7 65.0 L644.3 65.0 L648.0 65.0 L651.7 72.5 L655.3 81.4 L659.0 90.6 L662.7 100.2 L666.3 110.1 L670.0 120.0 L673.7 129.9 L677.3 139.8 L681.0 149.4 L684.7 158.6 L688.3 167.5 L692.0 175.0 L695.7 175.0 L699.3 175.0 L703.0 175.0 L706.7 175.0 L710.3 175.0 L714.0 175.0 L717.7 175.0 L721.3 175.0 L725.0 175.0 L728.7 175.0 L732.3 175.0 L736.0 175.0 L739.7 175.0 L743.3 175.0 L747.0 175.0 L750.7 175.0 L754.3 175.0 L758.0 175.0 L761.7 167.5 L765.3 158.6 L769.0 149.4 L772.7 139.8 L776.3 129.9 L780.0 120.0 L783.7 110.1 L787.3 100.2 L791.0 90.6 L794.7 81.4 L798.3 72.5 L802.0 65.0 L805.7 65.0 L809.3 65.0 L813.0 65.0 L816.7 65.0 L820.3 65.0 L824.0 65.0 L827.7 65.0 L831.3 65.0 L835.0 65.0 L838.7 65.0 L842.3 65.0 L846.0 65.0 L849.7 65.0 L853.3 65.0 L857.0 65.0 L860.7 65.0 L864.3 65.0 L868.0 65.0 L871.7 72.5 L875.3 81.4 L879.0 90.6 L882.7 100.2 L886.3 110.1 L890.0 120.0 L893.7 129.9 L897.3 139.8 L901.0 149.4 L904.7 158.6 L908.3 167.5 L912.0 175.0 L915.7 175.0 L919.3 175.0 L923.0 175.0 L926.7 175.0 L930.3 175.0 L934.0 175.0 L937.7 175.0 L941.3 175.0 L945.0 175.0 L948.7 175.0 L952.3 175.0 L956.0 175.0 L959.7 175.0 L963.3 175.0 L967.0 175.0 L970.7 175.0 L974.3 175.0 L978.0 175.0 L981.7 167.5 L985.3 158.6 L989.0 149.4 L992.7 139.8 L996.3 129.9 L1000.0 120.0" fill="none" stroke="#ff8a80" stroke-width="5" stroke-dasharray="10 6"/></g>
+        <text x="160" y="230" class="fig-lbl-m" text-anchor="middle">small input</text>
+        <text x="440" y="230" class="fig-lbl-m" text-anchor="middle">amplifier</text>
+        <text x="780" y="230" class="fig-lbl-m" text-anchor="middle">larger copy</text>
+        <text x="1030" y="70" class="fig-lbl-m fragment fade-in" data-fragment-index="2" style="fill:#ff8a80">peaks clipped</text>
+      </svg>
+    </figure>
+    <p class="slide-intro">You use them every day: a <strong>guitar amp</strong>, a <strong>speaker system</strong>, or a tiny <strong>sensor signal</strong> boosted so a controller can read it.</p>
+    <p class="slide-intro fragment fade-up" data-fragment-index="1">A transistor can amplify a signal. A small change in <strong>I<sub>B</sub></strong> makes a change in <strong>I<sub>C</sub></strong> that is <span class="res">&beta; times bigger</span>, with the same shape.</p>
+    <p class="slide-intro fragment fade-up" data-fragment-index="2">But only in the right <span class="key">region</span>. Push the transistor too far and the amplified copy gets its peaks <span class="fault">clipped</span> off.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · THE THREE REGIONS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Operating Regions</span>
+    <h2>The Three <span class="accent">Regions</span></h2>
+    <p class="slide-intro">How hard you drive the base decides the transistor&#39;s <span class="key">region</span>. Each one has its own collector current and V<sub>CE</sub>, the voltage from collector to emitter.</p>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:760px 1fr;align-items:start;gap:var(--gap-lg);">
+      <figure class="fig region-fig">
+        <svg viewBox="0 0 760 470" role="img" aria-label="Graph of collector current against base current. With no base current the collector current is zero: cutoff, with 5 volts across the transistor. As base current rises, collector current rises in a straight line: the active region, with a few volts across the transistor. Once collector current reaches the load limit it stays flat: saturation, with about 0.2 volts across the transistor.">
+          <rect x="90" y="84" width="80" height="306" class="rg-band rg-cut"/>
+          <g class="fragment fade-in" data-fragment-index="1"><rect x="170" y="84" width="250" height="306" class="rg-band rg-act"/></g>
+          <g class="fragment fade-in" data-fragment-index="2"><rect x="420" y="84" width="310" height="306" class="rg-band rg-sat"/></g>
+          <path d="M90 84 V390 H730" class="rg-axis"/>
+          <text x="410" y="432" class="rg-ax" text-anchor="middle">Base current, I<tspan baseline-shift="sub" class="rg-sub">B</tspan> &#8594;</text>
+          <text x="40" y="240" class="rg-ax" text-anchor="middle" transform="rotate(-90 40 240)">Collector current, I<tspan baseline-shift="sub" class="rg-sub">C</tspan> &#8594;</text>
+          <g class="rg-npn" aria-hidden="true">
+            <circle cx="600" cy="265" r="52" class="rg-body"/>
+            <path d="M512 265 H580 M580 236 V294 M580 250 L620 222 V184 M580 280 L620 308 V346" class="rg-sym"/>
+            <path d="M620 308 L596 304 L608 286 Z" class="rg-arrowhead"/>
+            <text x="500" y="274" class="rg-pin" text-anchor="end">B</text>
+            <text x="636" y="196" class="rg-pin">C</text>
+            <text x="636" y="352" class="rg-pin">E</text>
+            <path d="M668 190 V340 M660 198 L668 186 L676 198 M660 332 L668 344 L676 332" class="rg-vce"/>
+            <text x="684" y="274" class="rg-pin rg-vce-t">V<tspan baseline-shift="sub" class="rg-sub">CE</tspan></text>
+          </g>
+          <path d="M90 388 H170" class="rg-curve"/>
+          <text x="130" y="36" class="rg-name rg-cut-t" text-anchor="middle">Cutoff</text>
+          <text x="4" y="68" class="rg-v" style="fill:var(--text-muted)">V<tspan baseline-shift="sub" class="rg-sub">CE</tspan></text>
+          <text x="130" y="68" class="rg-v" text-anchor="middle">5 V</text>
+          <g class="fragment fade-in" data-fragment-index="1">
+            <path d="M170 388 L420 120" class="rg-curve"/>
+            <text x="295" y="36" class="rg-name rg-act-t" text-anchor="middle">Active</text>
+            <text x="295" y="68" class="rg-v" text-anchor="middle">a few volts</text>
+            <text x="318" y="300" class="rg-note">slope = &#946;</text>
+          </g>
+          <g class="fragment fade-in" data-fragment-index="2">
+            <path d="M420 120 H730" class="rg-curve"/>
+            <path d="M90 120 H730" class="rg-limit"/>
+            <text x="575" y="36" class="rg-name rg-sat-t" text-anchor="middle">Saturation</text>
+            <text x="575" y="68" class="rg-v" text-anchor="middle">about 0.2 V</text>
+            <text x="575" y="160" class="rg-note" text-anchor="middle">load limit</text>
+          </g>
+        </svg>
+      </figure>
+      <div class="region-stack">
+        <div class="card region-card is-cut" data-fragment-index="0"><span class="card-name">Cutoff</span><p class="card-body">No base current, so <strong>no collector current</strong>. An <strong>open switch</strong>.</p></div>
+        <div class="card region-card is-act fragment fade-up" data-fragment-index="1"><span class="card-name">Active</span><p class="card-body">I<sub>C</sub> = <strong>&beta; &times; I<sub>B</sub></strong>. The output <strong>follows</strong> the input: an <strong>amplifier</strong>.</p></div>
+        <div class="card region-card is-sat fragment fade-up" data-fragment-index="2"><span class="card-name">Saturation</span><p class="card-body">The <strong>load</strong> limits I<sub>C</sub>, so it stops rising. A <strong>closed switch</strong>.</p></div>
+      </div>
+    </div>
+    <p class="slide-intro fragment fade-up" data-fragment-index="3" style="margin-top:var(--gap-sm);">Your switch in the last lesson was <span class="res">saturated</span>. That is why I<sub>C</sub> &divide; I<sub>B</sub> came out near 21 instead of &beta;.</p>
+  </div>
+</section>
+
+
+<!-- VERTICAL STACK · REGION EXPLORER AND ITS TASKS -->
+<section>
+
+  <!-- SLIDE 7 · TRANSISTOR REGION EXPLORER (SIMULATOR) -->
+  <section>
+    <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+      <span class="slide-tag">Investigate · Transistor Region Explorer</span>
+      <h2 style="margin-bottom:12px;">Transistor Region <span class="accent">Explorer</span></h2>
+      <div class="region-explorer">
+        <div class="re-grid">
+          <div>
+            <div class="sim-panel">
+              <svg data-role="circuit" viewBox="0 0 640 500" role="img" aria-label="Interactive NPN driver: 5 volts through a 150 ohm resistor and an LED to the collector, the emitter to ground, and the base fed from an input switch through an adjustable base resistor. Wires light and currents are labeled while current flows."></svg>
+            </div>
+            <div class="ctl-row" style="margin-top:10px;">
+              <button class="sim-btn" data-role="sw">Input on</button>
+              <span class="ctl-label">&beta;</span>
+              <span class="seg">
+                <button class="seg-btn" data-beta="100" aria-pressed="false">100</button>
+                <button class="seg-btn" data-beta="150" aria-pressed="true">150</button>
+                <button class="seg-btn" data-beta="300" aria-pressed="false">300</button>
+              </span>
+            </div>
+            <div class="ctl-row">
+              <label class="ctl-label" for="d6-rb">R<sub>B</sub></label>
+              <input type="range" class="sim-range" id="d6-rb" data-role="rb" min="0" max="18" step="1" value="10">
+              <span class="range-val" data-role="rb-val">47 k&Omega;</span>
+              <span class="seg">
+                <button class="seg-btn" data-rb-pick="4700">4.7k</button>
+                <button class="seg-btn" data-rb-pick="47000">47k</button>
+                <button class="seg-btn" data-rb-pick="470000">470k</button>
+              </span>
+            </div>
+          </div>
+          <div class="re-right">
+            <div class="re-top">
+              <div class="re-badge re-cutoff" data-role="region" aria-live="polite">Cutoff</div>
+              <div class="tile"><span class="t-name">I<sub>B</sub></span><span class="t-val" data-role="ib">0 mA</span></div>
+              <div class="tile is-result"><span class="t-name">I<sub>C</sub></span><span class="t-val" data-role="ic">0 mA</span></div>
+              <div class="tile"><span class="t-name">V<sub>CE</sub></span><span class="t-val" data-role="vce">5.00 V</span></div>
+            </div>
+            <div class="heat"><span>Heat in transistor</span><span class="heat-track"><span class="heat-fill" data-role="heat-bar" style="display:block;"></span></span><span class="heat-num" data-role="heat-val">0.0 mW</span></div>
+            <div class="sim-panel">
+              <div class="sim-head">Collector current <span class="sim-note" data-role="plot-note">&beta; = 150</span></div>
+              <svg data-role="plot" viewBox="0 0 560 262" role="img" aria-label="Graph of collector current against base current from 0 to 200 microamps. The line rises with slope beta, then bends flat at the load limit. A dot marks the operating point."></svg>
+            </div>
+            <div class="sim-feedback" data-role="feedback"></div>
+            <div class="down-hint"><span class="dh-arrow" aria-hidden="true">&#8595;</span><span>Press the <strong>down arrow</strong> for the tasks</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- SLIDE 8 · EXPLORER TASKS -->
+  <section>
+    <div class="slide-inner">
+      <span class="slide-tag">Investigate · Region Explorer Tasks</span>
+      <h2>What to <span class="accent">Find Out</span></h2>
+      <div class="task-grid">
+        <div class="task-item"><span class="t-key">A</span><span>With the input <strong>off</strong>, what are I<sub>C</sub> and V<sub>CE</sub>? Which region is it?</span></div>
+        <div class="task-item"><span class="t-key">B</span><span>Turn the input on with <strong>470 k&Omega;</strong>, then <strong>47 k&Omega;</strong>. Check that I<sub>C</sub> = &beta; &times; I<sub>B</sub> for each.</span></div>
+        <div class="task-item"><span class="t-key">C</span><span>Lower R<sub>B</sub> one step at a time. At which value does the badge change to <strong>Saturation</strong>? What happens to V<sub>CE</sub>?</span></div>
+        <div class="task-item"><span class="t-key">D</span><span>Find the R<sub>B</sub> that makes the <strong>most heat</strong>. Which region is it in?</span></div>
+        <div class="task-item"><span class="t-key">E</span><span>Set <strong>47 k&Omega;</strong>, then change &beta; from 100 to 300. Why is a design that only just saturates <span class="warn">risky</span>?</span></div>
+        <div class="task-item"><span class="t-key">F</span><span>Record each setting in your notebook: R<sub>B</sub>, I<sub>B</sub>, I<sub>C</sub>, V<sub>CE</sub>, and the region.</span></div>
+      </div>
+    </div>
+  </section>
+
+</section>
+
+
+<!-- SLIDE 9 · SWITCH OR AMPLIFIER -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Power in the Transistor</span>
+    <h2>Why a Switch Stays Out of the <span class="accent">Active Region</span></h2>
+    <p class="slide-intro">The power a transistor turns into heat is <span class="key">P = I<sub>C</sub> &times; V<sub>CE</sub></span>. A switch wants one of the two to be nearly zero: no current in cutoff, almost no voltage in saturation.</p>
+    <table class="data-table heat-table">
+      <thead><tr><th>Load</th><th>Saturated</th><th>Halfway on (active)</th></tr></thead>
+      <tbody>
+        <tr><td>LED, 19 mA</td><td>19 mA &times; 0.2 V = <span class="res">4 mW</span></td><td>10 mA &times; 1.5 V = <span class="warn">15 mW</span></td></tr>
+        <tr class="fragment fade-up"><td>Motor, 500 mA from 12 V</td><td>0.5 A &times; 0.2 V = <span class="res">0.1 W</span></td><td>0.25 A &times; 6 V = <span class="fault">1.5 W</span></td></tr>
+      </tbody>
+    </table>
+    <p class="slide-intro fragment fade-up" style="margin-top:var(--gap);">At 1.5 W a small transistor gets hot enough to fail. A switch should snap between <strong>cutoff</strong> and <strong>saturation</strong>.</p>
+    <p class="slide-intro fragment fade-up">An <span class="key">amplifier</span> lives in the active region on purpose, because there the output current <strong>follows</strong> the input. It is designed to handle the heat.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · REGIONS CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:9:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A 2N3904 driving an LED reads: base current 50 µA, collector current 7.5 mA, collector-to-emitter voltage 1.9 V. Which region is it in?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Cutoff","isCorrect":false},{"id":"q1b","text":"Saturation","isCorrect":false},{"id":"q1c","text":"Active","isCorrect":true},{"id":"q1d","text":"It is broken","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"The same circuit now reads: base current 0.9 mA, collector current 18.7 mA, collector-to-emitter voltage 0.2 V. Which region is it in?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"Active","isCorrect":false},{"id":"q2b","text":"Saturation","isCorrect":true},{"id":"q2c","text":"Cutoff","isCorrect":false},{"id":"q2d","text":"It is broken","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · Operating Regions</span>
+    <h2>Name the <span class="accent">Region</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A 2N3904 driving an LED reads I<sub>B</sub> = 50 &micro;A, I<sub>C</sub> = 7.5 mA, and V<sub>CE</sub> = 1.9 V. Which region is it in?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>Cutoff</li>
+      <li><span class="opt-key">B</span>Saturation</li>
+      <li><span class="opt-key">C</span>Active</li>
+      <li><span class="opt-key">D</span>It is broken</li>
+    </ul>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">2</span>The same circuit now reads I<sub>B</sub> = 0.9 mA, I<sub>C</sub> = 18.7 mA, and V<sub>CE</sub> = 0.2 V. Which region is it in?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col">
+      <li><span class="opt-key">A</span>Active</li>
+      <li><span class="opt-key">B</span>Saturation</li>
+      <li><span class="opt-key">C</span>Cutoff</li>
+      <li><span class="opt-key">D</span>It is broken</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · CHOOSING A BASE RESISTOR -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Calculate · Biasing</span>
+    <h2>Choosing a Base <span class="accent">Resistor</span></h2>
+    <p class="slide-intro">Design the LED switch so it <strong>always</strong> saturates, even with the weakest 2N3904. The <a class="ds-link" href="media/2N3904-datasheet.pdf#page=2" target="_blank" rel="noopener">2N3904 datasheet</a> guarantees &beta; (listed as h<sub>FE</sub>) of at least <strong>100</strong> near 10 mA.</p>
+    <div class="calc-line fragment fade-up"><span class="step">1. Load current</span><span>I<sub>C(sat)</sub> = (<span class="num-tip" tabindex="0">5 V<span class="tip-box" role="tooltip">Supply voltage</span></span> &minus; <span class="num-tip" tabindex="0">2 V<span class="tip-box" role="tooltip">LED voltage drop</span></span> &minus; <span class="num-tip" tabindex="0">0.2 V<span class="tip-box" role="tooltip">V<sub>CE(sat)</sub>: transistor fully on</span></span>) &divide; <span class="num-tip" tabindex="0">150 &Omega;<span class="tip-box" role="tooltip">LED current-limiting resistor</span></span> = <span class="res">18.7 mA</span></span></div>
+    <div class="calc-line fragment fade-up"><span class="step">2. Minimum base current</span><span>I<sub>B(min)</sub> = <span class="num-tip" tabindex="0">18.7 mA<span class="tip-box" role="tooltip">I<sub>C(sat)</sub> from step 1</span></span> &divide; <span class="num-tip" tabindex="0">100<span class="tip-box" role="tooltip">Minimum &beta; (h<sub>FE</sub>) from the datasheet</span></span> = <span class="res">0.19 mA</span></span></div>
+    <div class="calc-line fragment fade-up"><span class="step">3. Drive 5 times harder</span><span>I<sub>B</sub> &asymp; <span class="num-tip" tabindex="0">5<span class="tip-box" role="tooltip">Safety factor: drive 5 times harder</span></span> &times; <span class="num-tip" tabindex="0">0.19 mA<span class="tip-box" role="tooltip">I<sub>B(min)</sub> from step 2</span></span> &asymp; <span class="res">1 mA</span></span></div>
+    <div class="calc-line fragment fade-up"><span class="step">4. Base resistor</span><span>R<sub>B</sub> = (<span class="num-tip" tabindex="0">5 V<span class="tip-box" role="tooltip">Supply voltage</span></span> &minus; <span class="num-tip" tabindex="0">0.7 V<span class="tip-box" role="tooltip">V<sub>BE</sub>: base-emitter diode drop</span></span>) &divide; <span class="num-tip" tabindex="0">1 mA<span class="tip-box" role="tooltip">I<sub>B</sub> from step 3</span></span> = <span class="res">4.3 k&Omega;</span></span></div>
+    <p class="slide-intro fragment fade-up" style="margin-top:var(--gap);">The nearest standard value is <strong>4.7 k&Omega;</strong>, which gives 0.91 mA, still almost 5 times the minimum. That is the resistor you used in the last lesson.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · YOUR TURN -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Calculate · Your Turn</span>
+    <h2>Drive a Relay <span class="accent">Coil</span></h2>
+    <p class="slide-intro">A 2N3904 switches a small <strong>5 V relay coil</strong> that draws <strong>40 mA</strong>, with a flyback diode across the coil. Use &beta; = 100 and the same four steps to choose R<sub>B</sub>. Show your work in your notebook.</p>
+    <div class="calc-line fragment fade-up"><span class="step">1. Load current</span><span>I<sub>C(sat)</sub> = <span class="res">40 mA</span> (the coil sets it)</span></div>
+    <div class="calc-line fragment fade-up"><span class="step">2. Minimum base current</span><span><span class="num-tip" tabindex="0">40 mA<span class="tip-box" role="tooltip">I<sub>C(sat)</sub> from step 1: the coil current</span></span> &divide; <span class="num-tip" tabindex="0">100<span class="tip-box" role="tooltip">Minimum &beta; (h<sub>FE</sub>) from the datasheet</span></span> = <span class="res">0.4 mA</span></span></div>
+    <div class="calc-line fragment fade-up"><span class="step">3. Drive 5 times harder</span><span><span class="num-tip" tabindex="0">5<span class="tip-box" role="tooltip">Safety factor: drive 5 times harder</span></span> &times; <span class="num-tip" tabindex="0">0.4 mA<span class="tip-box" role="tooltip">I<sub>B(min)</sub> from step 2</span></span> = <span class="res">2 mA</span></span></div>
+    <div class="calc-line fragment fade-up"><span class="step">4. Base resistor</span><span>(<span class="num-tip" tabindex="0">5 V<span class="tip-box" role="tooltip">Supply voltage</span></span> &minus; <span class="num-tip" tabindex="0">0.7 V<span class="tip-box" role="tooltip">V<sub>BE</sub>: base-emitter diode drop</span></span>) &divide; <span class="num-tip" tabindex="0">2 mA<span class="tip-box" role="tooltip">I<sub>B</sub> from step 3</span></span> = <span class="num-tip" tabindex="0">2.15 k&Omega;<span class="tip-box" role="tooltip">Not a standard value: use the nearest one, 2.2 k&Omega;</span></span> &rarr; <span class="res">2.2 k&Omega;</span></span></div>
+    <p class="slide-intro fragment fade-up" style="margin-top:var(--gap);">This is how a PLC or microcontroller output, which can supply only a few mA, switches a relay coil that needs much more.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · BENCH LAB -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Three Base Resistors</span>
+    <h2>Find All Three <span class="accent">Regions</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.2fr 1fr;align-items:start;gap:var(--gap-lg);">
+      <div class="lab-steps">
+        <div class="step-card"><span class="sc-num">1</span><p class="sc-body">Rebuild the <span class="num-tip schem-tip svg-zoomable" tabindex="0">NPN switch<span class="tip-box" role="tooltip"><span class="switch-bench" data-static="npn"><svg data-role="circuit" viewBox="0 0 640 520" role="img" aria-label="NPN switch schematic: +5 V through a 150 ohm resistor and an LED to the collector of a 2N3904, the emitter to ground, and the base through a 4.7 kilohm resistor and a switch to +5 V."></svg></span></span></span> from the last lesson with the <strong>4.7 k&Omega;</strong> base resistor. Check that the LED lights.</p></div>
+        <div class="step-card"><span class="sc-num">2</span><p class="sc-body">Measure I<sub>B</sub>, I<sub>C</sub>, and V<sub>CE</sub> (collector to emitter) with the input on. Then turn the input off and measure again.</p></div>
+        <div class="step-card"><span class="sc-num">3</span><p class="sc-body">Swap in <strong>47 k&Omega;</strong>, then <strong>470 k&Omega;</strong>, and repeat. Power down before each swap.</p></div>
+        <div class="step-card"><span class="sc-num">4</span><p class="sc-body">Classify every row as <strong>cutoff</strong>, <strong>active</strong>, or <strong>saturation</strong>.</p></div>
+      </div>
+      <div>
+        <div class="callout-warn">Never replace the base resistor with a <strong>wire</strong>. Without it, the base-emitter junction takes as much current as the supply can give, and it burns out.</div>
+        <div class="card" style="margin-top:var(--gap);"><span class="card-name">Two meters?</span><p class="card-body">If your pair has two DMMs, read I<sub>B</sub> and I<sub>C</sub> at the same time.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · WHAT TO RECORD -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Engineering Notebook</span>
+    <h2>Record and <span class="accent">Classify</span></h2>
+    <p class="slide-intro">Copy this table, fill it in from your measurements, and name the region for each row.</p>
+    <table class="data-table record-table">
+      <thead><tr><th>R<sub>B</sub></th><th>Input</th><th>I<sub>B</sub></th><th>I<sub>C</sub></th><th>V<sub>CE</sub></th><th>LED</th><th>Region</th></tr></thead>
+      <tbody>
+        <tr><td>4.7 k&Omega;</td><td>Off</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+        <tr><td>4.7 k&Omega;</td><td>On</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+        <tr><td>47 k&Omega;</td><td>On</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+        <tr><td>470 k&Omega;</td><td>On</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+      </tbody>
+    </table>
+    <div class="card fragment fade-up" style="margin-top:var(--gap-lg);"><span class="card-name">Explain</span><p class="card-body">For the <strong>470 k&Omega;</strong> row, calculate I<sub>C</sub> &divide; I<sub>B</sub>. How does it compare with the 4.7 k&Omega; row, and why?</p></div>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · HOW THE MYSTERY DRIVER WORKS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Troubleshooting · The Dim LED</span>
+    <h2>Find the <span class="accent">Hidden Fault</span></h2>
+    <p class="slide-intro">The build sheet calls for a <strong>2N3904</strong>, a <strong>4.7 k&Omega;</strong> base resistor, and the <strong>emitter to ground</strong>. The input is on, but the LED is <strong>dim or dark</strong>. Something on the board does not match the build sheet, and you have <strong>10 minutes</strong> of bench time.</p>
+    <div class="stage-row">
+      <div class="step-card"><div class="sc-num">1</div><p class="sc-body"><strong>Test.</strong> Each test costs minutes. The reading appears in your evidence log.</p></div>
+      <div class="step-card"><div class="sc-num">2</div><p class="sc-body"><strong>Rule out.</strong> Strike a cause only when a reading rules it out.</p></div>
+      <div class="step-card"><div class="sc-num">3</div><p class="sc-body"><strong>Diagnose.</strong> Choose the cause and the fix that cures it.</p></div>
+      <div class="step-card"><div class="sc-num">4</div><p class="sc-body"><strong>Defend.</strong> Tag the readings that prove it, then read your record.</p></div>
+    </div>
+    <div class="callout-warn fragment fade-up" style="margin-top:var(--gap-lg);">Read the <strong>bench notes</strong> first: they hold leads. Some choices are <strong>unsafe</strong>; they cost time, are never carried out, and count against you.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 16 · MYSTERY DRIVER (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+    <span class="slide-tag">Troubleshooting · The Dim LED</span>
+    <h2 style="margin-bottom:12px;">The Mystery <span class="accent">Driver</span></h2>
+    <div class="mystery-driver">
+      <div class="md-grid">
+        <div class="sim-panel md-circuit">
+          <svg data-role="circuit" viewBox="80 14 560 480" role="img" aria-label="The LED driver as built: 5 volts through a 150 ohm resistor and an LED to the collector, the emitter to ground, and the base fed from the input through the base resistor. The LED is dim or dark."></svg>
+        </div>
+        <div class="md-col">
+          <div class="budget"><span class="budget-track"><span class="budget-fill" data-role="budget-bar" style="display:block;"></span></span><span data-role="budget-val">0 of 10 min used</span></div>
+          <div class="sim-panel md-right" data-role="right"></div>
+        </div>
+        <div class="md-bottom">
+          <div class="ctl-row md-navrow">
+            <span class="seg">
+              <button class="seg-btn" data-tab="notes" aria-pressed="true">Bench notes</button>
+              <button class="seg-btn" data-tab="log" aria-pressed="false">Evidence log</button>
+            </span>
+            <span class="md-nav" data-role="nav"></span>
+          </div>
+          <div class="sim-panel md-panel" data-role="left" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 17 · EXIT TICKET (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:16:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A transistor switch is meant to saturate, but its base resistor is 10 times too large. Which readings would you expect?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"No base current, and the whole supply across the transistor","isCorrect":false},{"id":"q1b","text":"A base current of 0.9 mA, and 0.2 V across the transistor","isCorrect":false},{"id":"q1c","text":"A large base current, and the LED brighter than normal","isCorrect":false},{"id":"q1d","text":"A small base current, a reduced collector current, and a few volts across the transistor","isCorrect":true}]},{"id":"q2","type":"free-response","text":"Why does a transistor switch get hot when its base resistor is too large? Use the words active region, collector current, and collector-to-emitter voltage.","order":1,"responseTimeLimitMs":180000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Exit <span class="accent">Ticket</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A transistor switch is meant to saturate, but its base resistor is <strong>10 times too large</strong>. Which readings would you expect?</div>
+    </div>
+    <ul class="mcq-opts" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>No base current, and the whole supply across the transistor</li>
+      <li><span class="opt-key">B</span>A base current of 0.9 mA, and 0.2 V across the transistor</li>
+      <li><span class="opt-key">C</span>A large base current, and the LED brighter than normal</li>
+      <li><span class="opt-key">D</span>A small base current, a reduced collector current, and a few volts across the transistor</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>Why does a transistor switch get <strong>hot</strong> when its base resistor is too large? Use the words <em>active region</em>, <em>collector current</em>, and <em>collector-to-emitter voltage</em>.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 18 · WRAP UP -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Wrap Up</span>
+    <h2>What We Know, and What Comes <span class="accent">Next</span></h2>
+    <div class="row-2" style="margin-bottom:var(--gap-lg);">
+      <div class="card is-key"><span class="card-name">A switch</span><p class="card-body">Lives in <strong>cutoff</strong> or <strong>saturation</strong>. Size R<sub>B</sub> for the weakest &beta;, then drive about <span class="res">5 times harder</span>.</p></div>
+      <div class="card is-warn"><span class="card-name">An amplifier</span><p class="card-body">Lives in the <strong>active region</strong>, where I<sub>C</sub> follows I<sub>B</sub>, and the transistor turns I<sub>C</sub> &times; V<sub>CE</sub> into heat.</p></div>
+    </div>
+    <div class="callout fragment fade-up">
+      <strong>Next class:</strong> a saturated transistor is a clean on/off switch. Put a few of them together, and you can build the <span class="key">logic gates</span> that form the basis of digital circuits.
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script src="semiconductor-sims.js"></script>
+<script>
+var SIMS = [];
+document.querySelectorAll('.switch-bench[data-static]').forEach(function (r) {
+    if (!r.closest('#storyboard')) SiliconSims.buildSwitchBench(r);
+});
+document.querySelectorAll('.region-explorer').forEach(function (r) {
+    if (!r.closest('#storyboard')) SIMS.push(SiliconSims.buildRegionExplorer(r));
+});
+document.querySelectorAll('.mystery-driver').forEach(function (r) {
+    if (!r.closest('#storyboard')) SiliconSims.buildMysteryDriver(r);
+});
+
+initSyncDeckReveal({
+    deckId: 'day6-operating-regions-and-biasing',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        SiliconSims.startSimLoop(Reveal, SIMS);
+    },
+});
+</script>
+</body>
+</html>

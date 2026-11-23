@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="1ix5wcj">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 9: Connecting Different Electrical Systems</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: Silicon in Control Day 9 · Connecting Different Electrical Systems
+   ============================================================ */
+.fig-lbl { font-family: var(--font-mono); font-size: 26px; fill: var(--text); }
+.fig-lbl-m { font-family: var(--font-mono); font-size: 24px; fill: var(--text-muted); }
+.mcq-2col { display: grid; grid-template-columns: 1fr 1fr; max-width: none; }
+.spec-card .spec { font-family: var(--font-mono); font-size: 44px; font-weight: 700; line-height: 1.1; display: block; margin: 6px 0; }
+.spec-card.is-logic .spec { color: var(--accent); }
+.spec-card.is-load .spec { color: var(--warn); }
+.opto-fig .w { fill: none; stroke: rgba(230,247,234,0.55); stroke-width: 4; stroke-linejoin: round; }
+.opto-fig .w-on { fill: none; stroke: var(--result); stroke-width: 4; stroke-linejoin: round; }
+.opto-fig .s { fill: none; stroke: rgba(230,247,234,0.85); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.opto-fig .pkg { fill: rgba(230,247,234,0.04); stroke: rgba(230,247,234,0.55); stroke-width: 3; }
+.opto-fig .pin { fill: rgba(230,247,234,0.35); }
+.opto-fig .barrier { stroke: var(--warn); stroke-width: 3; stroke-dasharray: 10 8; }
+.opto-fig .ray { stroke: var(--glow); stroke-width: 5; stroke-linecap: round; }
+.opto-fig .ray-h { fill: var(--glow); }
+.opto-fig .led-on { fill: #ff6b5e; }
+.opto-fig .glow { fill: var(--glow); opacity: 0.3; }
+.opto-fig .q-on { fill: rgba(255,224,138,0.12); stroke: var(--glow); stroke-width: 3; }
+.dev-card .dev-row { font-size: var(--body); color: var(--text-muted); line-height: 1.35; margin-top: 8px; }
+.dev-card .dev-row b { color: var(--text); }
+.dev-card svg { display: block; height: 110px; margin: 6px 0 0; }
+.ssr-fig .blk { fill: rgba(57,211,83,0.07); stroke: var(--accent-border); stroke-width: 2; }
+.ssr-fig .t { font-family: var(--font-ui); font-size: 28px; font-weight: 700; fill: var(--text); }
+.ssr-fig .m { font-family: var(--font-mono); font-size: 24px; fill: var(--text-muted); }
+.ssr-fig .a { fill: none; stroke: var(--accent); stroke-width: 4; }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(255,224,138,0.10),transparent 70%);"></div>
+  <div class="glow" style="width:420px;height:420px;bottom:-90px;right:12%;background:radial-gradient(circle,rgba(57,211,83,0.08),transparent 70%);"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; Silicon in Control &nbsp;·&nbsp; Day 9</span>
+    <h1 class="title-h1">Connecting Different <span class="accent">Electrical Systems</span></h1>
+    <p class="subtitle">// Optocouplers &nbsp;·&nbsp; 5 V to 24 V drivers &nbsp;·&nbsp; MOSFETs, SCRs, and TRIACs</p>
+    <svg viewBox="0 0 640 240" style="width:640px;margin-top:40px;" aria-hidden="true">
+      <g transform="translate(0 20)">
+      <g font-family="JetBrains Mono, monospace" font-size="28" font-weight="700">
+        <text x="60" y="74" text-anchor="middle" fill="#39d353">+5 V</text>
+        
+      </g>
+      <g fill="none" stroke="rgba(230,247,234,0.6)" stroke-width="5" stroke-linecap="round">
+        <path d="M60 92 V115 M60 155 V190 M40 190 H80 M48 200 H72 M56 210 H64"/>
+        <path d="M436 190 H456 M428 190 H464 M438 200 H454 M444 210 H448"/>
+      </g>
+      <circle cx="60" cy="135" r="40" fill="#ffe08a" opacity="0.22"/>
+      <path d="M36 115 H84 L60 155 Z" fill="#ff6b5e" stroke="#fff3c4" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M36 157 H84" stroke="#fff3c4" stroke-width="4" stroke-linecap="round"/>
+      <path d="M250 18 V212" stroke="#ffd166" stroke-width="4" stroke-dasharray="10 8"/>
+      <path d="M104 122 H366 M104 148 H366" stroke="#ffe08a" stroke-width="6" stroke-linecap="round"/>
+      <path d="M386 122 l-22 -11 v22 z M386 148 l-22 -11 v22 z" fill="#ffe08a"/>
+      <circle cx="430" cy="135" r="46" fill="rgba(255,224,138,0.10)" stroke="#ffe08a" stroke-width="4"/>
+      <path d="M414 108 V162 M414 124 L446 104 M414 146 L446 166" fill="none" stroke="rgba(230,247,234,0.85)" stroke-width="5" stroke-linecap="round"/>
+      <path d="M446 166 l-20 -3 l10 -14 z" fill="rgba(230,247,234,0.85)"/>
+      <path d="M446 166 V190" fill="none" stroke="#5eead4" stroke-width="5" stroke-linecap="round"/>
+      </g>
+      <text x="570" y="72" text-anchor="middle" fill="#ffd166" font-family="JetBrains Mono, monospace" font-size="28" font-weight="700">+24 V</text>
+      <path d="M446 100 V124 M446 28 H570" fill="none" stroke="#5eead4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M446 28 a20 12 0 0 0 0 24 a20 12 0 0 0 0 24 a20 12 0 0 0 0 24" fill="none" stroke="#5eead4" stroke-width="5"/>
+      <circle cx="570" cy="28" r="7" fill="#0d1117" stroke="#5eead4" stroke-width="4"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · DAY QUESTION AND OBJECTIVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Today&#39;s Question &amp; Objectives</span>
+    <div class="eq-box" style="margin-bottom:var(--gap-lg);">
+      <span class="eq-label">Today&#39;s question</span>
+      How can a <span class="accent">5 V logic signal</span> safely command a <span class="warn">24 V industrial actuator</span>?
+    </div>
+    <div class="split split-50 split-top" style="flex:0 0 auto;">
+      <div>
+        <h3>By the end of class you can <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Explain why logic and industrial loads need different voltages and, often, <strong>isolation</strong>.</li>
+          <li>Describe how an <strong>optocoupler</strong> passes a signal using light.</li>
+          <li>Build a <strong>transistor driver</strong> for a 24 V coil, with a flyback diode.</li>
+          <li>Match a <strong>MOSFET</strong>, an <strong>SCR</strong>, and a <strong>TRIAC</strong> to DC and AC switching jobs.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today&#39;s <span class="accent">path</span></h3>
+        <div class="agenda-grid">
+          <a class="agenda-item" href="#/3"><span class="agenda-num">01</span><span class="agenda-text">Why not <strong>just connect them?</strong></span></a>
+          <a class="agenda-item" href="#/6"><span class="agenda-num">02</span><span class="agenda-text">The <strong>optocoupler</strong></span></a>
+          <a class="agenda-item" href="#/8"><span class="agenda-num">03</span><span class="agenda-text">Bench lab: <strong>the 5 V to 24 V driver</strong></span></a>
+          <a class="agenda-item" href="#/14"><span class="agenda-num">04</span><span class="agenda-text">MOSFETs, SCRs, and <strong>TRIACs</strong></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · HOOK -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Hook · Two Different Worlds</span>
+    <h2>A Logic Output Meets a <span class="warn">Solenoid Valve</span></h2>
+    <p class="slide-intro">Your logic circuit has decided the valve should open. The logic runs on 5 V, and the valve is a 24 V industrial part like the ones on the Festo trainer.</p>
+    <div class="row-2">
+      <div class="card spec-card is-logic"><span class="card-name">A logic output</span><span class="spec">5 V &middot; about 20 mA</span><p class="card-body">Enough to light an LED. Most logic outputs supply only a few milliamps, and a small current is all a logic input needs.</p></div>
+      <div class="card spec-card is-load"><span class="card-name">A 24 V solenoid valve</span><span class="spec">24 V &middot; 200 mA or more</span><p class="card-body">Its coil needs about <strong>ten times</strong> the current at almost five times the voltage, and it is an inductor that kicks back when switched off.</p></div>
+    </div>
+    <div class="callout fragment fade-up" style="margin-top:var(--gap-lg);">
+      <strong>Think:</strong> what is the worst thing that could happen if you wired the logic output straight to the valve and the 24 V supply?
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · PREDICTION (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:3:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A logic output can supply about 20 mA at 5 V. A 24 V solenoid valve needs about 200 mA at 24 V. You connect the output straight to the valve. What happens?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"The valve opens normally","isCorrect":false},{"id":"q1b","text":"The valve opens, but more slowly","isCorrect":false},{"id":"q1c","text":"The valve does not move, because the output cannot supply the voltage or current it needs","isCorrect":true},{"id":"q1d","text":"The output steps its voltage up to 24 V","isCorrect":false}]},{"id":"q2","type":"free-response","text":"Predict: if a 5 V logic circuit and a 24 V valve circuit share wires, what else could go wrong? Think about what could reach the logic chip.","order":1,"responseTimeLimitMs":120000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Predict</span>
+    <h2>What <span class="accent">Happens?</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A logic output supplies about <strong>20 mA at 5 V</strong>. A solenoid valve needs about <strong>200 mA at 24 V</strong>. You connect the output straight to the valve. What happens?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>The valve opens normally</li>
+      <li><span class="opt-key">B</span>The valve opens, but more slowly</li>
+      <li><span class="opt-key">C</span>The valve does not move: the output cannot supply the voltage or current</li>
+      <li><span class="opt-key">D</span>The output steps its voltage up to 24 V</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>If a 5 V logic circuit and a 24 V valve circuit <strong>share wires</strong>, what else could go wrong? Think about what could reach the logic chip.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · THREE PROBLEMS AN INTERFACE SOLVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · The Interface</span>
+    <h2>Three Problems an Interface <span class="accent">Solves</span></h2>
+    <p class="slide-intro">The circuit between the logic and the load is called an <span class="key">interface</span>. It has three problems to solve.</p>
+    <div class="row-3">
+      <div class="card is-warn"><span class="card-name">Not enough current</span><p class="card-body">The logic output is too weak to run the coil. A <strong>transistor</strong> lets its small current control a large one, as on Day 5.</p></div>
+      <div class="card is-fault fragment fade-up"><span class="card-name">24 V in the wrong place</span><p class="card-body">One wiring mistake or failed part can put 24 V on a 5 V chip and destroy it. Noise from motors and coils can also travel along shared wires.</p></div>
+      <div class="card is-warn fragment fade-up"><span class="card-name">The coil kicks back</span><p class="card-body">Switching a coil off makes a spike of <strong>hundreds of volts</strong>. A <strong>flyback diode</strong> gives that current a safe loop, as on Day 4.</p></div>
+    </div>
+    <p class="slide-intro fragment fade-up" style="margin-top:var(--gap);">So an interface does two jobs: it <span class="key">amplifies</span> the signal, and it <span class="key">isolates</span> the logic from the 24 V side so that nothing but the signal crosses over.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · THE OPTOCOUPLER -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Isolation</span>
+    <h2>The <span class="accent">Optocoupler</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1fr 640px;align-items:center;gap:var(--gap-lg);">
+      <div>
+        <p class="slide-intro">An <span class="key">optocoupler</span> holds an LED and a <strong>phototransistor</strong> in one small package, facing each other across a clear gap.</p>
+        <p class="slide-intro fragment fade-up" data-fragment-index="1">Current through the LED makes <span style="color:var(--glow);font-weight:600;">light</span>. The LED is infrared, so you cannot see it.</p>
+        <p class="slide-intro fragment fade-up" data-fragment-index="2">The light turns on the phototransistor, and current flows on the other side: the light plays the role of base current.</p>
+        <p class="slide-intro fragment fade-up" data-fragment-index="3">Only light crosses the gap. <strong>No wire connects the two sides</strong>, and the gap withstands thousands of volts.</p>
+      </div>
+      <figure class="fig">
+        <svg class="opto-fig" viewBox="0 0 640 440" role="img" aria-label="Inside an optocoupler: on the left an LED between the anode and cathode pins, on the right a phototransistor between the collector and emitter pins, and a dashed isolation gap between them that only light crosses.">
+          <rect class="pkg" x="120" y="60" width="400" height="300" rx="16"/>
+          <rect class="pin" x="60" y="110" width="60" height="16"/><rect class="pin" x="60" y="294" width="60" height="16"/>
+          <rect class="pin" x="520" y="110" width="60" height="16"/><rect class="pin" x="520" y="294" width="60" height="16"/>
+          <path class="w" d="M120 118 H210 V170 M210 210 V302 H120"/>
+          <path class="w" d="M520 118 H446 V170 M446 250 V302 H520"/>
+          <g class="fragment" data-fragment-index="1">
+            <circle class="glow" cx="210" cy="190" r="40"/>
+            <path class="w-on" d="M120 118 H210 V170 M210 210 V302 H120"/>
+          </g>
+          <path class="s" d="M186 170 H234 L210 210 Z"/>
+          <path class="led-on fragment" data-fragment-index="1" d="M186 170 H234 L210 210 Z"/>
+          <path class="s" d="M186 210 H234"/>
+          <g class="fragment" data-fragment-index="1">
+            <path class="ray" d="M250 180 H350 M250 210 H350"/>
+            <path class="ray-h" d="M366 180 l-18 -10 v20 z M366 210 l-18 -10 v20 z"/>
+          </g>
+          <circle cx="420" cy="210" r="48" fill="rgba(230,247,234,0.04)" stroke="rgba(230,247,234,0.6)" stroke-width="3"/>
+          <g class="fragment" data-fragment-index="2">
+            <circle class="q-on" cx="420" cy="210" r="48"/>
+            <path class="w-on" d="M520 118 H446 V170 M446 250 V302 H520"/>
+          </g>
+          <path class="s" d="M400 182 V238 M400 196 L446 170 M400 224 L446 250"/>
+          <path d="M446 250 l-20 -2 l9 -14 z" fill="rgba(230,247,234,0.85)"/>
+          <line class="barrier" x1="320" y1="30" x2="320" y2="390"/>
+          <text class="fig-lbl-m" x="20" y="48" text-anchor="start">anode</text>
+          <text class="fig-lbl-m" x="20" y="390" text-anchor="start">cathode</text>
+          <text class="fig-lbl-m" x="620" y="48" text-anchor="end">collector</text>
+          <text class="fig-lbl-m" x="620" y="390" text-anchor="end">emitter</text>
+          <text class="fig-lbl" x="200" y="418" text-anchor="middle" style="fill:var(--accent)">5 V side</text>
+          <text class="fig-lbl" x="440" y="418" text-anchor="middle" style="fill:var(--warn)">24 V side</text>
+          <text class="fig-lbl fragment" data-fragment-index="3" x="320" y="22" text-anchor="middle" style="fill:var(--warn)">only light crosses</text>
+        </svg>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · EACH SIDE HAS ITS OWN GROUND -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Isolation</span>
+    <h2>Each Side Has Its Own <span class="accent">Ground</span></h2>
+    <p class="slide-intro">On Day 7 you had to <strong>join</strong> the LogiKIT ground to your breadboard ground, because the switch&#39;s current needed a path back. An optocoupler is the exception: the signal crosses as light, so the two grounds stay <span class="key">separate</span>.</p>
+    <div class="row-2">
+      <div class="card is-key"><span class="card-name">Why keep them apart</span><p class="card-body">A short or a spike on the 24 V side has <strong>no path</strong> into the logic. Current from motors and coils stays on its own side.</p></div>
+      <div class="card is-warn fragment fade-up"><span class="card-name">How to measure</span><p class="card-body">Put the meter&#39;s black lead on the ground of the <strong>side you are measuring</strong>. Between the two sides there is no shared reference, so the reading means nothing.</p></div>
+    </div>
+    <div class="callout-warn fragment fade-up" style="margin-top:var(--gap-lg);">Joining the two grounds with a jumper &quot;to be safe&quot; throws the isolation away. The circuit still works, but a fault on the 24 V side can now reach the logic.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · THE DRIVER, STAGE BY STAGE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · The 5 V to 24 V Driver</span>
+    <h2>The Driver, <span class="accent">Stage by Stage</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:560px 1fr;align-items:center;gap:var(--gap);">
+      <div class="lab-steps">
+        <div class="step-card"><span class="sc-num">1</span><p class="sc-body">The 5 V input drives the optocoupler LED through <strong>390 &Omega;</strong>: about 10 mA.</p></div>
+        <div class="step-card fragment fade-up" data-drv-in="1"><span class="sc-num">2</span><p class="sc-body">The phototransistor feeds <strong>Q1&#39;s base</strong> from 24 V through 10 k&Omega;: about 2.3 mA.</p></div>
+        <div class="step-card fragment fade-up" data-drv-in="1"><span class="sc-num">3</span><p class="sc-body">Q1 saturates and runs the <strong>relay coil</strong> from 24 V: about 50 mA.</p></div>
+        <div class="step-card fragment fade-up" data-drv-in="0"><span class="sc-num">4</span><p class="sc-body">When Q1 turns off, <strong>D1</strong> gives the coil&#39;s current a safe loop.</p></div>
+      </div>
+      <figure class="fig">
+        <div class="interface-driver" data-static="0"><svg data-role="circuit" viewBox="0 0 820 520" role="img" aria-label="The 5 volt to 24 volt driver. On the 5 volt side, an input switch feeds 390 ohms and the optocoupler LED, returning to the 5 volt ground. On the 24 volt side, the phototransistor connects 24 volts through 10 kilohms to the base of transistor Q1. Q1 switches a relay coil from 24 volts, with flyback diode D1 across the coil. A dashed isolation line separates the two sides, and each side has its own ground."></svg></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · CHOOSING THE SWITCH -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Choosing the Switch</span>
+    <h2>Is a 2N3904 <span class="accent">Enough?</span></h2>
+    <p class="slide-intro">Check the load against the transistor&#39;s ratings before you build. The 2N3904 is rated for <span class="warn">40 V</span> and <span class="warn">200 mA</span>, and its gain falls off well before 200 mA.</p>
+    <div class="row-3">
+      <div class="card is-key"><span class="card-name">A relay coil</span><p class="card-body">Under about <strong>100 mA</strong>: the 2N3904 handles it. Today&#39;s coil draws about 50 mA.</p></div>
+      <div class="card is-warn fragment fade-up"><span class="card-name">A solenoid valve</span><p class="card-body">Often <strong>200 mA or more</strong>: use a <span class="key">logic-level MOSFET</span>, which switches amps with almost no gate current.</p></div>
+      <div class="card is-fault fragment fade-up"><span class="card-name">The spike</span><p class="card-body">A 24 V coil switched off without a diode spikes far above <strong>40 V</strong>. Without D1, Q1 fails the first time it turns off.</p></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · INTERFACE DRIVER (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+    <span class="slide-tag">Investigate · Interface Driver</span>
+    <h2 style="margin-bottom:12px;">Interface <span class="accent">Driver</span></h2>
+    <div class="interface-driver">
+      <div class="id-grid">
+        <div class="id-left">
+        <div class="sim-panel">
+          <svg data-role="circuit" viewBox="0 0 820 520" role="img" aria-label="Interactive 5 volt to 24 volt driver: an input switch, the optocoupler LED and phototransistor, transistor Q1, and a relay coil with flyback diode D1. Test points TP1 to TP4 can be clicked to measure them with the meter."></svg>
+        </div>
+        <div class="id-meter">
+          <div class="dmm"><span class="dmm-name" data-role="dmm-name">Click a test point (TP)</span><span class="dmm-val" data-role="dmm-val" aria-live="polite">--.- V</span></div>
+          <span class="status-chip" data-role="relay">Relay off</span>
+        </div>
+        </div>
+        <div class="id-right">
+          <div class="task-pager">
+            <div class="tp-head">
+              <span class="tp-count"></span>
+              <button class="tp-nav tp-prev" aria-label="Previous task">&lsaquo;</button>
+              <button class="tp-nav tp-next" aria-label="Next task">&rsaquo;</button>
+            </div>
+            <div class="tp-text"></div>
+            <ol hidden>
+              <li>Turn the input <b>on</b>. Measure TP1 to the 5 V ground and TP2 to the 24 V ground.</li>
+              <li>Measure <b>TP2</b> with the black lead on the <b>5 V</b> ground. Why does the reading drift?</li>
+              <li>With the input on, measure <b>TP3</b> and <b>TP4</b>. How do you know Q1 is saturated?</li>
+              <li>Take <b>D1 out</b>, then turn the input off. What happened to Q1, and why?</li>
+            </ol>
+          </div>
+          <div class="ctl-row">
+            <button class="sim-btn" data-role="in" aria-pressed="false">Input 0</button>
+            <span class="ctl-label">D1</span>
+            <span class="seg">
+              <button class="seg-btn" data-diode="in" aria-pressed="true">In</button>
+              <button class="seg-btn" data-diode="out" aria-pressed="false">Out</button>
+            </span>
+            <button class="sim-btn alt" data-role="replace" style="visibility:hidden">Replace Q1</button>
+          </div>
+          <div class="ctl-row">
+            <span class="ctl-label">Black lead</span>
+            <span class="seg">
+              <button class="seg-btn" data-black="5" aria-pressed="false">5 V gnd</button>
+              <button class="seg-btn" data-black="24" aria-pressed="true">24 V gnd</button>
+            </span>
+          </div>
+          <div class="sim-feedback" data-role="feedback" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · DRIVER CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:10:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"In the 5 V to 24 V driver, you want to measure the phototransistor&#39;s emitter, which is on the 24 V side of the optocoupler. Where does the meter&#39;s black lead go?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"On the 5 V ground","isCorrect":false},{"id":"q1b","text":"On the 24 V ground","isCorrect":true},{"id":"q1c","text":"On the +5 V supply","isCorrect":false},{"id":"q1d","text":"Either ground; they are the same","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"A transistor drives a 24 V relay coil. After the input is switched off once, the relay stays on no matter what the input does, and the transistor&#39;s collector reads 0.05 V. Which part was most likely missing?","order":1,"responseTimeLimitMs":60000,"options":[{"id":"q2a","text":"The 390 Ω resistor","isCorrect":false},{"id":"q2b","text":"The 10 kΩ base resistor","isCorrect":false},{"id":"q2c","text":"The optocoupler","isCorrect":false},{"id":"q2d","text":"The flyback diode across the coil","isCorrect":true}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · The Driver</span>
+    <h2>Check the <span class="accent">Driver</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>You want to measure the phototransistor&#39;s emitter, on the <strong>24 V side</strong> of the optocoupler. Where does the black lead go?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>On the 5 V ground</li>
+      <li><span class="opt-key">B</span>On the 24 V ground</li>
+      <li><span class="opt-key">C</span>On the +5 V supply</li>
+      <li><span class="opt-key">D</span>Either ground; they are the same</li>
+    </ul>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">2</span>After the input is switched off once, the relay <strong>stays on</strong> whatever the input does, and the collector reads 0.05 V. Which part was most likely missing?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col">
+      <li><span class="opt-key">A</span>The 390 &Omega; resistor</li>
+      <li><span class="opt-key">B</span>The 10 k&Omega; base resistor</li>
+      <li><span class="opt-key">C</span>The optocoupler</li>
+      <li><span class="opt-key">D</span>The flyback diode across the coil</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · BENCH LAB -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Build the Driver</span>
+    <h2>Build It One Stage at a <span class="accent">Time</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.3fr 1fr;align-items:start;gap:var(--gap-lg);">
+      <div class="lab-steps">
+        <div class="step-card"><span class="sc-num">1</span><p class="sc-body"><strong>5 V side:</strong> the input through 390 &Omega; to the LED&#39;s anode pin, and the cathode pin to the 5 V ground. <span class="res">Check:</span> TP1 reads about 1.2 V with the input on.</p></div>
+        <div class="step-card"><span class="sc-num">2</span><p class="sc-body"><strong>24 V side, power off:</strong> collector pin to +24 V, emitter pin through 10 k&Omega; to Q1&#39;s base, Q1&#39;s emitter to the 24 V ground. <span class="res">Check:</span> TP2 follows the input.</p></div>
+        <div class="step-card"><span class="sc-num">3</span><p class="sc-body"><strong>The load:</strong> the relay coil from +24 V to Q1&#39;s collector, and the 1N4001 across the coil, <strong>band toward +24 V</strong>. <span class="res">Check:</span> the relay clicks.</p></div>
+        <div class="step-card"><span class="sc-num">4</span><p class="sc-body">Feed the input from a <strong>LogiKIT switch</strong>, then compare your build with the interface board or its schematic.</p></div>
+      </div>
+      <div>
+        <div class="callout-warn">Have your teacher check the diode before you turn on the 24 V supply. Turn the 24 V supply <strong>off</strong> before you change any wiring, and keep the two grounds <strong>separate</strong>.</div>
+        <div class="card" style="margin-top:var(--gap);"><span class="card-name">Pinouts</span><p class="card-body">Check your pinout card. The optocoupler has its LED pins on one side and its transistor pins on the other.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · WHAT TO RECORD -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Engineering Notebook</span>
+    <h2>Measure Every <span class="accent">Stage</span></h2>
+    <p class="slide-intro">Draw the driver&#39;s schematic with TP1 to TP4 marked. Measure each test point to the ground on its own side, then fill in the simulator column from the Interface Driver.</p>
+    <table class="data-table record-table">
+      <thead><tr><th>Test point</th><th>Black lead on</th><th>Input 0</th><th>Input 1</th><th>Simulator, input 1</th></tr></thead>
+      <tbody>
+        <tr><td>TP1 &middot; LED anode</td><td>5 V ground</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+        <tr><td>TP2 &middot; phototransistor emitter</td><td>24 V ground</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+        <tr><td>TP3 &middot; Q1 base</td><td>24 V ground</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+        <tr><td>TP4 &middot; Q1 collector</td><td>24 V ground</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+      </tbody>
+    </table>
+    <div class="card fragment fade-up" style="margin-top:var(--gap);"><span class="card-name">Explain</span><p class="card-body">Which readings show that the signal crossed the optocoupler, and which show that Q1 is saturated?</p></div>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · BEYOND THE 2N3904 -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Power Switching Devices</span>
+    <h2>MOSFETs, SCRs, and <span class="accent">TRIACs</span></h2>
+    <p class="slide-intro">Bigger loads use semiconductor switches built for power. They differ in <strong>what turns them on</strong>, <strong>what turns them off</strong>, and whether they work on DC or AC.</p>
+    <div class="row-3">
+      <div class="card dev-card">
+        <span class="card-name">MOSFET</span>
+        <p class="dev-row"><b>On:</b> while the gate voltage is high. <b>Off:</b> when the gate goes low.</p>
+        <p class="dev-row"><b>Used for:</b> <span class="key">DC loads</span> such as solenoid valves and motors.</p>
+      </div>
+      <div class="card dev-card fragment fade-up">
+        <span class="card-name">SCR</span>
+        <p class="dev-row"><b>On:</b> one gate pulse, then it <span class="warn">latches</span>. <b>Off:</b> only when its current falls to zero.</p>
+        <p class="dev-row"><b>Used for:</b> controlling large DC or AC power, one direction only.</p>
+      </div>
+      <div class="card dev-card fragment fade-up">
+        <span class="card-name">TRIAC</span>
+        <p class="dev-row"><b>On:</b> a gate pulse, in <strong>either</strong> direction. <b>Off:</b> at each zero crossing of the AC.</p>
+        <p class="dev-row"><b>Used for:</b> <span class="key">AC loads</span> such as heaters, lamps, and fans.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · SWITCHING DEVICE COMPARISON (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+    <span class="slide-tag">Investigate · Switching Device Comparison</span>
+    <h2 style="margin-bottom:12px;">Switching Device <span class="accent">Comparison</span></h2>
+    <div class="switch-compare">
+      <div class="sw-grid">
+        <div class="sw-col">
+          <div class="sim-panel">
+            <svg data-role="circuit" viewBox="0 0 500 380" role="img" aria-label="A 24 volt source, a lamp, and the chosen switching device in a loop, with the device&#39;s gate lead. The source is drawn as a battery for DC or a circle with a sine wave for AC."></svg>
+          </div>
+          <div class="ctl-row">
+            <span class="seg">
+              <button class="seg-btn" data-dev="MOSFET" aria-pressed="true">MOSFET</button>
+              <button class="seg-btn" data-dev="SCR" aria-pressed="false">SCR</button>
+              <button class="seg-btn" data-dev="TRIAC" aria-pressed="false">TRIAC</button>
+            </span>
+            <span class="seg">
+              <button class="seg-btn" data-src="DC" aria-pressed="true">DC</button>
+              <button class="seg-btn" data-src="AC" aria-pressed="false">AC</button>
+            </span>
+          </div>
+          <div class="ctl-row">
+            <button class="sim-btn" data-role="pulse">Pulse gate</button>
+            <button class="sim-btn alt" data-role="hold" aria-pressed="false">Hold gate on</button>
+          </div>
+          <div class="ctl-row">
+            <button class="sim-btn alt" data-role="break">Break the circuit</button>
+            <span class="status-chip" data-role="lamp" aria-live="polite">Lamp 0%</span>
+          </div>
+        </div>
+        <div class="sw-col">
+          <div class="sim-panel">
+            <svg data-role="scope" viewBox="0 0 900 440" role="img" aria-label="Scrolling scope traces over the last four seconds: source voltage on top, the gate signal in the middle, and lamp current at the bottom. Time is slowed 60 times."></svg>
+          </div>
+          <div class="task-pager">
+            <div class="tp-head">
+              <span class="tp-count"></span>
+              <button class="tp-nav tp-prev" aria-label="Previous task">&lsaquo;</button>
+              <button class="tp-nav tp-next" aria-label="Next task">&rsaquo;</button>
+            </div>
+            <div class="tp-text"></div>
+            <ol hidden>
+              <li><b>MOSFET on DC:</b> hold the gate on, then let go. Does the lamp follow the gate?</li>
+              <li><b>SCR on DC:</b> pulse the gate once. What happens after the pulse? How can you turn it off?</li>
+              <li><b>SCR on AC:</b> hold the gate on. On which half of the wave does it conduct?</li>
+              <li><b>TRIAC on AC:</b> hold the gate on. Compare its lamp with the SCR&#39;s.</li>
+              <li><b>MOSFET on AC</b> with the gate off. Why does current still flow?</li>
+            </ol>
+          </div>
+          <div class="sim-feedback" data-role="feedback" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 16 · DEVICES CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:15:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"An SCR on a 24 V DC supply gets one short gate pulse, and its lamp lights. The pulse ends. What does the lamp do?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"It stays on until the circuit is broken","isCorrect":true},{"id":"q1b","text":"It turns off when the pulse ends","isCorrect":false},{"id":"q1c","text":"It flickers on and off 60 times a second","isCorrect":false},{"id":"q1d","text":"It dims slowly to off","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"Which device would you choose to switch a 120 V AC heater on and off from a control signal?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"A single MOSFET","isCorrect":false},{"id":"q2b","text":"A 2N3904","isCorrect":false},{"id":"q2c","text":"A TRIAC","isCorrect":true},{"id":"q2d","text":"An SCR on its own","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · Switching Devices</span>
+    <h2>Which <span class="accent">Device?</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>An <strong>SCR</strong> on 24 V <strong>DC</strong> gets one short gate pulse, and its lamp lights. The pulse ends. What does the lamp do?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>It stays on until the circuit is broken</li>
+      <li><span class="opt-key">B</span>It turns off when the pulse ends</li>
+      <li><span class="opt-key">C</span>It flickers on and off 60 times a second</li>
+      <li><span class="opt-key">D</span>It dims slowly to off</li>
+    </ul>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">2</span>Which device would you choose to switch a <strong>120 V AC heater</strong> on and off from a control signal?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col">
+      <li><span class="opt-key">A</span>A single MOSFET</li>
+      <li><span class="opt-key">B</span>A 2N3904</li>
+      <li><span class="opt-key">C</span>A TRIAC</li>
+      <li><span class="opt-key">D</span>An SCR on its own</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 17 · THE SOLID-STATE RELAY -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Connect · Industrial Parts</span>
+    <h2>The Solid-State <span class="accent">Relay</span></h2>
+    <p class="slide-intro">Put an optocoupler and a TRIAC in one sealed block and you have a <span class="key">solid-state relay</span> (SSR), a common part in control panels. A small DC signal on the input switches an AC load on the output, with full isolation between them.</p>
+    <svg class="ssr-fig" viewBox="0 0 1400 190" style="width:100%;max-width:1400px;" role="img" aria-label="Block diagram of a solid-state relay: a DC control input drives an LED, light crosses an isolation gap to a light-triggered circuit, which fires a TRIAC that switches the AC load.">
+      <rect class="blk" x="0" y="40" width="250" height="110" rx="10"/><text class="t" x="125" y="90" text-anchor="middle">DC input</text><text class="m" x="125" y="126" text-anchor="middle">from logic</text>
+      <path class="a" d="M250 95 H300"/>
+      <rect class="blk" x="300" y="40" width="250" height="110" rx="10"/><text class="t" x="425" y="90" text-anchor="middle">LED</text><text class="m" x="425" y="126" text-anchor="middle">makes light</text>
+      <path d="M560 95 H640" stroke="var(--glow)" stroke-width="5" stroke-dasharray="10 8"/>
+      <rect class="blk" x="650" y="40" width="280" height="110" rx="10"/><text class="t" x="790" y="90" text-anchor="middle">Light trigger</text><text class="m" x="790" y="126" text-anchor="middle">fires the gate</text>
+      <path class="a" d="M930 95 H980"/>
+      <rect class="blk" x="980" y="40" width="200" height="110" rx="10"/><text class="t" x="1080" y="90" text-anchor="middle">TRIAC</text><text class="m" x="1080" y="126" text-anchor="middle">switches AC</text>
+      <path class="a" d="M1180 95 H1230"/>
+      <rect class="blk" x="1230" y="40" width="170" height="110" rx="10"/><text class="t" x="1315" y="90" text-anchor="middle">AC load</text><text class="m" x="1315" y="126" text-anchor="middle">heater</text>
+      <text class="m" x="600" y="24" text-anchor="middle" style="fill:var(--warn)">isolation gap</text>
+    </svg>
+    <div class="row-2" style="margin-top:var(--gap);">
+      <div class="card is-key fragment fade-up"><span class="card-name">Compared with a relay</span><p class="card-body">No moving contacts: <strong>no arcing</strong>, no wear, silent, and fast. These were the relay&#39;s problems on Day 1.</p></div>
+      <div class="card is-warn fragment fade-up"><span class="card-name">Cautions</span><p class="card-body">An SSR gets <strong>warm</strong> and may need a heat sink. When one fails, it usually fails <strong>on</strong>, so it is never the only safety stop.</p></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 18 · EXIT TICKET (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:17:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"How does an optocoupler protect a 5 V logic chip from a fault on the 24 V side?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"It lowers the 24 V to 5 V","isCorrect":false},{"id":"q1b","text":"It blows like a fuse when the current is too high","isCorrect":false},{"id":"q1c","text":"It joins the two grounds so the voltages stay equal","isCorrect":false},{"id":"q1d","text":"The signal crosses as light, so no wire connects the two sides","isCorrect":true}]},{"id":"q2","type":"free-response","text":"Why does the 24 V driver need a flyback diode across the relay coil, and what would happen to the transistor without it?","order":1,"responseTimeLimitMs":180000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Exit <span class="accent">Ticket</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>How does an <strong>optocoupler</strong> protect a 5 V logic chip from a fault on the 24 V side?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>It lowers the 24 V to 5 V</li>
+      <li><span class="opt-key">B</span>It blows like a fuse when the current is too high</li>
+      <li><span class="opt-key">C</span>It joins the two grounds so the voltages stay equal</li>
+      <li><span class="opt-key">D</span>The signal crosses as light, so no wire connects the sides</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>Why does the driver need a <strong>flyback diode</strong> across the relay coil, and what would happen to the transistor without it?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 19 · WRAP UP -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Wrap Up</span>
+    <h2>What We Know, and What Comes <span class="accent">Next</span></h2>
+    <div class="row-2" style="margin-bottom:var(--gap-lg);">
+      <div class="card is-key"><span class="card-name">The interface</span><p class="card-body">An <strong>optocoupler</strong> isolates the logic, a <strong>transistor</strong> or MOSFET amplifies the signal, and a <strong>flyback diode</strong> protects the switch from the coil.</p></div>
+      <div class="card is-key"><span class="card-name">Power switches</span><p class="card-body">A <strong>MOSFET</strong> follows its gate on DC. An <strong>SCR</strong> latches and turns off at zero current. A <strong>TRIAC</strong> switches AC in both directions.</p></div>
+    </div>
+    <div class="callout fragment fade-up">
+      <strong>Next class:</strong> if transistors can make decisions, why do factories use <span class="key">PLCs</span>?
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script src="semiconductor-sims.js"></script>
+<script>
+var SIMS = [];
+document.querySelectorAll('.interface-driver').forEach(function (r) {
+    if (r.closest('#storyboard')) return;
+    SIMS.push(SiliconSims.buildInterfaceDriver(r));
+});
+document.querySelectorAll('.switch-compare').forEach(function (r) {
+    if (r.closest('#storyboard')) return;
+    SIMS.push(SiliconSims.buildSwitchCompare(r));
+});
+
+initSyncDeckReveal({
+    deckId: 'day9-connecting-electrical-systems',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        SiliconSims.startSimLoop(Reveal, SIMS);
+    },
+});
+</script>
+</body>
+</html>

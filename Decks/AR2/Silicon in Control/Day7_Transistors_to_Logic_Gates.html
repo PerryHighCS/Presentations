@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="syncdeck-permalink" content="mmtboh">
+<meta name="syncdeck-projects" content="readability">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 7: From Transistors to Logic Gates</title>
+
+<link rel="stylesheet" href="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.css">
+<link rel="stylesheet" href="../theme.css">
+<link rel="stylesheet" href="theme.css">
+
+<style>
+/* ============================================================
+   DECK-SPECIFIC STYLES: Silicon in Control Day 7 · From Transistors to Logic Gates
+   ============================================================ */
+.mcq-2col { display: grid; grid-template-columns: 1fr 1fr; max-width: none; }
+.stage-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap); }
+.board-photo { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--accent-border); display: block; }
+.mod-key { display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; align-items: center; font-size: var(--body); color: var(--text-muted); }
+.mod-key .sw { width: 34px; height: 26px; border-radius: 5px; border: 2px solid rgba(0,0,0,0.5); }
+.static-gate { background: var(--surface, rgba(57,211,83,0.04)); border: 1px solid var(--accent-border); border-radius: 10px; padding: 8px; }
+.gate-builder .gb-right .seg-btn { min-width: 90px; }
+.resq { font-size: var(--body); }
+</style>
+</head>
+<body>
+
+<div id="storyboard" class="storyboard" aria-hidden="true">
+  <div id="storyboard-track" class="storyboard-track"></div>
+</div>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- SLIDE 1 · TITLE -->
+<section>
+  <div class="glow" style="width:640px;height:640px;top:-180px;left:-160px;background:radial-gradient(circle,rgba(255,224,138,0.10),transparent 70%);"></div>
+  <div class="glow" style="width:420px;height:420px;bottom:-90px;right:12%;background:radial-gradient(circle,rgba(57,211,83,0.08),transparent 70%);"></div>
+  <div class="slide-inner slide-center">
+    <span class="slide-tag">AR2 &nbsp;·&nbsp; Silicon in Control &nbsp;·&nbsp; Day 7</span>
+    <h1 class="title-h1">From Transistors to <span class="accent">Logic Gates</span></h1>
+    <p class="subtitle">// LogiKIT review &nbsp;·&nbsp; Inside a gate &nbsp;·&nbsp; The faulty gate</p>
+    <svg viewBox="0 0 560 170" style="width:560px;margin-top:40px;" aria-hidden="true">
+      <defs><radialGradient id="t7glow"><stop offset="0" stop-color="#ffe08a" stop-opacity="0.55"/><stop offset="1" stop-color="#ffe08a" stop-opacity="0"/></radialGradient></defs>
+      <g font-family="JetBrains Mono, monospace" font-size="26" font-weight="700" fill="rgba(230,247,234,0.75)">
+        <text x="20" y="64">A</text><text x="20" y="124">B</text><text x="512" y="94">Y</text>
+      </g>
+      <path d="M52 55 H140 M52 115 H140 M292 85 H420" fill="none" stroke="rgba(230,247,234,0.6)" stroke-width="5" stroke-linecap="round"/>
+      <path d="M140 25 H210 A60 60 0 0 1 210 145 H140 Z" fill="rgba(57,211,83,0.10)" stroke="#39d353" stroke-width="5" stroke-linejoin="round"/>
+      <circle cx="281" cy="85" r="11" fill="none" stroke="#39d353" stroke-width="5"/>
+      <circle cx="448" cy="85" r="52" fill="url(#t7glow)"/>
+      <circle cx="448" cy="85" r="24" fill="#ffe08a" stroke="#fff3c4" stroke-width="3"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- SLIDE 2 · DAY QUESTION AND OBJECTIVES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Today&#39;s Question &amp; Objectives</span>
+    <div class="eq-box" style="margin-bottom:var(--gap-lg);">
+      <span class="eq-label">Today&#39;s question</span>
+      What is inside a <span class="accent">LogiKIT gate module</span>?
+    </div>
+    <div class="split split-50 split-top" style="flex:0 0 auto;">
+      <div>
+        <h3>By the end of class you can <span class="accent">&hellip;</span></h3>
+        <ul class="bullets">
+          <li>Build a transistor <strong>NOT gate</strong> and explain why it inverts.</li>
+          <li>Explain how transistors in <strong>series</strong> and in <strong>parallel</strong> make AND, OR, NAND, and NOR.</li>
+          <li>Check a transistor gate against a <strong>LogiKIT module</strong>.</li>
+          <li>Find a hidden fault in a transistor gate from its <strong>truth table</strong> and voltage readings.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Today&#39;s <span class="accent">path</span></h3>
+        <div class="agenda-grid">
+          <a class="agenda-item" href="#/3"><span class="agenda-num">01</span><span class="agenda-text">LogiKIT <strong>review</strong></span></a>
+          <a class="agenda-item" href="#/5"><span class="agenda-num">02</span><span class="agenda-text">Open the <strong>black box</strong></span></a>
+          <a class="agenda-item" href="#/12"><span class="agenda-num">03</span><span class="agenda-text">Bench lab: <strong>transistor gates</strong></span></a>
+          <a class="agenda-item" href="#/15"><span class="agenda-num">04</span><span class="agenda-text">Troubleshooting: <strong>the faulty gate</strong></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 3 · LOGIKIT REVIEW -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Review · The LogiKIT</span>
+    <h2>Remember the <span class="accent">LogiKIT?</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.35fr 1fr;align-items:center;gap:var(--gap-lg);">
+      <img class="board-photo img-zoomable" src="media/logikit-board.jpg" alt="The LogiKIT board: sixteen gate sockets labeled GATE1 to GATE16, each with A, C, and B inputs, Y outputs, and an output LED; switches SW1 to SW6 and output LEDs LED1 to LED4 along the bottom; color-coded gate modules down both sides.">
+      <div>
+        <p class="slide-intro">In Labs 1 and 2 you plugged gate modules into the sockets and wired them up. Each module was a <strong>black box</strong>: you knew its truth table, but not what was inside.</p>
+        <div class="mod-key">
+          <span class="sw" style="background:#f2f2ee"></span><span>AND</span>
+          <span class="sw" style="background:#b9814f"></span><span>NAND</span>
+          <span class="sw" style="background:#e2463c"></span><span>NOT</span>
+          <span class="sw" style="background:#23272e;border-color:#8b93a1"></span><span>OR</span>
+          <span class="sw" style="background:#f2d541"></span><span>NOR</span>
+          <span class="sw" style="background:#b8bcc2"></span><span>XOR</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 4 · TRUTH TABLE WARM-UP (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:3:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"An AND gate has inputs A = 1 and B = 0. What is its output?","order":0,"responseTimeLimitMs":30000,"options":[{"id":"q1a","text":"1","isCorrect":false},{"id":"q1b","text":"0","isCorrect":true}]},{"id":"q2","type":"multiple-choice","text":"An OR gate&#39;s output is 0. What must its inputs be?","order":1,"responseTimeLimitMs":30000,"options":[{"id":"q2a","text":"Both inputs are 1","isCorrect":false},{"id":"q2b","text":"One input is 1 and the other is 0","isCorrect":false},{"id":"q2c","text":"Both inputs are 0","isCorrect":true}]},{"id":"q3","type":"multiple-choice","text":"A NOT gate&#39;s input is 1. What is its output?","order":2,"responseTimeLimitMs":30000,"options":[{"id":"q3a","text":"0","isCorrect":true},{"id":"q3b","text":"1","isCorrect":false}]},{"id":"q4","type":"multiple-choice","text":"For which inputs is a NAND gate&#39;s output 0?","order":3,"responseTimeLimitMs":40000,"options":[{"id":"q4a","text":"Only when both inputs are 0","isCorrect":false},{"id":"q4b","text":"When either input is 1","isCorrect":false},{"id":"q4c","text":"Never; a NAND output is always 1","isCorrect":false},{"id":"q4d","text":"Only when both inputs are 1","isCorrect":true}]},{"id":"q5","type":"multiple-choice","text":"A two-input gate&#39;s output is 1 when exactly one of its inputs is 1, and 0 when both inputs are the same. Which gate is it?","order":4,"responseTimeLimitMs":40000,"options":[{"id":"q5a","text":"OR","isCorrect":false},{"id":"q5b","text":"XOR","isCorrect":true},{"id":"q5c","text":"NAND","isCorrect":false},{"id":"q5d","text":"AND","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Warm-Up · Truth Tables</span>
+    <h2>Quick <span class="accent">Truth Table</span> Check</h2>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">1</span>An <strong>AND</strong> gate has A = 1 and B = 0. What is its output?</div>
+      <div class="frq-box"><span class="q-num">2</span>An <strong>OR</strong> gate&#39;s output is 0. What must its inputs be?</div>
+      <div class="frq-box"><span class="q-num">3</span>A <strong>NOT</strong> gate&#39;s input is 1. What is its output?</div>
+      <div class="frq-box"><span class="q-num">4</span>For which inputs is a <strong>NAND</strong> gate&#39;s output 0?</div>
+      <div class="frq-box"><span class="q-num">5</span>A gate&#39;s output is 1 when <strong>exactly one</strong> input is 1, and 0 when both inputs are the same. Which gate is it?</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 5 · OPEN THE BOX: THE NOT GATE -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Inside a Gate</span>
+    <h2>Open the Box: the <span class="accent">NOT Gate</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1fr 1fr;align-items:center;gap:var(--gap-lg);">
+      <div>
+        <p class="slide-intro">Take the transistor switch from the last two lessons and read the <strong>collector</strong> as the output. A <span class="key">pull-up resistor</span> connects it to 5 V.</p>
+        <p class="slide-intro fragment fade-up" data-gate-a="1"><strong>A = 1:</strong> the transistor <span class="res">saturates</span> and pulls the output down to about 0.2 V. <strong>Y = 0.</strong></p>
+        <p class="slide-intro fragment fade-up" data-gate-a="0"><strong>A = 0:</strong> the transistor is in <span class="warn">cutoff</span>, and the pull-up holds the output at 5 V. <strong>Y = 1.</strong></p>
+        <p class="slide-intro fragment fade-up">The output is always the opposite of the input. One transistor and two resistors make a <span class="key">NOT gate</span>.</p>
+      </div>
+      <figure class="fig static-gate">
+        <div class="gate-builder" data-static="NOT" data-highlight><svg data-role="circuit" viewBox="0 0 620 500" role="img" aria-label="Transistor NOT gate: a 1 kilohm pull-up from 5 volts to the output node Y, and transistor Q1, drawn as a switch and circled, from the output node to ground. Input A drives Q1&#39;s base through 10 kilohms."></svg></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 6 · SERIES MAKES AND -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Two Switches in Series</span>
+    <h2>Series Makes <span class="accent">AND</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1fr 1fr;align-items:center;gap:var(--gap-lg);">
+      <div>
+        <p class="slide-intro">Now use two transistor switches on the <strong>top</strong> side, between +5 V and the output. A <span class="key">pull-down resistor</span> holds the output at 0 V until a closed path connects it to 5 V.</p>
+        <p class="slide-intro fragment fade-up" data-gate-a="1" data-gate-b="0"><strong>A = 1, B = 0:</strong> Q1 closes, but Q2 is still open. There is no path to 5 V, so <strong>Y = 0.</strong></p>
+        <p class="slide-intro fragment fade-up" data-gate-a="1" data-gate-b="1"><strong>A = 1, B = 1:</strong> both switches close in <span class="key">series</span> and complete the path. <strong>Y = 1</strong> only in this row: an <span class="key">AND gate</span>.</p>
+      </div>
+      <figure class="fig static-gate">
+        <div class="gate-builder" data-static="AND"><svg data-role="circuit" viewBox="0 0 620 500" role="img" aria-label="Transistor AND gate: two transistor switches, Q1 driven by A and Q2 driven by B, stacked in series between 5 volts and the output node Y, with a 1 kilohm pull-down from the output to ground."></svg></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 7 · PARALLEL MAKES OR -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Two Switches in Parallel</span>
+    <h2>Parallel Makes <span class="accent">OR</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1fr 1fr;align-items:center;gap:var(--gap-lg);">
+      <div>
+        <p class="slide-intro">Put the two top-side switches side by side, in <span class="key">parallel</span>. Each switch has its own path from 5 V to the output.</p>
+        <p class="slide-intro fragment fade-up" data-gate-a="0" data-gate-b="0"><strong>A = 0, B = 0:</strong> both switches are open, and the pull-down holds the output low. <strong>Y = 0.</strong></p>
+        <p class="slide-intro fragment fade-up" data-gate-a="0" data-gate-b="1"><strong>A = 0, B = 1:</strong> Q2 alone completes a path. <strong>Either</strong> closed switch makes <strong>Y = 1</strong>: an <span class="key">OR gate</span>.</p>
+      </div>
+      <figure class="fig static-gate">
+        <div class="gate-builder" data-static="OR"><svg data-role="circuit" viewBox="0 0 620 500" role="img" aria-label="Transistor OR gate: two transistor switches, Q1 driven by A and Q2 driven by B, side by side in parallel between 5 volts and the output node Y, with a 1 kilohm pull-down from the output to ground."></svg></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 8 · SERIES ON THE BOTTOM MAKES NAND -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Switches on the Bottom</span>
+    <h2>Series on the Bottom Makes <span class="accent">NAND</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1fr 1fr;align-items:center;gap:var(--gap-lg);">
+      <div>
+        <p class="slide-intro">Move the series switches to the <strong>bottom</strong>, between the output and ground, with a pull-up on top like the NOT gate. A complete path now pulls the output <strong>down</strong>.</p>
+        <p class="slide-intro fragment fade-up" data-gate-a="1" data-gate-b="1"><strong>A = 1, B = 1:</strong> both switches close and connect the output to ground. That row is the only 0, the AND pattern flipped: a <span class="key">NAND gate</span>.</p>
+        <p class="slide-intro fragment fade-up">A transistor on the top side cannot lift the output all the way to 5 V, because its emitter stays about 0.7 V below its base. Bottom switches pull down cleanly, so gate chips often build <strong>NAND</strong> and add a NOT to make <strong>AND</strong>.</p>
+      </div>
+      <figure class="fig static-gate">
+        <div class="gate-builder" data-static="NAND"><svg data-role="circuit" viewBox="0 0 620 500" role="img" aria-label="Transistor NAND gate: two transistor switches, Q1 driven by A and Q2 driven by B, stacked in series between the output node and ground, with a 1 kilohm pull-up to 5 volts."></svg></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 9 · PARALLEL ON THE BOTTOM MAKES NOR -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Switches on the Bottom</span>
+    <h2>Parallel on the Bottom Makes <span class="accent">NOR</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1fr 1fr;align-items:center;gap:var(--gap-lg);">
+      <div>
+        <p class="slide-intro">Move the parallel switches to the bottom too. Now <strong>either</strong> closed switch completes a path through the switches and pulls the output down.</p>
+        <p class="slide-intro fragment fade-up" data-gate-a="1" data-gate-b="0"><strong>A = 1, B = 0:</strong> Q1 alone pulls the output down. Y is 1 only when A and B are both 0: a <span class="key">NOR gate</span>, the OR pattern flipped.</p>
+        <p class="slide-intro fragment fade-up">Series switches behave like AND, and parallel switches behave like OR. Moving the switches to the bottom <strong>flips</strong> the output.</p>
+      </div>
+      <figure class="fig static-gate">
+        <div class="gate-builder" data-static="NOR"><svg data-role="circuit" viewBox="0 0 620 500" role="img" aria-label="Transistor NOR gate: two transistor switches, Q1 driven by A and Q2 driven by B, side by side in parallel between the output node and ground, with a 1 kilohm pull-up to 5 volts."></svg></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 10 · TRANSISTOR GATE BUILDER (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:44px;">
+    <span class="slide-tag">Investigate · Transistor Gate Builder</span>
+    <h2 style="margin-bottom:12px;">Transistor Gate <span class="accent">Builder</span></h2>
+    <div class="gate-builder">
+      <div class="gb-grid">
+        <div class="sim-panel">
+          <svg data-role="circuit" viewBox="0 0 620 500" role="img" aria-label="Interactive transistor gate: a 1 kilohm pull-up from 5 volts to the output Y, and one or two NPN transistors between the output and ground. A transistor turns on when its input is 1; the path through the transistors that pulls the output low is animated."></svg>
+        </div>
+        <div class="gb-right">
+          <p class="gb-task" data-role="task" aria-live="polite"></p>
+          <div class="ctl-row">
+            <span class="seg">
+              <button class="seg-btn" data-gate="NOT" aria-pressed="true">NOT</button>
+              <button class="seg-btn" data-gate="NAND" aria-pressed="false">NAND</button>
+              <button class="seg-btn" data-gate="NOR" aria-pressed="false">NOR</button>
+            </span>
+            <button class="seg-btn" data-role="cur" aria-pressed="true" style="border:1px solid var(--accent-border);border-radius:8px;">Show current</button>
+          </div>
+          <div class="ctl-row">
+            <span class="gb-y" data-role="y">Y = 1</span>
+          </div>
+          <div class="sim-panel gb-ttp"><table data-role="tt"></table></div>
+          <div class="sim-feedback" data-role="feedback"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 11 · GATES CHECK (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:10:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"Two transistors are connected in series between a gate&#39;s output and ground, and a pull-up resistor connects the output to 5 V. When is the output 0?","order":0,"responseTimeLimitMs":45000,"options":[{"id":"q1a","text":"When either input is 1","isCorrect":false},{"id":"q1b","text":"When both inputs are 0","isCorrect":false},{"id":"q1c","text":"Only when both inputs are 1","isCorrect":true},{"id":"q1d","text":"Never","isCorrect":false}]},{"id":"q2","type":"multiple-choice","text":"Two transistors are connected side by side (in parallel) between a gate&#39;s output and ground, with a pull-up resistor to 5 V. Which gate is it?","order":1,"responseTimeLimitMs":45000,"options":[{"id":"q2a","text":"NOR","isCorrect":true},{"id":"q2b","text":"AND","isCorrect":false},{"id":"q2c","text":"NAND","isCorrect":false},{"id":"q2d","text":"OR","isCorrect":false}]}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Check · Transistor Gates</span>
+    <h2>Series or <span class="accent">Parallel?</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>Two transistors are in <strong>series</strong> between the output and ground, with a pull-up to 5 V. When is the output 0?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>When either input is 1</li>
+      <li><span class="opt-key">B</span>When both inputs are 0</li>
+      <li><span class="opt-key">C</span>Only when both inputs are 1</li>
+      <li><span class="opt-key">D</span>Never</li>
+    </ul>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">2</span>Two transistors are in <strong>parallel</strong> between the output and ground, with a pull-up to 5 V. Which gate is it?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col">
+      <li><span class="opt-key">A</span>NOR</li>
+      <li><span class="opt-key">B</span>AND</li>
+      <li><span class="opt-key">C</span>NAND</li>
+      <li><span class="opt-key">D</span>OR</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- SLIDE 12 · BENCH LAB -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Build a Transistor Gate</span>
+    <h2>Build It, Then Check It Against the <span class="accent">LogiKIT</span></h2>
+    <div class="split" style="flex:0 0 auto;grid-template-columns:1.25fr 1fr;align-items:start;gap:var(--gap-lg);">
+      <div class="lab-steps">
+        <div class="step-card"><span class="sc-num">1</span><p class="sc-body">Build the <strong>NOT gate</strong>: a 1 k&Omega; pull-up from +5 V to the collector, the emitter to ground, and a 10 k&Omega; base resistor.</p></div>
+        <div class="step-card"><span class="sc-num">2</span><p class="sc-body">Join the LogiKIT <strong>GND</strong> to your breadboard ground. Feed the base resistor from a LogiKIT <strong>switch</strong>.</p></div>
+        <div class="step-card"><span class="sc-num">3</span><p class="sc-body">Measure the output for each input. Wire the same switch to a LogiKIT <strong>NOT module</strong> and compare its LED.</p></div>
+        <div class="step-card"><span class="sc-num">4</span><p class="sc-body">Your teacher assigns <strong>NAND</strong> (series) or <strong>NOR</strong> (parallel). Build it with two switches and compare it with that module.</p></div>
+      </div>
+      <div>
+        <div class="callout-warn">The two grounds must be <strong>joined</strong>. Without a shared ground, the switch&#39;s 5 V has no return path and the transistor never turns on.</div>
+        <div class="card" style="margin-top:var(--gap);"><span class="card-name">Finished early?</span><p class="card-body">Feed your gate&#39;s output into your NOT gate. Which gate do you have now?</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 13 · WHAT TO RECORD -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Lab · Engineering Notebook</span>
+    <h2>Two Truth Tables, <span class="accent">Side by Side</span></h2>
+    <p class="slide-intro">Draw your transistor gate&#39;s schematic, then fill in this table for it. A voltage above about 2.5 V counts as <strong>1</strong>.</p>
+    <table class="data-table record-table">
+      <thead><tr><th>A</th><th>B</th><th>Transistor V<sub>out</sub></th><th>Transistor Y</th><th>LogiKIT LED</th><th>Match?</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>0</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+        <tr><td>0</td><td>1</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+        <tr><td>1</td><td>0</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+        <tr><td>1</td><td>1</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td><td class="blank">___</td></tr>
+      </tbody>
+    </table>
+    <div class="card fragment fade-up" style="margin-top:var(--gap-lg);"><span class="card-name">Explain</span><p class="card-body">Using the words <strong>path through the transistors</strong> and <strong>pull-up</strong>, explain why your gate gives a 0 in the rows where it does.</p></div>
+  </div>
+</section>
+
+
+<!-- SLIDE 14 · BILLIONS OF SWITCHES -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Concept · Integrated Circuits</span>
+    <h2>Billions of <span class="accent">Switches</span></h2>
+    <p class="slide-intro">A LogiKIT module does the job you just did on the breadboard, but on a small <span class="key">integrated circuit</span>: transistors and their connections built together on one piece of silicon.</p>
+    <div class="row-3">
+      <div class="card"><span class="card-name">Your breadboard</span><p class="card-body">One gate from <strong>1 or 2</strong> transistors and a couple of resistors.</p></div>
+      <div class="card fragment fade-up"><span class="card-name">A gate chip</span><p class="card-body">Several gates on one chip about the size of a <strong>fingernail</strong>.</p></div>
+      <div class="card fragment fade-up"><span class="card-name">A phone processor</span><p class="card-body">More than <span class="res">10 billion</span> transistors on a chip smaller than a postage stamp.</p></div>
+    </div>
+    <p class="slide-intro fragment fade-up" style="margin-top:var(--gap);">Modern chips use a different kind of transistor, the <strong>MOSFET</strong>, in pairs that pull the output up or down, but the idea is same: switches that open or close a path. The next lesson shows how they are built.</p>
+  </div>
+</section>
+
+
+<!-- SLIDE 15 · HOW THE FAULTY GATE WORKS -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Troubleshooting · The Faulty Gate</span>
+    <h2>Find the <span class="accent">Hidden Fault</span></h2>
+    <p class="slide-intro">This breadboard gate is supposed to be a <strong>transistor NAND</strong>: the build sheet calls for the circuit you used in the Gate Builder. Something on the board does not match the build sheet, and the gate no longer follows the NAND truth table. You have <strong>10 minutes</strong> of bench time.</p>
+    <div class="stage-row">
+      <div class="step-card"><div class="sc-num">1</div><p class="sc-body"><strong>Fill the table.</strong> Click A and B on the schematic. Checking rows is free.</p></div>
+      <div class="step-card"><div class="sc-num">2</div><p class="sc-body"><strong>Probe.</strong> Click a test point (TP) to measure it at the current inputs: 1 minute.</p></div>
+      <div class="step-card"><div class="sc-num">3</div><p class="sc-body"><strong>Diagnose.</strong> Strike the causes your readings rule out. Choose the cause and the fix.</p></div>
+      <div class="step-card"><div class="sc-num">4</div><p class="sc-body"><strong>Read the record.</strong> Did you find the reading that settles it?</p></div>
+    </div>
+    <div class="callout-warn fragment fade-up" style="margin-top:var(--gap-lg);">Two different faults can give the <strong>same truth table</strong>. The wrong rows tell you where to look, and a voltage tells you which fault it is. Some choices are <strong>unsafe</strong>: they cost time, are never carried out, and count against you.</div>
+  </div>
+</section>
+
+
+<!-- SLIDE 16 · THE FAULTY GATE (SIMULATOR) -->
+<section>
+  <div class="slide-inner" style="justify-content:flex-start;padding-top:40px;">
+    <span class="slide-tag">Troubleshooting · The Faulty Gate</span>
+    <h2 style="margin-bottom:12px;">The Faulty <span class="accent">Gate</span></h2>
+    <div class="gate-builder gate-hunt">
+      <div class="gh-grid">
+        <div class="gh-left">
+          <div class="sim-panel"><svg data-role="circuit" viewBox="0 0 620 500" role="img" aria-label="The transistor NAND as the build sheet draws it: a 1 kilohm pull-up from 5 volts to the output Y, transistors Q1 and Q2 in series from the output to ground, inputs A and B through 10 kilohm base resistors, and a lamp on Y. Test points TP1 to TP5 mark the output, Q1&#39;s base, the node between Q1 and Q2, Q2&#39;s base, and Q2&#39;s emitter."></svg></div>
+          <div class="sim-panel"><table class="gh-tt" data-role="tt"></table></div>
+        </div>
+        <div class="md-col">
+          <div class="budget"><span class="budget-track"><span class="budget-fill" data-role="budget-bar" style="display:block;"></span></span><span data-role="budget-val">0 of 10 min used</span></div>
+          <div class="ctl-row md-navrow">
+            <span class="seg">
+              <button class="seg-btn" data-tab="notes" aria-pressed="true">Bench notes</button>
+              <button class="seg-btn" data-tab="log" aria-pressed="false">Evidence log</button>
+            </span>
+            <span class="md-nav" data-role="nav"></span>
+          </div>
+          <div class="sim-panel md-panel" data-role="left" aria-live="polite"></div>
+          <div class="sim-panel md-right" data-role="right"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 17 · EXIT TICKET (RESONANCE) -->
+<section
+  data-activity-id="resonance"
+  data-activity-trigger="slide-enter"
+  data-activity-instance-key="resonance:16:0"
+  data-activity-options='{"questions":[{"id":"q1","type":"multiple-choice","text":"A transistor NAND&#39;s lamp stays lit for every input. With A = 1 and B = 1, Q1&#39;s base reads 5.0 V instead of about 0.8 V. Which fault fits?","order":0,"responseTimeLimitMs":60000,"options":[{"id":"q1a","text":"Q1&#39;s base resistor is open","isCorrect":false},{"id":"q1b","text":"The 1 kΩ pull-up is missing","isCorrect":false},{"id":"q1c","text":"Q2&#39;s emitter is not connected to ground","isCorrect":true},{"id":"q1d","text":"The lamp is burned out","isCorrect":false}]},{"id":"q2","type":"free-response","text":"A chip in a phone holds billions of transistors. Using today&#39;s circuits, explain what most of those transistors are doing.","order":1,"responseTimeLimitMs":180000}]}'>
+  <div class="slide-inner">
+    <span class="slide-tag">Exit Ticket</span>
+    <h2>Exit <span class="accent">Ticket</span></h2>
+    <div class="frq-list" style="margin-bottom:10px;">
+      <div class="frq-box"><span class="q-num">1</span>A transistor NAND&#39;s lamp stays lit for <strong>every</strong> input. With A = 1 and B = 1, Q1&#39;s base reads <strong>5.0 V</strong> instead of about 0.8 V. Which fault fits?</div>
+    </div>
+    <ul class="mcq-opts mcq-2col" style="margin-bottom:var(--gap);">
+      <li><span class="opt-key">A</span>Q1&#39;s base resistor is open</li>
+      <li><span class="opt-key">B</span>The 1 k&Omega; pull-up is missing</li>
+      <li><span class="opt-key">C</span>Q2&#39;s emitter is not connected to ground</li>
+      <li><span class="opt-key">D</span>The lamp is burned out</li>
+    </ul>
+    <div class="frq-list">
+      <div class="frq-box"><span class="q-num">2</span>A chip in a phone holds <strong>billions</strong> of transistors. Using today&#39;s circuits, explain what most of those transistors are doing.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SLIDE 18 · WRAP UP -->
+<section>
+  <div class="slide-inner">
+    <span class="slide-tag">Wrap Up</span>
+    <h2>What We Know, and What Comes <span class="accent">Next</span></h2>
+    <div class="row-2" style="margin-bottom:var(--gap-lg);">
+      <div class="card is-key"><span class="card-name">Inside a gate</span><p class="card-body">Transistor switches with a pull-up or a pull-down. Switches in <strong>series</strong> make AND and NAND, and switches in <strong>parallel</strong> make OR and NOR.</p></div>
+      <div class="card is-key"><span class="card-name">Finding faults</span><p class="card-body">Fill the truth table first: the wrong rows tell you where to look. Then measure the <strong>voltage</strong> that tells look-alike faults apart.</p></div>
+    </div>
+    <div class="callout fragment fade-up">
+      <strong>Next class:</strong> how do you build billions of transistors on a chip smaller than a fingernail, and who runs the machines that do it?
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="../../runtime/syncdeck-reveal/dist/syncdeck-reveal.js"></script>
+<script src="semiconductor-sims.js"></script>
+<script>
+var SIMS = [];
+document.querySelectorAll('.gate-builder').forEach(function (r) {
+    if (r.closest('#storyboard')) return;
+    var s = SiliconSims.buildGateBuilder(r);
+    if (s) SIMS.push(s);
+});
+
+initSyncDeckReveal({
+    deckId: 'day7-transistors-to-logic-gates',
+    standaloneHosting: {
+        activeBitsOrigin: 'https://bits.mycode.run',
+    },
+    revealOverrides: {
+        hash: true,
+        hashOneBasedIndex: true,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'none',
+        center: false,
+        controls: true,
+        controlsLayout: 'edges',
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        touch: true,
+        fragments: true,
+        width: 1600,
+        height: 900,
+        margin: 0.04,
+        minScale: 0.2,
+        maxScale: 2.5,
+    },
+    afterInit: function (Reveal) {
+        SiliconSims.startSimLoop(Reveal, SIMS);
+    },
+});
+</script>
+</body>
+</html>
